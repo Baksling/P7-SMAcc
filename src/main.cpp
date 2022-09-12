@@ -4,6 +4,8 @@
 #include <string>
 #include "Node.h"
 #include "Edge.h"
+#include "RelationHandler.h"
+
 using namespace std;
 
 int main() {
@@ -12,6 +14,10 @@ int main() {
 
     Edge edgeOne(&nodeOne, &nodeTwo, 1);
 
-    cout << edgeOne.GetN1()->outputs;
+    RelationHandler relationHandler;
+    relationHandler.AddNode(&nodeOne);
+    relationHandler.AddEdgeToNode(&nodeOne, &edgeOne);
+
+    cout << edgeOne.GetN1()->GetId();
     return 0;
 }

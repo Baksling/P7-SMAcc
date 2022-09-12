@@ -1,6 +1,6 @@
 
 
-$local_folder = "./src"
+$local_folder = "./src2"
 $server_path = "/home/ubuntu/P7/"
 
 function Move-Files{
