@@ -2,23 +2,24 @@
 #include "Node.h"
 using namespace std;
 
-edge::edge(node* n1, node* n2, const float weight) {
-    n1_ = n1;
-    n2_ = n2;
+edge::edge(node* n1, const float weight) {
+    node_ = n1;
     weight_ = weight;
 }
 
-node* edge::get_n1() const
+node* edge::get_node() const
 {
-    return n1_;
-}
-
-node* edge::get_n2() const
-{
-    return n2_;
+    return node_;
 }
 
 float edge::get_weight() const
 {
     return weight_;
 }
+
+bool edge::validate()
+{
+    //Placeholder! ;)
+    return true;
+}
+

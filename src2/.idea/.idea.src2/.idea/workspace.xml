@@ -7,16 +7,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="62562a0c-d884-4251-aae0-458ae488e089" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../src/RelationHandler.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../src/RelationHandler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../run_server.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/../run_server.ps1" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../src/Node.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../src/Node.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../src/Node.h" beforeDir="false" afterPath="$PROJECT_DIR$/../src/Node.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../src/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src2.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/src2.vcxproj" afterDir="false" />
-    </list>
+    <list default="true" id="62562a0c-d884-4251-aae0-458ae488e089" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -33,19 +24,19 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="src2" type="CppProject" factoryName="C++ Project">
       <configuration_1>
@@ -103,7 +94,8 @@
       <option name="presentableId" value="Default" />
       <updated>1662984787559</updated>
       <workItem from="1662984806655" duration="250000" />
-      <workItem from="1662985429822" duration="1751000" />
+      <workItem from="1662985429822" duration="1859000" />
+      <workItem from="1663054692096" duration="5606000" />
     </task>
     <servers />
   </component>
