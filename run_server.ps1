@@ -19,7 +19,7 @@ function Move-Files{
     }
 
     Write-Output("Starting transfering files...")
-    Invoke-Expression("scp " + $local_folder + "/* " + $ssh_target + ":" + $server_path )
+    Invoke-Expression("scp " + $local_folder + "/* " + $ssh_target + ":" + $server_path + "/" + $compile_filename )
     Write-Output("Files transfered to '" + $ssh_target + "'.")
 }
 
