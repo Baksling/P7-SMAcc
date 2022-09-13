@@ -17,9 +17,20 @@ float edge::get_weight() const
     return weight_;
 }
 
+void edge::add_guard(guard* guard)
+{
+    this->guards_.push_back(guard);
+}
+
 bool edge::validate()
 {
-    //Placeholder! ;)
+    for (guard* guard : this->guards_)
+    {
+        if (!guard->validate_guard()) return false;
+    }
+    
+    if (!this->get_node()->validate_invariants()) return false; 
+
     return true;
 }
 

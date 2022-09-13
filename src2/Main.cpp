@@ -16,6 +16,10 @@ int main() {
     node_two.add_edge(&node_one, 1);
 
     simulator sim;
+    sim.add_timer(1);
+
+    node_two.add_guard(logical_operator::greater_equal, 0, sim.get_timer(1));
+    
     cout << sim.simulate(&node_one);
 
     return 0;
