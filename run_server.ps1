@@ -13,7 +13,7 @@ $compile_filename = "a.out"
 function Move-Files{
     param([string] $ssh_target)
 
-    if([string]::IsNullOrWhiteSpace($ssh_target) -or $Name -like "* *"){
+    if([string]::IsNullOrWhiteSpace($ssh_target) -or $ssh_target -like "* *"){
         Write-Error "You didnt add a ssh target you idiot!"
         return;
     }
@@ -21,12 +21,13 @@ function Move-Files{
     Write-Output("Starting transfering files...")
     Invoke-Expression("scp " + $local_folder + "/* " + $ssh_target + ":" + $server_path + "/" + $local_folder )
     Write-Output("Files transfered to '" + $ssh_target + "'.")
+    Write-Output " "
 }
 
 function Compile_project{
     param([string] $ssh_target)
 
-    if([string]::IsNullOrWhiteSpace($ssh_target) -or $Name -like "* *"){
+    if([string]::IsNullOrWhiteSpace($ssh_target) -or $ssh_target -like "* *"){
         Write-Error "You didnt add a ssh target you idiot!"
         return;
     }
@@ -36,21 +37,68 @@ function Compile_project{
     Write-Output("Start Compiling")
     Invoke-Expression("ssh " + $ssh_target + " " + $compile_command)
     Write-Output("Compilation concluded")
+    Write-Output " "
 }
 
-function Run_project(){
+function Run_project{
     param([string] $ssh_target)
 
-    if([string]::IsNullOrWhiteSpace($ssh_target) -or $Name -like "* *"){
+    if([string]::IsNullOrWhiteSpace($ssh_target) -or $ssh_target -like "* *"){
         Write-Error "You didnt add a ssh target you idiot!"
         return;
     }
 
-    
+    $run_command =  $server_path + "/" + $local_folder + "/" + $compile_filename
+
+    Write-Output("Running program: ")
+    Invoke-Expression("ssh " + $ssh_target + " " + $run_command)
+    Write-Output("Program terminated")
+    Write-Output " "
 }
 
 
-$ssh_target = $args[0]
+function execute_command([string]$ssh_target, [string]$command){
 
-Move-Files($ssh_target)
-Compile_project($ssh_target)
+    if([string]::IsNullOrWhiteSpace($command) -or $command -like "* *"){
+        Write-Output "No command supplied, defaulting to 'compile'.";
+        Write-Output "Options: 'transfer', 'compile' and 'run'";
+        Write-Output " "
+        $command = "compile";
+    }
+
+    $ssh_target = $ssh_target.Trim()
+    if([string]::IsNullOrWhiteSpace($ssh_target) -or $ssh_target -like "* *"){
+        Write-Output($ssh_target + " " + $ssh_target.Length)
+        Write-Error "You didnt add a ssh target you idiot!"
+        return;
+    }
+
+    switch($command){
+        "transfer"{
+            Move-Files($ssh_target)
+            break;
+        }
+        "compile"{
+            Move-Files($ssh_target)
+            Compile_project($ssh_target)
+            break;
+        }
+        "run"{
+            Move-Files($ssh_target)
+            Compile_project($ssh_target)
+            Run_project($ssh_target)
+            break;
+        }
+        default{
+            Write-Error "Unknown command";
+        }
+    }
+}
+
+# $arg = $args[0].Split(" ")
+$ssh_target = $args[0]
+$command = $args[1]
+
+execute_command $ssh_target $command
+
+
