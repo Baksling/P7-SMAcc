@@ -31,7 +31,7 @@ function Compile_project{
         return;
     }
 
-    $compile_command = "g++ " + $server_path + "/*.cpp -o " + $server_path + "/" + $compile_filename;
+    $compile_command = "g++ " + $server_path + "/*.cpp -o " + $server_path + "/" + $local_folder + "/" + $compile_filename;
 
     Write-Output("Start Compiling")
     Invoke-Expression("ssh " + $ssh_target + " " + $compile_command)
