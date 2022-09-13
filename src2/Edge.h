@@ -2,17 +2,17 @@
 #define EDGE_H
 
 #include "Node.h"
+class node;
 
 class edge {
-    private:
-        node* n1_;
-        node* n2_;
-        float weight_;
-    public:
-        edge(node* n1, node* n2, float weight);
-        float get_weight() const;
-        node* get_n1() const;
-        node* get_n2() const;
+private:
+    node* node_;
+    float weight_;
+public:
+    edge(node* n1, float weight);
+    bool validate();
+    node* get_node() const;
+    float get_weight() const;
 };
 
 
