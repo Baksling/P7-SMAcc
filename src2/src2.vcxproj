@@ -160,6 +160,7 @@
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="Simulator.cpp" />
     <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="UniformDistribution.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Edge.h" />
@@ -167,6 +168,7 @@
     <ClInclude Include="Node.h" />
     <ClInclude Include="Simulator.h" />
     <ClInclude Include="Timer.h" />
+    <ClInclude Include="UniformDistribution.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

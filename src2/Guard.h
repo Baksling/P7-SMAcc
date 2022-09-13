@@ -23,6 +23,7 @@ public:
     guard(logical_operator type, double value, timer* timer);
     double get_value() const;
     bool validate_guard();
+    logical_operator get_type();
 };
 
 

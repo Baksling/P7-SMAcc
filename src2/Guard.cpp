@@ -30,3 +30,8 @@ bool guard::validate_guard()
     return false;
 }
 
+logical_operator guard::get_type()
+{
+    return this->type_;
+}
+

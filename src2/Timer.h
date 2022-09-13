@@ -8,6 +8,7 @@ private:
 public:
     timer(double time = 0);
     double get_time();
+    double set_time(double time);
     
 };
 

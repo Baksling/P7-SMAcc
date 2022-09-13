@@ -1,5 +1,5 @@
 #include "Node.h"
-
+#include <iostream>
 #include <functional>
 
 using namespace std;
@@ -12,9 +12,9 @@ node::node(const int id, const bool is_goal) {
     edges_ = temp;
 }
 
-void node::add_edge(node* n, const float weight)
+void node::add_edge(node* n, const list<guard> guards)
 {
-    this->edges_.emplace_back(n, weight);
+    this->edges_.emplace_back(n, guards);
 }
 
 int node::get_id() const
@@ -27,7 +27,7 @@ bool node::is_goal() const
     return is_goal_;
 }
 
-void node::add_guard(const logical_operator type, const double value, timer* timer)
+void node::add_invariant(const logical_operator type, const double value, timer* timer)
 {
     this->invariants_.emplace_back(type, value, timer);
 }
@@ -45,6 +45,11 @@ bool node::validate_invariants()
     }
 
     return true;
+}
+
+list<guard> node::get_invariants()
+{
+    return this->invariants_;
 }
 
 

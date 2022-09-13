@@ -1,6 +1,8 @@
 ﻿#include "Simulator.h"
 #include <iostream>
 #include <map>
+#include "UniformDistribution.h"
+#include <cfloat>
 
 using namespace std;
 
@@ -42,27 +44,33 @@ simulator::simulator(const int max_steps)
 }
 
 
-bool simulator::simulate(node* start_node, const int n_step)
+bool simulator::simulate(node* start_node, int n_step)
 {
-    if (n_step >= this->max_steps_)
+    node* current_node = start_node;
+    int current_step = 0;
+    do
     {
-        cout << "Hit max steps!";
-        return false;
-    }
+        current_step ++;
+        this->update_time(start_node);
     
-    //Get validated edges! (Active edges)
-    list<edge>* validated_data = get_valid_edges(start_node);
+        //Get validated edges! (Active edges)
+        list<edge>* validated_data = get_valid_edges(current_node);
 
-    if (validated_data->empty()) return false;
-
-    //Find next route
-    const edge* next_edge = choose_next_edge(validated_data);
-
-    delete validated_data;
+        if (validated_data->empty()) continue;
     
-    //Check if goal node hit // Else loop
-    if (next_edge->get_node()->is_goal()) return true;
-    return simulate(next_edge->get_node(), n_step + 1);
+        //Find next route
+        const edge* next_edge = choose_next_edge(validated_data);
+
+        delete validated_data;
+    
+        //Check if goal node hit // Else loop
+        if (next_edge->get_node()->is_goal()) return true;
+        current_node = next_edge->get_node();
+        
+    } while (current_step <= this->max_steps_);
+
+    cout << "Hit max steps!\n";
+    return false;
     
 }
 
@@ -76,5 +84,38 @@ timer* simulator::get_timer(const int id)
     return this->timers_[id];
 }
 
+void simulator::update_time(node* current_node)
+{
+    double least_difference = this->find_least_difference(current_node);
+    
+    uniform_distribution tmp;
+    double time_progression = tmp.get_time_difference(least_difference);
 
+    for (auto const& t : this->timers_)
+    {
+        t.second->set_time(t.second->get_time() + time_progression);
+        cout << t.first << ": " << t.second->get_time() << "\n";
+    }
+
+    
+}
+
+double simulator::find_least_difference(node* current_node)
+{
+    double least_difference = DBL_MAX;
+    for (auto const& t : this->timers_)
+    {
+        for (guard g : current_node->get_invariants())
+        {
+            if (g.get_type() != logical_operator::less_equal &&
+                g.get_type() != logical_operator::less) continue;
+            
+            double diff = g.get_value() - t.second->get_time();
+            if (diff >= 0 && diff < least_difference)
+                least_difference = diff;
+        }
+    }
+
+    return least_difference;
+}
 

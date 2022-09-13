@@ -15,13 +15,13 @@ class edge {
 private:
     node* node_;
     float weight_;
-    list<guard*> guards_;
+    list<guard> guards_;
 public:
-    edge(node* n1, float weight);
+    edge(node* n1, const list<guard>& guards);
     bool validate();
     node* get_node() const;
     float get_weight() const;
-    void add_guard(guard* guard);
+    void add_guard(guard guard);
 };
 
 
