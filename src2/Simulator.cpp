@@ -11,7 +11,7 @@ static list<edge>* get_valid_edges(node* n)
 {
     list<edge>* validated_data = new list<edge>;
     
-    for (edge it : n->get_edges()){
+    for (edge it : *(n->get_edges())){
         if (it.validate())
         {
             validated_data->push_back(it);
@@ -44,18 +44,27 @@ simulator::simulator(const int max_steps)
 }
 
 
-bool simulator::simulate(node* start_node, int n_step)
+bool simulator::simulate(node* start_node)
 {
     node* current_node = start_node;
     int current_step = 0;
     do
     {
+        if (current_step != 0) this->update_time(start_node);
         current_step ++;
-        this->update_time(start_node);
-    
+
+        for (auto const& t : this->timers_)
+        {
+            cout << t.first << ": " << t.second->get_time() << "\n";
+        }
+        
+        //Check if current node has edges (Otherwise it terminates if not an goal)
+        if (current_node->get_edges()->empty() || current_node->is_goal())
+            return current_node->is_goal();
+        
         //Get validated edges! (Active edges)
         list<edge>* validated_data = get_valid_edges(current_node);
-
+        
         if (validated_data->empty()) continue;
     
         //Find next route
@@ -64,8 +73,10 @@ bool simulator::simulate(node* start_node, int n_step)
         delete validated_data;
     
         //Check if goal node hit // Else loop
-        if (next_edge->get_node()->is_goal()) return true;
         current_node = next_edge->get_node();
+        if (current_node->is_goal()) return true;
+        
+        
         
     } while (current_step <= this->max_steps_);
 
@@ -94,10 +105,7 @@ void simulator::update_time(node* current_node)
     for (auto const& t : this->timers_)
     {
         t.second->set_time(t.second->get_time() + time_progression);
-        cout << t.first << ": " << t.second->get_time() << "\n";
     }
-
-    
 }
 
 double simulator::find_least_difference(node* current_node)
@@ -105,7 +113,7 @@ double simulator::find_least_difference(node* current_node)
     double least_difference = DBL_MAX;
     for (auto const& t : this->timers_)
     {
-        for (guard g : current_node->get_invariants())
+        for (guard g : *(current_node->get_invariants()))
         {
             if (g.get_type() != logical_operator::less_equal &&
                 g.get_type() != logical_operator::less) continue;

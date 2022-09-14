@@ -32,9 +32,9 @@ void node::add_invariant(const logical_operator type, const double value, timer*
     this->invariants_.emplace_back(type, value, timer);
 }
 
-list<edge> node::get_edges()
+list<edge>* node::get_edges()
 {
-    return edges_;
+    return &this->edges_;
 }
 
 bool node::validate_invariants()
@@ -47,9 +47,9 @@ bool node::validate_invariants()
     return true;
 }
 
-list<guard> node::get_invariants()
+list<guard>* node::get_invariants()
 {
-    return this->invariants_;
+    return &this->invariants_;
 }
 
 

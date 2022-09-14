@@ -21,9 +21,9 @@ public:
     void add_edge(node* n, list<guard> guards);
     bool is_goal() const;
     void add_invariant(logical_operator type, double value, timer* timer);
-    list<edge> get_edges();
+    list<edge>* get_edges();
     bool validate_invariants();
-    list<guard> get_invariants();
+    list<guard>* get_invariants();
         
 };
 
