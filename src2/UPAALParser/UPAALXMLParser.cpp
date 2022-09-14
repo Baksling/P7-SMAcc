@@ -50,7 +50,7 @@ int xml_id_to_int(string id_string)
     return stoi(id_string.replace(0,2,""));
 }
 
-node UPAALXMLParser::parse_xml(timer* t, char* file_path)
+node UPAALXMLParser::parse_xml(timer* t, char* file_path, int goal_node_id)
 {
     string path = file_path;
     cout << "\nParsing XML data ("+path+").....\n\n";
@@ -74,7 +74,7 @@ node UPAALXMLParser::parse_xml(timer* t, char* file_path)
 
             node n(node_id);
             
-            if (node_id == 1)
+            if (node_id == goal_node_id)
                 n = node(node_id,true);
             
             string kind = locs.child("label").attribute("kind").as_string();

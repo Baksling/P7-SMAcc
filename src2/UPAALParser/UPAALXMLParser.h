@@ -14,6 +14,6 @@ private:
     map<unsigned int, node>* nodes_;
 public:
     UPAALXMLParser();
-    node parse_xml(timer* t, char* file_path);
+    node parse_xml(timer* t, char* file_path, int goal_node_id = 1);
 };
 #endif

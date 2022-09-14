@@ -178,6 +178,7 @@
     <ClInclude Include="Update.h" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UPAALParser\sample.xml" />
     <Content Include="UPAALParser\sample1.xml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
