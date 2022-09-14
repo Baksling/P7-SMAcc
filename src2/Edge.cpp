@@ -1,10 +1,12 @@
 #include "Edge.h"
 #include "Node.h"
+#include <iostream>
 using namespace std;
 
-edge::edge(node* n1, const list<guard>& guards) {
-    node_ = n1;
+edge::edge(node* n1, const list<guard>& guards, list<update>* updates) {
+    this->node_ = n1;
     this->guards_ = guards;
+    this->updates_ = updates;
 }
 
 node* edge::get_node() const
@@ -20,6 +22,15 @@ float edge::get_weight() const
 void edge::add_guard(guard guard)
 {
     this->guards_.push_back(guard);
+}
+
+void edge::activate()
+{
+    if (this->updates_->empty()) return;
+    for (update update : *this->updates_)
+    {
+        update.activate();
+    }
 }
 
 bool edge::validate()

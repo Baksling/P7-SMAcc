@@ -128,10 +128,6 @@ node* simulator::simulate_process(node* start_node)
         this->update_time(start_node);
         current_step ++;
 
-        // for (auto const& t : this->timers_)
-        // {
-        //     cout << t.first << ": " << t.second->get_time() << "\n";
-        // }
         
         //Check if current node has edges (Otherwise it terminates if not an goal)
         if (current_node->get_edges()->empty() || current_node->is_goal())
@@ -143,15 +139,19 @@ node* simulator::simulate_process(node* start_node)
         if (validated_data->empty()) continue;
     
         //Find next route
-        const edge* next_edge = choose_next_edge(validated_data);
+        edge* next_edge = choose_next_edge(validated_data);
 
         delete validated_data;
     
         //Check if goal node hit // Else loop
         current_node = next_edge->get_node();
+        next_edge->activate();
         if (current_node->is_goal()) return current_node;
         
-        
+        // for (auto const& t : this->timers_)
+        // {
+        //     cout << t.first << ": " << t.second->get_time() << "\n";
+        // }
         
     } while (current_step <= this->max_steps_);
 

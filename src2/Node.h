@@ -5,6 +5,7 @@
 #include "Edge.h"
 #include "Guard.h"
 #include "Timer.h"
+#include "Update.h"
 using namespace std;  // NOLINT(clang-diagnostic-header-hygiene)
 class edge;
 class timer;
@@ -18,7 +19,7 @@ private:
 public:
     int get_id() const;
     explicit node(int id, bool is_goal = false);
-    void add_edge(node* n, list<guard> guards);
+    void add_edge(node* n, list<guard> guards, list<update>* updates);
     bool is_goal() const;
     void add_invariant(logical_operator type, double value, timer* timer);
     list<edge>* get_edges();

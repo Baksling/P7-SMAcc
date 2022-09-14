@@ -1,6 +1,7 @@
 #include "Node.h"
 #include <iostream>
 #include <functional>
+#include "Update.h"
 
 using namespace std;
 
@@ -12,9 +13,9 @@ node::node(const int id, const bool is_goal) {
     edges_ = temp;
 }
 
-void node::add_edge(node* n, const list<guard> guards)
+void node::add_edge(node* n, const list<guard> guards, list<update>* updates)
 {
-    this->edges_.emplace_back(n, guards);
+    this->edges_.emplace_back(n, guards, updates);
 }
 
 int node::get_id() const

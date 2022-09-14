@@ -5,6 +5,7 @@
 #include "Node.h"
 #include "Edge.h"
 #include "Simulator.h"
+#include "Update.h"
 #include <map>
 #include <time.h>
 
@@ -21,7 +22,10 @@ static void print_result(map<node*, unsigned int>* result, const int number_of_s
 
 int main() {
     srand(time(NULL));
-    const int number_of_simulations = 100000;
+    const int number_of_simulations = 1000;
+
+    cout << "Hej";
+    
 
     // Clock initialization
     simulator sim;
@@ -43,14 +47,20 @@ int main() {
     list<guard> edge13_guard;
     edge13_guard.emplace_back(logical_operator::less_equal, 3, sim.get_timer(1));
 
+    //Update initialization
+    list<update>* edge12_update = new list<update>;
+    edge12_update->emplace_back(sim.get_timer(1), 0);
+
+    list<update>* edge13_update = new list<update>;
+    edge13_update->emplace_back(sim.get_timer(1), 100);
+
     //Edge initialization
-    node_one.add_edge(&node_two, edge12_guard);
-    node_one.add_edge(&node_three, edge13_guard);
-
-
+    node_one.add_edge(&node_two, edge12_guard, edge12_update);
+    node_one.add_edge(&node_three, edge13_guard, edge13_update);
+    
     map<node*, unsigned int>* result = sim.simulate(&node_one, number_of_simulations);
 
     print_result(result, number_of_simulations);
-
+    
     return 0;
 }

@@ -161,6 +161,7 @@
     <ClCompile Include="Simulator.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="UniformDistribution.cpp" />
+    <ClCompile Include="Update.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Edge.h" />
@@ -169,6 +170,7 @@
     <ClInclude Include="Simulator.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="UniformDistribution.h" />
+    <ClInclude Include="Update.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
