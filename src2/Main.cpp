@@ -5,34 +5,52 @@
 #include "Node.h"
 #include "Edge.h"
 #include "Simulator.h"
+#include <map>
+#include <time.h>
 
 using namespace std;
 
-int main() {
-    node node_one(1);
-    node node_two(2, false);
+static void print_result(map<node*, unsigned int>* result, const int number_of_simulations)
+{
+    for (map<node*, unsigned int>::iterator it = result->begin(); it != result->end(); it++)
+    {
+        cout << it->first->get_id() << ": " << it->second << " (~" << static_cast<int>(static_cast<double>(it->second) / static_cast<double>(number_of_simulations) * 100) << "%)\n";
+    }
+    cout << "Number of simulations: " << number_of_simulations << "\n";
+}
 
+int main() {
+    srand(time(NULL));
+    const int number_of_simulations = 100000;
+
+    // Clock initialization
     simulator sim;
     sim.add_timer(1);
-    sim.add_timer(2);
-    
-    list<guard> hej;
-    hej.emplace_back(logical_operator::greater_equal, 1, sim.get_timer(2));
 
-    node_one.add_edge(&node_two, hej);
-    node_two.add_edge(&node_one, list<guard>());
 
-    node_one.add_invariant(logical_operator::less_equal, 1, sim.get_timer(1));
-    node_two.add_invariant(logical_operator::greater_equal, 1, sim.get_timer(1));
-    node_two.add_invariant(logical_operator::greater_equal, 1, sim.get_timer(2));
+    // Node initialization
+    node node_one(1);
+    node node_two(2, true);
+    node node_three(3);
 
-    const bool result = sim.simulate(&node_one);
+    //Invariant initialization
+    node_one.add_invariant(logical_operator::less_equal, 10, sim.get_timer(1));
 
-    if (result)
-        cout << "Result: " << "Successfully succeeded!\n";
-    else
-        cout << "Result: " << "Failed successfully!\n";
-    //cout << "Result: " << result << "\n";
+    //Edge guard initialization
+    list<guard> edge12_guard;
+    edge12_guard.emplace_back(logical_operator::less_equal, 10, sim.get_timer(1));
+
+    list<guard> edge13_guard;
+    edge13_guard.emplace_back(logical_operator::less_equal, 3, sim.get_timer(1));
+
+    //Edge initialization
+    node_one.add_edge(&node_two, edge12_guard);
+    node_one.add_edge(&node_three, edge13_guard);
+
+
+    map<node*, unsigned int>* result = sim.simulate(&node_one, number_of_simulations);
+
+    print_result(result, number_of_simulations);
 
     return 0;
 }
