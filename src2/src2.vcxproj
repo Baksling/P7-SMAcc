@@ -161,6 +161,8 @@
     <ClCompile Include="Simulator.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="UniformDistribution.cpp" />
+    <ClCompile Include="UPAALParser\pugixml.cpp" />
+    <ClCompile Include="UPAALParser\UPAALXMLParser.cpp" />
     <ClCompile Include="Update.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -170,7 +172,13 @@
     <ClInclude Include="Simulator.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="UniformDistribution.h" />
+    <ClInclude Include="UPAALParser\pugiconfig.hpp" />
+    <ClInclude Include="UPAALParser\pugixml.hpp" />
+    <ClInclude Include="UPAALParser\UPAALXMLParser.h" />
     <ClInclude Include="Update.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="UPAALParser\sample1.xml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

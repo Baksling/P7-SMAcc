@@ -7,11 +7,24 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="62562a0c-d884-4251-aae0-458ae488e089" name="Changes" comment="" />
+    <list default="true" id="62562a0c-d884-4251-aae0-458ae488e089" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/UPAALParser/UPAALXMLParser.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/UPAALParser/UPAALXMLParser.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/UPAALParser/pugiconfig.hpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/UPAALParser/pugixml.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/UPAALParser/pugixml.hpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/UPAALParser/sample1.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src2.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/src2.vcxproj" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/UPAALParser/pugixml.cpp" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -79,6 +92,16 @@
         <option name="PASS_PARENT_ENVS" value="1" />
         <option name="USE_EXTERNAL_CONSOLE" value="0" />
       </configuration_4>
+      <configuration_5>
+        <option name="CONFIGURATION" value="" />
+        <option name="PLATFORM" value="" />
+        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/src2.vcxproj" />
+        <option name="EXE_PATH" value="$(TargetPath)" />
+        <option name="PROGRAM_PARAMETERS" value="" />
+        <option name="WORKING_DIRECTORY" value="$(ProjectDir)" />
+        <option name="PASS_PARENT_ENVS" value="1" />
+        <option name="USE_EXTERNAL_CONSOLE" value="0" />
+      </configuration_5>
       <option name="DEFAULT_PROJECT_PATH" value="$PROJECT_DIR$/src2.vcxproj" />
       <method v="2">
         <option name="Build" />
@@ -96,6 +119,7 @@
       <workItem from="1662984806655" duration="250000" />
       <workItem from="1662985429822" duration="1859000" />
       <workItem from="1663054692096" duration="27803000" />
+      <workItem from="1663173672901" duration="18771000" />
     </task>
     <servers />
   </component>
@@ -117,5 +141,15 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/Node.cpp</url>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
