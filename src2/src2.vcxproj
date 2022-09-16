@@ -154,6 +154,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Cuda\CudaSimulator.cpp" />
     <ClCompile Include="Edge.cpp" />
     <ClCompile Include="Guard.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -164,6 +165,7 @@
     <ClCompile Include="Update.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Cuda\CudaSimulator.h" />
     <ClInclude Include="Edge.h" />
     <ClInclude Include="Guard.h" />
     <ClInclude Include="Node.h" />
