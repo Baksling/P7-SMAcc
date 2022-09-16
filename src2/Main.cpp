@@ -7,6 +7,7 @@
 #include "Simulator.h"
 #include "Update.h"
 #include <map>
+#include "./UPAALParser/UPAALXMLParser.h"
 #include <time.h>
 
 using namespace std;
@@ -20,18 +21,17 @@ static void print_result(map<node*, unsigned int>* result, const int number_of_s
     cout << "Number of simulations: " << number_of_simulations << "\n";
 }
 
-int main() {
+int main(int argc, char* argv[]) {
     srand(time(NULL));
     const int number_of_simulations = 1000;
-
-    cout << "Hej";
     
+    UPAALXMLParser xml_parser;
 
     // Clock initialization
     simulator sim;
     sim.add_timer(1);
-
-
+    
+    
     // Node initialization
     node node_one(1);
     node node_two(2, true);
@@ -57,10 +57,33 @@ int main() {
     //Edge initialization
     node_one.add_edge(&node_two, edge12_guard, edge12_update);
     node_one.add_edge(&node_three, edge13_guard, edge13_update);
-    
-    map<node*, unsigned int>* result = sim.simulate(&node_one, number_of_simulations);
 
-    print_result(result, number_of_simulations);
-    
+    try
+    {
+        string third_arg = argc == 3 ? argv[2] : "";
+        if (third_arg != "--debugxml" && !third_arg.empty())
+            throw "only third arg accepted is '--debugxml'.";
+
+        if (argc == 1 || !third_arg.empty())
+        {
+            cout << "\n\n--------------------------non XML--------------------------\n\n";
+            map<node*, unsigned int>* result = sim.simulate(&node_one, number_of_simulations);
+            print_result(result, number_of_simulations);
+            cout << "\n\n-----------------------------------------------------------\n\n";
+        }
+
+        if (argc > 1)
+        {
+            cout << "\n\n--------------------------XML--------------------------\n\n";
+            node start_node = xml_parser.parse_xml(sim.get_timer(1), argv[1]);
+            map<node*, unsigned int>* result2 = sim.simulate(&start_node, number_of_simulations);
+            print_result(result2, number_of_simulations);
+            cout << "\n\n--------------------------------------------------------\n\n";
+        }
+    }
+    catch (const char* msg)
+    {
+        cout << msg;
+    }
     return 0;
 }

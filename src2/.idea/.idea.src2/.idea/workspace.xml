@@ -7,7 +7,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="62562a0c-d884-4251-aae0-458ae488e089" name="Changes" comment="" />
+    <list default="true" id="62562a0c-d884-4251-aae0-458ae488e089" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/UPAALParser/sample.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/UPAALParser/UPAALXMLParser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/UPAALParser/UPAALXMLParser.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/UPAALParser/UPAALXMLParser.h" beforeDir="false" afterPath="$PROJECT_DIR$/UPAALParser/UPAALXMLParser.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/a.exe" beforeDir="false" afterPath="$PROJECT_DIR$/a.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src2.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/src2.vcxproj" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -15,6 +22,7 @@
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/Cuda/test/test_class.cu" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/UPAALParser/pugixml.cpp" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -112,6 +120,7 @@
       <workItem from="1663054692096" duration="27803000" />
       <workItem from="1663320610958" duration="1060000" />
       <workItem from="1663321788799" duration="1602000" />
+      <workItem from="1663173672901" duration="19565000" />
     </task>
     <servers />
   </component>
