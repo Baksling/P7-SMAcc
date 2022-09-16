@@ -21,6 +21,7 @@ private:
     timer* timer_;
 public:
     guard(logical_operator type, double value, timer* timer);
+    guard(logical_operator type, double value, int timer_id);
     double get_value() const;
     bool validate_guard();
     logical_operator get_type();

@@ -10,6 +10,12 @@ guard::guard(const logical_operator type, const double value, timer* timer)
     this->timer_ = timer;
 }
 
+guard::guard(const logical_operator type, const double value, int timer_id)
+{
+    this->type_ = type;
+    this->value_ = value;
+}
+
 double guard::get_value() const
 {
     return this->value_;

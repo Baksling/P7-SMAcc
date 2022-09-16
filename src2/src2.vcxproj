@@ -154,11 +154,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Cuda\CudaSimulator.cpp" />
+    <ClCompile Include="Cuda\CudaSimulator.cu" />
     <ClCompile Include="Edge.cpp" />
     <ClCompile Include="Guard.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Node.cpp" />
+    <ClCompile Include="Node.cu" />
     <ClCompile Include="Simulator.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="UniformDistribution.cpp" />

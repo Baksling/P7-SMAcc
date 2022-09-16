@@ -10,6 +10,7 @@ private:
     double value_;
 public:
     update(timer* timer, double value);
+    update(int timer_id, double value);
     void activate();
 };
 

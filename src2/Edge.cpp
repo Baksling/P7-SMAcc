@@ -9,6 +9,11 @@ edge::edge(node* n1, const list<guard>& guards, list<update>* updates) {
     this->updates_ = updates;
 }
 
+edge::edge()
+{
+    
+}
+
 node* edge::get_node() const
 {
     return node_;

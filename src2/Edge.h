@@ -22,6 +22,7 @@ private:
     list<update>* updates_;
 public:
     edge(node* n1, const list<guard>& guards, list<update>* updates);
+    edge();
     bool validate();
     node* get_node() const;
     float get_weight() const;
