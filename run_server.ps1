@@ -34,9 +34,9 @@ function Compile_project{
 
     $space = " "
 
-    $main = $server_path + "/*.cpp" + $space
-    $parser = $server_path + "/UPAALParser/*.cpp" + $space
-    $cuda = $server_path + "/Cuda/*.cpp" + $space
+    $main = $server_path + "*.cpp" + $space
+    $parser = $server_path + "UPAALParser/*.cpp" + $space
+    $cuda = $server_path + "Cuda/*.cpp" + $space
 
     $outpath = $server_path + $compile_filename
 
