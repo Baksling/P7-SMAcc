@@ -3,8 +3,8 @@
 #local_folder must not start with ./ or end with /
 $local_folder = "src2"
 
-#server_path must end with '/'
-$server_path = "/home/ubuntu/P7"
+#server_path must end with "/""
+$server_path = "/home/ubuntu/P7/"
 
 #The output file from the compiler
 $compile_filename = "a.out"
@@ -19,7 +19,7 @@ function Move-Files{
     }
 
     Write-Output("Starting transfering files...")
-    Invoke-Expression("scp " + $local_folder + "/* " + $ssh_target + ":" + $server_path + "/" + $local_folder )
+    Invoke-Expression("scp -r ./" + $local_folder + " " + $ssh_target + ":" + $server_path )
     Write-Output("Files transfered to '" + $ssh_target + "'.")
     Write-Output " "
 }
@@ -32,7 +32,15 @@ function Compile_project{
         return;
     }
 
-    $compile_command = "g++ " + $server_path + "/" + $local_folder + "/*.cpp -o " + $server_path + "/" + $local_folder + "/" + $compile_filename;
+    $space = " "
+
+    $main = $server_path + "/*.cpp" + $space
+    $parser = $server_path + "/UPAALParser/*.cpp" + $space
+    $cuda = $server_path + "/Cuda/*.cpp" + $space
+
+    $outpath = $server_path + $compile_filename
+
+    $compile_command = "g++ " + $main + $parser + $Cuda + "-o " + $outpath;
 
     Write-Output("Start Compiling")
     Invoke-Expression("ssh " + $ssh_target + " " + $compile_command)
@@ -48,7 +56,7 @@ function Run_project{
         return;
     }
 
-    $run_command =  $server_path + "/" + $local_folder + "/" + $compile_filename
+    $run_command =  $server_path + $compile_filename
 
     Write-Output("Running program: ")
     Invoke-Expression("ssh " + $ssh_target + " " + $run_command)
