@@ -24,6 +24,12 @@ function Move-Files{
     Write-Output " "
 }
 
+function compile_cuda{
+    param([string] $ssh_target)
+
+    return;
+}
+
 function Compile_project{
     param([string] $ssh_target)
 
@@ -33,10 +39,10 @@ function Compile_project{
     }
 
     $space = " "
-
-    $main = $server_path + "*.cpp" + $space
-    $parser = $server_path + "UPAALParser/*.cpp" + $space
-    $cuda = $server_path + "Cuda/*.cpp" + $space
+    $path = $server_path
+    $main = $path + "*.cpp" + $space
+    $parser = $path + "UPAALParser/*.cpp" + $space
+    $cuda = $path + "Cuda/*.cpp" + $space
 
     $outpath = $server_path + $compile_filename
 
