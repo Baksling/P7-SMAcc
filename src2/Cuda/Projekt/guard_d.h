@@ -25,9 +25,9 @@ private:
     int timer_id_;
     logical_operator type_;
     double value_;
+    bool is_node_;
 public:
-    CPU guard_d(int id, int timer_id, logical_operator type, double value);
-    GPU int get_id();
+    guard_d(int timer_id, logical_operator type, double value);
     GPU int get_timer_id();
     GPU logical_operator get_type();
     GPU bool validate(double value);

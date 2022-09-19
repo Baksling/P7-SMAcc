@@ -7,7 +7,7 @@
 
 #include "node_d.h"
 
-CPU node_d::node_d(const int id, const bool is_goal) {
+node_d::node_d(const int id, const bool is_goal) {
     this->id_ = id;
     this->is_goal_ = is_goal;
 }

@@ -11,12 +11,10 @@
 
 class update_d {
 private:
-    int id_;
     int timer_id_;
     double value_;
 public:
-    CPU update_d(int id, int timer_id, double value);
-    GPU int get_id();
+    update_d(int timer_id, double value);
     GPU int get_timer_id();
     GPU double get_value();
 };

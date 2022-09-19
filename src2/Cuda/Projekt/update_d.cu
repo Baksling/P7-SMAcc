@@ -7,14 +7,9 @@
 
 #include "update_d.h"
 
-CPU update_d::update_d(int id, int timer_id, double value) {
-    this->id_ = id;
+update_d::update_d(int timer_id, double value) {
     this->timer_id_ = timer_id;
     this->value_ = value;
-}
-
-GPU int update_d::get_id() {
-    return this->id_;
 }
 
 GPU int update_d::get_timer_id() {

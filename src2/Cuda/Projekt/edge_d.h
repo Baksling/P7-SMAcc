@@ -13,7 +13,7 @@ private:
     int id_;
     int dest_node_;
 public:
-    CPU edge_d(int id, int dest_node_id);
+    edge_d(int id, int dest_node_id);
     GPU int get_id();
     GPU int get_dest_node();
 };

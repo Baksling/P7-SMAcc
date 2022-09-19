@@ -7,15 +7,10 @@
 
 #include "guard_d.h"
 
-CPU guard_d::guard_d(int id, int timer_id, logical_operator type, double value) {
-    this->id_ = id;
+guard_d::guard_d(int timer_id, logical_operator type, double value) {
     this->timer_id_ = timer_id;
     this->type_ = type;
     this->value_ = value;
-}
-
-GPU int guard_d::get_id() {
-    return this->id_;
 }
 
 GPU int guard_d::get_timer_id() {

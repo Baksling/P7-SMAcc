@@ -6,7 +6,7 @@
 
 #include "edge_d.h"
 
-CPU edge_d::edge_d(const int id, const int dest_node_id) {
+edge_d::edge_d(int id, int dest_node_id) {
     this->id_ = id;
     this->dest_node_ = dest_node_id;
 }

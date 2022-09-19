@@ -14,7 +14,7 @@ private:
     int id_;
     bool is_goal_;
 public:
-    CPU node_d(int id, bool is_goal);
+    node_d(int id, bool is_goal = false);
     GPU int get_id();
     GPU bool is_goal();
 };
