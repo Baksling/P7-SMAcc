@@ -1,0 +1,124 @@
+Detecting CUDA compiler ABI info failed to compile with the following output:
+Change Dir: C:/Users/Patrick/Documents/Github/P7/src2/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~1/JETBRA~1/CLION2~1.3/bin/mingw/bin/mingw32-make.exe -f Makefile cmTC_9ef35/fast && C:/PROGRA~1/JETBRA~1/CLION2~1.3/bin/mingw/bin/mingw32-make.exe  -f CMakeFiles\cmTC_9ef35.dir\build.make CMakeFiles/cmTC_9ef35.dir/build
+mingw32-make[1]: Entering directory 'C:/Users/Patrick/Documents/Github/P7/src2/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CUDA object CMakeFiles/cmTC_9ef35.dir/CMakeCUDACompilerABI.cu.obj
+C:\PROGRA~1\NVIDIA~2\CUDA\v11.7\bin\nvcc.exe -forward-unknown-to-host-compiler   -D_WINDOWS -Xcompiler=" /GR /EHsc"  -Xcompiler="-Zi -Ob0 -Od /RTC1" -Xcompiler=-MDd   -Xcompiler=-v -MD -MT CMakeFiles/cmTC_9ef35.dir/CMakeCUDACompilerABI.cu.obj -MF CMakeFiles\cmTC_9ef35.dir\CMakeCUDACompilerABI.cu.obj.d -x cu -c "C:\Program Files\JetBrains\CLion 2022.2.3\bin\cmake\win\share\cmake-3.23\Modules\CMakeCUDACompilerABI.cu" -o CMakeFiles\cmTC_9ef35.dir\CMakeCUDACompilerABI.cu.obj -Xcompiler=-FdCMakeFiles\cmTC_9ef35.dir/,-FS
+cl : Command line warning D9002 : ignoring unknown option '-v'
+CMakeCUDACompilerABI.cu
+cl : Command line warning D9002 : ignoring unknown option '-v'
+CMakeCUDACompilerABI.cu
+CMakeCUDACompilerABI.cu
+cl : Command line warning D9002 : ignoring unknown option '-v'
+Linking CUDA executable cmTC_9ef35.exe
+"C:\Program Files\JetBrains\CLion 2022.2.3\bin\cmake\win\bin\cmake.exe" -E cmake_link_script CMakeFiles\cmTC_9ef35.dir\link.txt --verbose=1
+"C:\Program Files\JetBrains\CLion 2022.2.3\bin\cmake\win\bin\cmake.exe" -E vs_link_exe --intdir=CMakeFiles\cmTC_9ef35.dir --rc=rc --mt=CMAKE_MT-NOTFOUND --manifests -- C:\PROGRA~2\MICROS~4\2019\COMMUN~1\VC\Tools\MSVC\1429~1.300\bin\Hostx64\x64\link.exe /nologo CMakeFiles/cmTC_9ef35.dir/CMakeCUDACompilerABI.cu.obj  /out:cmTC_9ef35.exe /implib:cmTC_9ef35.lib /pdb:C:\Users\Patrick\Documents\Github\P7\src2\cmake-build-debug\CMakeFiles\CMakeTmp\cmTC_9ef35.pdb /version:0.0  -v /debug /INCREMENTAL  cudadevrt.lib cudart_static.lib  -LIBPATH:"C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.7/lib/x64" 
+RC Pass 1: command "rc /fo CMakeFiles\cmTC_9ef35.dir/manifest.res CMakeFiles\cmTC_9ef35.dir/manifest.rc" failed (exit code 0) with the following output:
+Den angivne fil blev ikke fundetmingw32-make[1]: *** [CMakeFiles\cmTC_9ef35.dir\build.make:99: cmTC_9ef35.exe] Error -1
+mingw32-make[1]: Leaving directory 'C:/Users/Patrick/Documents/Github/P7/src2/cmake-build-debug/CMakeFiles/CMakeTmp'
+mingw32-make: *** [Makefile:126: cmTC_9ef35/fast] Error 2
+
+
+
+
+Determining if the CUDA compiler works failed with the following output:
+Change Dir: C:/Users/Patrick/Documents/Github/P7/src2/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~1/JETBRA~1/CLION2~1.3/bin/mingw/bin/mingw32-make.exe -f Makefile cmTC_12e83/fast && C:/PROGRA~1/JETBRA~1/CLION2~1.3/bin/mingw/bin/mingw32-make.exe  -f CMakeFiles\cmTC_12e83.dir\build.make CMakeFiles/cmTC_12e83.dir/build
+mingw32-make[1]: Entering directory 'C:/Users/Patrick/Documents/Github/P7/src2/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CUDA object CMakeFiles/cmTC_12e83.dir/main.cu.obj
+C:\PROGRA~1\NVIDIA~2\CUDA\v11.7\bin\nvcc.exe -forward-unknown-to-host-compiler   -D_WINDOWS -Xcompiler=" /GR /EHsc"  -Xcompiler="-Zi -Ob0 -Od /RTC1" -Xcompiler=-MDd -MD -MT CMakeFiles/cmTC_12e83.dir/main.cu.obj -MF CMakeFiles\cmTC_12e83.dir\main.cu.obj.d -x cu -c C:\Users\Patrick\Documents\Github\P7\src2\cmake-build-debug\CMakeFiles\CMakeTmp\main.cu -o CMakeFiles\cmTC_12e83.dir\main.cu.obj -Xcompiler=-FdCMakeFiles\cmTC_12e83.dir/,-FS
+main.cu
+Linking CUDA executable cmTC_12e83.exe
+"C:\Program Files\JetBrains\CLion 2022.2.3\bin\cmake\win\bin\cmake.exe" -E cmake_link_script CMakeFiles\cmTC_12e83.dir\link.txt --verbose=1
+"C:\Program Files\JetBrains\CLion 2022.2.3\bin\cmake\win\bin\cmake.exe" -E vs_link_exe --intdir=CMakeFiles\cmTC_12e83.dir --rc=rc --mt=CMAKE_MT-NOTFOUND --manifests -- C:\PROGRA~2\MICROS~4\2019\COMMUN~1\VC\Tools\MSVC\1429~1.300\bin\Hostx64\x64\link.exe /nologo CMakeFiles/cmTC_12e83.dir/main.cu.obj  /out:cmTC_12e83.exe /implib:cmTC_12e83.lib /pdb:C:\Users\Patrick\Documents\Github\P7\src2\cmake-build-debug\CMakeFiles\CMakeTmp\cmTC_12e83.pdb /version:0.0 /debug /INCREMENTAL  cudadevrt.lib cudart_static.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib  -LIBPATH:"C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.7/lib/x64" 
+RC Pass 1: command "rc /fo CMakeFiles\cmTC_12e83.dir/manifest.res CMakeFiles\cmTC_12e83.dir/manifest.rc" failed (exit code 0) with the following output:
+Den angivne fil blev ikke fundetmingw32-make[1]: *** [CMakeFiles\cmTC_12e83.dir\build.make:99: cmTC_12e83.exe] Error -1
+mingw32-make[1]: Leaving directory 'C:/Users/Patrick/Documents/Github/P7/src2/cmake-build-debug/CMakeFiles/CMakeTmp'
+mingw32-make: *** [Makefile:126: cmTC_12e83/fast] Error 2
+
+
+
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.7/bin/nvcc.exe 
+Build flags: -D_WINDOWS;-Xcompiler=";/GR;/EHsc"
+Id flags: --keep;--keep-dir;tmp -v
+
+The output was:
+1
+nvcc fatal   : Stray '"' character
+
+
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.7/bin/nvcc.exe 
+Build flags: -D_WINDOWS;-Xcompiler=";/GR;/EHsc"
+Id flags:  -v
+
+The output was:
+1
+nvcc fatal   : Stray '"' character
+
+
+Detecting CUDA compiler ABI info failed to compile with the following output:
+Change Dir: C:/Users/Patrick/Documents/Github/P7/src2/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~1/JETBRA~1/CLION2~1.3/bin/mingw/bin/mingw32-make.exe -f Makefile cmTC_a3806/fast && C:/PROGRA~1/JETBRA~1/CLION2~1.3/bin/mingw/bin/mingw32-make.exe  -f CMakeFiles\cmTC_a3806.dir\build.make CMakeFiles/cmTC_a3806.dir/build
+mingw32-make[1]: Entering directory 'C:/Users/Patrick/Documents/Github/P7/src2/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CUDA object CMakeFiles/cmTC_a3806.dir/CMakeCUDACompilerABI.cu.obj
+C:\PROGRA~1\NVIDIA~2\CUDA\v11.7\bin\nvcc.exe -forward-unknown-to-host-compiler   -D_WINDOWS -Xcompiler=" /GR /EHsc"  -Xcompiler="-Zi -Ob0 -Od /RTC1" -Xcompiler=-MDd   -Xcompiler=-v -MD -MT CMakeFiles/cmTC_a3806.dir/CMakeCUDACompilerABI.cu.obj -MF CMakeFiles\cmTC_a3806.dir\CMakeCUDACompilerABI.cu.obj.d -x cu -c "C:\Program Files\JetBrains\CLion 2022.2.3\bin\cmake\win\share\cmake-3.23\Modules\CMakeCUDACompilerABI.cu" -o CMakeFiles\cmTC_a3806.dir\CMakeCUDACompilerABI.cu.obj -Xcompiler=-FdCMakeFiles\cmTC_a3806.dir/,-FS
+cl : Command line warning D9002 : ignoring unknown option '-v'
+CMakeCUDACompilerABI.cu
+cl : Command line warning D9002 : ignoring unknown option '-v'
+CMakeCUDACompilerABI.cu
+CMakeCUDACompilerABI.cu
+cl : Command line warning D9002 : ignoring unknown option '-v'
+Linking CUDA executable cmTC_a3806.exe
+"C:\Program Files\JetBrains\CLion 2022.2.3\bin\cmake\win\bin\cmake.exe" -E cmake_link_script CMakeFiles\cmTC_a3806.dir\link.txt --verbose=1
+"C:\Program Files\JetBrains\CLion 2022.2.3\bin\cmake\win\bin\cmake.exe" -E vs_link_exe --intdir=CMakeFiles\cmTC_a3806.dir --rc=rc --mt=CMAKE_MT-NOTFOUND --manifests -- C:\PROGRA~2\MICROS~4\2019\COMMUN~1\VC\Tools\MSVC\1429~1.300\bin\Hostx64\x64\link.exe /nologo CMakeFiles/cmTC_a3806.dir/CMakeCUDACompilerABI.cu.obj  /out:cmTC_a3806.exe /implib:cmTC_a3806.lib /pdb:C:\Users\Patrick\Documents\Github\P7\src2\cmake-build-debug\CMakeFiles\CMakeTmp\cmTC_a3806.pdb /version:0.0  -v /debug /INCREMENTAL  cudadevrt.lib cudart_static.lib  -LIBPATH:"C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.7/lib/x64" 
+RC Pass 1: command "rc /fo CMakeFiles\cmTC_a3806.dir/manifest.res CMakeFiles\cmTC_a3806.dir/manifest.rc" failed (exit code 0) with the following output:
+Den angivne fil blev ikke fundetmingw32-make[1]: *** [CMakeFiles\cmTC_a3806.dir\build.make:99: cmTC_a3806.exe] Error -1
+mingw32-make[1]: Leaving directory 'C:/Users/Patrick/Documents/Github/P7/src2/cmake-build-debug/CMakeFiles/CMakeTmp'
+mingw32-make: *** [Makefile:126: cmTC_a3806/fast] Error 2
+
+
+
+
+Determining if the CUDA compiler works failed with the following output:
+Change Dir: C:/Users/Patrick/Documents/Github/P7/src2/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~1/JETBRA~1/CLION2~1.3/bin/mingw/bin/mingw32-make.exe -f Makefile cmTC_bced2/fast && C:/PROGRA~1/JETBRA~1/CLION2~1.3/bin/mingw/bin/mingw32-make.exe  -f CMakeFiles\cmTC_bced2.dir\build.make CMakeFiles/cmTC_bced2.dir/build
+mingw32-make[1]: Entering directory 'C:/Users/Patrick/Documents/Github/P7/src2/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CUDA object CMakeFiles/cmTC_bced2.dir/main.cu.obj
+C:\PROGRA~1\NVIDIA~2\CUDA\v11.7\bin\nvcc.exe -forward-unknown-to-host-compiler   -D_WINDOWS -Xcompiler=" /GR /EHsc"  -Xcompiler="-Zi -Ob0 -Od /RTC1" -Xcompiler=-MDd -MD -MT CMakeFiles/cmTC_bced2.dir/main.cu.obj -MF CMakeFiles\cmTC_bced2.dir\main.cu.obj.d -x cu -c C:\Users\Patrick\Documents\Github\P7\src2\cmake-build-debug\CMakeFiles\CMakeTmp\main.cu -o CMakeFiles\cmTC_bced2.dir\main.cu.obj -Xcompiler=-FdCMakeFiles\cmTC_bced2.dir/,-FS
+main.cu
+Linking CUDA executable cmTC_bced2.exe
+"C:\Program Files\JetBrains\CLion 2022.2.3\bin\cmake\win\bin\cmake.exe" -E cmake_link_script CMakeFiles\cmTC_bced2.dir\link.txt --verbose=1
+"C:\Program Files\JetBrains\CLion 2022.2.3\bin\cmake\win\bin\cmake.exe" -E vs_link_exe --intdir=CMakeFiles\cmTC_bced2.dir --rc=rc --mt=CMAKE_MT-NOTFOUND --manifests -- C:\PROGRA~2\MICROS~4\2019\COMMUN~1\VC\Tools\MSVC\1429~1.300\bin\Hostx64\x64\link.exe /nologo CMakeFiles/cmTC_bced2.dir/main.cu.obj  /out:cmTC_bced2.exe /implib:cmTC_bced2.lib /pdb:C:\Users\Patrick\Documents\Github\P7\src2\cmake-build-debug\CMakeFiles\CMakeTmp\cmTC_bced2.pdb /version:0.0 /debug /INCREMENTAL  cudadevrt.lib cudart_static.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib  -LIBPATH:"C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.7/lib/x64" 
+RC Pass 1: command "rc /fo CMakeFiles\cmTC_bced2.dir/manifest.res CMakeFiles\cmTC_bced2.dir/manifest.rc" failed (exit code 0) with the following output:
+Den angivne fil blev ikke fundetmingw32-make[1]: *** [CMakeFiles\cmTC_bced2.dir\build.make:99: cmTC_bced2.exe] Error -1
+mingw32-make[1]: Leaving directory 'C:/Users/Patrick/Documents/Github/P7/src2/cmake-build-debug/CMakeFiles/CMakeTmp'
+mingw32-make: *** [Makefile:126: cmTC_bced2/fast] Error 2
+
+
+
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.7/bin/nvcc.exe 
+Build flags: -D_WINDOWS;-Xcompiler=";/GR;/EHsc"
+Id flags: --keep;--keep-dir;tmp -v
+
+The output was:
+1
+nvcc fatal   : Stray '"' character
+
+
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.7/bin/nvcc.exe 
+Build flags: -D_WINDOWS;-Xcompiler=";/GR;/EHsc"
+Id flags:  -v
+
+The output was:
+1
+nvcc fatal   : Stray '"' character
+
+

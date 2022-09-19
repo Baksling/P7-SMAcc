@@ -1,0 +1,20 @@
+"C:\Program Files\JetBrains\CLion 2022.2.3\bin\cmake\win\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - MinGW Makefiles" -S C:\Users\Patrick\Documents\Github\P7\src2 -B C:\Users\Patrick\Documents\Github\P7\src2\cmake-build-debug
+-- The CUDA compiler identification is NVIDIA 11.7.99
+CMake Error: Error required internal CMake variable not set, cmake may not be built correctly.
+Missing variable is:
+CMAKE_Cuda_COMPILER_ENV_VAR
+CMake Error: Error required internal CMake variable not set, cmake may not be built correctly.
+Missing variable is:
+CMAKE_Cuda_COMPILER
+CMake Error at CMakeLists.txt:2 (project):
+  No CMAKE_Cuda_COMPILER could be found.
+
+  Tell CMake where to find the compiler by setting the CMake cache entry
+  CMAKE_Cuda_COMPILER to the full path to the compiler, or to the compiler
+  name if it is in the PATH.
+
+
+CMake Error: CMAKE_Cuda_COMPILER not set, after EnableLanguage
+-- Configuring incomplete, errors occurred!
+See also "C:/Users/Patrick/Documents/Github/P7/src2/cmake-build-debug/CMakeFiles/CMakeOutput.log".
+See also "C:/Users/Patrick/Documents/Github/P7/src2/cmake-build-debug/CMakeFiles/CMakeError.log".
