@@ -160,7 +160,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Cuda\CudaSimulator.cu" />
+    <ClCompile Include="Cuda\Projekt\edge_d.h" />
+    <ClCompile Include="Cuda\Projekt\edge_d.cu" />
+    <ClCompile Include="Cuda\Projekt\guard_d.cu" />
+    <ClCompile Include="Cuda\Projekt\guard_d.h" />
+    <ClCompile Include="Cuda\Projekt\main.cu" />
+    <ClCompile Include="Cuda\Projekt\node_d.cu" />
+    <ClCompile Include="Cuda\Projekt\node_d.h" />
+    <ClCompile Include="Cuda\Projekt\timer_d.h" />
+    <ClCompile Include="Cuda\Projekt\timer_d.cu" />
+    <ClCompile Include="Cuda\Projekt\update_d.h" />
+    <ClCompile Include="Cuda\Projekt\update_d.cu" />
     <ClCompile Include="Edge.cpp" />
     <ClCompile Include="Guard.cpp" />
     <ClCompile Include="Main.cpp" />
