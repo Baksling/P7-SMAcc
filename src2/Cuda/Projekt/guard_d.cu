@@ -13,12 +13,17 @@ guard_d::guard_d(int timer_id, logical_operator type, double value) {
     this->value_ = value;
 }
 
-GPU int guard_d::get_timer_id() {
+CPU GPU int guard_d::get_timer_id() {
     return this->timer_id_;
 }
 
-GPU logical_operator guard_d::get_type() {
+CPU GPU logical_operator guard_d::get_type() {
     return this->type_;
+}
+
+CPU GPU double guard_d::get_value()
+{
+    return this->value_;
 }
 
 GPU bool guard_d::validate(double value) {

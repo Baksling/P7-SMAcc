@@ -6,13 +6,9 @@
 #include "guard_d.h"
 #include "update_d.h"
 #include "timer_d.h"
-
-template <typename T>
-struct array_info
-{
-    T* arr;
-    int size;
-};
+#include "uneven_list.h"
+#include <cuda.h>
+#include <cuda_runtime.h>
 
 class cuda_simulator
 {

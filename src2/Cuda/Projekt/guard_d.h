@@ -8,6 +8,9 @@
 #ifndef SRC2_SLN_GUARD_D_H
 #define SRC2_SLN_GUARD_D_H
 
+#include <cuda.h>
+#include <cuda_runtime.h>
+
 enum logical_operator
 {
     less_equal = 0,
@@ -28,9 +31,10 @@ private:
     bool is_node_;
 public:
     guard_d(int timer_id, logical_operator type, double value);
-    GPU int get_timer_id();
-    GPU logical_operator get_type();
-    GPU bool validate(double value);
+    CPU GPU int get_timer_id();
+    CPU GPU double get_value();
+    CPU GPU logical_operator get_type();
+    CPU GPU bool validate(double value);
 };
 
 

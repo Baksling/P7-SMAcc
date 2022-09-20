@@ -11,10 +11,10 @@ edge_d::edge_d(int id, int dest_node_id) {
     this->dest_node_ = dest_node_id;
 }
 
-GPU int edge_d::get_id() {
+CPU GPU int edge_d::get_id() {
     return this->id_;
 }
 
-GPU int edge_d::get_dest_node() {
+CPU GPU int edge_d::get_dest_node() {
     return this->dest_node_;
 }

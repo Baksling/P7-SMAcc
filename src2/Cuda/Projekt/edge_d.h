@@ -7,6 +7,8 @@
 #ifndef SRC2_SLN_EDGE_D_H
 #define SRC2_SLN_EDGE_D_H
 
+#include <cuda.h>
+#include <cuda_runtime.h>
 
 class edge_d {
 private:
@@ -14,8 +16,8 @@ private:
     int dest_node_;
 public:
     edge_d(int id, int dest_node_id);
-    GPU int get_id();
-    GPU int get_dest_node();
+    CPU GPU int get_id();
+    CPU GPU int get_dest_node();
 };
 
 
