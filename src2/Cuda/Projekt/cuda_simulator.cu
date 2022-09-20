@@ -10,6 +10,10 @@
 #include <list>
 #include <stdio.h>
 #include <math.h>
+#include <chrono>
+#include <iostream>
+
+using namespace std::chrono;
 
 
 GPU edge_d* choose_next_edge(array_info<edge_d> edges, curandState* states)
@@ -20,8 +24,8 @@ GPU edge_d* choose_next_edge(array_info<edge_d> edges, curandState* states)
     float r = 1.0f - curand_uniform(&states[0]);
     int index = (int)(r * (float)edges.size);
 
-    printf("index: %d .. r: %f .. size: %d %f % f\n", index, r, edges.size, (float) edges.size, r * (float)edges.size);
-    printf("Moving from %d to %d \n", edges.arr[index].get_id(), edges.arr[index].get_dest_node());
+    // printf("index: %d .. r: %f .. size: %d %f % f\n", index, r, edges.size, (float) edges.size, r * (float)edges.size);
+    // printf("Moving from %d to %d \n", edges.arr[index].get_id(), edges.arr[index].get_dest_node());
 
     return &edges.arr[index] ;
     
@@ -55,7 +59,7 @@ __global__ void simulate_d_2(
     
     for (int test = 0; test < 1000; test++)
     {
-        printf("Starting new run --- \n");
+        // printf("Starting new run --- \n");
         int current_node = 0;
         int last_node = -1;
 
@@ -67,7 +71,7 @@ __global__ void simulate_d_2(
 
             if(edge == nullptr)
             {
-                printf("Stopped at node: %d \n", current_node);
+                // printf("Stopped at node: %d \n", current_node);
                 break;
             }
             
@@ -75,7 +79,7 @@ __global__ void simulate_d_2(
 
             if(last_node == current_node)
             {
-                printf("Stopped at node: %d \n", current_node);
+                // printf("Stopped at node: %d \n", current_node);
                 break;
             }
 
@@ -128,8 +132,8 @@ CPU void cuda_simulator::simulate(int max_nr_of_steps)
 
     //Run program
     simulate_d<<<1,1>>>(nodes_d, edges_d, guards_d, updates_d, timers_d, result_d);
-
-    // Copy result to 
+    
+    // Copy result to
     cudaMemcpy(&result, result_d, sizeof(int), cudaMemcpyDeviceToHost);
 
     //printf("%d", result);
@@ -149,8 +153,10 @@ void cuda_simulator::simulate_2(uneven_list<edge_d> *node_to_edge, uneven_list<g
     curandState* state;
     cudaMalloc((void**)&state, sizeof(curandState));
 
-    
-    simulate_d_2<<<1,1>>>(node_to_edge, node_to_invariant, edge_to_guard, edge_to_update, timers, state);
+    steady_clock::time_point start = steady_clock::now();
+    simulate_d_2<<<10,1>>>(node_to_edge, node_to_invariant, edge_to_guard, edge_to_update, timers, state);
+    cout << "1000 runs!: " << duration_cast<nanoseconds>(steady_clock::now() - start).count() << "[ns] \n";
+    cudaFree(state);
 }
 
 cuda_simulator::cuda_simulator()
