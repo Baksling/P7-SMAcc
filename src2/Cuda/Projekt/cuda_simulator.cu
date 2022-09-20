@@ -59,7 +59,7 @@ __global__ void simulate_d_2(
     
     for (int test = 0; test < 1000; test++)
     {
-        // printf("Starting new run --- \n");
+        printf("Starting new run --- \n");
         int current_node = 0;
         int last_node = -1;
 
@@ -71,7 +71,7 @@ __global__ void simulate_d_2(
 
             if(edge == nullptr)
             {
-                // printf("Stopped at node: %d \n", current_node);
+                printf("Stopped at node: %d \n", current_node);
                 break;
             }
             
@@ -79,7 +79,7 @@ __global__ void simulate_d_2(
 
             if(last_node == current_node)
             {
-                // printf("Stopped at node: %d \n", current_node);
+                printf("Stopped at node: %d \n", current_node);
                 break;
             }
 

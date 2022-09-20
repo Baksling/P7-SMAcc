@@ -29,8 +29,9 @@ private:
     int init_node_id_;
     list<node_d> nodes_;
     list<list<edge_d>> edge_list_;
+    list<list<edge_d>> edge_list_test;
 public:
     UPAALXMLParser();
-    parser_output parse_xml(timer_d* t, char* file_path, int goal_node_id = 1);
+    __host__ parser_output parse_xml(timer_d* t, char* file_path, int goal_node_id = 1);
 };
 #endif

@@ -8,15 +8,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="62562a0c-d884-4251-aae0-458ae488e089" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/UPAALParser/test.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/cuda_simulator.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/cuda_simulator.cu" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Projekt/main.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/main.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/uneven_list.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/uneven_list.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UPAALParser/UPAALXMLParser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/UPAALParser/UPAALXMLParser.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/UPAALParser/UPAALXMLParser.cu" beforeDir="false" afterPath="$PROJECT_DIR$/UPAALParser/UPAALXMLParser.cu" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/UPAALParser/UPAALXMLParser.h" beforeDir="false" afterPath="$PROJECT_DIR$/UPAALParser/UPAALXMLParser.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UPAALParser/sample.xml" beforeDir="false" afterPath="$PROJECT_DIR$/UPAALParser/sample.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src2.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/src2.vcxproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src2.sln.DotSettings.user" beforeDir="false" afterPath="$PROJECT_DIR$/src2.sln.DotSettings.user" afterDir="false" />
     </list>
-    <list default="true" id="62562a0c-d884-4251-aae0-458ae488e089" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -127,6 +126,7 @@
       <workItem from="1663658829615" duration="10089000" />
       <workItem from="1663593919089" duration="13503000" />
       <workItem from="1663593919089" duration="16108000" />
+      <workItem from="1663709051588" duration="5812000" />
     </task>
     <servers />
   </component>
