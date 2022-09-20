@@ -1,10 +1,6 @@
 ﻿#include "main.h"
-
-#define GPU __device__
-#define CPU __host__
+#include "common.h"
 #include "uneven_list.h"
-#include <cuda.h>
-#include <cuda_runtime.h>
 #include <list>
 #include <stdio.h>
 

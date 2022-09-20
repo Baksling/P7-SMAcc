@@ -186,6 +186,7 @@
     <ClCompile Include="Update.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Cuda\Projekt\common.h" />
     <ClInclude Include="Edge.h" />
     <ClInclude Include="Guard.h" />
     <ClInclude Include="Node.h" />

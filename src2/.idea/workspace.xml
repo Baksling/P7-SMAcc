@@ -19,8 +19,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="75efb384-365d-400b-a30b-c8822a10cdbd" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Cuda/Projekt/common.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Projekt/common.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src2.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/src2.vcxproj" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
