@@ -8,12 +8,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="62562a0c-d884-4251-aae0-458ae488e089" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Projekt/main.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/main.cu" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Projekt/timer_d.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/timer_d.cu" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Projekt/timer_d.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/timer_d.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/UPAALParser/UPAALXMLParser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/UPAALParser/UPAALXMLParser.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/UPAALParser/UPAALXMLParser.h" beforeDir="false" afterPath="$PROJECT_DIR$/UPAALParser/UPAALXMLParser.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Projekt/common.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/main.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/main.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src2.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/src2.vcxproj" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -123,6 +127,7 @@
       <workItem from="1663593294993" duration="296000" />
       <workItem from="1663593919089" duration="3499000" />
       <workItem from="1663658829615" duration="10089000" />
+      <workItem from="1663593919089" duration="13503000" />
     </task>
     <servers />
   </component>
