@@ -183,7 +183,7 @@
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="UniformDistribution.cpp" />
     <ClCompile Include="UPAALParser\pugixml.cpp" />
-    <ClCompile Include="UPAALParser\UPAALXMLParser.cpp" />
+    <ClCompile Include="UPAALParser\UPAALXMLParser.cu" />
     <ClCompile Include="Update.cpp" />
   </ItemGroup>
   <ItemGroup>

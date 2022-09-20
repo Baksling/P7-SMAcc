@@ -3,7 +3,6 @@
 #ifndef UPAALXMLParser_H
 #define UPAALXMLParser_H
 
-#include "../Timer.h"
 #include "../Cuda/Projekt/node_d.h"
 #include "../Cuda/Projekt/edge_d.h"
 #include <list>
@@ -17,10 +16,10 @@ using namespace std;
 
 struct parser_output
 {
-    uneven_list<edge_d>* edge;
-    uneven_list<guard_d>* invariance;
-    uneven_list<guard_d>* guard;
-    uneven_list<update_d>* update;
+    uneven_list<edge_d> edge;
+    uneven_list<guard_d> invariance;
+    uneven_list<guard_d> guard;
+    uneven_list<update_d> update;
 };
 
 
@@ -32,6 +31,6 @@ private:
     list<list<edge_d>> edge_list_;
 public:
     UPAALXMLParser();
-    void parse_xml(timer_d* t, char* file_path, parser_output p_output, int goal_node_id = 1);
+    parser_output parse_xml(timer_d* t, char* file_path, int goal_node_id = 1);
 };
 #endif

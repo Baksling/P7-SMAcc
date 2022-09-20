@@ -5,6 +5,7 @@
 #include <cuda_runtime.h>
 #include <list>
 #include <stdio.h>
+#include "../../UPAALParser/UPAALXMLParser.h"
 
 #include "uneven_list.h"
 #include "node_d.h"
@@ -44,6 +45,8 @@ int main(int argc, char* argv[])
     nodes__.emplace_back(0);
     nodes__.emplace_back(1);
     nodes__.emplace_back(2);
+    nodes__.emplace_back(3);
+    nodes__.emplace_back(4);
 
     // Edges
     list<edge_d> edges_1_;
@@ -56,9 +59,7 @@ int main(int argc, char* argv[])
     list<edge_d> edges_3_;
 
     list<list<edge_d>> edge_list;
-    edge_list.push_back(edges_1_);
-    edge_list.push_back(edges_2_);
-    edge_list.push_back(edges_3_);
+
 
     //Invariants for nodes
     list<guard_d> invariant_1_;
@@ -111,19 +112,14 @@ int main(int argc, char* argv[])
     timer_list[0] = timer_d(0, 0);
     timer_list[1] = timer_d(1, 0);
     
-    uneven_list<edge_d> node_to_edge(&edge_list, 3);
-    uneven_list<guard_d> node_to_invariant(&invariant_list, 3);
-    uneven_list<guard_d> edge_to_guard(&guard_list, 3);
-    uneven_list<update_d> edge_to_update(&update_list, 3);
-    
-    if (argc > 1)
-    {
-        UPAALXMLParser parser;
-        parser_output p {&node_to_edge, &node_to_invariant, &edge_to_guard, &edge_to_update};
-        parser.parse_xml(&timer_list[0], argv[1], p);
-    }
-    
+    UPAALXMLParser parser;
+    auto p = parser.parse_xml(&timer_list[0], argv[1]);
 
+    uneven_list<edge_d> node_to_edge = p.edge;
+    uneven_list<guard_d> node_to_invariant = p.invariance;
+    uneven_list<guard_d> edge_to_guard = p.guard;
+    uneven_list<update_d> edge_to_update = p.update;
+    
     // NOW ALLOCATE MEMORY ON DEVICE FOR ALL THIS SHIT!
 
     uneven_list<edge_d> *node_to_edge_d;
@@ -152,16 +148,16 @@ int main(int argc, char* argv[])
     cudaMemcpy(timers_d, timer_list, sizeof(timer_d) * 2, cudaMemcpyHostToDevice);
 
     //printf("yasss girl: %d %d %d %d\n", node_to_edge.max_elements_, node_to_edge.max_index_, node_to_edge_d->max_elements_, node_to_edge_d->max_index_);
-    
+
+    // array_info<edge_d> hej = node_to_edge_d->get_index(0);
+    //
+    // for(int i = 0; i < hej.size; i++) {
+    //     printf("%d -> %d", hej.arr[i].get_id(), (int)hej.arr[i].get_dest_node());
+    // }
     cuda_simulator sim;
     sim.simulate_2(node_to_edge_d, node_to_invariant_d, edge_to_guard_d, edge_to_update_d, timers_d);
     
     
-    // array_info<guard_d> hej = node_to_invariant.get_index(0);
-    //
-    // for(int i = 0; i < hej.size; i++) {
-    //     printf("%d -> %d", hej.arr[i].get_timer_id(), (int)hej.arr[i].get_value());
-    // }
 
     return 0;
 }

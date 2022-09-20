@@ -7,13 +7,15 @@
 		<declaration>// Place local declarations here.
 clock x;</declaration>
 		<location id="id0" x="-144" y="-144">
-			<label kind="invariant" x="-169" y="-178">x &lt;= 10</label>
 		</location>
 		<location id="id1" x="-186" y="-59">
+			<label kind="invariant" x="-95" y="76">x &gt; 5</label>
 		</location>
 		<location id="id2" x="-102" y="-59">
+			<label kind="invariant" x="-95" y="76">x &gt; 5</label>
 		</location>
 		<location id="id3" x="-187" y="59">
+			<label kind="invariant" x="-95" y="76">x &gt; 5</label>
 		</location>
 		<location id="id4" x="-85" y="59">
 			<label kind="invariant" x="-95" y="76">x &gt; 5</label>

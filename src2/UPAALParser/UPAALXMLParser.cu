@@ -7,7 +7,8 @@
 #include "../Cuda/Projekt/guard_d.h"
 #include "../Cuda/Projekt/uneven_list.h"
 #include "../Cuda/Projekt/timer_d.h"
-
+#include <cuda.h>
+#include <cuda_runtime.h>
 #include <map>
 
 using namespace std;
@@ -87,7 +88,7 @@ template <typename T> list<list<T>>* convert_map_to_list_list(map<int, list<T>> 
     
     for (it = in.begin(); it != in.end(); it++)
     {
-        result->emplace_back(it->first);
+        result->emplace_back(it->second);
         *size = *size+1;
     }
 
@@ -95,7 +96,7 @@ template <typename T> list<list<T>>* convert_map_to_list_list(map<int, list<T>> 
 }
 
 
-void UPAALXMLParser::parse_xml(timer_d* t, char* file_path, parser_output p_output, int goal_node_id)
+__host__ parser_output UPAALXMLParser::parse_xml(timer_d* t, char* file_path, int goal_node_id)
 {
     string path = file_path;
     cout << "\nParsing XML data ("+path+").....\n\n";
@@ -165,15 +166,18 @@ void UPAALXMLParser::parse_xml(timer_d* t, char* file_path, parser_output p_outp
             egde_id_ = egde_id_+1;
         }
     }
-
     int index_size_invariant = 0;
     int index_size_guard = 0;
     int index_size_edge = 0;
     int index_size_update = 0;
-    p_output.invariance = new uneven_list<guard_d>(convert_map_to_list_list(invariant_map_,&index_size_invariant), index_size_invariant);
-    p_output.guard = new uneven_list<guard_d>(convert_map_to_list_list(guard_map_,&index_size_guard), index_size_guard);
-    p_output.edge = new uneven_list<edge_d>(convert_map_to_list_list(edge_map_,&index_size_edge), index_size_edge);
-    p_output.update = new uneven_list<update_d>(convert_map_to_list_list(update_map_,&index_size_update), index_size_update);
+    parser_output p_output {
+    uneven_list<edge_d>(convert_map_to_list_list(edge_map_,&index_size_edge), index_size_edge),
+    uneven_list<guard_d>(convert_map_to_list_list(invariant_map_,&index_size_invariant), index_size_invariant),
+    uneven_list<guard_d>(convert_map_to_list_list(guard_map_,&index_size_guard), index_size_guard),
+    uneven_list<update_d>(convert_map_to_list_list(update_map_,&index_size_update), index_size_update)
+    };
+
+    return p_output;
 }
 
 

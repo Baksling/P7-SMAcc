@@ -54,7 +54,7 @@ public:
         this->data_ = arr;
         this->max_elements_ = items;
     }
-    __device__ array_info<T> get_index(int index)
+    __host__ __device__ array_info<T> get_index(int index)
     {
         int index_val = this->index_list_d_[index];
         int nr_of_elements = index != this->max_index_ - 1 ? this->index_list_d_[index + 1] - index_val : this->max_elements_ - index_val;
