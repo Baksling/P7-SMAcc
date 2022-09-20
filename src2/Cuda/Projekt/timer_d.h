@@ -15,6 +15,7 @@ private:
     double value_;
 public:
     timer_d(int id, double start_value);
+    int get_id();
     GPU double get_value();
     GPU void set_value(double new_value);
 };

@@ -8,6 +8,8 @@
 #include <list>
 #include <stdio.h>
 
+#include "../../UPAALParser/UPAALXMLParser.h"
+
 __global__ void simulate_d(node_d* nodes, edge_d* edges, guard_d* guards, update_d* updates, timer_d* timers, int* result)
 {
     
@@ -75,7 +77,7 @@ CPU void cuda_simulator::simulate(int max_nr_of_steps)
     cudaFree(timers_d);
 }
 
-int main()
+int main(int argc, char* argv[])
 {
     node_d nodes[2] = {node_d(1), node_d(2)};
     edge_d edges[2] = {edge_d(1, 2), edge_d(2, 1)};
@@ -177,6 +179,12 @@ int main()
     uneven_list<guard_d> node_to_invariant(&invariant_list, 3);
     uneven_list<guard_d> edge_to_guard(&guard_list, 3);
     uneven_list<update_d> edge_to_update(&update_list, 3);
+    if (argc > 1)
+    {
+        UPAALXMLParser parser;
+        parser_output p {&node_to_edge, &node_to_invariant, &edge_to_guard, &edge_to_update};
+        parser.parse_xml(&timer_list[0], argv[1], p);
+    }
     
 
     array_info<guard_d> hej = node_to_invariant.get_index(0);

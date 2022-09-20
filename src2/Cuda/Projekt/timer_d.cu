@@ -12,6 +12,11 @@ timer_d::timer_d(int id, double start_value) {
     this->value_ = start_value;
 }
 
+int timer_d::get_id()
+{
+    return this->id_;
+}
+
 GPU double timer_d::get_value() {
     return this->value_;
 }
