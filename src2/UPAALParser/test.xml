@@ -10,6 +10,7 @@ clock x;</declaration>
 		<location id="id1" x="8" y="25">
 		</location>
 		<location id="id2" x="8" y="25">
+			<name x="9" y="-76">Goal</name>
 		</location>
 		<init ref="id0"/>
 		<transition>
