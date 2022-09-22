@@ -5,6 +5,8 @@
 #ifndef SRC2_SLN_UNEVEN_LIST_H
 #define SRC2_SLN_UNEVEN_LIST_H
 
+#include <cuda.h>
+#include <cuda_runtime.h>
 #include <list>
 
 using namespace std;
@@ -19,11 +21,12 @@ struct array_info
 template <class T>
 class uneven_list {
 private:
-    int* index_list_;
-    T* data_;
+    int *index_list_, *index_list_d_;
+public:
+    T *data_;
+    T *data_d_ = nullptr;
     int max_index_;
     int max_elements_;
-public:
     uneven_list(list<list<T>>* value_list, int size_of_indexes)
     {
         this->index_list_ = (int*)malloc(sizeof(int) * size_of_indexes);
@@ -51,22 +54,42 @@ public:
         this->data_ = arr;
         this->max_elements_ = items;
     }
-    array_info<T> get_index(int index)
+    __device__ array_info<T> get_index(int index)
     {
-        int index_val = this->index_list_[index];
-        int nr_of_elements = index != this->max_index_ - 1 ? this->index_list_[index + 1] - index_val : this->max_elements_ - index_val;
+        int index_val = this->index_list_d_[index];
+        int nr_of_elements = index != this->max_index_ - 1 ? this->index_list_d_[index + 1] - index_val : this->max_elements_ - index_val;
     
         array_info<T> result;
         T* arr = (T*)malloc(sizeof(T) * nr_of_elements);
     
         for (int i = 0; i < nr_of_elements; i++) {
-            arr[i] = this->data_[i+index_val];
+            arr[i] = this->data_d_[i+index_val];
         }
     
         result.arr = arr;
         result.size = nr_of_elements;
     
         return result;
+    }
+    void allocate_memory()
+    {
+        // Allocate Memory
+        cudaMalloc((void**)&index_list_d_, sizeof(int) * max_index_);
+        cudaMalloc((void**)&data_d_, sizeof(T) * max_elements_);
+
+        //Copy Memory
+        cudaMemcpy(index_list_d_, index_list_, sizeof(int) * max_index_, cudaMemcpyHostToDevice);
+        cudaMemcpy(data_d_, data_, sizeof(T) * max_elements_, cudaMemcpyHostToDevice);
+    }
+    void free_memory()
+    {
+        cudaFree(index_list_d_);
+        cudaFree(data_d_);
+        
+    }
+    ~uneven_list()
+    {
+        this->free_memory();
     }
 };
 

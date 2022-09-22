@@ -74,19 +74,19 @@ CPU void cuda_simulator::simulate(int max_nr_of_steps)
 
 int main()
 {
-    node_d nodes[2] = {node_d(1), node_d(2)};
-    edge_d edges[2] = {edge_d(1, 2), edge_d(2, 1)};
-    guard_d guards[1] = {guard_d(1, logical_operator::greater_equal, 10)};
-    update_d updates[1] = {update_d(1, 0)};
-    timer_d timers[1] = {timer_d(1,0)};
-
-    array_info<node_d> n {nodes, 2};
-    array_info<edge_d> e {edges, 2};
-    array_info<guard_d> g {guards, 1};
-    array_info<update_d> u {updates, 1};
-    array_info<timer_d> t {timers, 1};
-    
-    cuda_simulator sim(&n, &e, &g, &u, &t);
+    // node_d nodes[2] = {node_d(1), node_d(2)};
+    // edge_d edges[2] = {edge_d(1, 2), edge_d(2, 1)};
+    // guard_d guards[1] = {guard_d(1, logical_operator::greater_equal, 10)};
+    // update_d updates[1] = {update_d(1, 0)};
+    // timer_d timers[1] = {timer_d(1,0)};
+    //
+    // array_info<node_d> n {nodes, 2};
+    // array_info<edge_d> e {edges, 2};
+    // array_info<guard_d> g {guards, 1};
+    // array_info<update_d> u {updates, 1};
+    // array_info<timer_d> t {timers, 1};
+    //
+    // cuda_simulator sim(&n, &e, &g, &u, &t);
     // sim.simulate(10);
 
     // node = [node]
@@ -107,10 +107,10 @@ int main()
     // Edges
     list<edge_d> edges_1_;
     edges_1_.emplace_back(0, 1);
-    edges_1_.emplace_back(1,2);
+    edges_1_.emplace_back(0,2);
 
     list<edge_d> edges_2_;
-    edges_2_.emplace_back(2, 1);
+    edges_2_.emplace_back(1, 2);
 
     list<edge_d> edges_3_;
 
@@ -174,13 +174,45 @@ int main()
     uneven_list<guard_d> node_to_invariant(&invariant_list, 3);
     uneven_list<guard_d> edge_to_guard(&guard_list, 3);
     uneven_list<update_d> edge_to_update(&update_list, 3);
-    
 
-    array_info<guard_d> hej = node_to_invariant.get_index(0);
+    // NOW ALLOCATE MEMORY ON DEVICE FOR ALL THIS SHIT!
+
+    uneven_list<edge_d> *node_to_edge_d;
+    uneven_list<guard_d> *node_to_invariant_d;
+    uneven_list<guard_d> *edge_to_guard_d;
+    uneven_list<update_d> *edge_to_update_d;
+
+    timer_d* timers_d;
     
-    for(int i = 0; i < hej.size; i++) {
-        printf("%d -> %d", hej.arr[i].get_timer_id(), (int)hej.arr[i].get_value());
-    }
+    cudaMalloc((void**)&node_to_edge_d, sizeof(uneven_list<edge_d>));
+    cudaMalloc((void**)&node_to_invariant_d, sizeof(uneven_list<guard_d>));
+    cudaMalloc((void**)&edge_to_guard_d, sizeof(uneven_list<guard_d>));
+    cudaMalloc((void**)&edge_to_update_d, sizeof(uneven_list<update_d>));
+    cudaMalloc((void**)&timers_d, sizeof(timer_d) * 2);
+
+    // Copy memory to device
+    node_to_edge.allocate_memory();
+    node_to_invariant.allocate_memory();
+    edge_to_guard.allocate_memory();
+    edge_to_update.allocate_memory();
+
+    cudaMemcpy(node_to_edge_d, &node_to_edge, sizeof(uneven_list<edge_d>), cudaMemcpyHostToDevice);
+    cudaMemcpy(node_to_invariant_d, &node_to_invariant, sizeof(uneven_list<guard_d>), cudaMemcpyHostToDevice);
+    cudaMemcpy(edge_to_guard_d, &edge_to_guard, sizeof(uneven_list<guard_d>), cudaMemcpyHostToDevice);
+    cudaMemcpy(edge_to_update_d, &edge_to_update, sizeof(uneven_list<update_d>), cudaMemcpyHostToDevice);
+    cudaMemcpy(timers_d, timer_list, sizeof(timer_d) * 2, cudaMemcpyHostToDevice);
+
+    //printf("yasss girl: %d %d %d %d\n", node_to_edge.max_elements_, node_to_edge.max_index_, node_to_edge_d->max_elements_, node_to_edge_d->max_index_);
+    
+    cuda_simulator sim;
+    sim.simulate_2(node_to_edge_d, node_to_invariant_d, edge_to_guard_d, edge_to_update_d, timers_d);
+    
+    
+    // array_info<guard_d> hej = node_to_invariant.get_index(0);
+    //
+    // for(int i = 0; i < hej.size; i++) {
+    //     printf("%d -> %d", hej.arr[i].get_timer_id(), (int)hej.arr[i].get_value());
+    // }
 
     return 0;
 }
