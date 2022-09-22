@@ -23,7 +23,7 @@ int node::get_id()
     return id_;
 }
 
-bool node::is_goal() const
+bool node::is_goal()
 {
     return is_goal_;
 }

@@ -6,8 +6,7 @@
 #include "Guard.h"
 #include "Timer.h"
 #include "Update.h"
-#include <cuda.h>
-#include <cuda_runtime.h>
+
 using namespace std;  // NOLINT(clang-diagnostic-header-hygiene)
 class edge;
 class timer;
@@ -20,13 +19,13 @@ private:
     int id_;
 public:
     node(int id, bool is_goal = false);
-    __device__ int get_id();
-    __host__ void add_edge(node* n, list<guard> guards, list<update>* updates);
-    __host__ bool is_goal() const;
-    __host__ void add_invariant(logical_operator type, double value, timer* timer);
-    __host__ list<edge>* get_edges();
-    __host__ bool validate_invariants();
-    __host__ list<guard>* get_invariants();
+    int get_id();
+    void add_edge(node* n, list<guard> guards, list<update>* updates);
+    bool is_goal();
+    void add_invariant(logical_operator type, double value, timer* timer);
+    list<edge>* get_edges();
+    bool validate_invariants();
+    list<guard>* get_invariants();
         
 };
 

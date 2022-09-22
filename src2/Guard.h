@@ -3,15 +3,15 @@
 
 #include "Timer.h"
 
-enum logical_operator
-{
-    less_equal = 0,
-    greater_equal,
-    less,
-    greater,
-    equal,
-    not_equal
-};
+// enum logical_operator
+// {
+//     less_equal = 0,
+//     greater_equal,
+//     less,
+//     greater,
+//     equal,
+//     not_equal
+// };
 
 class guard
 {

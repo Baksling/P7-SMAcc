@@ -178,7 +178,7 @@
     <ClCompile Include="Edge.cpp" />
     <ClCompile Include="Guard.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Node.cu" />
+    <ClCompile Include="Node.cpp" />
     <ClCompile Include="Simulator.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="UniformDistribution.cpp" />

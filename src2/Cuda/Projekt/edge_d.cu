@@ -6,9 +6,10 @@
 
 #include "edge_d.h"
 
-edge_d::edge_d(int id, int dest_node_id) {
+edge_d::edge_d(int id, int dest_node_id, int weight) {
     this->id_ = id;
     this->dest_node_ = dest_node_id;
+    this->weight_ = weight;
 }
 
 CPU GPU int edge_d::get_id() {

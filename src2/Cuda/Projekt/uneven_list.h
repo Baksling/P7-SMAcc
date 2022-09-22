@@ -8,6 +8,10 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <list>
+#include <stdio.h>
+
+#define GPU __device__
+#define CPU __host__
 
 using namespace std;
 
@@ -16,6 +20,12 @@ struct array_info
 {
     T* arr;
     int size;
+
+    // CPU GPU ~array_info()
+    // {
+    //     // printf(" WUP WUP I DEALLOCATED SOMETHING!");
+    //     free(this->arr);
+    // }
 };
 
 template <class T>
@@ -56,14 +66,37 @@ public:
     }
     __device__ array_info<T> get_index(int index)
     {
+        if (index >= this->max_index_ || index < 0)
+        {
+            printf("YOU FUCKED UP MAN! this index: %d does not exist!", index);
+            array_info<T> result;
+            result.size = -1;
+            return result;
+        }
+        
         int index_val = this->index_list_d_[index];
-        int nr_of_elements = index != this->max_index_ - 1 ? this->index_list_d_[index + 1] - index_val : this->max_elements_ - index_val;
-    
+        int nr_of_elements = index != this->max_index_ - 1 ? this->index_list_d_[index + 1] - index_val : (this->max_elements_) - index_val;
+
+        // ME DOING BRAIN EXERCICE TO CHECK MY SANITY!
+        // printf("DEBUG:: index_val: %d -- Number of elements: %d %d \n", index_val, nr_of_elements, this->max_elements_);
+
+
+        // index:  [0, 2, 3]
+        // values: [0, 1, 2, 3]
+
+        // index 0 -> nr: (2 - 0) = 2
+        // index 1 -> nr: (3 - 1) = 2
+        // index 2 -> nr: (4 - 3) = 1
+
+        // i 0 = 0 + 0 :: 0 + 1
+        // i 2 = 2 + 0
+        // i 3 = 3 + 0
+        
         array_info<T> result;
         T* arr = (T*)malloc(sizeof(T) * nr_of_elements);
     
         for (int i = 0; i < nr_of_elements; i++) {
-            arr[i] = this->data_d_[i+index_val];
+            arr[i] = this->data_d_[(index_val + i)];
         }
     
         result.arr = arr;

@@ -7,10 +7,13 @@
 
 #include "guard_d.h"
 
-guard_d::guard_d(int timer_id, logical_operator type, double value) {
+#include <stdio.h>
+
+guard_d::guard_d(int timer_id, logical_operator type, double value, int id) {
     this->timer_id_ = timer_id;
     this->type_ = type;
     this->value_ = value;
+    this->id_ = id;
 }
 
 CPU GPU int guard_d::get_timer_id() {
@@ -27,6 +30,7 @@ CPU GPU double guard_d::get_value()
 }
 
 GPU bool guard_d::validate(double value) {
+    //printf("Validating %d, value: %f, target %f %d id: %d \n", this->timer_id_, value, this->value_, this->type_, this->id_);
     switch (this->type_) {
         case logical_operator::greater_equal: return value >= this->value_;
         case logical_operator::less_equal: return value <= this->value_;

@@ -14,8 +14,9 @@ class edge_d {
 private:
     int id_;
     int dest_node_;
+    int weight_;
 public:
-    edge_d(int id, int dest_node_id);
+    edge_d(int id, int dest_node_id, int weight = 1);
     CPU GPU int get_id();
     CPU GPU int get_dest_node();
 };

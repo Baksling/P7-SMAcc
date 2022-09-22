@@ -49,12 +49,13 @@ int main()
     // Edges
     list<edge_d> edges_1_;
     edges_1_.emplace_back(0, 1);
-    edges_1_.emplace_back(0,2);
+    edges_1_.emplace_back(1,2);
 
     list<edge_d> edges_2_;
-    edges_2_.emplace_back(1, 2);
+    edges_2_.emplace_back(2, 2);
 
     list<edge_d> edges_3_;
+    //edges_3_.emplace_back(3,0);
 
     list<list<edge_d>> edge_list;
     edge_list.push_back(edges_1_);
@@ -63,13 +64,13 @@ int main()
 
     //Invariants for nodes
     list<guard_d> invariant_1_;
-    invariant_1_.emplace_back(0, logical_operator::less, 10);
+    invariant_1_.emplace_back(0, logical_operator::less, 10, 0);
 
     list<guard_d> invariant_2_;
-    invariant_2_.emplace_back(0, logical_operator::less_equal, 10);
+    //invariant_2_.emplace_back(0, logical_operator::less_equal, 10);
 
     list<guard_d> invariant_3_;
-    invariant_3_.emplace_back(0, logical_operator::greater_equal, 10);
+    invariant_3_.emplace_back(0, logical_operator::greater_equal, 10, 1);
 
     list<list<guard_d>> invariant_list;
     invariant_list.push_back(invariant_1_);
@@ -78,18 +79,21 @@ int main()
 
     // Guard List for edges
     list<guard_d> guard_1_;
-    guard_1_.emplace_back(0, logical_operator::less, 10);
+    guard_1_.emplace_back(0, logical_operator::less, 5, 2);
 
     list<guard_d> guard_2_;
-    guard_2_.emplace_back(0, logical_operator::less_equal, 10);
+    guard_2_.emplace_back(0, logical_operator::greater, 10, 3);
 
     list<guard_d> guard_3_;
-    guard_3_.emplace_back(0, logical_operator::greater_equal, 10);
+    guard_3_.emplace_back(0, logical_operator::greater_equal, 10, 4);
 
+    // list<guard_d> guard_4_;
+    
     list<list<guard_d>> guard_list;
-    guard_list.push_back(invariant_1_);
-    guard_list.push_back(invariant_2_);
-    guard_list.push_back(invariant_3_);
+    guard_list.push_back(guard_1_);
+    guard_list.push_back(guard_2_);
+    guard_list.push_back(guard_3_);
+    // guard_list.push_back(guard_4_);
 
     //Update list for edges
     list<update_d> update_1_;
@@ -101,10 +105,13 @@ int main()
 
     list<update_d> update_3_;
 
+    list<update_d> update_4_;
+
     list<list<update_d>> update_list;
     update_list.push_back(update_1_);
     update_list.push_back(update_2_);
     update_list.push_back(update_3_);
+    update_list.push_back(update_4_);
 
     // Timers
     timer_d* timer_list;
@@ -147,7 +154,7 @@ int main()
     //printf("yasss girl: %d %d %d %d\n", node_to_edge.max_elements_, node_to_edge.max_index_, node_to_edge_d->max_elements_, node_to_edge_d->max_index_);
     
     cuda_simulator sim;
-    sim.simulate_2(node_to_edge_d, node_to_invariant_d, edge_to_guard_d, edge_to_update_d, timers_d);
+    sim.simulate_2(node_to_edge_d, node_to_invariant_d, edge_to_guard_d, edge_to_update_d, 2, timers_d);
     
     
     // array_info<guard_d> hej = node_to_invariant.get_index(0);
