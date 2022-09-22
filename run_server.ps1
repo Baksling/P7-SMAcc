@@ -24,9 +24,25 @@ function Move-Files{
     Write-Output " "
 }
 
-function compile_cuda{
-    param([string] $ssh_target)
+function compile_self{
+    param([string] $ssh_target, [string] $compile_cmd)
 
+    if([string]::IsNullOrWhiteSpace($ssh_target) -or $ssh_target -like "* *"){
+        Write-Error "You didnt add a ssh target you idiot!"
+        return;
+    }
+
+    if([string]::IsNullOrWhiteSpace($compile_cmd) -or $compile_cmd -like "* *"){
+        Write-Error "No compile command supplied!"
+        return;
+    }
+
+    $compile_cmd = $compile_cmd.Trim('"')
+    $command = "ssh " + $ssh_target + $compile_cmd
+    Write-Output("Start Compiling using custom command: $compile_cmd")
+    Invoke-Expression($command)
+    Write-Output("Compilation concluded")
+    Write-Output " "
     return;
 }
 
@@ -71,7 +87,7 @@ function Run_project{
 }
 
 
-function execute_command([string]$ssh_target, [string]$command){
+function execute_command([string]$ssh_target, [string]$command, [string]$additional_arg){
 
     if([string]::IsNullOrWhiteSpace($command) -or $command -like "* *"){
         Write-Output "No command supplied, defaulting to 'compile'.";
@@ -103,6 +119,12 @@ function execute_command([string]$ssh_target, [string]$command){
             Run_project($ssh_target)
             break;
         }
+        "compile-custom"{
+            Move-Files($ssh_target)
+            compile_self($ssh_target, $additional_arg)
+            Run_project($ssh_target)
+            break;
+        }
         default{
             Write-Error "Unknown command";
         }
@@ -112,7 +134,8 @@ function execute_command([string]$ssh_target, [string]$command){
 # $arg = $args[0].Split(" ")
 $ssh_target = $args[0]
 $command = $args[1]
+$additional_arg = $arg[2]
 
-execute_command $ssh_target $command
+execute_command $ssh_target $command $additional_arg
 
 

@@ -1,12 +1,13 @@
 ﻿#include "main.h"
 #include "common.h"
 #include "uneven_list.h"
+#include <builtin_types.h>
 #include <list>
 #include <stdio.h>
 
 __global__ void simulate_d(node_d* nodes, edge_d* edges, guard_d* guards, update_d* updates, timer_d* timers, int* result)
 {
-    
+
     for (int i = 0; i < 2; i ++)
     {
         printf("%d", nodes[i].get_id());
