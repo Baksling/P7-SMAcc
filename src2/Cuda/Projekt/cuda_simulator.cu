@@ -14,43 +14,52 @@
 #include <chrono>
 #include <iostream>
 
+#include "stochastic_model.h"
+
 using namespace std::chrono;
 using namespace std;
 
 
-GPU array_info<edge_d> validate_edges(const array_info<edge_d>* edges, uneven_list<guard_d>* guard_ulist,
-                                      uneven_list<guard_d>* guard_node_ulist, array_info<timer_d>* timers)
+GPU bool validate_guards(const array_info<guard_d>* guards, const array_info<timer_d>* timers)
 {
-    int validated_i = 0;
-    const auto valid_edges = static_cast<edge_d*>(malloc(sizeof(edge_d) * edges->size));
+    for (int j = 0; j < guards->size; j++)
+    {
+        //get timer required by guard.
+        const int timer_id = guards->arr[j].get_timer_id();
+        //validate guard using required timer.
+        if(guards->arr[j].validate(timers->arr[timer_id].get_value())) continue;
 
+        //if validate fails, return false. Also breaks loop
+        return false;
+    }
+    return true;
+}
+
+GPU array_info<edge_d> validate_edges(const array_info<edge_d>* edges, const stochastic_model* model, const array_info<timer_d>* timers)
+{
+    //count of valid edges
+    int validated_i = 0;
+    
+    //buffer of all possible valid edges using validated_i
+    const auto valid_edges = static_cast<edge_d*>(malloc(sizeof(edge_d) * edges->size)); 
+
+    //go through all edges from current node.
     for(int i = 0; i < edges->size; i++)
     {
-        bool validated = true;
-        const array_info<guard_d> guards = guard_ulist->get_index(edges->arr[i].get_id());
+        //find all guards of current edge and validate its guards
+        array_info<guard_d> guards = model->get_edge_guards(edges->arr[i].get_id());
+        bool validated =  validate_guards(&guards, timers);
+        guards.free_arr();
 
-        for (int j = 0; j < guards.size; j++)
-        {
-            const int timer_id = guards.arr[j].get_timer_id();
-            if(guards.arr[j].validate(timers->arr[timer_id].get_value())) continue;
-
-            validated = false;
-            break;
-        }
-        free(guards.arr);
+        //only continue if all guards are valid.
         if(!validated) continue;
 
-        const array_info<guard_d> guards_node = guard_node_ulist->get_index(edges->arr[i].get_dest_node());
-        for (int j = 0; j < guards_node.size; j++)
-        {
-            const int timer_id = guards_node.arr[j].get_timer_id();
-            if(guards_node.arr[j].validate(timers->arr[timer_id].get_value())) continue;
+        //check all guards of destination node.
+        guards = model->get_node_invariants(edges->arr[i].get_dest_node());
+        validated =  validate_guards(&guards, timers);
+        guards.free_arr();
 
-            validated = false;
-            break;
-        }
-        free(guards_node.arr);
-
+        //add to valid_edges if both check succeed.
         if (validated)
         {
             valid_edges[validated_i] = edges->arr[i];
@@ -58,263 +67,172 @@ GPU array_info<edge_d> validate_edges(const array_info<edge_d>* edges, uneven_li
         }
     }
 
-    edge_d* result_arr = (edge_d*)malloc(sizeof(edge_d) * validated_i);
+    //copy all valid edges into appropriate sized array.
+    const auto result_arr = static_cast<edge_d*>(malloc(sizeof(edge_d) * validated_i));
     for (int i = 0; i < validated_i; i++)
     {
         result_arr[i] = valid_edges[i];
     }
-
+    //free old buffer
     free(valid_edges);
 
     const array_info<edge_d> result { result_arr, validated_i};
     return result;
 }
 
-GPU edge_d* choose_next_edge(array_info<edge_d>* edges, curandState* states, const unsigned int thread_id)
+GPU edge_d* choose_next_edge(const array_info<edge_d>* edges, curandState* states, const unsigned int thread_id)
 {
-
+    //if no possible edges, return null pointer
     if(edges->size == 0) return nullptr;
 
-    const float r = 1.0f - curand_uniform(&states[thread_id]);
-    const int index = (int)(r * (float)edges->size);
-
-    // printf("MY RANDOM IS: %f | MY INDEX IS: %d | size: %d | blockIdx: %d\n", r, index, edges->size, blockIdx.x);
-    
-    // printf("index: %d .. r: %f .. size: %d %f % f\n", index, r, edges.size, (float) edges.size, r * (float)edges.size);
-    // printf("edge: %d Moving from %d to %d \n", edges.arr[index].get_id(), current_node, edges.arr[index].get_dest_node());
+    //curand_uniform return ]0.0f, 1.0f], but we require [0.0f, 1.0f[
+    //conversion from float to int is floored, such that a array of 10 (index 0..9) will return valid index.
+    const float r = 1.0f - curand_uniform(&states[thread_id]); 
+    const int index = static_cast<int>(r * static_cast<float>(edges->size));
 
     return &edges->arr[index] ;
-    
 }
 
 GPU void progress_time(const array_info<timer_d>* timers, const double difference, curandState* states, const unsigned int thread_id)
 {
+    //Get random uniform value between ]0.0f, 0.1f] * difference gives a random uniform range of ]0, diff]
     const double time_progression = difference * curand_uniform_double(&states[thread_id]);
-    
+
+    //update all timers by adding time_progression to each
     for(int i = 0; i < timers->size; i++)
     {
-        timers->arr[i].set_value(timers->arr[i].get_value() + time_progression);
+        timers->arr[i].add_time(time_progression);
     }
 }
 
-GPU double find_least_difference(int current_node, uneven_list<guard_d>* node_to_invariant, array_info<timer_d>* timers, const int max_value = 100)
+//Finds the furthest possible time it is possible to progress in current step.
+GPU double find_least_difference(const array_info<guard_d>* invariants, const array_info<timer_d>* timers,
+    const int max_value = 100)
 {
     double least_difference = max_value;
+    
 
-    const array_info<guard_d> guards = node_to_invariant->get_index(current_node);
-
-    for (int i = 0; i < guards.size; i++)
+    //check all guards of current node
+    for (int i = 0; i < invariants->size; i++)
     {
-        const logical_operator guard_type = guards.arr[i].get_type();
+        const logical_operator guard_type = invariants->arr[i].get_type();
+        //only relevant if it is upper bounded logical operator.
         if(guard_type != logical_operator::less_equal && guard_type != logical_operator::less) continue;
 
-        const double diff = guards.arr[i].get_value() - timers->arr[guards.arr[i].get_timer_id()].get_value();
+        //find difference in upper bounded guard value and current time.
+        const double diff = invariants->arr[i].get_value() - timers->arr[invariants->arr[i].get_timer_id()].get_value();
+        //if equal or higher than 0 and its smallest value, find newest lower bound.
         if (diff >= 0 && diff < least_difference)
             least_difference = diff;
     }
 
-    free(guards.arr);
-
+    //free index.
     return least_difference;
 }
 
-__global__ void simulate_d(node_d* nodes, edge_d* edges, guard_d* guards, update_d* updates, timer_d* timers, int* result)
+GPU void reset_timers(const array_info<timer_d>* timers, const array_info<timer_d>* original_time)
 {
     
-    
-    for (int i = 0; i < 2; i ++)
-    {
-        printf("%d", nodes[i].get_id());
-    }
-
-    *result = 1;
 }
 
-GPU void free_all(array_info<guard_d>* arr1, array_info<edge_d>* arr2, array_info<edge_d>* arr3)
+
+GPU void free_all(const array_info<guard_d>* arr1, const array_info<edge_d>* arr2, const array_info<edge_d>* arr3)
 {
     if(arr1 != nullptr) free(arr1->arr);
     if(arr2 != nullptr) free(arr2->arr);
     if(arr3 != nullptr) free(arr3->arr);
 }
 
+
 __global__ void simulate_d_2(
-    uneven_list<edge_d>* node_to_edge,
-    uneven_list<guard_d>* node_to_invariant,
-    uneven_list<guard_d>* edge_to_guard,
-    uneven_list<update_d>* egde_to_update,
-    timer_d* timers, int timer_amount,
-    curandState* states,
-    int* output, unsigned long seed
+    stochastic_model* model,
+    const unsigned long seed,
+    curandState* r_state,
+    int* output
     )
 {
+    //init variables and random state
     const unsigned int idx = threadIdx.x + blockDim.x * blockIdx.x;
-    // printf("MY_SEED: %d | threadIdx: %d | blockDim: %d | blockIdx: %d\n", idx, threadIdx.x, blockDim.x, blockIdx.x);
-    curand_init(seed, idx, idx, &states[idx]);
-    const int max_number_of_steps = 1000;
+    curand_init(seed, idx, idx, &r_state[idx]);
+    constexpr int max_number_of_steps = 1000;
     output[idx] = 0;
-    // int times_hit_maximum = 0;
 
-    const auto timer_copies = static_cast<timer_d*>(malloc(sizeof(timer_d) * timer_amount));
 
-    for (int i = 0; i < timer_amount; i++)
+    // init local timers.
+    constexpr int repeat_sim = 20000;
+    const array_info<timer_d> internal_timers = model->copy_timers();
+
+
+    for (int test = 0; test < repeat_sim; test++)
     {
-        timer_copies[i] = timers[i].copy();
-    }
-    array_info<timer_d> internal_timers{ timer_copies, timer_amount};
-
-    for (int test = 0; test < 1100; test++)
-    {
-        // if(test % 20 == 0) printf("%d \n", test);
-
-        //Reset timers!
-        for (int i = 0; i < timer_amount; i++)
-        {
-            internal_timers.arr[i].set_value(timers[i].get_value());
-        }
+        model->reset_timers(&internal_timers);
         
-        // printf("Starting new run --- \n");
         int current_node = 0;
-        // int last_node = -1;
         int steps = 0;
 
         while (true)
         {
-            array_info<guard_d> invariants{ nullptr, 0};
-            array_info<edge_d> edges{ nullptr, 0 };
-            array_info<edge_d> valid_edges{ nullptr, 0 };
-            
             if(steps >= max_number_of_steps)
             {
-                // printf("Hit max steps!");
-                output[idx]++;
                 break;
             }
             steps++;
 
-            invariants = node_to_invariant->get_index(current_node);
-            bool valid_node = true;
-            // printf("ARGHH %d \n", invariants.size);
-            for(int i = 0; i < invariants.size; i++)
+            const array_info<guard_d> invariants = model->get_node_invariants(current_node);
+            if (!validate_guards(&invariants, &internal_timers))
             {
-                const int timer_id = invariants.arr[i].get_timer_id();
-                if(invariants.arr[i].validate(internal_timers.arr[timer_id].get_value())) continue;
-
-
-                // printf("WHAT HAPPEND?!");
-                output[idx]++;
-                valid_node = false;
-            }
-
-            if (!valid_node)
-            {
-                free_all(&invariants, nullptr, nullptr);
+                invariants.free_arr();
                 break;
             }
 
-            const double difference = find_least_difference(current_node, node_to_invariant, &internal_timers);
-            // printf("TIME MOVES DIFFERENTLY! %f \n", difference);
-            progress_time(&internal_timers, difference, states, idx);
             
-            edges = node_to_edge->get_index(current_node);
+            const double difference = find_least_difference(&invariants, &internal_timers);
+            progress_time(&internal_timers, difference, r_state, idx);
+            invariants.free_arr();
+            
+            const array_info<edge_d> edges = model->get_node_edges(current_node);
             if (edges.size <= 0)
             {
-                free_all(&invariants, &edges, nullptr);
+                edges.free_arr();
                 continue;
             }
 
-            valid_edges = validate_edges(&edges, edge_to_guard, node_to_invariant, &internal_timers);
-            edge_d* edge = choose_next_edge(&valid_edges, states, idx);
-
+            const array_info<edge_d> valid_edges = validate_edges(&edges, model, &internal_timers);
+            edge_d* edge = choose_next_edge(&valid_edges, r_state, idx);
+            
             if(edge == nullptr)
             {
                 // printf("Stopped at node: %d \n", current_node);
-                free_all(&invariants, &edges, &valid_edges);
+                edges.free_arr();
+                valid_edges.free_arr();
                 continue;
             }
             
             current_node = edge->get_dest_node();
+            edges.free_arr();
+            valid_edges.free_arr();
 
-            if (current_node == 2)
+            if(model->is_goal_node(current_node))
             {
-                // printf("WIN!");
-                free_all(&invariants, &edges, &valid_edges);
+                output[idx]++;
                 break;
             }
-
-            // if(last_node == current_node)
-            // {
-            //     // printf("Stopped at node: %d \n", current_node);
-            //     // break;
-            // }
-
-            // last_node = current_node;
-            free_all(&invariants, &edges, &valid_edges);
-        
         }
     }
 
-    free(timer_copies);
-
-    //cout << "1000 runs!: " <<  << "[ns] \n";
-    printf("Hit maximum steps: %d times \n", output[idx]);
-    
+    internal_timers.free_arr();
+    const float proc = (static_cast<float>(output[idx])/static_cast<float>(repeat_sim))*100;
+    printf("Hit goal state: %d / %d times (%f)%% \n", output[idx], repeat_sim, proc);
 }
 
-cuda_simulator::cuda_simulator(
-    array_info<node_d>* nodes, array_info<edge_d>* edges,
-    array_info<guard_d>* guards, array_info<update_d>* updates,
-    array_info<timer_d>* timers)
+cuda_simulator::cuda_simulator()
 {
-    this->nodes_ = nodes;
-    this->edges_ = edges;
-    this->guards_ = guards;
-    this->updates_ = updates;
-    this->timers_ = timers;
 }
 
-CPU void cuda_simulator::simulate(int max_nr_of_steps)
+void copy_to_device(void* dest, const void* src, const int size)
 {
-    // Device pointers
-    node_d* nodes_d;
-    edge_d* edges_d;
-    guard_d* guards_d;
-    update_d* updates_d;
-    timer_d* timers_d;
-    int* result_d;
-
-    // Host pointers!
-    int result = 0;
-
-    // Allocate memory on device
-    cudaMalloc((void**)&nodes_d, sizeof(node_d) * this->nodes_->size);
-    cudaMalloc((void**)&edges_d, sizeof(edge_d) * this->edges_->size);
-    cudaMalloc((void**)&guards_d, sizeof(guard_d) * this->guards_->size);
-    cudaMalloc((void**)&updates_d, sizeof(update_d) * this->updates_->size);
-    cudaMalloc((void**)&timers_d, sizeof(timer_d) * this->timers_->size);
-    cudaMalloc((void**)&result_d, sizeof(int));
-    
-    // Copy memory to device!
-    cudaMemcpy(nodes_d, this->nodes_->arr, sizeof(node_d) * this->nodes_->size, cudaMemcpyHostToDevice);
-    cudaMemcpy(edges_d, this->edges_->arr, sizeof(edge_d) * this->edges_->size, cudaMemcpyHostToDevice);
-    cudaMemcpy(guards_d, this->guards_->arr, sizeof(guard_d) * this->guards_->size, cudaMemcpyHostToDevice);
-    cudaMemcpy(updates_d, this->updates_->arr, sizeof(update_d) * this->updates_->size, cudaMemcpyHostToDevice);
-    cudaMemcpy(timers_d, this->timers_->arr, sizeof(timer_d) * this->timers_->size, cudaMemcpyHostToDevice);
-
-    //Run program
-    simulate_d<<<1,1>>>(nodes_d, edges_d, guards_d, updates_d, timers_d, result_d);
-    
-    // Copy result to
-    cudaMemcpy(&result, result_d, sizeof(int), cudaMemcpyDeviceToHost);
-
-    //printf("%d", result);
-
-    //Free device memory
-    cudaFree(nodes_d);
-    cudaFree(edges_d);
-    cudaFree(guards_d);
-    cudaFree(updates_d);
-    cudaFree(timers_d);
-    cudaFree(result_d);
+    cudaMalloc(((void**)&dest), size);
+    cudaMemcpy(dest, src, size, cudaMemcpyHostToDevice);
 }
 
 void cuda_simulator::simulate_2(uneven_list<edge_d> *node_to_edge, uneven_list<guard_d> *node_to_invariant,
@@ -323,27 +241,29 @@ void cuda_simulator::simulate_2(uneven_list<edge_d> *node_to_edge, uneven_list<g
     const steady_clock::time_point start = steady_clock::now();
 
     constexpr int parallel_degree = 32;
-    constexpr int threads_n = 512;
+    constexpr int threads_n = 80;
     
     curandState* state;
-    cudaMalloc((void**)&state, sizeof(curandState)*parallel_degree*threads_n);
+    cudaMalloc(&state, sizeof(curandState)*parallel_degree*threads_n);
     int* results;
-    cudaMalloc((void**)&results, sizeof(int)*parallel_degree*threads_n);
+    cudaMalloc(&results, sizeof(int)*parallel_degree*threads_n);
 
     time_t t;
-    time(&t);
-    simulate_d_2<<<parallel_degree, threads_n>>>(node_to_edge, node_to_invariant,
-        edge_to_guard, edge_to_update, timers, timer_amount, state, results, static_cast<unsigned long>(t));
+    t = time(&t);
+    
+    stochastic_model* model_d = nullptr;
+    stochastic_model model(node_to_edge, node_to_invariant,
+        edge_to_guard, edge_to_update, timers, timer_amount);
+    cudaMalloc(((void**)&model_d), sizeof(stochastic_model));
+    cudaMemcpy(model_d, &model, sizeof(stochastic_model), cudaMemcpyHostToDevice);
+
+    simulate_d_2<<<parallel_degree, threads_n>>>(model_d, static_cast<unsigned long>(t), state, results);
 
     cudaDeviceSynchronize();
 
     cout << "I ran for: " << duration_cast<milliseconds>(steady_clock::now() - start).count() << "[ms] \n";
+    cudaFree(model_d);
     cudaFree(state);
     cudaFree(results);
-}
-
-cuda_simulator::cuda_simulator()
-{
-    
 }
 

@@ -24,6 +24,10 @@ GPU void timer_d::set_value(const double new_value) {
     this->value_ = new_value;
 }
 
+GPU void timer_d::add_time(const double progression) {
+    this->value_ += progression;
+}
+
 GPU timer_d timer_d::copy() const
 {
     return timer_d(this->id_, this->value_);

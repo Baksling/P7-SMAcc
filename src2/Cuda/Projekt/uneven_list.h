@@ -21,11 +21,10 @@ struct array_info
     T* arr;
     int size;
 
-    // CPU GPU ~array_info()
-    // {
-    //     // printf(" WUP WUP I DEALLOCATED SOMETHING!");
-    //     free(this->arr);
-    // }
+    CPU GPU void free_arr() const
+    {
+        free(this->arr);
+    }
 };
 
 template <class T>

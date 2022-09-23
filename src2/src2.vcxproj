@@ -167,6 +167,7 @@
     <ClCompile Include="Cuda\Projekt\guard_d.h" />
     <ClCompile Include="Cuda\Projekt\node_d.cu" />
     <ClCompile Include="Cuda\Projekt\node_d.h" />
+    <ClCompile Include="Cuda\Projekt\stochastic_model.cu" />
     <ClCompile Include="Cuda\Projekt\timer_d.h" />
     <ClCompile Include="Cuda\Projekt\timer_d.cu" />
     <ClCompile Include="Cuda\Projekt\update_d.h" />
@@ -189,6 +190,7 @@
   <ItemGroup>
     <ClInclude Include="Cuda\Projekt\common.h" />
     <ClInclude Include="Cuda\Projekt\cuda_simulator.h" />
+    <ClInclude Include="Cuda\Projekt\stochastic_model.h" />
     <ClInclude Include="Edge.h" />
     <ClInclude Include="Guard.h" />
     <ClInclude Include="Node.h" />
