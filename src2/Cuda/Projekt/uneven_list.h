@@ -92,16 +92,14 @@ public:
         // i 2 = 2 + 0
         // i 3 = 3 + 0
         
-        array_info<T> result;
-        T* arr = (T*)malloc(sizeof(T) * nr_of_elements);
+        T* arr = static_cast<T*>(malloc(sizeof(T) * nr_of_elements));
     
         for (int i = 0; i < nr_of_elements; i++) {
             arr[i] = this->data_d_[(index_val + i)];
         }
-    
-        result.arr = arr;
-        result.size = nr_of_elements;
-    
+
+        array_info<T> result {arr , nr_of_elements};
+
         return result;
     }
     void allocate_memory()
@@ -114,7 +112,21 @@ public:
         cudaMemcpy(index_list_d_, index_list_, sizeof(int) * max_index_, cudaMemcpyHostToDevice);
         cudaMemcpy(data_d_, data_, sizeof(T) * max_elements_, cudaMemcpyHostToDevice);
     }
-    void free_memory()
+
+    void allocate_memory_2(uneven_list<T>* location)
+    {
+        // Allocate Memory
+        cudaMalloc((void**)&location, sizeof(uneven_list<T>*));
+        cudaMalloc((void**)&index_list_d_, sizeof(int) * max_index_);
+        cudaMalloc((void**)&data_d_, sizeof(T) * max_elements_);
+
+        //Copy Memory
+        cudaMemcpy(index_list_d_, index_list_, sizeof(int) * max_index_, cudaMemcpyHostToDevice);
+        cudaMemcpy(data_d_, data_, sizeof(T) * max_elements_, cudaMemcpyHostToDevice);
+        cudaMemcpy(location, this, sizeof(uneven_list<T>), cudaMemcpyHostToDevice);
+    }
+    
+    void free_memory() const
     {
         cudaFree(index_list_d_);
         cudaFree(data_d_);

@@ -28,12 +28,11 @@ private:
     int timer_id_;
     logical_operator type_;
     double value_;
-    bool is_node_;
 public:
     guard_d(int timer_id, logical_operator type, double value, int id = 0);
-    CPU GPU int get_timer_id();
-    CPU GPU double get_value();
-    CPU GPU logical_operator get_type();
+    CPU GPU int get_timer_id() const;
+    CPU GPU double get_value() const;
+    CPU GPU logical_operator get_type() const;
     CPU GPU bool validate(double value);
 };
 

@@ -17,9 +17,9 @@ private:
     double value_;
 public:
     CPU GPU timer_d(int id, double start_value);
-    GPU double get_value();
+    GPU double get_value() const;
     GPU void set_value(double new_value);
-    GPU timer_d copy();
+    GPU timer_d copy() const;
 };
 
 

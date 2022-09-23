@@ -9,22 +9,24 @@
 
 #include <stdio.h>
 
-guard_d::guard_d(int timer_id, logical_operator type, double value, int id) {
+guard_d::guard_d(const int timer_id, const logical_operator type, const double value, const int id) {
     this->timer_id_ = timer_id;
     this->type_ = type;
     this->value_ = value;
     this->id_ = id;
 }
 
-CPU GPU int guard_d::get_timer_id() {
+CPU GPU int guard_d::get_timer_id() const
+{
     return this->timer_id_;
 }
 
-CPU GPU logical_operator guard_d::get_type() {
+CPU GPU logical_operator guard_d::get_type() const
+{
     return this->type_;
 }
 
-CPU GPU double guard_d::get_value()
+CPU GPU double guard_d::get_value() const
 {
     return this->value_;
 }

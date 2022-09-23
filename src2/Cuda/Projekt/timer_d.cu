@@ -15,15 +15,16 @@ CPU GPU timer_d::timer_d(int id, double start_value) {
     this->value_ = start_value;
 }
 
-GPU double timer_d::get_value() {
+GPU double timer_d::get_value() const
+{
     return this->value_;
 }
 
-GPU void timer_d::set_value(double new_value) {
+GPU void timer_d::set_value(const double new_value) {
     this->value_ = new_value;
 }
 
-GPU timer_d timer_d::copy()
+GPU timer_d timer_d::copy() const
 {
     return timer_d(this->id_, this->value_);
 }
