@@ -63,7 +63,7 @@ public:
         this->data_ = arr;
         this->max_elements_ = items;
     }
-    __device__ array_info<T> get_index(int index)
+    __host__ __device__ array_info<T> get_index(int index)
     {
         if (index >= this->max_index_ || index < 0)
         {
