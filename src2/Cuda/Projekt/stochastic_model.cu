@@ -45,7 +45,7 @@ GPU int stochastic_model::get_start_node() const
     return 0;
 }
 
-GPU bool stochastic_model::is_goal_node(int node_id)
+GPU bool stochastic_model::is_goal_node(int node_id) const
 {
     return node_id == 2;
 }
@@ -55,12 +55,12 @@ GPU array_info<timer_d> stochastic_model::copy_timers() const
     const int size = this->timer_count_;
     timer_d* internal_timers_arr = static_cast<timer_d*>(malloc(sizeof(timer_d) * size));
     const array_info<timer_d> internal_timers{ internal_timers_arr, size};
-
     
     for (int i = 0; i < internal_timers.size; i++)
     {
         internal_timers.arr[i] = this->timers_[i].copy();
     }
+    
     return internal_timers;
 }
 
@@ -72,4 +72,10 @@ GPU void stochastic_model::reset_timers(const array_info<timer_d>* timers) const
         timers->arr[i].set_value(this->timers_[i].get_value());
     }
     
+}
+
+void stochastic_model::cuda_allocate(stochastic_model** p) const
+{
+    cudaMalloc(p, sizeof(stochastic_model));
+    cudaMemcpy(*p, this, sizeof(stochastic_model), cudaMemcpyHostToDevice);
 }

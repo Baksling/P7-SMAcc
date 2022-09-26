@@ -38,12 +38,13 @@ public:
         GPU array_info<guard_d> get_node_invariants(int node_id) const;
         GPU array_info<guard_d> get_edge_guards(int edge_id) const;
         GPU array_info<update_d> get_updates(int edge_id) const;
-
-
+        
         //state functions
         GPU int get_start_node() const;
-        GPU bool is_goal_node(int node_id);
-        
+        GPU bool is_goal_node(int node_id) const;
         GPU array_info<timer_d> copy_timers() const;
         GPU void reset_timers(const array_info<timer_d>* timers) const;
+
+        //allocation
+        void cuda_allocate(stochastic_model** p) const;
 };

@@ -39,12 +39,12 @@ int main()
     // timer = [timer], index = id.
 
     // -----------------------------------------------------------
-
+    
     //Nodes
-    list<node_d> nodes__;
-    nodes__.emplace_back(0);
-    nodes__.emplace_back(1);
-    nodes__.emplace_back(2);
+    list<node_d> nodes_;
+    nodes_.emplace_back(0);
+    nodes_.emplace_back(1);
+    nodes_.emplace_back(2);
 
     // Edges
     list<edge_d> edges_1_;
@@ -126,12 +126,13 @@ int main()
 
     // NOW ALLOCATE MEMORY ON DEVICE FOR ALL THIS SHIT!
 
-    uneven_list<edge_d> *node_to_edge_d;
-    uneven_list<guard_d> *node_to_invariant_d;
-    uneven_list<guard_d> *edge_to_guard_d;
-    uneven_list<update_d> *edge_to_update_d;
+    uneven_list<edge_d>* node_to_edge_d = nullptr;
+    uneven_list<guard_d>* node_to_invariant_d = nullptr;
+    uneven_list<guard_d>* edge_to_guard_d = nullptr;
+    uneven_list<update_d>* edge_to_update_d = nullptr;
 
-    timer_d* timers_d;
+    timer_d* timers_d = nullptr;
+
     
     cudaMalloc((void**)&node_to_edge_d, sizeof(uneven_list<edge_d>));
     cudaMalloc((void**)&node_to_invariant_d, sizeof(uneven_list<guard_d>));
@@ -139,6 +140,7 @@ int main()
     cudaMalloc((void**)&edge_to_update_d, sizeof(uneven_list<update_d>));
     cudaMalloc((void**)&timers_d, sizeof(timer_d) * 2);
 
+    
     // Copy memory to device
     node_to_edge.allocate_memory();
     node_to_invariant.allocate_memory();
@@ -152,6 +154,8 @@ int main()
     cudaMemcpy(timers_d, timer_list, sizeof(timer_d) * 2, cudaMemcpyHostToDevice);
 
     //printf("yasss girl: %d %d %d %d\n", node_to_edge.max_elements_, node_to_edge.max_index_, node_to_edge_d->max_elements_, node_to_edge_d->max_index_);
+
+    
     
     cuda_simulator sim;
     sim.simulate_2(node_to_edge_d, node_to_invariant_d, edge_to_guard_d, edge_to_update_d, 2, timers_d);

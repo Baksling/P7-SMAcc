@@ -18,6 +18,8 @@ function Move-Files{
         return;
     }
 
+    Write-Output("Yeeting old files on server")
+    Invoke-Expression("ssh $ssh_target rm -r $server_path")
     Write-Output("Starting transfering files...")
     Invoke-Expression("scp -r ./" + $local_folder + " " + $ssh_target + ":" + $server_path )
     Write-Output("Files transfered to '" + $ssh_target + "'.")
