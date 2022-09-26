@@ -126,11 +126,22 @@ void UPAALXMLParser::init_lists(xml_document* doc)
     }
 }
 
-template <typename T> void insert_into_list(list<list<T>> t_list, int index, T item)
+template <typename T> void insert_into_list(list<list<T>>* t_list, int index, T item)
 {
-    auto l_front = t_list.begin();
+    auto l_front = t_list->begin();
     std::advance(l_front, index);
     l_front->emplace_back(item);
+}
+
+template <typename T> void insert_into_list2(list<list<T>>* t_list, int index, T item)
+{
+    cout << "::::::::::::::" << item.get_dest_node() << "::::::"<< item.get_id()<<"::::::\n";
+    
+    auto l_front = t_list->begin();
+    std::advance(l_front, index);
+    l_front->emplace_back(item);
+
+    cout << "::::::::::::::" << t_list->begin()->begin()->get_dest_node() << ":::::::"<< t_list->begin()->begin()->get_id()<<":::::\n";
 }
 
 
@@ -157,7 +168,6 @@ __host__ parser_output UPAALXMLParser::parse_xml(timer_d* t, char* file_path, in
         {
             string string_id = locs.attribute("id").as_string();
             string string_name = locs.child("name").child_value();
-            cout << string_name;
             const int node_id = xml_id_to_int(string_id);
             
             if (string_name == "Goal")
@@ -169,7 +179,7 @@ __host__ parser_output UPAALXMLParser::parse_xml(timer_d* t, char* file_path, in
             string expr = locs.child("label").child_value();
 
             if (kind == "invariant")
-                insert_into_list(invariance_list_, node_id, guard_d(t->get_id(),get_expr_enum(expr),get_expr_value(expr)));
+                insert_into_list(&invariance_list_, node_id, guard_d(0,get_expr_enum(expr),get_expr_value(expr)));
             
         }
 
@@ -185,7 +195,6 @@ __host__ parser_output UPAALXMLParser::parse_xml(timer_d* t, char* file_path, in
             int target_id = xml_id_to_int(target);
             
             list<guard_d> guards;
-            auto edge_updates = new list<update_d>;
             
             for (pugi::xml_node labels: trans.children("label"))
             {
@@ -193,13 +202,13 @@ __host__ parser_output UPAALXMLParser::parse_xml(timer_d* t, char* file_path, in
                 string expr = labels.child_value();
                 
                 if(kind == "guard")
-                    insert_into_list(guard_list_, source_id, guard_d(t->get_id(),get_expr_enum(expr),get_expr_value(expr)));
+                    insert_into_list(&guard_list_, source_id, guard_d(0,get_expr_enum(expr),get_expr_value(expr)));
                 else if (kind == "assignment")
-                    insert_into_list(update_list_, source_id, update_d(t->get_id(),get_expr_value(expr)));
+                    insert_into_list(&update_list_, source_id, update_d(0,get_expr_value(expr)));
             }
-            
-            insert_into_list(edge_list_, source_id, edge_d(egde_id_, target_id));
+            insert_into_list2(&edge_list_, source_id, edge_d(egde_id_, target_id, 1));
             egde_id_ = egde_id_+1;
+            cout << "::::::::::::::" << edge_list_.begin()->begin()->get_dest_node() << ":::::::"<< edge_list_.begin()->begin()->get_id()<<":::::\n";
         }
     }
 
@@ -222,7 +231,9 @@ __host__ parser_output UPAALXMLParser::parse_xml(timer_d* t, char* file_path, in
     //print1(edge_list_test.front());
     //print2(edge_list_test);
     //print2(edge_list);
+
     
+    //cout << "::::::::::::::" << edge_list_.begin()->end()->get_dest_node() << ":::::::"<< edge_list_.begin()->end()->get_id()<<":::::\n";
     auto edges = uneven_list<edge_d>(&edge_list_, edge_list_.size());
     auto invariants = uneven_list<guard_d>(&invariance_list_, invariance_list_.size());
     auto guards = uneven_list<guard_d>(&guard_list_, guard_list_.size());

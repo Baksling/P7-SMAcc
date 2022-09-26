@@ -21,6 +21,7 @@ public:
     GPU void set_value(double new_value);
     GPU void add_time(double progression);
     GPU timer_d copy() const;
+    CPU int get_id() const;
 };
 
 

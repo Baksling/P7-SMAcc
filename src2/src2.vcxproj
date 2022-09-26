@@ -205,6 +205,8 @@
   <ItemGroup>
     <Content Include="UPAALParser\sample.xml" />
     <Content Include="UPAALParser\sample1.xml" />
+    <Content Include="UPAALParser\test2.xml" />
+    <Content Include="UPAALParser\testBasic.xml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

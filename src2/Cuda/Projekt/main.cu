@@ -122,26 +122,19 @@ int main(int argc, char* argv[])
     timer_list[1] = timer_d(1, 0);
     
     UPAALXMLParser parser;
-    auto p = parser.parse_xml(&timer_list[1], argv[1]);
+    auto p = parser.parse_xml(&timer_list[0], argv[1]);
 
     uneven_list<edge_d> node_to_edge = p.edge;
     uneven_list<guard_d> node_to_invariant = p.invariance;
     uneven_list<guard_d> edge_to_guard = p.guard;
     uneven_list<update_d> edge_to_update = p.update;
+    
+    // uneven_list<edge_d> node_to_edge(&edge_list, 3);
+    // uneven_list<guard_d> node_to_invariant(&invariant_list, 3);
+    // uneven_list<guard_d> edge_to_guard(&guard_list, 3);
+    // uneven_list<update_d> edge_to_update(&update_list, 3);
 
-    //list<list<edge_d>>::iterator it;
-    // int i = 0;
-    // for (it = node_to_edge.get_index(0)->begin(); it != node_to_edge.get_index(0)->end(); it++)
-    // {
-    //     printf("%d",i);
-    //     i++;
-    //     typename list<edge_d>::iterator it2;
-    //     for (it2 = it->begin(); it2 != it->end(); it2++ )
-    //     {
-    //         printf("%d",it2->get_id());
-    //     }
-    //     printf("\n");
-    // }
+    //printf("%d", node_to_edge.get_index(1).size);
 
 
     

@@ -6,21 +6,34 @@
 #define CPU __host__
 
 #include "timer_d.h"
+#include <cuda.h>
+#include <cuda_runtime.h>
 
-timer_d::timer_d(int id, double start_value) {
+
+CPU GPU timer_d::timer_d(int id, double start_value) {
     this->id_ = id;
     this->value_ = start_value;
 }
 
-int timer_d::get_id()
+GPU double timer_d::get_value() const
 {
-    return this->id_;
-}
-
-GPU double timer_d::get_value() {
     return this->value_;
 }
 
-GPU void timer_d::set_value(double new_value) {
+GPU void timer_d::set_value(const double new_value) {
     this->value_ = new_value;
+}
+
+GPU void timer_d::add_time(const double progression) {
+    this->value_ += progression;
+}
+
+GPU timer_d timer_d::copy() const
+{
+    return timer_d(this->id_, this->value_);
+}
+
+int timer_d::get_id() const
+{
+    return this->id_;
 }

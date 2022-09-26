@@ -159,7 +159,7 @@ __global__ void simulate_d_2(
 
 
     // init local timers.
-    constexpr int repeat_sim = 20000;
+    constexpr int repeat_sim = 5;
     const array_info<timer_d> internal_timers = model->copy_timers();
 
 
@@ -181,6 +181,7 @@ __global__ void simulate_d_2(
             const array_info<guard_d> invariants = model->get_node_invariants(current_node);
             if (!validate_guards(&invariants, &internal_timers))
             {
+                printf("2");
                 invariants.free_arr();
                 break;
             }
@@ -202,7 +203,7 @@ __global__ void simulate_d_2(
             
             if(edge == nullptr)
             {
-                // printf("Stopped at node: %d \n", current_node);
+                //printf("Stopped at node: %d \n", current_node);
                 edges.free_arr();
                 valid_edges.free_arr();
                 continue;
