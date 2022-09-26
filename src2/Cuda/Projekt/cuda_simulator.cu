@@ -92,10 +92,23 @@ GPU edge_d* choose_next_edge(const array_info<edge_d>* edges, curandState* state
 
     //curand_uniform return ]0.0f, 1.0f], but we require [0.0f, 1.0f[
     //conversion from float to int is floored, such that a array of 10 (index 0..9) will return valid index.
-    const float r = 1.0f - curand_uniform(&states[thread_id]); 
-    const int index = static_cast<int>(r * static_cast<float>(edges->size));
+    float weight_sum = 0.0f;
+    for(int i = 0; i < edges->size; i++)
+        weight_sum += edges->arr[i].get_weight();
 
-    return &edges->arr[index] ;
+    
+    const float r_val = (1.0f - curand_uniform(&states[thread_id]))*weight_sum;
+    float r_acc = 0.0; 
+    
+    for (int i = 0; i < edges->size; ++i)
+    {
+        r_acc += edges->arr[i].get_weight();
+        if(r_val < r_acc) return &edges->arr[i];
+    }
+
+    //This should be handled in for loop.
+    //This is for safety :)
+    return &edges->arr[edges->size - 1];
 }
 
 GPU void progress_time(const array_info<timer_d>* timers, const double difference, curandState* states, const unsigned int thread_id)

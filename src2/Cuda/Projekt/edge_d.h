@@ -14,11 +14,12 @@ class edge_d {
 private:
     int id_;
     int dest_node_;
-    int weight_;
+    float weight_;
 public:
-    edge_d(int id, int dest_node_id, int weight = 1);
-    CPU GPU int get_id();
-    CPU GPU int get_dest_node();
+    edge_d(int id, int dest_node_id, float weight = 1.0f);
+    CPU GPU int get_id() const;
+    CPU GPU int get_dest_node() const;
+    GPU float get_weight() const;
 };
 
 
