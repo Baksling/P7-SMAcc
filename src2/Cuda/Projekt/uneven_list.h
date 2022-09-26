@@ -112,12 +112,12 @@ public:
         cudaMemcpy(data_d_, data_, sizeof(T) * max_elements_, cudaMemcpyHostToDevice);
     }
 
-    void allocate_memory_2(uneven_list<T>* location)
+    void allocate_memory_2(uneven_list<T>** location)
     {
         // Allocate Memory
-        cudaMalloc((void**)&location, sizeof(uneven_list<T>*));
-        cudaMalloc((void**)&index_list_d_, sizeof(int) * max_index_);
-        cudaMalloc((void**)&data_d_, sizeof(T) * max_elements_);
+        cudaMalloc(location, sizeof(uneven_list<T>));
+        cudaMalloc(&index_list_d_, sizeof(int) * max_index_);
+        cudaMalloc(&data_d_, sizeof(T) * max_elements_);
 
         //Copy Memory
         cudaMemcpy(index_list_d_, index_list_, sizeof(int) * max_index_, cudaMemcpyHostToDevice);
@@ -127,13 +127,12 @@ public:
     
     void free_memory() const
     {
+        free(index_list_d_);
+        free(data_d_);
+    }
+    void cuda_free_memory() const{
         cudaFree(index_list_d_);
         cudaFree(data_d_);
-        
-    }
-    ~uneven_list()
-    {
-        this->free_memory();
     }
 };
 

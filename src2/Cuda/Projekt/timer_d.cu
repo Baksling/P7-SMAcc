@@ -10,9 +10,14 @@
 #include <cuda_runtime.h>
 
 
-CPU GPU timer_d::timer_d(int id, double start_value) {
+CPU GPU timer_d::timer_d(const int id, const double start_value) {
     this->id_ = id;
     this->value_ = start_value;
+}
+
+int timer_d::get_id() const
+{
+    return this->id_;
 }
 
 GPU double timer_d::get_value() const
@@ -20,7 +25,7 @@ GPU double timer_d::get_value() const
     return this->value_;
 }
 
-GPU void timer_d::set_value(const double new_value) {
+GPU void timer_d::set_time(const double new_value) {
     this->value_ = new_value;
 }
 

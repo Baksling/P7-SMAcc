@@ -16,10 +16,10 @@ private:
     int dest_node_;
     float weight_;
 public:
-    edge_d(int id, int dest_node_id, float weight = 1);
-    CPU GPU int get_id();
-    CPU GPU int get_dest_node();
-    CPU GPU float get_val();
+    edge_d(int id, int dest_node_id, float weight = 1.0f);
+    CPU GPU int get_id() const;
+    CPU GPU int get_dest_node() const;
+    GPU float get_weight() const;
 };
 
 

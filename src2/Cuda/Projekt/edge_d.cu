@@ -12,15 +12,17 @@ edge_d::edge_d(int id, int dest_node_id, float weight) {
     this->weight_ = weight;
 }
 
-CPU GPU int edge_d::get_id() {
+CPU GPU int edge_d::get_id() const
+{
     return this->id_;
 }
 
-CPU GPU int edge_d::get_dest_node() {
+CPU GPU int edge_d::get_dest_node() const
+{
     return this->dest_node_;
 }
 
-float edge_d::get_val()
+GPU float edge_d::get_weight() const
 {
     return this->weight_;
 }

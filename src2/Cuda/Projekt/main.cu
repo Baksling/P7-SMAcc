@@ -39,14 +39,12 @@ int main(int argc, char* argv[])
     // timer = [timer], index = id.
 
     // -----------------------------------------------------------
-
+    
     //Nodes
-    list<node_d> nodes__;
-    nodes__.emplace_back(0);
-    nodes__.emplace_back(1);
-    nodes__.emplace_back(2);
-    nodes__.emplace_back(3);
-    nodes__.emplace_back(4);
+    list<node_d> nodes_;
+    nodes_.emplace_back(0);
+    nodes_.emplace_back(1);
+    nodes_.emplace_back(2);
 
     // Edges
     list<edge_d> edges_1_;
@@ -140,12 +138,13 @@ int main(int argc, char* argv[])
     
     // NOW ALLOCATE MEMORY ON DEVICE FOR ALL THIS SHIT!
 
-    uneven_list<edge_d> *node_to_edge_d;
-    uneven_list<guard_d> *node_to_invariant_d;
-    uneven_list<guard_d> *edge_to_guard_d;
-    uneven_list<update_d> *edge_to_update_d;
+    uneven_list<edge_d>* node_to_edge_d = nullptr;
+    uneven_list<guard_d>* node_to_invariant_d = nullptr;
+    uneven_list<guard_d>* edge_to_guard_d = nullptr;
+    uneven_list<update_d>* edge_to_update_d = nullptr;
 
-    timer_d* timers_d;
+    timer_d* timers_d = nullptr;
+
     
     cudaMalloc((void**)&node_to_edge_d, sizeof(uneven_list<edge_d>));
     cudaMalloc((void**)&node_to_invariant_d, sizeof(uneven_list<guard_d>));
@@ -153,6 +152,7 @@ int main(int argc, char* argv[])
     cudaMalloc((void**)&edge_to_update_d, sizeof(uneven_list<update_d>));
     cudaMalloc((void**)&timers_d, sizeof(timer_d) * 2);
 
+    
     // Copy memory to device
     node_to_edge.allocate_memory();
     node_to_invariant.allocate_memory();
@@ -167,11 +167,8 @@ int main(int argc, char* argv[])
 
     //printf("yasss girl: %d %d %d %d\n", node_to_edge.max_elements_, node_to_edge.max_index_, node_to_edge_d->max_elements_, node_to_edge_d->max_index_);
 
-    // array_info<edge_d> hej = node_to_edge_d->get_index(0);
-    //
-    // for(int i = 0; i < hej.size; i++) {
-    //     printf("%d -> %d", hej.arr[i].get_id(), (int)hej.arr[i].get_dest_node());
-    // }
+    
+    
     cuda_simulator sim;
     sim.simulate_2(node_to_edge_d, node_to_invariant_d, edge_to_guard_d, edge_to_update_d, 2, timers_d);
     

@@ -40,12 +40,29 @@ GPU array_info<update_d> stochastic_model::get_updates(const int edge_id) const
     return this->edge_to_update_->get_index(edge_id);
 }
 
+
+GPU void stochastic_model::traverse_edge_update(const int edge_id, const array_info<timer_d>* local_timers) const
+{
+    const array_info<update_d> updates = this->get_updates(edge_id);
+
+    for (int i = 0; i < updates.size; ++i)
+    {
+        update_d update = updates.arr[i];
+        const int timer_id = update.get_timer_id();
+        timer_d timer = local_timers->arr[timer_id];
+
+        timer.set_time(update.get_value());
+    }
+    
+    updates.free_arr();
+}
+
 GPU int stochastic_model::get_start_node() const
 {
     return 0;
 }
 
-GPU bool stochastic_model::is_goal_node(int node_id)
+GPU bool stochastic_model::is_goal_node(int node_id) const
 {
     return node_id == 2;
 }
@@ -55,12 +72,12 @@ GPU array_info<timer_d> stochastic_model::copy_timers() const
     const int size = this->timer_count_;
     timer_d* internal_timers_arr = static_cast<timer_d*>(malloc(sizeof(timer_d) * size));
     const array_info<timer_d> internal_timers{ internal_timers_arr, size};
-
     
     for (int i = 0; i < internal_timers.size; i++)
     {
         internal_timers.arr[i] = this->timers_[i].copy();
     }
+    
     return internal_timers;
 }
 
@@ -69,7 +86,13 @@ GPU void stochastic_model::reset_timers(const array_info<timer_d>* timers) const
     assert(timers->size == this->timer_count_);
     for (int i = 0; i < timers->size; i++)
     {
-        timers->arr[i].set_value(this->timers_[i].get_value());
+        timers->arr[i].set_time(this->timers_[i].get_value());
     }
     
+}
+
+void stochastic_model::cuda_allocate(stochastic_model** p) const
+{
+    cudaMalloc(p, sizeof(stochastic_model));
+    cudaMemcpy(*p, this, sizeof(stochastic_model), cudaMemcpyHostToDevice);
 }
