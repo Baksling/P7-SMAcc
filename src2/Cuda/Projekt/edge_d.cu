@@ -6,7 +6,7 @@
 
 #include "edge_d.h"
 
-edge_d::edge_d(int id, int dest_node_id, int weight) {
+edge_d::edge_d(int id, int dest_node_id, float weight) {
     this->id_ = id;
     this->dest_node_ = dest_node_id;
     this->weight_ = weight;
@@ -18,4 +18,9 @@ CPU GPU int edge_d::get_id() {
 
 CPU GPU int edge_d::get_dest_node() {
     return this->dest_node_;
+}
+
+float edge_d::get_val()
+{
+    return this->weight_;
 }

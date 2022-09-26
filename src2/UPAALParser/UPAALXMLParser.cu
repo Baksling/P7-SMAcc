@@ -55,9 +55,28 @@ int get_expr_value(const string& expr)
         
         if (in_array(expr[--index], {'=',' ','<','>'}))
         {
-            cout << index << " " << expr.substr(index+1) << " \n";
-            cout.flush();
+            //cout << index << " ::: " << expr.substr(index+1) << " \n";
+            //cout.flush();
             return stoi(expr.substr(index+1));
+        }
+    }
+}
+
+float get_expr_value_float(const string& expr)
+{
+    int index = expr.length();
+    while (true)
+    {
+        if (index == 0)
+        {
+            return stof(expr);
+        }
+        
+        if (in_array(expr[--index], {'=',' ','<','>'}))
+        {
+            //cout << index << " ::: " << expr.substr(index+1) << " \n";
+            //cout.flush();
+            return stof(expr.substr(index+1));
         }
     }
 }
@@ -133,17 +152,6 @@ template <typename T> void insert_into_list(list<list<T>>* t_list, int index, T 
     l_front->emplace_back(item);
 }
 
-template <typename T> void insert_into_list2(list<list<T>>* t_list, int index, T item)
-{
-    cout << "::::::::::::::" << item.get_dest_node() << "::::::"<< item.get_id()<<"::::::\n";
-    
-    auto l_front = t_list->begin();
-    std::advance(l_front, index);
-    l_front->emplace_back(item);
-
-    cout << "::::::::::::::" << t_list->begin()->begin()->get_dest_node() << ":::::::"<< t_list->begin()->begin()->get_id()<<":::::\n";
-}
-
 
 __host__ parser_output UPAALXMLParser::parse_xml(timer_d* t, char* file_path, int goal_node_id)
 {
@@ -159,6 +167,7 @@ __host__ parser_output UPAALXMLParser::parse_xml(timer_d* t, char* file_path, in
     
     list<node_d> nodes__;
     int egde_id_ = 0;
+    int invariant_id = 0;
 
     init_lists(&doc);
     
@@ -179,7 +188,10 @@ __host__ parser_output UPAALXMLParser::parse_xml(timer_d* t, char* file_path, in
             string expr = locs.child("label").child_value();
 
             if (kind == "invariant")
-                insert_into_list(&invariance_list_, node_id, guard_d(0,get_expr_enum(expr),get_expr_value(expr)));
+            {
+                insert_into_list(&invariance_list_, node_id, guard_d(0,get_expr_enum(expr),get_expr_value(expr),invariant_id));
+                //cout << "\nINVARIANT:::" << invariance_list_.begin()->begin()->get_value() << " " << invariant_id++ << "\n";
+            }
             
         }
 
@@ -195,20 +207,22 @@ __host__ parser_output UPAALXMLParser::parse_xml(timer_d* t, char* file_path, in
             int target_id = xml_id_to_int(target);
             
             list<guard_d> guards;
-            
+            float probability = 1;
             for (pugi::xml_node labels: trans.children("label"))
             {
                 string kind = labels.attribute("kind").as_string();
                 string expr = labels.child_value();
                 
                 if(kind == "guard")
-                    insert_into_list(&guard_list_, source_id, guard_d(0,get_expr_enum(expr),get_expr_value(expr)));
+                    insert_into_list(&guard_list_, egde_id_, guard_d(0,get_expr_enum(expr),get_expr_value(expr)));
                 else if (kind == "assignment")
-                    insert_into_list(&update_list_, source_id, update_d(0,get_expr_value(expr)));
+                    insert_into_list(&update_list_, egde_id_, update_d(0,get_expr_value(expr)));
+                else if (kind == "probability")
+                    probability = get_expr_value_float(expr);
             }
-            insert_into_list2(&edge_list_, source_id, edge_d(egde_id_, target_id, 1));
-            egde_id_ = egde_id_+1;
-            cout << "::::::::::::::" << edge_list_.begin()->begin()->get_dest_node() << ":::::::"<< edge_list_.begin()->begin()->get_id()<<":::::\n";
+            insert_into_list(&edge_list_, source_id, edge_d(egde_id_, target_id, probability));
+            egde_id_++;
+            //cout << "::::::::::::::" << edge_list_.begin()->begin()->get_dest_node() << ":::::::"<< edge_list_.begin()->begin()->get_id()<<":::::\n";
         }
     }
 
@@ -233,7 +247,7 @@ __host__ parser_output UPAALXMLParser::parse_xml(timer_d* t, char* file_path, in
     //print2(edge_list);
 
     
-    //cout << "::::::::::::::" << edge_list_.begin()->end()->get_dest_node() << ":::::::"<< edge_list_.begin()->end()->get_id()<<":::::\n";
+    //cout << "::::::::::::::" << edge_list_.begin()->begin()->get_val() << ":::::::"<< edge_list_.begin()->begin()->get_id()<<":::::\n";
     auto edges = uneven_list<edge_d>(&edge_list_, edge_list_.size());
     auto invariants = uneven_list<guard_d>(&invariance_list_, invariance_list_.size());
     auto guards = uneven_list<guard_d>(&guard_list_, guard_list_.size());

@@ -159,7 +159,7 @@ __global__ void simulate_d_2(
 
 
     // init local timers.
-    constexpr int repeat_sim = 5;
+    constexpr int repeat_sim = 1000;
     const array_info<timer_d> internal_timers = model->copy_timers();
 
 
@@ -200,6 +200,7 @@ __global__ void simulate_d_2(
 
             const array_info<edge_d> valid_edges = validate_edges(&edges, model, &internal_timers);
             edge_d* edge = choose_next_edge(&valid_edges, r_state, idx);
+
             
             if(edge == nullptr)
             {
@@ -209,6 +210,7 @@ __global__ void simulate_d_2(
                 continue;
             }
             
+            printf("going from: %d to %d \n", current_node, edge->get_dest_node());
             current_node = edge->get_dest_node();
             edges.free_arr();
             valid_edges.free_arr();
@@ -241,8 +243,8 @@ void cuda_simulator::simulate_2(uneven_list<edge_d> *node_to_edge, uneven_list<g
 {
     const steady_clock::time_point start = steady_clock::now();
 
-    constexpr int parallel_degree = 32;
-    constexpr int threads_n = 80;
+    constexpr int parallel_degree = 1;
+    constexpr int threads_n = 1;
     
     curandState* state;
     cudaMalloc(&state, sizeof(curandState)*parallel_degree*threads_n);
