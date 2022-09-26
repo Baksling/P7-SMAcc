@@ -25,7 +25,7 @@ GPU double timer_d::get_value() const
     return this->value_;
 }
 
-GPU void timer_d::set_value(const double new_value) {
+GPU void timer_d::set_time(const double new_value) {
     this->value_ = new_value;
 }
 

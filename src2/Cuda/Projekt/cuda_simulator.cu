@@ -90,16 +90,18 @@ GPU edge_d* choose_next_edge(const array_info<edge_d>* edges, curandState* state
     //if no possible edges, return null pointer
     if(edges->size == 0) return nullptr;
 
-    //curand_uniform return ]0.0f, 1.0f], but we require [0.0f, 1.0f[
-    //conversion from float to int is floored, such that a array of 10 (index 0..9) will return valid index.
+
+    //summed weight
     float weight_sum = 0.0f;
     for(int i = 0; i < edges->size; i++)
         weight_sum += edges->arr[i].get_weight();
 
-    
+    //curand_uniform return ]0.0f, 1.0f], but we require [0.0f, 1.0f[
+    //conversion from float to int is floored, such that a array of 10 (index 0..9) will return valid index.
     const float r_val = (1.0f - curand_uniform(&states[thread_id]))*weight_sum;
     float r_acc = 0.0; 
-    
+
+    //pick the weighted random value.
     for (int i = 0; i < edges->size; ++i)
     {
         r_acc += edges->arr[i].get_weight();
@@ -219,14 +221,15 @@ __global__ void simulate_d_2(
             const array_info<edge_d> valid_edges = validate_edges(&edges, model, &internal_timers);
             edge_d* edge = choose_next_edge(&valid_edges, r_state, idx);
             
-            if(edge == nullptr)
+            if(edge == nullptr) //no traversal can be done in current step
             {
                 // printf("Stopped at node: %d \n", current_node);
                 edges.free_arr();
                 valid_edges.free_arr();
                 continue;
             }
-            
+
+            model->traverse_edge_update(edge->get_id(), &internal_timers);
             current_node = edge->get_dest_node();
             edges.free_arr();
             valid_edges.free_arr();
@@ -270,6 +273,12 @@ void print_results(map<int,int>* result_map, const int result_size)
     cout << "Nr of simulations: " << result_size << "\n";
 }
 
+
+struct SimulationStrategy
+{
+    
+};
+
 void cuda_simulator::simulate_2(uneven_list<edge_d> *node_to_edge, uneven_list<guard_d> *node_to_invariant,
     uneven_list<guard_d> *edge_to_guard, uneven_list<update_d> *edge_to_update, int timer_amount, timer_d *timers) const
 {
@@ -278,7 +287,7 @@ void cuda_simulator::simulate_2(uneven_list<edge_d> *node_to_edge, uneven_list<g
     constexpr int parallel_degree = 32;
     constexpr int threads_n = 80;
     constexpr int simulation_amounts = 100;
-    // constexpr int sim_count = 1;
+    constexpr int sim_count = 1;
 
     const int result_size = parallel_degree*threads_n*simulation_amounts;
     curandState* state;
