@@ -13,6 +13,7 @@
 #include "update_d.h"
 #include "timer_d.h"
 #include "cuda_simulator.h"
+#include "stochastic_model.h"
 
 int main()
 {
@@ -155,17 +156,18 @@ int main()
 
     //printf("yasss girl: %d %d %d %d\n", node_to_edge.max_elements_, node_to_edge.max_index_, node_to_edge_d->max_elements_, node_to_edge_d->max_index_);
 
-    
+    const stochastic_model model(node_to_edge_d, node_to_invariant_d,
+        edge_to_guard_d, edge_to_update_d, timers_d, 2);
     
     cuda_simulator sim;
-    sim.simulate_2(node_to_edge_d, node_to_invariant_d, edge_to_guard_d, edge_to_update_d, 2, timers_d);
-    
-    
-    // array_info<guard_d> hej = node_to_invariant.get_index(0);
-    //
-    // for(int i = 0; i < hej.size; i++) {
-    //     printf("%d -> %d", hej.arr[i].get_timer_id(), (int)hej.arr[i].get_value());
-    // }
+    simulation_strategy strategy = {
+        32,
+        80,
+        1000,
+        1,
+        1000
+    };
+    sim.simulate(&model, &strategy);
 
     return 0;
 }

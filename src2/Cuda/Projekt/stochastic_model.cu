@@ -1,5 +1,4 @@
 ﻿#include "stochastic_model.h"
-
 #include <assert.h>
 #include <ctime>
 
@@ -26,7 +25,6 @@ GPU array_info<edge_d> stochastic_model::get_node_edges(const int node_id) const
 GPU array_info<guard_d> stochastic_model::get_node_invariants(const int node_id) const
 {
     return this->node_to_invariant_->get_index(node_id);
-
 }
 
 GPU array_info<guard_d> stochastic_model::get_edge_guards(const int edge_id) const
@@ -47,11 +45,11 @@ GPU void stochastic_model::traverse_edge_update(const int edge_id, const array_i
 
     for (int i = 0; i < updates.size; ++i)
     {
-        update_d update = updates.arr[i];
-        const int timer_id = update.get_timer_id();
-        timer_d timer = local_timers->arr[timer_id];
+        update_d* update = &updates.arr[i];
+        const int timer_id = update->get_timer_id();
+        timer_d* timer = &local_timers->arr[timer_id];
 
-        timer.set_time(update.get_value());
+        timer->set_time(update->get_value());
     }
     
     updates.free_arr();
