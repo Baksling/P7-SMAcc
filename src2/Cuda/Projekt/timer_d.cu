@@ -37,8 +37,3 @@ GPU timer_d timer_d::copy() const
 {
     return timer_d(this->id_, this->value_);
 }
-
-int timer_d::get_id() const
-{
-    return this->id_;
-}

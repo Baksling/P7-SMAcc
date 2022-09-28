@@ -10,6 +10,7 @@
 #include "../Cuda/Projekt/timer_d.h"
 #include "../Cuda/Projekt/update_d.h"
 #include "../Cuda/Projekt/uneven_list.h"
+#include <map>
 
 class guard_d;
 using namespace std;
@@ -27,11 +28,14 @@ class UPAALXMLParser
 {
 private:
     int init_node_id_;
+    list<timer_d> timers_;
+    map<string, int> timers_map_;
     list<node_d> nodes_;
     list<list<edge_d>> edge_list_;
     list<list<guard_d>> guard_list_;
     list<list<guard_d>> invariance_list_;
     list<list<update_d>> update_list_;
+    int get_timer_id(string expr) const;
     void init_lists(pugi::xml_document* doc);
 public:
     UPAALXMLParser();

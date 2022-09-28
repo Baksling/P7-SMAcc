@@ -5,12 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c81c9d2a-66d3-4b0c-b40b-c667cea459e8" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/UPAALParser/cursedShit.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/UPAALParser/test3.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Projekt/cuda_simulator.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/cuda_simulator.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/edge_d.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/edge_d.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/edge_d.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/edge_d.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/timer_d.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/timer_d.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/timer_d.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/timer_d.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/UPAALParser/UPAALXMLParser.cu" beforeDir="false" afterPath="$PROJECT_DIR$/UPAALParser/UPAALXMLParser.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UPAALParser/test2.xml" beforeDir="false" afterPath="$PROJECT_DIR$/UPAALParser/test2.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/UPAALParser/UPAALXMLParser.h" beforeDir="false" afterPath="$PROJECT_DIR$/UPAALParser/UPAALXMLParser.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/UPAALParser/sample.xml" beforeDir="false" afterPath="$PROJECT_DIR$/UPAALParser/lilleShit.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src2.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/src2.vcxproj" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -26,14 +30,14 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -42,7 +46,8 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1664177633762</updated>
-      <workItem from="1664177658377" duration="7921000" />
+      <workItem from="1664177658377" duration="10911000" />
+      <workItem from="1664198137728" duration="10781000" />
     </task>
     <servers />
   </component>

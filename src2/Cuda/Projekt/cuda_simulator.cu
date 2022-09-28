@@ -286,7 +286,7 @@ void cuda_simulator::simulate_2(uneven_list<edge_d> *node_to_edge, uneven_list<g
 
     constexpr int parallel_degree = 32;
     constexpr int threads_n = 80;
-    constexpr int simulation_amounts = 100;
+    constexpr int simulation_amounts = 30;
     constexpr int sim_count = 1;
 
     const int result_size = parallel_degree*threads_n*simulation_amounts;
@@ -310,7 +310,7 @@ void cuda_simulator::simulate_2(uneven_list<edge_d> *node_to_edge, uneven_list<g
 
     //move options to device
     model_options* options_d = nullptr;
-    const model_options options = { simulation_amounts,20000, static_cast<unsigned long>(time(nullptr)) };
+    const model_options options = { simulation_amounts,1000, static_cast<unsigned long>(time(nullptr)) };
     cudaMalloc(&options_d, sizeof(model_options));
     cudaMemcpy(options_d, &options, sizeof(model_options), cudaMemcpyHostToDevice);
     
