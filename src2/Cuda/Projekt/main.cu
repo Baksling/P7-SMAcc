@@ -117,24 +117,21 @@ int main(int argc, char* argv[])
     update_list.push_back(update_4_);
 
     // Timers
-    int timer_count = 2;
-    timer_d* timer_list;
-    timer_list = (timer_d*)malloc(sizeof(timer_d) * timer_count);
-    timer_list[0] = timer_d(0, 0);
-    timer_list[1] = timer_d(1, 0);
+    // int timer_count = 2;
+    // timer_d* timer_list;
+    // timer_list = (timer_d*)malloc(sizeof(timer_d) * timer_count);
+    // timer_list[0] = timer_d(0, 0);
+    // timer_list[1] = timer_d(1, 0);
     
-    uneven_list<edge_d> node_to_edge(&edge_list, 5);
-    uneven_list<guard_d> node_to_invariant(&invariant_list, 5);
-    uneven_list<guard_d> edge_to_guard(&guard_list, 5);
-    uneven_list<update_d> edge_to_update(&update_list, 5);
+    // uneven_list<edge_d> node_to_edge(&edge_list, 5);
+    // uneven_list<guard_d> node_to_invariant(&invariant_list, 5);
+    // uneven_list<guard_d> edge_to_guard(&guard_list, 5);
+    // uneven_list<update_d> edge_to_update(&update_list, 5);
 
     UPAALXMLParser parser;
-    auto p = parser.parse_xml(argv[1]);
+    auto model = parser.parse_xml(argv[1]);
 
-    uneven_list<edge_d> node_to_edge = p.get_node_edges();
-    uneven_list<guard_d> node_to_invariant = p.get_node_invariants();
-    uneven_list<guard_d> edge_to_guard = p.get_edge_guards();
-    uneven_list<update_d> edge_to_update = p.get_updates();
+
     
     // uneven_list<edge_d> node_to_edge(&edge_list, 3);
     // uneven_list<guard_d> node_to_invariant(&invariant_list, 3);
@@ -180,8 +177,8 @@ int main(int argc, char* argv[])
     //     edge_to_guard_d, edge_to_update_d, timers_d, 2);
 
     list<void*> free_list = list<void*>();
-    const stochastic_model model(&node_to_edge, &node_to_invariant,
-        &edge_to_guard, &edge_to_update, timer_list, timer_count);
+    // const stochastic_model model(&node_to_edge, &node_to_invariant,
+    //     &edge_to_guard, &edge_to_update, timer_list, timer_count);
     
     const cuda_simulator sim = cuda_simulator();
     simulation_strategy strategy = {
@@ -193,7 +190,7 @@ int main(int argc, char* argv[])
     };
     sim.simulate(&model, &strategy, &free_list);
 
-    free(timer_list);
+    // free(timer_list);
     for(void* p : free_list)
     {
         cudaFree(p);
