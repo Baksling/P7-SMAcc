@@ -47,5 +47,5 @@ public:
         GPU void reset_timers(const array_info<timer_d>* timers) const;
 
         //allocation
-        void cuda_allocate(stochastic_model** p) const;
+        void cuda_allocate(stochastic_model** p, list<void*>* free_list) const;
 };
