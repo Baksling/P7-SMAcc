@@ -89,8 +89,36 @@ GPU void stochastic_model::reset_timers(const array_info<timer_d>* timers) const
     
 }
 
-void stochastic_model::cuda_allocate(stochastic_model** p) const
+void stochastic_model::cuda_allocate(stochastic_model** p, list<void*>* free_list) const
 {
+    //move internal lists to cuda    
+    uneven_list<edge_d>* node_to_edge_d = nullptr;
+    this->node_to_edge_->cuda_allocate(&node_to_edge_d, free_list);
+    
+    uneven_list<guard_d>* node_to_invariant_d = nullptr;
+    this->node_to_invariant_->cuda_allocate(&node_to_invariant_d, free_list);
+
+    uneven_list<guard_d>* edge_to_guard_d = nullptr;
+    this->edge_to_guard_->cuda_allocate(&edge_to_guard_d, free_list);
+
+    uneven_list<update_d>* edge_to_update_d = nullptr;
+    this->edge_to_update_->cuda_allocate(&edge_to_update_d, free_list);
+
+    //move timers to cuda
+    timer_d* timers_d = nullptr;
+    cudaMalloc(&timers_d, sizeof(timer_d)*this->timer_count_);
+    free_list->push_back(timers_d);
+    cudaMemcpy(timers_d, this->timers_, sizeof(timer_d)*this->timer_count_, cudaMemcpyHostToDevice);
+
+    //create model with cuda pointers
+    const stochastic_model model = stochastic_model(
+        node_to_edge_d, node_to_invariant_d,
+        edge_to_guard_d, edge_to_update_d,
+        timers_d, this->timer_count_);
+
+    //move model with cuda pointers to device. Add to free list.
     cudaMalloc(p, sizeof(stochastic_model));
-    cudaMemcpy(*p, this, sizeof(stochastic_model), cudaMemcpyHostToDevice);
+    free_list->push_back((*p));
+    cudaMemcpy((*p), &model, sizeof(stochastic_model), cudaMemcpyHostToDevice);
+
 }

@@ -29,7 +29,7 @@ class cuda_simulator
 
 public:
     cuda_simulator();
-    void simulate(const stochastic_model* model, const simulation_strategy* strategy) const;
+    void simulate(const stochastic_model* model, const simulation_strategy* strategy, list<void*>* free_list) const;
 };
 
 #endif // CUDA_SIMULATOR_H

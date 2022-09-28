@@ -183,7 +183,6 @@ __global__ void simulate_d_2(
         {
             if(steps >= options->max_steps_pr_sim)
             {
-                output[sim_id] = NOT_GOAL_STATE;
                 break;
             }
             steps++;
@@ -192,7 +191,6 @@ __global__ void simulate_d_2(
             if (!validate_guards(&invariants, &internal_timers))
             {
                 invariants.free_arr();
-                output[sim_id] = NOT_GOAL_STATE;
                 break;
             }
 
@@ -205,7 +203,6 @@ __global__ void simulate_d_2(
             if (edges.size <= 0) //current edge has no outgoing edges.
             {
                 edges.free_arr();
-                output[sim_id] = NOT_GOAL_STATE;
                 break;
             }
 
@@ -227,10 +224,12 @@ __global__ void simulate_d_2(
 
             if(model->is_goal_node(current_node))
             {
-                output[sim_id] = current_node;
                 break;
             }
         }
+
+        //record final location
+        output[sim_id] = current_node;
     }
 
     internal_timers.free_arr();
@@ -277,7 +276,9 @@ void count_results(const int total_simulations,
     }
 }
 
-void cuda_simulator::simulate(const stochastic_model* model, const simulation_strategy* strategy) const
+
+//Expects all parameters to be on the host.
+void cuda_simulator::simulate(const stochastic_model* model, const simulation_strategy* strategy, list<void*>* free_list) const
 {
     const steady_clock::time_point start = steady_clock::now();
 
@@ -287,14 +288,12 @@ void cuda_simulator::simulate(const stochastic_model* model, const simulation_st
     cudaMalloc(&state, sizeof(curandState) * strategy->parallel_degree * strategy->threads_n);
     
     int* results = nullptr;
-    int* local_results = static_cast<int*>(malloc(sizeof(int)*total_simulations));
     cudaMalloc(&results, sizeof(int)*total_simulations);
-    cudaMemcpy(results, local_results, sizeof(int)*total_simulations, cudaMemcpyHostToDevice);
     
     //move model to device
+    
     stochastic_model* model_d = nullptr;
-    model->cuda_allocate(&model_d);
-
+    model->cuda_allocate(&model_d, free_list);
     //move options to device
     model_options* options_d = nullptr;
     const model_options options = {
@@ -305,6 +304,7 @@ void cuda_simulator::simulate(const stochastic_model* model, const simulation_st
     cudaMalloc(&options_d, sizeof(model_options));
     cudaMemcpy(options_d, &options, sizeof(model_options), cudaMemcpyHostToDevice);
 
+    
     //run simulations
     simulate_d_2<<<strategy->parallel_degree, strategy->threads_n>>>(
         model_d, options_d, state, results);
@@ -316,6 +316,7 @@ void cuda_simulator::simulate(const stochastic_model* model, const simulation_st
     cout << "I ran for: " << duration_cast<milliseconds>(steady_clock::now() - start).count() << "[ms] \n";
 
     //copy results from device to host
+    int* local_results = static_cast<int*>(malloc(sizeof(int)*total_simulations));
     cudaMemcpy(local_results, results, sizeof(int)*total_simulations, cudaMemcpyDeviceToHost);
 
     //count the results
@@ -325,12 +326,12 @@ void cuda_simulator::simulate(const stochastic_model* model, const simulation_st
     print_results(&node_results, total_simulations);
 
     //free heap allocated and cuda memory
+    //model is not handled here, as it is added to the free list.
+    //only the local instantiated memory is freed here.
     free(local_results);
     cudaFree(results);
     cudaFree(options_d);
-    cudaFree(model_d);
     cudaFree(state);
-    return;
 }
 
 
