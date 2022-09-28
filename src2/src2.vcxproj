@@ -203,7 +203,7 @@
     <ClInclude Include="Update.h" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="UPAALParser\cursedShit.xml" />
+    <Content Include="UPAALParser\Lol.xml" />
     <Content Include="UPAALParser\lilleShit.xml" />
     <Content Include="UPAALParser\sample1.xml" />
     <Content Include="UPAALParser\test2.xml" />

@@ -114,18 +114,14 @@ int main(int argc, char* argv[])
     update_list.push_back(update_4_);
 
     // Timers
-    timer_d* timer_list;
-    timer_list = (timer_d*)malloc(sizeof(timer_d) * 2);
-    timer_list[0] = timer_d(0, 0);
-    timer_list[1] = timer_d(1, 0);
-    
-    UPAALXMLParser parser;
-    auto p = parser.parse_xml(&timer_list[0], argv[1]);
 
-    uneven_list<edge_d> node_to_edge = p.edge;
-    uneven_list<guard_d> node_to_invariant = p.invariance;
-    uneven_list<guard_d> edge_to_guard = p.guard;
-    uneven_list<update_d> edge_to_update = p.update;
+    UPAALXMLParser parser;
+    auto p = parser.parse_xml(argv[1]);
+
+    uneven_list<edge_d> node_to_edge = p.get_node_edges();
+    uneven_list<guard_d> node_to_invariant = p.get_node_invariants();
+    uneven_list<guard_d> edge_to_guard = p.get_edge_guards();
+    uneven_list<update_d> edge_to_update = p.get_updates();
     
     // uneven_list<edge_d> node_to_edge(&edge_list, 3);
     // uneven_list<guard_d> node_to_invariant(&invariant_list, 3);
@@ -150,7 +146,7 @@ int main(int argc, char* argv[])
     cudaMalloc((void**)&node_to_invariant_d, sizeof(uneven_list<guard_d>));
     cudaMalloc((void**)&edge_to_guard_d, sizeof(uneven_list<guard_d>));
     cudaMalloc((void**)&edge_to_update_d, sizeof(uneven_list<update_d>));
-    cudaMalloc((void**)&timers_d, sizeof(timer_d) * 2);
+    cudaMalloc((void**)&timers_d, sizeof(timer_d) * p.copy_timers().size);
 
     
     // Copy memory to device
@@ -163,7 +159,7 @@ int main(int argc, char* argv[])
     cudaMemcpy(node_to_invariant_d, &node_to_invariant, sizeof(uneven_list<guard_d>), cudaMemcpyHostToDevice);
     cudaMemcpy(edge_to_guard_d, &edge_to_guard, sizeof(uneven_list<guard_d>), cudaMemcpyHostToDevice);
     cudaMemcpy(edge_to_update_d, &edge_to_update, sizeof(uneven_list<update_d>), cudaMemcpyHostToDevice);
-    cudaMemcpy(timers_d, timer_list, sizeof(timer_d) * 2, cudaMemcpyHostToDevice);
+    cudaMemcpy(timers_d, p.copy_timers().arr, sizeof(timer_d) * p.copy_timers().size, cudaMemcpyHostToDevice);
 
     //printf("yasss girl: %d %d %d %d\n", node_to_edge.max_elements_, node_to_edge.max_index_, node_to_edge_d->max_elements_, node_to_edge_d->max_index_);
 

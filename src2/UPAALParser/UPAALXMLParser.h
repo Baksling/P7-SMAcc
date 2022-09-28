@@ -10,25 +10,18 @@
 #include "../Cuda/Projekt/timer_d.h"
 #include "../Cuda/Projekt/update_d.h"
 #include "../Cuda/Projekt/uneven_list.h"
+#include "../Cuda/Projekt/stochastic_model.h"
 #include <map>
 
 class guard_d;
 using namespace std;
 
-struct parser_output
-{
-    uneven_list<edge_d> edge;
-    uneven_list<guard_d> invariance;
-    uneven_list<guard_d> guard;
-    uneven_list<update_d> update;
-};
-
-
 class UPAALXMLParser
 {
 private:
     int init_node_id_;
-    list<timer_d> timers_;
+    timer_d* timer_list_;
+    int timer_amount_ = 0;
     map<string, int> timers_map_;
     list<node_d> nodes_;
     list<list<edge_d>> edge_list_;
@@ -39,6 +32,6 @@ private:
     void init_lists(pugi::xml_document* doc);
 public:
     UPAALXMLParser();
-    __host__ parser_output parse_xml(timer_d* t, char* file_path, int goal_node_id = 1);
+    __host__ stochastic_model parse_xml(char* file_path);
 };
 #endif

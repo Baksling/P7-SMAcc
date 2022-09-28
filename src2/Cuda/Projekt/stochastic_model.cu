@@ -49,9 +49,9 @@ GPU void stochastic_model::traverse_edge_update(const int edge_id, const array_i
     {
         update_d update = updates.arr[i];
         const int timer_id = update.get_timer_id();
-        timer_d timer = local_timers->arr[timer_id];
+        timer_d* timer = &local_timers->arr[timer_id];
 
-        timer.set_time(update.get_value());
+        timer->set_time(update.get_value());
     }
     
     updates.free_arr();
@@ -64,7 +64,7 @@ GPU int stochastic_model::get_start_node() const
 
 GPU bool stochastic_model::is_goal_node(int node_id) const
 {
-    return node_id == 2;
+    return node_id == 3;
 }
 
 GPU array_info<timer_d> stochastic_model::copy_timers() const

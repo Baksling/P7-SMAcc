@@ -5,15 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c81c9d2a-66d3-4b0c-b40b-c667cea459e8" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/UPAALParser/cursedShit.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/UPAALParser/test3.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/UPAALParser/Lol.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/cuda_simulator.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/cuda_simulator.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/timer_d.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/timer_d.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/timer_d.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/timer_d.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/main.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/main.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/stochastic_model.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/stochastic_model.cu" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/UPAALParser/UPAALXMLParser.cu" beforeDir="false" afterPath="$PROJECT_DIR$/UPAALParser/UPAALXMLParser.cu" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/UPAALParser/UPAALXMLParser.h" beforeDir="false" afterPath="$PROJECT_DIR$/UPAALParser/UPAALXMLParser.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UPAALParser/sample.xml" beforeDir="false" afterPath="$PROJECT_DIR$/UPAALParser/lilleShit.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/UPAALParser/cursedShit.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src2.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/src2.vcxproj" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -47,7 +45,7 @@
       <option name="presentableId" value="Default" />
       <updated>1664177633762</updated>
       <workItem from="1664177658377" duration="10911000" />
-      <workItem from="1664198137728" duration="10781000" />
+      <workItem from="1664198137728" duration="18198000" />
     </task>
     <servers />
   </component>
