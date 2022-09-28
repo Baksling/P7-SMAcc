@@ -48,4 +48,7 @@ public:
 
         //allocation
         void cuda_allocate(stochastic_model** p, list<void*>* free_list) const;
+
+        //misc
+        CPU GPU void pretty_print() const;
 };

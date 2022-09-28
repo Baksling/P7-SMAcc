@@ -304,7 +304,7 @@ void cuda_simulator::simulate(const stochastic_model* model, const simulation_st
     cudaMalloc(&options_d, sizeof(model_options));
     cudaMemcpy(options_d, &options, sizeof(model_options), cudaMemcpyHostToDevice);
 
-    
+    model->pretty_print();
     //run simulations
     simulate_d_2<<<strategy->parallel_degree, strategy->threads_n>>>(
         model_d, options_d, state, results);

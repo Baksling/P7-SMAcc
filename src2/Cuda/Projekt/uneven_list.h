@@ -69,7 +69,7 @@ public:
         this->data_ = arr;
         this->max_elements_ = items;
     }
-    __host__ __device__ array_info<T> get_index(int index)
+    CPU GPU array_info<T> get_index(int index)
     {
         if (index >= this->max_index_ || index < 0)
         {
@@ -119,6 +119,11 @@ public:
         cudaMemcpy(data_lst, this->data_, sizeof(T) * max_elements_, cudaMemcpyHostToDevice);
         cudaMemcpy((*location), lst, sizeof(uneven_list<T>), cudaMemcpyHostToDevice);
         free(lst);
+    }
+
+    CPU GPU int get_index_size() const
+    {
+        return this->max_index_;
     }
 
     ~uneven_list()
