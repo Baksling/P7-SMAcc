@@ -1,4 +1,5 @@
 ﻿#include "main.h"
+#include "cuda_map.h"
 #define GPU __device__
 #define CPU __host__
 #include <cuda.h>
