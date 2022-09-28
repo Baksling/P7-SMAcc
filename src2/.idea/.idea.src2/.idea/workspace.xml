@@ -5,10 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="eb9e7d46-655a-4845-90a7-5d80b5bd2ed2" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Cuda/Projekt/cuda_map.cu" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Cuda/Projekt/cuda_map.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/main.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/main.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src2.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/src2.vcxproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/cuda_simulator.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/cuda_simulator.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/stochastic_model.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/stochastic_model.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/stochastic_model.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/stochastic_model.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/timer_d.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/timer_d.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/timer_d.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/timer_d.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/uneven_list.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/uneven_list.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/update_d.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/update_d.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/update_d.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/update_d.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -90,7 +95,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1664360640391</updated>
-      <workItem from="1664360648623" duration="4722000" />
+      <workItem from="1664360648623" duration="7720000" />
     </task>
     <servers />
   </component>

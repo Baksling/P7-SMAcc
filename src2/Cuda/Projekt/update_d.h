@@ -15,8 +15,8 @@ private:
     double value_;
 public:
     update_d(int timer_id, double value);
-    GPU int get_timer_id();
-    GPU double get_value();
+    CPU GPU int get_timer_id();
+    CPU GPU double get_value();
 };
 
 

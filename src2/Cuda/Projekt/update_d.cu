@@ -12,10 +12,10 @@ update_d::update_d(int timer_id, double value) {
     this->value_ = value;
 }
 
-GPU int update_d::get_timer_id() {
+CPU GPU int update_d::get_timer_id() {
     return this->timer_id_;
 }
 
-GPU double update_d::get_value() {
+CPU GPU double update_d::get_value() {
     return this->value_;
 }

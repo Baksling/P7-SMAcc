@@ -120,5 +120,33 @@ void stochastic_model::cuda_allocate(stochastic_model** p, list<void*>* free_lis
     cudaMalloc(p, sizeof(stochastic_model));
     free_list->push_back((*p));
     cudaMemcpy((*p), &model, sizeof(stochastic_model), cudaMemcpyHostToDevice);
+}
 
+CPU GPU void stochastic_model::pretty_print() const
+{
+    for (int node_id = 0; node_id < this->node_to_edge_->get_index_size(); ++node_id)
+    {
+        printf("Node: %d \n", node_id);
+        array_info<edge_d> edges = this->node_to_edge_->get_index(node_id);
+        for (int edge_id = 0; edge_id < edges.size; ++edge_id)
+        {
+            array_info<guard_d> guards = this->edge_to_guard_->get_index(edge_id);
+            array_info<update_d> updates = this->edge_to_update_->get_index(edge_id);
+            printf("    Edge id: %d, %d -> %d \n", edge_id, node_id, edges.arr[edge_id].get_dest_node());
+            printf("        Guards amount: %d \n", guards.size);
+            printf("        Updates: %d \n", updates.size);
+            for (int update_id = 0; update_id < updates.size; ++update_id)
+            {
+                printf("            Clock: %d, Value: %f \n", updates.arr[update_id].get_timer_id(), updates.arr[update_id].get_value());
+            }
+            updates.free_arr();
+            guards.free_arr();
+        }
+        edges.free_arr();
+    }
+    printf("Clocks %d \n", this->timer_count_);
+    for (int clock_id = 0; clock_id < this->timer_count_; ++clock_id)
+    {
+        printf("    Clock: %d, Value: %f \n", this->timers_[clock_id].get_id(), this->timers_->get_value());       
+    }
 }
