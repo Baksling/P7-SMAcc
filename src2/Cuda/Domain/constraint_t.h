@@ -48,32 +48,32 @@ public:
     GPU double max_time_progression(const lend_array<clock_timer_t>* timers, double max_progression = 100.0);
     
     //FACTORY CONSTRUCTORS
-    inline static constraint_t less_equal_v(int timer_id, float value);
-    inline static constraint_t less_equal_t(int timer_id, int timer_id2);
+    static constraint_t less_equal_v(int timer_id, float value);
+    static constraint_t less_equal_t(int timer_id, int timer_id2);
     
-    inline static constraint_t greater_equal_v(int timer_id, float value);
-    inline static constraint_t greater_equal_t(int timer_id, int timer_id2);
+    static constraint_t greater_equal_v(int timer_id, float value);
+    static constraint_t greater_equal_t(int timer_id, int timer_id2);
     
-    inline static constraint_t less_v(int timer_id, float value);
-    inline static constraint_t less_t(int timer_id, int timer_id2);
+    static constraint_t less_v(int timer_id, float value);
+    static constraint_t less_t(int timer_id, int timer_id2);
     
-    inline static constraint_t greater_v(int timer_id, float value);
-    inline static constraint_t greater_t(int timer_id, int timer_id2);
+    static constraint_t greater_v(int timer_id, float value);
+    static constraint_t greater_t(int timer_id, int timer_id2);
     
-    inline static constraint_t equal_v(int timer_id, float value);
-    inline static constraint_t equal_t(int timer_id, int timer_id2);
+    static constraint_t equal_v(int timer_id, float value);
+    static constraint_t equal_t(int timer_id, int timer_id2);
 
-    inline static constraint_t not_equal_v(int timer_id, float value);
-    inline static constraint_t not_equal_t(int timer_id, int timer_id2);
+    static constraint_t not_equal_v(int timer_id, float value);
+    static constraint_t not_equal_t(int timer_id, int timer_id2);
 
 
     //----------------|boolean constraints|----------------
     
-    inline static constraint_t not_constraint(constraint_t* constraint);
+    static constraint_t not_constraint(constraint_t* constraint);
 
-    inline static constraint_t or_constraint(constraint_t* constraint1, constraint_t* constraint2);
+    static constraint_t or_constraint(constraint_t* constraint1, constraint_t* constraint2);
     
-    inline static constraint_t and_constraint(constraint_t* constraint1, constraint_t* constraint2);
+    static constraint_t and_constraint(constraint_t* constraint1, constraint_t* constraint2);
 };
 
 #endif

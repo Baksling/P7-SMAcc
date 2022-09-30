@@ -1,24 +1,6 @@
 ﻿#include "uppaal_tree_parser.h"
-
-#include "uppaal_tree_parser.h"
-#include <iostream>
-#include "pugixml.hpp"
-#include <list>
-#include "../Domain/node_t.h"
-#include "../Domain/update_t.h"
-#include "../Domain/constraint_t.h"
 //#include "../Domain/uneven_list.h"
-#include "../Domain/timer_t.h"
-#include <cuda.h>
-#include <cuda_runtime.h>
-#include <map>
-#include <vector>
-#include <algorithm>
-#include <string>
-#include <vector>
-#include <sstream>
 
-#include "../../Node.h"
 
 #define GPU __device__
 #define CPU __host__
@@ -109,7 +91,7 @@ template <typename T> T* list_to_arr(list<T> l)
 {
     T* arr = (T*)malloc(sizeof(T)*l.size());
     int k = 0;
-    for (int const &i: l) {
+    for (T const &i: l) {
         arr[k++] = i;
     }
     
@@ -120,33 +102,33 @@ int xml_id_to_int(string id_string)
 {
     return stoi(id_string.replace(0,2,""));
 }
-
-void print1(list<edge_t> const &list)
-{
-    for (auto i: list) {
-        std::cout << i.get_weight() << " <-1-> " << i.get_weight()  << std::endl;
-    }
-}
-
-void print2(list<list<edge_t>> const &list)
-{
-    for (auto const &i: list) {
-        for (auto q: i) {
-
-        }
-    }
-}
-
-void print_2_guard(list<list<guard_d>> const &list)
-{
-    // int index = 0;
-    // for (auto const &i: list) {
-    //     cout << " "<< index++ << ":"<<endl;
-    //     for (auto q: i) {
-    //         std::cout << q.get_value() << " -> " << q.get_type()  << std::endl;
-    //     }
-    // }
-}
+//
+// void print1(list<edge_t> const &list)
+// {
+//     for (auto i: list) {
+//         std::cout << i.get_weight() << " <-1-> " << i.get_weight()  << std::endl;
+//     }
+// }
+//
+// void print2(list<list<edge_t>> const &list)
+// {
+//     for (auto const &i: list) {
+//         for (auto q: i) {
+//
+//         }
+//     }
+// // }
+//
+// void print_2_guard(list<list<constraint_t>> const &list)
+// {
+//     // int index = 0;
+//     // for (auto const &i: list) {
+//     //     cout << " "<< index++ << ":"<<endl;
+//     //     for (auto q: i) {
+//     //         std::cout << q.get_value() << " -> " << q.get_type()  << std::endl;
+//     //     }
+//     // }
+// }
 
 int uppaal_tree_parser::get_timer_id(string expr) const
 {
@@ -211,11 +193,11 @@ void uppaal_tree_parser::init_lists(xml_document* doc)
             timers_map_.insert_or_assign(clock_without,var_amount++);
         }
 
-        timer_list_ = static_cast<timer_t*>(malloc(sizeof(timer_t) * var_amount));
+        timer_list_ = static_cast<clock_timer_t*>(malloc(sizeof(clock_timer_t) * var_amount));
         timer_amount_ = var_amount;
         for (int i = 0; i < var_amount; i++)
         {
-            timer_list_[i] = timer_t(i, 0);
+            timer_list_[i] = clock_timer_t(i, 0);
         }
         
         for (pugi::xml_node locs: templates.children("location"))
@@ -237,7 +219,7 @@ void uppaal_tree_parser::init_lists(xml_document* doc)
         
         for (pugi::xml_node trans: templates.children("transition"))
         {
-            guard_list_.push_back(list<guard_d>());
+            guard_list_.push_back(list<constraint_t>());
             update_list_.push_back(list<update_t>());
         }
     }
@@ -249,12 +231,12 @@ uppaal_tree_parser::uppaal_tree_parser()
 
 node_t* uppaal_tree_parser::get_node(int target_id)
 {
-    for(auto node: nodes_)
+    for(node_t* node: *nodes_)
     {
-        if(node.get_id() == target_id)
-            return &node;
+        if(node->get_id() == target_id)
+            return node;
     }
-    return &nodes_.front();
+    return nodes_->front();
 }
 
 template <typename T> void insert_into_list(list<list<T>>* t_list, int index, T item)
@@ -280,7 +262,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
     
     list<node_t> nodes__;
     int egde_id_ = 0;
-    int invariant_id = 0;
+    //int invariant_id = 0;
 
     init_lists(&doc);
     
@@ -310,7 +292,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                     insert_into_list(&invariance_list_, node_id, get_constraint(expr, get_timer_id(expr), get_expr_value_float(expr)));
                 }
             }
-            nodes_.push_back(node_t(node_id, false, list_to_arr(invariants), is_goal));
+            nodes_->push_back(new node_t(node_id, false, list_to_arr(invariants), is_goal));
         }
 
         for (pugi::xml_node locs: templates.children("branchpoint"))
@@ -318,7 +300,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             string string_id = locs.attribute("id").as_string();
             const int node_id = xml_id_to_int(string_id);
 
-            nodes_.push_back(node_t(node_id, true));
+            nodes_->push_back(new node_t(node_id, true));
         }
 
         string init_node = templates.child("init").attribute("ref").as_string();
@@ -376,20 +358,20 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
     }
     
     // auto edges = new uneven_list<edge_d>(&edge_list_, edge_list_.size());
-    // auto invariants = new uneven_list<guard_d>(&invariance_list_, invariance_list_.size());
-    // auto guards = new uneven_list<guard_d>(&guard_list_, guard_list_.size());
+    // auto invariants = new uneven_list<constraint_t>(&invariance_list_, invariance_list_.size());
+    // auto guards = new uneven_list<constraint_t>(&guard_list_, guard_list_.size());
     // auto updates = new uneven_list<update_d>(&update_list_, update_list_.size());
-    // list<guard_d> guard_0_;
+    // list<constraint_t> guard_0_;
 
-    for(auto node: nodes_)
+    for(node_t* node: *nodes_)
     {
-        node.set_edges(&node_edge_map.at(node.get_id()));
+        node->set_edges(&node_edge_map.at(node->get_id()));
     }
 
     //print_2_guard(guard_list_);
     
     //int* branchpoint_nodes_arr = list_to_arr(branchpoint_nodes);
     
-    return stochastic_model_t(get_node(init_node_id_), new array_t<timer_t>(timer_list_, timer_amount_));
+    return stochastic_model_t(get_node(init_node_id_), new array_t<clock_timer_t>(timer_list_, timer_amount_));
 }
 
