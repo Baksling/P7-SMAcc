@@ -31,7 +31,8 @@ CPU GPU double guard_d::get_value() const
     return this->value_;
 }
 
-GPU bool guard_d::validate(double value) {
+GPU bool guard_d::validate(const double value) const
+{
     //printf("Validating %d, value: %f, target %f %d id: %d \n", this->timer_id_, value, this->value_, this->type_, this->id_);
     switch (this->type_) {
         case logical_operator::greater_equal: return value >= this->value_;

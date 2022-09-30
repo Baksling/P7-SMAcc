@@ -2,13 +2,11 @@
 // Created by Patrick on 19-09-2022.
 //
 
-#define GPU __device__
-#define CPU __host__
-
 #ifndef SRC2_SLN_TIMER_D_H
 #define SRC2_SLN_TIMER_D_H
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include "common.h"
 
 
 class timer_d {

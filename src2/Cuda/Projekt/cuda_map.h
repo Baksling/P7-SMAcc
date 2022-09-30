@@ -1,12 +1,16 @@
 ﻿#pragma once
 #include <stdlib.h>
 #include "common.h"
+#include <list>
+#include <cuda.h>
+#include <cuda_runtime.h>
+
 
 template<typename T, typename V>
 struct key_value_pair
 {
-    T* key;
-    V* value;
+    T key;
+    V value;
 };
 template<typename T, typename V>
 class cuda_map
@@ -14,11 +18,16 @@ class cuda_map
 private:
     key_value_pair<T, V>* store_;
     int size_;
-    CPU GPU int hash(T* item)
+    CPU GPU int hash(T item)
     {
         long p_val = reinterpret_cast<long>(item);
         return p_val % this->size_;
-    }    
+    }
+    explicit cuda_map(key_value_pair<T, V>* store, int size)
+    {
+        this->size_ = size;
+        this->store_ = store;
+    }
 public:
     explicit cuda_map(int size)
     {
@@ -30,7 +39,7 @@ public:
             this->store_[i] = pair;
         }
     }
-    CPU GPU bool set(T* key, V* value)
+    CPU GPU bool set(T key, V value)
     {
         const int hash_i = hash(key);
         for (int i = 0; i < this->size_; ++i)
@@ -50,7 +59,7 @@ public:
         }
         return false;
     }
-    CPU GPU V* get(T* key)
+    CPU GPU V* get(T key)
     {
         const int hash_i = hash(key);
         for (int i = 0; i < this->size_; ++i)
@@ -80,6 +89,22 @@ public:
             }
         }
         return false;
+    }
+
+    void cuda_allocate(cuda_map<T, V>** p, std::list<void*>* free_list)
+    {
+        //move internal store
+        key_value_pair<T,V>* store = nullptr; 
+        cudaMalloc(&store, sizeof(key_value_pair<T,V>)*this->size_);
+        free_list->push_back(store);
+        cudaMemcpy(store, this->store_, sizeof(key_value_pair<T,V>)*this->size_, cudaMemcpyHostToDevice);
+
+        
+        cudaMalloc(p, sizeof(cuda_map<T, V>));
+        free_list->push_back((*p));
+
+        const cuda_map<T, V>* cpy = new cuda_map<T, V>(store, this->size_);
+        cudaMemcpy((*p), cpy, sizeof(cuda_map<T, V>), cudaMemcpyHostToDevice);
     }
 
     ~cuda_map()

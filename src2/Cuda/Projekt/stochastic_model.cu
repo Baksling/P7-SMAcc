@@ -2,18 +2,28 @@
 #include <assert.h>
 #include <ctime>
 
+#include "constraint_d.h"
+
 using namespace std;
 
-stochastic_model::stochastic_model(uneven_list<edge_d>* node_to_edge, uneven_list<guard_d>* node_to_invariant,
-                                   uneven_list<guard_d>* edge_to_guard, uneven_list<update_d>* edge_to_update,
-                                   timer_d* timers, const int timer_count)
+stochastic_model::stochastic_model(
+    uneven_list<edge_d>* node_to_edge,
+    cuda_map<int, int>* node_to_invariants,
+    cuda_map<int, int>* edge_to_guards,
+    uneven_list<update_d>* edge_to_update,
+    constraint_d* constraints,
+    const int constraint_count,
+    timer_d* timers,
+    const int timer_count)
 {
     this->timer_count_ = timer_count;
     this->timers_ = timers;
     this->node_to_edge_ = node_to_edge;
-    this->node_to_invariant_ = node_to_invariant;
-    this->edge_to_guard_ = edge_to_guard;
+    this->node_to_invariant_ = node_to_invariants;
+    this->edge_to_guard_ = edge_to_guards;
     this->edge_to_update_ = edge_to_update;
+    this->constraints_ = constraints;
+    this->constraint_count_ = constraint_count;
 }
 
 
@@ -22,14 +32,16 @@ GPU array_info<edge_d> stochastic_model::get_node_edges(const int node_id) const
     return this->node_to_edge_->get_index(node_id);
 }
 
-GPU array_info<guard_d> stochastic_model::get_node_invariants(const int node_id) const
+GPU constraint_d* stochastic_model::get_node_invariants(const int node_id) const
 {
-    return this->node_to_invariant_->get_index(node_id);
+    const int index = *this->node_to_invariant_->get(node_id);
+    return &this->constraints_[index];
 }
 
-GPU array_info<guard_d> stochastic_model::get_edge_guards(const int edge_id) const
+GPU constraint_d* stochastic_model::get_edge_guards(const int edge_id) const
 {
-    return this->edge_to_guard_->get_index(edge_id);
+    const int index = *this->edge_to_guard_->get(edge_id);
+    return &this->constraints_[index];
 
 }
 
@@ -53,6 +65,12 @@ GPU void stochastic_model::traverse_edge_update(const int edge_id, const array_i
     }
     
     updates.free_arr();
+}
+
+array_info<constraint_d> stochastic_model::get_constraints() const
+{
+    const array_info<constraint_d> con = { this->constraints_, this->constraint_count_};
+    return con;
 }
 
 GPU int stochastic_model::get_start_node() const
@@ -95,10 +113,10 @@ void stochastic_model::cuda_allocate(stochastic_model** p, list<void*>* free_lis
     uneven_list<edge_d>* node_to_edge_d = nullptr;
     this->node_to_edge_->cuda_allocate(&node_to_edge_d, free_list);
     
-    uneven_list<guard_d>* node_to_invariant_d = nullptr;
+    cuda_map<int, int>* node_to_invariant_d = nullptr;
     this->node_to_invariant_->cuda_allocate(&node_to_invariant_d, free_list);
 
-    uneven_list<guard_d>* edge_to_guard_d = nullptr;
+    cuda_map<int, int>* edge_to_guard_d = nullptr;
     this->edge_to_guard_->cuda_allocate(&edge_to_guard_d, free_list);
 
     uneven_list<update_d>* edge_to_update_d = nullptr;
@@ -110,11 +128,22 @@ void stochastic_model::cuda_allocate(stochastic_model** p, list<void*>* free_lis
     free_list->push_back(timers_d);
     cudaMemcpy(timers_d, this->timers_, sizeof(timer_d)*this->timer_count_, cudaMemcpyHostToDevice);
 
+    //move constraints to cuda
+    constraint_d* constraints_d = nullptr;
+    cudaMalloc(&constraints_d, sizeof(constraint_d)*this->constraint_count_);
+    free_list->push_back(constraints_d);
+    cudaMemcpy(constraints_d, this->constraints_, sizeof(constraint_d)*this->constraint_count_, cudaMemcpyHostToDevice);
+    
     //create model with cuda pointers
     const stochastic_model model = stochastic_model(
-        node_to_edge_d, node_to_invariant_d,
-        edge_to_guard_d, edge_to_update_d,
-        timers_d, this->timer_count_);
+        node_to_edge_d,
+        node_to_invariant_d,
+        edge_to_guard_d,
+        edge_to_update_d,
+        constraints_d,
+        this->constraint_count_,
+        timers_d,
+        this->timer_count_);
 
     //move model with cuda pointers to device. Add to free list.
     cudaMalloc(p, sizeof(stochastic_model));
@@ -128,19 +157,21 @@ CPU GPU void stochastic_model::pretty_print() const
     {
         printf("Node: %d \n", node_id);
         array_info<edge_d> edges = this->node_to_edge_->get_index(node_id);
-        for (int edge_id = 0; edge_id < edges.size; ++edge_id)
+        for (int edge_index = 0; edge_index < edges.size; ++edge_index)
         {
-            array_info<guard_d> guards = this->edge_to_guard_->get_index(edge_id);
+            const int edge_id = edges.arr[edge_index].get_id();
+            printf("I HAVE MADE PRETTY PRINT NOT WORK. SOWY!");
+            // array_info<guard_d> guards = this->edge_to_guard_->get_index(edge_id);
             array_info<update_d> updates = this->edge_to_update_->get_index(edge_id);
-            printf("    Edge id: %d, %d -> %d \n", edge_id, node_id, edges.arr[edge_id].get_dest_node());
-            printf("        Guards amount: %d \n", guards.size);
+            printf("    Edge id: %d, %d -> %d \n", edge_id, node_id, edges.arr[edge_index].get_dest_node());
+            // printf("        Guards amount: %d \n", guards.size);
             printf("        Updates: %d \n", updates.size);
             for (int update_id = 0; update_id < updates.size; ++update_id)
             {
                 printf("            Clock: %d, Value: %f \n", updates.arr[update_id].get_timer_id(), updates.arr[update_id].get_value());
             }
             updates.free_arr();
-            guards.free_arr();
+            // guards.free_arr();
         }
         edges.free_arr();
     }

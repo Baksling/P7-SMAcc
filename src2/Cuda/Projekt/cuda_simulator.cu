@@ -1,8 +1,7 @@
 ﻿#include "cuda_simulator.h"
 
-#define GPU __device__
-#define CPU __host__
-#define NOT_GOAL_STATE -1
+#define NOT_GOAL_STATE (-1)
+#include "common.h"
 #include "uneven_list.h"
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -42,26 +41,24 @@ GPU array_info<edge_d> validate_edges(const array_info<edge_d>* edges, const sto
     int validated_i = 0;
     
     //buffer of all possible valid edges using validated_i
-    const auto valid_edges = static_cast<edge_d*>(malloc(sizeof(edge_d) * edges->size)); 
-
+    const auto valid_edges = static_cast<edge_d*>(malloc(sizeof(edge_d) * edges->size));
+    //DO NOT FREE THIS ARRAY
+    const array_info<constraint_d> constraints = model->get_constraints();
+    
     //go through all edges from current node.
     for(int i = 0; i < edges->size; i++)
     {
         //find all guards of current edge and validate its guards
-        array_info<guard_d> guards = model->get_edge_guards(edges->arr[i].get_id());
-        bool validated =  validate_guards(&guards, timers);
-        guards.free_arr();
+        const constraint_d* guard =  model->get_edge_guards(edges->arr[i].get_id());
 
         //only continue if all guards are valid.
-        if(!validated) continue;
+        if(!guard->evaluate(timers, &constraints)) continue;
 
         //check all guards of destination node.
-        guards = model->get_node_invariants(edges->arr[i].get_dest_node());
-        validated =  validate_guards(&guards, timers);
-        guards.free_arr();
+        const constraint_d* dest_invariant = model->get_node_invariants(edges->arr[i].get_dest_node());
 
         //add to valid_edges if both check succeed.
-        if (validated)
+        if (dest_invariant->evaluate(timers, &constraints))
         {
             valid_edges[validated_i] = edges->arr[i];
             validated_i++;
@@ -121,22 +118,24 @@ GPU void progress_time(const array_info<timer_d>* timers, const double differenc
 }
 
 //Finds the furthest possible time it is possible to progress in current step.
-GPU double find_least_difference(const array_info<guard_d>* invariants, const array_info<timer_d>* timers,
+GPU double find_least_difference(const list<constraint_d*>* invariants, const array_info<timer_d>* timers,
     const int max_value = 100)
 {
     double least_difference = max_value;
     
-
     //check all guards of current node
-    for (int i = 0; i < invariants->size; i++)
+    for(const constraint_d* con : invariants)
     {
-        const logical_operator guard_type = invariants->arr[i].get_type();
+        const logical_operator2 guard_type = con->get_type();
         //only relevant if it is upper bounded logical operator.
-        if(guard_type != logical_operator::less_equal && guard_type != logical_operator::less) continue;
+        if(guard_type != logical_operator2::less_equal && guard_type != logical_operator2::less) continue;
 
         //find difference in upper bounded guard value and current time.
-        const double diff = invariants->arr[i].get_value() - timers->arr[invariants->arr[i].get_timer_id()].get_value();
+        const double diff = con->get_difference(timers);
+        // const double diff = invariants.get_value() - timers->arr[invariants->arr[i].get_timer_id()].get_value();
         //if equal or higher than 0 and its smallest value, find newest lower bound.
+
+        //unlimited time is a negative number and is ignored.
         if (diff >= 0 && diff < least_difference)
             least_difference = diff;
     }
@@ -165,7 +164,7 @@ __global__ void simulate_d_2(
     curand_init(options->seed, idx, idx, &r_state[idx]);
 
     // init local timers.
-    const array_info<timer_d> internal_timers = model->copy_timers();
+    array_info<timer_d> internal_timers = model->copy_timers();
 
     for (int i = 0; i < options->simulation_amount; i++)
     {
@@ -187,17 +186,21 @@ __global__ void simulate_d_2(
             }
             steps++;
 
-            const array_info<guard_d> invariants = model->get_node_invariants(current_node);
-            if (!validate_guards(&invariants, &internal_timers))
+            //!DO NOT FREE THIS ARRAY
+            array_info<constraint_d> all_constraints =  model->get_constraints();
+            constraint_d* invariant = model->get_node_invariants(current_node);
+            // const array_info<guard_d> invariants = model->get_node_invariants(current_node);
+            if (!invariant->evaluate(&internal_timers, &all_constraints))
             {
-                invariants.free_arr();
                 break;
             }
 
+            list<constraint_d*> dependencies;
+            invariant->find_children(&dependencies, &all_constraints);
             
-            const double difference = find_least_difference(&invariants, &internal_timers);
+            
+            const double difference = find_least_difference(&dependencies, &internal_timers);
             progress_time(&internal_timers, difference, r_state, idx);
-            invariants.free_arr();
             
             const array_info<edge_d> edges = model->get_node_edges(current_node);
             if (edges.size <= 0) //current edge has no outgoing edges.
@@ -207,11 +210,11 @@ __global__ void simulate_d_2(
             }
 
             const array_info<edge_d> valid_edges = validate_edges(&edges, model, &internal_timers);
-            edge_d* edge = choose_next_edge(&valid_edges, r_state, idx);
+            const edge_d* edge = choose_next_edge(&valid_edges, r_state, idx);
             
-            if(edge == nullptr) //no traversal can be done in current step
+            if(edge == nullptr) //no traversal can be done in current step. Maybe later in time
             {
-                // printf("Stopped at node: %d \n", current_node);
+                
                 edges.free_arr();
                 valid_edges.free_arr();
                 continue;

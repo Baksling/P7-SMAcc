@@ -33,7 +33,7 @@ public:
     CPU GPU int get_timer_id() const;
     CPU GPU double get_value() const;
     CPU GPU logical_operator get_type() const;
-    CPU GPU bool validate(double value);
+    CPU GPU bool validate(const double value) const;
 };
 
 
