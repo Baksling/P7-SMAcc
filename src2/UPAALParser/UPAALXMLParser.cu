@@ -26,7 +26,6 @@ UPAALXMLParser::UPAALXMLParser() = default;
 
 logical_operator get_expr_enum(const string& expr)
 {
-
     if(expr.find("<=") != std::string::npos)
         return logical_operator::less_equal;
     if(expr.find(">=") != std::string::npos)
@@ -37,7 +36,6 @@ logical_operator get_expr_enum(const string& expr)
         return logical_operator::less;
     if(expr.find('>') != std::string::npos)
         return logical_operator::greater;
-
     throw "Operand in " + expr + " not found, sad..";
 }
 
@@ -68,9 +66,6 @@ int get_expr_value(const string& expr)
         
         if (!in_array(expr_wout_spaces[--index], {'1','2','3','4','5','6','7','8','9','0'}))
         {
-            //cout << "\n" << "AAAAA: " << expr_wout_spaces << "\n"; 
-            //cout << "HERE: " << index << " ::: " << expr_wout_spaces.substr(index+1) << " \n";
-            //cout.flush();
             return stoi(expr_wout_spaces.substr(index+1));
         }
     }
@@ -88,37 +83,32 @@ float get_expr_value_float(const string& expr)
         
         if (in_array(expr[--index], {'=',' ','<','>'}))
         {
-            cout << index << " ::: " << expr.substr(index+1) << " \n";
-            cout.flush();
             return stof(expr.substr(index+1));
         }
     }
 }
 
-template <typename T> auto list_to_arr(list<T> l)
+template <typename T> T* list_to_arr(list<T> l)
 {
-    T arr[l.size()];
+    T* arr = (T*)malloc(sizeof(T)*l.size());
     int k = 0;
     for (int const &i: l) {
         arr[k++] = i;
     }
-
+    
     return arr;
 }
 
 int xml_id_to_int(string id_string)
 {
-    cout << id_string;
     return stoi(id_string.replace(0,2,""));
 }
-
 
 void print1(list<edge_d> const &list)
 {
     for (auto i: list) {
         std::cout << i.get_id() << " <-1-> " << i.get_dest_node()  << std::endl;
     }
-    cout << "---------------------";
 }
 
 void print2(list<list<edge_d>> const &list)
@@ -128,11 +118,18 @@ void print2(list<list<edge_d>> const &list)
             std::cout << q.get_id() << " -> " << q.get_dest_node()  << std::endl;
         }
     }
-    
 }
 
-
-
+void print_2_guard(list<list<guard_d>> const &list)
+{
+    int index = 0;
+    for (auto const &i: list) {
+        cout << " "<< index++ << ":"<<endl;
+        for (auto q: i) {
+            std::cout << q.get_value() << " -> " << q.get_type()  << std::endl;
+        }
+    }
+}
 
 int UPAALXMLParser::get_timer_id(string expr) const
 {
@@ -154,14 +151,8 @@ int UPAALXMLParser::get_timer_id(string expr) const
     }
 
     string sub = expr_wout_spaces.substr(0, index);
-
-    for ( const auto &myPair : timers_map_ ) {
-        std::cout <<"KEY:"<< myPair.first << ":\n";
-    }
     
-    //cout << "::::::"<<index<<"::::::TImEr ID:" << sub << "|\n";
-    //cout << "CLOCKO::" << (timers_map_.count(sub) == 1 ?  timers_map_.at(sub) : -1) << "\n";
-    return timers_map_.count(sub) == 1 ?  timers_map_.at(sub) : throw "sum ting wrong";
+    return timers_map_.count(sub) == 1 ?  timers_map_.at(sub) : throw "sum tin wong";
 }
 
 list<string> split_expr(string expr)
@@ -188,48 +179,40 @@ void UPAALXMLParser::init_lists(xml_document* doc)
         size_t clock_end = decl.find(";");
         
         //string vars = decl.substr(clock_start, clock_end-1);
-        string t = decl.substr(clock_start+5,clock_end-1);
-        t = replace_all(t, string(" "), string(""));
+        string clocks = decl.substr(clock_start+5,clock_end-1);
+        clocks = replace_all(clocks, string(" "), string(""));
 
-        std::stringstream test(t);
-        std::string segment;
-        
-        
+        std::stringstream clocks_stream(clocks);
+        std::string clock;
         
         int var_amount = 0;
-        while(std::getline(test, segment, ','))
+        while(std::getline(clocks_stream, clock, ','))
         {
-            if (segment.find(';') != std::string::npos)
-                segment = replace_all(segment, ";", "");
-            timers_map_.insert_or_assign(segment,var_amount);
-            
+            string clock_without = clock;
+            if (clock.find(';') != std::string::npos)
+                clock_without = replace_all(clock, ";", "");
+            timers_map_.insert_or_assign(clock_without,var_amount++);
         }
 
-        timer_list_ = (timer_d*)malloc(sizeof(timer_d) * var_amount+1);
-        timer_amount_ = var_amount + 1;
-        var_amount = 0;
-        while(std::getline(test, segment, ','))
+        timer_list_ = static_cast<timer_d*>(malloc(sizeof(timer_d) * var_amount));
+        timer_amount_ = var_amount;
+        for (int i = 0; i < var_amount; i++)
         {
-            if (segment.find(';') != std::string::npos)
-                segment = replace_all(segment, ";", "");
-            timer_list_[var_amount] = timer_d(var_amount++, 0);
-            
+            timer_list_[i] = timer_d(i, 0);
         }
-        //cout << "VARS:" << t << " " << clock_start << " " << clock_end;
-        
         
         for (pugi::xml_node locs: templates.children("location"))
         {
             edge_list_.push_back(list<edge_d>());
             invariance_list_.push_back(list<guard_d>());
-            
         }
 
         for (pugi::xml_node locs: templates.children("branchpoint"))
         {
+            string string_id = locs.attribute("id").as_string();
+            branchpoint_nodes.push_back(xml_id_to_int(string_id));
             edge_list_.push_back(list<edge_d>());
             invariance_list_.push_back(list<guard_d>());
-            
         }
 
         string init_node = templates.child("init").attribute("ref").as_string();
@@ -254,7 +237,6 @@ template <typename T> void insert_into_list(list<list<T>>* t_list, int index, T 
 __host__ stochastic_model UPAALXMLParser::parse_xml(char* file_path)
 {
     string path = file_path;
-    cout << "\nParsing XML data ("+path+").....\n\n";
     xml_document doc;
     
     // load the XML file
@@ -271,7 +253,6 @@ __host__ stochastic_model UPAALXMLParser::parse_xml(char* file_path)
     
     for (pugi::xml_node templates: doc.child("nta").children("template"))
     {
-        
         for (pugi::xml_node locs: templates.children("location"))
         {
             string string_id = locs.attribute("id").as_string();
@@ -289,10 +270,8 @@ __host__ stochastic_model UPAALXMLParser::parse_xml(char* file_path)
             {
                 for(auto expr: exprs)
                 {
-                    cout << "\nA_ASDADSD:" <<expr;
                     insert_into_list(&invariance_list_, node_id, guard_d(get_timer_id(expr),get_expr_enum(expr),get_expr_value(expr),invariant_id++));
                 }
-                //cout << "\nINVARIANT:::" << invariance_list_.begin()->begin()->get_value() << " " << invariant_id++ << "\n";
             }
         }
 
@@ -316,53 +295,40 @@ __host__ stochastic_model UPAALXMLParser::parse_xml(char* file_path)
                 string expr_string = labels.child_value();
 
                 list<string> exprs = split_expr(expr_string);
-                cout << "KIND:::" << kind<<"|\n";
                 if(kind == "guard")
                 {
                     for(auto expr: exprs)
                     {
                         if (expr == "")
                             continue;
-                        cout << "\nGUARDZ:" <<expr<<"|\n";
                         insert_into_list(&guard_list_, egde_id_, guard_d(get_timer_id(expr),get_expr_enum(expr),get_expr_value(expr)));
-                        cout << "\nGINFO-  TIMERID: " << get_timer_id(expr) << "::: TYPE: "<<get_expr_enum(expr)<< "::: VAL: " << get_expr_value(expr);
                     }
-                    cout << "\n\n\n";
                 }
                 else if (kind == "assignment")
                 {
                     for(auto expr: exprs)
                     {
-                        cout << "\nASS:" <<expr<<"\n";
                         insert_into_list(&update_list_, egde_id_, update_d(get_timer_id(expr),get_expr_value(expr)));
                     }
                 }
                 else if (kind == "probability")
                 {
-                    cout << "PROP1:" << probability << "\n";
                     probability = get_expr_value_float(expr_string);
-                    cout << "PROP2:" << probability << "\n";
                 }
             }
             insert_into_list(&edge_list_, source_id, edge_d(egde_id_++, target_id, probability));
-            //cout << "::::::::::::::" << edge_list_.begin()->begin()->get_dest_node() << ":::::::"<< edge_list_.begin()->begin()->get_id()<<":::::\n";
         }
     }
     
-    //print1(edge_list.front());
-    //print1(edge_list_test.front());
-    //print2(edge_list_test);
-    //print2(edge_list);
+    auto edges = new uneven_list<edge_d>(&edge_list_, edge_list_.size());
+    auto invariants = new uneven_list<guard_d>(&invariance_list_, invariance_list_.size());
+    auto guards = new uneven_list<guard_d>(&guard_list_, guard_list_.size());
+    auto updates = new uneven_list<update_d>(&update_list_, update_list_.size());
+    list<guard_d> guard_0_;
 
+    //print_2_guard(guard_list_);
     
-    //cout << "::::::::::::::" << edge_list_.begin()->begin()->get_val() << ":::::::"<< edge_list_.begin()->begin()->get_id()<<":::::\n";
-    auto edges = uneven_list<edge_d>(&edge_list_, edge_list_.size());
-    auto invariants = uneven_list<guard_d>(&invariance_list_, invariance_list_.size());
-    auto guards = uneven_list<guard_d>(&guard_list_, guard_list_.size());
-    auto updates =uneven_list<update_d>(&update_list_, update_list_.size());
-    
-    cout << "DONE PARSIN' MAN, GL HF";
-    return stochastic_model(&edges, &invariants, &guards, &updates, timer_list_, timer_amount_);
+    int* branchpoint_nodes_arr = list_to_arr(branchpoint_nodes);
+    return stochastic_model(edges, invariants, guards, updates, timer_list_, branchpoint_nodes_arr,branchpoint_nodes.size(), timer_amount_);
 }
-
 

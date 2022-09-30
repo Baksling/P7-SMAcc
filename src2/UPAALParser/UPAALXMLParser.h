@@ -28,6 +28,7 @@ private:
     list<list<guard_d>> guard_list_;
     list<list<guard_d>> invariance_list_;
     list<list<update_d>> update_list_;
+    list<int> branchpoint_nodes;
     int get_timer_id(string expr) const;
     void init_lists(pugi::xml_document* doc);
 public:

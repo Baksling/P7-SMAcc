@@ -5,19 +5,29 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c81c9d2a-66d3-4b0c-b40b-c667cea459e8" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/UPAALParser/Lol.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/UPAALParser/and_guy.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/cuda_simulator.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/cuda_simulator.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/edge_d.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/edge_d.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/edge_d.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/edge_d.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Projekt/main.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/main.cu" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Projekt/stochastic_model.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/stochastic_model.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/stochastic_model.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/stochastic_model.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/UPAALParser/UPAALXMLParser.cu" beforeDir="false" afterPath="$PROJECT_DIR$/UPAALParser/UPAALXMLParser.cu" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/UPAALParser/UPAALXMLParser.h" beforeDir="false" afterPath="$PROJECT_DIR$/UPAALParser/UPAALXMLParser.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UPAALParser/cursedShit.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src2.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/src2.vcxproj" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="XML File" />
+      </list>
+    </option>
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -46,6 +56,7 @@
       <updated>1664177633762</updated>
       <workItem from="1664177658377" duration="10911000" />
       <workItem from="1664198137728" duration="18198000" />
+      <workItem from="1664442212826" duration="13684000" />
     </task>
     <servers />
   </component>

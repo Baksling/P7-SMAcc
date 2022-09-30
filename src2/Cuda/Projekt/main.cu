@@ -130,7 +130,7 @@ int main(int argc, char* argv[])
 
     UPAALXMLParser parser;
     auto model = parser.parse_xml(argv[1]);
-
+    //model.pretty_print();
 
     
     // uneven_list<edge_d> node_to_edge(&edge_list, 3);
@@ -184,9 +184,9 @@ int main(int argc, char* argv[])
     simulation_strategy strategy = {
         32,
         512,
-        100,
+        3,
         1,
-        20
+        1000
     };
     sim.simulate(&model, &strategy, &free_list);
 

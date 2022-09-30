@@ -22,7 +22,7 @@ CPU GPU int edge_d::get_dest_node() const
     return this->dest_node_;
 }
 
-GPU float edge_d::get_weight() const
+CPU GPU float edge_d::get_weight() const
 {
     return this->weight_;
 }

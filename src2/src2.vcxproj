@@ -205,6 +205,7 @@
     <ClInclude Include="Update.h" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UPAALParser\and_guy.xml" />
     <Content Include="UPAALParser\Lol.xml" />
     <Content Include="UPAALParser\lilleShit.xml" />
     <Content Include="UPAALParser\sample1.xml" />

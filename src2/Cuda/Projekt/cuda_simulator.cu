@@ -145,7 +145,6 @@ GPU double find_least_difference(const array_info<guard_d>* invariants, const ar
     return least_difference;
 }
 
-
 struct model_options
 {
     int simulation_amount;
@@ -160,6 +159,9 @@ __global__ void simulate_d_2(
     int* output
     )
 {
+    // printf("HELOL\n");
+    // model->pretty_print();
+    // printf("HELOLo");
     //init variables and random state
     const unsigned int idx = threadIdx.x + blockDim.x * blockIdx.x;
     curand_init(options->seed, idx, idx, &r_state[idx]);
@@ -194,9 +196,12 @@ __global__ void simulate_d_2(
                 break;
             }
 
+            if (!model->is_branchpoint(current_node))
+            {
+                const double difference = find_least_difference(&invariants, &internal_timers);
+                progress_time(&internal_timers, difference, r_state, idx);
+            }
             
-            const double difference = find_least_difference(&invariants, &internal_timers);
-            progress_time(&internal_timers, difference, r_state, idx);
             invariants.free_arr();
             
             const array_info<edge_d> edges = model->get_node_edges(current_node);
@@ -303,8 +308,7 @@ void cuda_simulator::simulate(const stochastic_model* model, const simulation_st
     };
     cudaMalloc(&options_d, sizeof(model_options));
     cudaMemcpy(options_d, &options, sizeof(model_options), cudaMemcpyHostToDevice);
-
-    model->pretty_print();
+    
     //run simulations
     simulate_d_2<<<strategy->parallel_degree, strategy->threads_n>>>(
         model_d, options_d, state, results);
