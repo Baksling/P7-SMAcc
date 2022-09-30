@@ -161,7 +161,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Cuda\Domain\constraint_t.cu" />
+    <ClCompile Include="Cuda\Domain\CudaSimulator.cu" />
     <ClCompile Include="Cuda\Domain\edge_t.cu" />
+    <ClCompile Include="Cuda\Domain\main.cpp" />
     <ClCompile Include="Cuda\Domain\node_t.cu" />
     <ClCompile Include="Cuda\Domain\stochastic_model_t.cu" />
     <ClCompile Include="Cuda\Domain\timer_t.cu" />
@@ -202,6 +204,8 @@
     <ClCompile Include="Cuda\Domain\stochastic_model_t.h" />
     <ClCompile Include="Cuda\Domain\timer_t.h" />
     <ClCompile Include="Cuda\Domain\update_t.h" />
+    <ClInclude Include="Cuda\Domain\CudaSimulator.h" />
+    <ClInclude Include="Cuda\Domain\main.h" />
     <ClInclude Include="Cuda\Projekt\common.h" />
     <ClInclude Include="Cuda\Projekt\cuda_map.h" />
     <ClInclude Include="Cuda\Projekt\cuda_simulator.h" />
