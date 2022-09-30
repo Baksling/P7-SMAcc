@@ -24,7 +24,7 @@ int update_t::get_timer_id() const
 
 float update_t::get_timer_value() const
 {
-    return this->timer_value_;
+    return static_cast<float>(this->timer_value_);
 }
 
 int update_t::get_id() const

@@ -36,10 +36,9 @@ GPU bool edge_t::evaluate_constraints(const lend_array<timer_t>* timers) const
 void edge_t::accept(visistor& v)
 {
     v.visit(this->guard_);
-    const lend_array<update_t> updates = this->get_updates();
-    for (int i = 0; i < updates.size(); ++i)
+    for (int i = 0; i < this->updates_.size(); ++i)
     {
-        v.visit(updates.at(i));
+        v.visit(this->updates_.at(i));
     }
 }
 

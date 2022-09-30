@@ -46,10 +46,6 @@ void node_t::accept(visistor& v)
     v.visit(this->invariant_);
 }
 
-int node_t::get_id() const
-{
-    return this->id_;
-}
 
 bool node_t::is_branch() const
 {

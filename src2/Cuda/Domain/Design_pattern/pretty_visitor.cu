@@ -14,7 +14,7 @@ void pretty_visitor::visit(edge_t* edge)
     if (edge == nullptr) return;
 
     printf("    Edge id: %d | Weight: %f | Dest node: %d \n", edge->get_id(), edge->get_weight(),
-           edge->get_dest_node()->get_id());
+           edge->get_dest()->get_id());
     edge->accept(this);
 }
 
