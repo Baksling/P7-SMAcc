@@ -4,6 +4,7 @@ node_t::node_t(const int id, const bool is_branch_point, constraint_t* invariant
 {
     this->id_ = id;
     this->is_goal_ = is_goal;
+    this->is_branch_ = is_branch;
     this->invariant_ = invariant;
     this->is_branch_point_ = is_branch_point;
     this->edges_ = array_t<edge_t>(0);
@@ -33,6 +34,21 @@ GPU bool node_t::evaluate_invariants(const lend_array<clock_timer_t>* timers) co
 {
     if(this->invariant_ == nullptr) return true;
     return this->invariant_->evaluate(timers);
+}
+
+void node_t::accept(visistor& v)
+{
+    const lend_array<edge_t> edges = this->get_edges();
+    for (int i = 0; i < edges.size(); ++i)
+    {
+        v.visit(edges.at(i));
+    }
+    v.visit(this->invariant_);
+}
+
+bool node_t::is_branch() const
+{
+    return this->is_branch_;
 }
 
 GPU double node_t::max_time_progression(const lend_array<clock_timer_t>* timers, double max_progression) const

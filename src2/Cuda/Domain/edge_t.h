@@ -7,7 +7,7 @@
 #include "update_t.h"
 class node_t;
 
-class edge_t
+class edge_t : public element
 {
 private:
     int id_;
@@ -22,6 +22,8 @@ public:
     void set_updates(std::list<update_t>* updates);
     GPU bool evaluate_constraints(const lend_array<clock_timer_t>* timers) const;
     GPU void execute_updates(const lend_array<clock_timer_t>* timers);
+    void accept(visistor& v) override;
+    int get_id() const;
 };
 
 #endif

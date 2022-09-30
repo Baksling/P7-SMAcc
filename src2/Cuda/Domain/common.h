@@ -4,9 +4,9 @@
 
 #include <cuda.h>
 #include <cuda_runtime.h>
-#include <iostream>
+#include "Design_pattern/element.h"
 #include <list>
-
+#include <iostream>
 
 #define GPU __device__
 #define CPU __host__

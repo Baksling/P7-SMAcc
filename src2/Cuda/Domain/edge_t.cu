@@ -33,6 +33,22 @@ GPU bool edge_t::evaluate_constraints(const lend_array<clock_timer_t>* timers) c
     return this->guard_->evaluate(timers);
 }
 
+void edge_t::accept(visistor& v)
+{
+    v.visit(this->guard_);
+    for (int i = 0; i < this->updates_.size(); ++i)
+    {
+        v.visit(this->updates_.at(i));
+    }
+}
+
+
+int edge_t::get_id() const
+{
+    return this->id_;
+}
+
+
 GPU void edge_t::execute_updates(const lend_array<clock_timer_t>* timers)
 {
     for (int i = 0; i < this->updates_.size(); ++i)

@@ -7,7 +7,7 @@
 #include "edge_t.h"
 class edge_t;
 
-class node_t
+class node_t final : public element
 {
 private:
     int id_;
@@ -23,6 +23,8 @@ public:
     GPU bool is_goal_node() const;
     GPU bool evaluate_invariants(const lend_array<clock_timer_t>* timers) const;
     GPU double max_time_progression(const lend_array<clock_timer_t>* timers, double max_progression = 100.0) const;
+    CPU GPU bool is_branch_point() const;
+    void accept(visistor& v) override;
 };
 
 #endif
