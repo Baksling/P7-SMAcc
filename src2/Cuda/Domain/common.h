@@ -4,12 +4,14 @@
 
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <iostream>
+#include <list>
+
 
 #define GPU __device__
 #define CPU __host__
 #define GLOBAL __global__
 #define IS_GPU __CUDACC__
-#include <list>
 
 
 template<typename T>
@@ -97,6 +99,23 @@ array_t<T> to_array(std::list<T>* list)
     for(T item : *list)
     {
         arr[i] = item;
+        i++;
+    }
+
+    array_t<T> info = array_t<T>(arr, size);
+    return info;
+}
+
+template<typename T>
+array_t<T> to_array_as_pointers(std::list<T*>* list)
+{
+    int size = static_cast<int>(list->size());
+    T* arr = static_cast<T*>(malloc(sizeof(T)*size));
+
+    int i = 0;
+    for(T* item : *list)
+    {
+        arr[i] = *item;
         i++;
     }
 
