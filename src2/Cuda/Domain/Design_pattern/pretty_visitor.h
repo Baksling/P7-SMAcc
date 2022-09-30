@@ -4,15 +4,17 @@
 #define PRETTY_VISITOR_H
 
 #include <map>
+#include <set>
 #include <unordered_set>
 
 #include "visistor.h"
-#include "../../../Node.h"
+#include "../clock_timer_t.h"
+
 
 class pretty_visitor : public visistor
 {
 private:
-    unordered_set<node_t*> checker = {};
+    std::set<node_t*> checker = {};
 public:
     virtual void visit(constraint_t* constraint) override;
 
@@ -22,7 +24,7 @@ public:
 
     virtual void visit(stochastic_model_t* model) override;
 
-    virtual void visit(timer_t* timer) override;
+    virtual void visit(clock_timer_t* timer) override;
 
     virtual void visit(update_t* update) override;
 };

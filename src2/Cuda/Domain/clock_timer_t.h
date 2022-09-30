@@ -17,3 +17,5 @@ public:
     GPU clock_timer_t duplicate() const;
     void accept(visistor& v) override;
 };
+
+#endif
