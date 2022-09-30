@@ -1,12 +1,14 @@
 ﻿#include "stochastic_model.h"
 #include <assert.h>
 #include <ctime>
+#include <map>
+#include <string>
 
 using namespace std;
 
 stochastic_model::stochastic_model(uneven_list<edge_d>* node_to_edge, uneven_list<guard_d>* node_to_invariant,
                                    uneven_list<guard_d>* edge_to_guard, uneven_list<update_d>* edge_to_update,
-                                   timer_d* timers, const int timer_count)
+                                   timer_d* timers, int* branchpoint_nodes, int branchpoint_count, const int timer_count)
 {
     this->timer_count_ = timer_count;
     this->timers_ = timers;
@@ -14,6 +16,8 @@ stochastic_model::stochastic_model(uneven_list<edge_d>* node_to_edge, uneven_lis
     this->node_to_invariant_ = node_to_invariant;
     this->edge_to_guard_ = edge_to_guard;
     this->edge_to_update_ = edge_to_update;
+    this->branchpoint_nodes_ = branchpoint_nodes;
+    this->branchpoint_count_= branchpoint_count;
 }
 
 
@@ -36,6 +40,16 @@ GPU array_info<guard_d> stochastic_model::get_edge_guards(const int edge_id) con
 GPU array_info<update_d> stochastic_model::get_updates(const int edge_id) const
 {
     return this->edge_to_update_->get_index(edge_id);
+}
+
+GPU bool stochastic_model::is_branchpoint(int node_id) const
+{
+    for (int i = 0; i<branchpoint_count_;i++)
+    {
+        if (node_id == branchpoint_nodes_[i])
+            return true;
+    }
+    return false;
 }
 
 
@@ -62,7 +76,7 @@ GPU int stochastic_model::get_start_node() const
 
 GPU bool stochastic_model::is_goal_node(int node_id) const
 {
-    return node_id == 2;
+    return node_id == 3;
 }
 
 GPU array_info<timer_d> stochastic_model::copy_timers() const
@@ -110,11 +124,16 @@ void stochastic_model::cuda_allocate(stochastic_model** p, list<void*>* free_lis
     free_list->push_back(timers_d);
     cudaMemcpy(timers_d, this->timers_, sizeof(timer_d)*this->timer_count_, cudaMemcpyHostToDevice);
 
+    int* branchpoint_nodes_d = nullptr;
+    cudaMalloc(&branchpoint_nodes_d, sizeof(int)*this->branchpoint_count_);
+    free_list->push_back(branchpoint_nodes_d);
+    cudaMemcpy(branchpoint_nodes_d, this->branchpoint_nodes_, sizeof(int)*this->branchpoint_count_,cudaMemcpyHostToDevice);
+
     //create model with cuda pointers
     const stochastic_model model = stochastic_model(
         node_to_edge_d, node_to_invariant_d,
         edge_to_guard_d, edge_to_update_d,
-        timers_d, this->timer_count_);
+        timers_d, branchpoint_nodes_d, this->branchpoint_count_, this->timer_count_);
 
     //move model with cuda pointers to device. Add to free list.
     cudaMalloc(p, sizeof(stochastic_model));
@@ -124,17 +143,53 @@ void stochastic_model::cuda_allocate(stochastic_model** p, list<void*>* free_lis
 
 CPU GPU void stochastic_model::pretty_print() const
 {
+    // std::map<logical_operator, string> logical_guys;
+    // logical_guys.insert_or_assign(logical_operator::equal,"==");
+    // logical_guys.insert_or_assign(logical_operator::greater, ">");
+    // logical_guys.insert_or_assign(logical_operator::greater_equal, ">=");
+    // logical_guys.insert_or_assign(logical_operator::less_equal, "<=");
+    // logical_guys.insert_or_assign(logical_operator::less, "<");
+    // logical_guys.insert_or_assign(logical_operator::not_equal, "!=");
+    //
+    //
+    printf("Branchpoint nodes: ");
+    for (int b_nodes = 0; b_nodes<branchpoint_count_; b_nodes++)
+    {
+        printf("%d ", branchpoint_nodes_[b_nodes]);
+    }
+    
     for (int node_id = 0; node_id < this->node_to_edge_->get_index_size(); ++node_id)
     {
-        printf("Node: %d \n", node_id);
+        printf("\nNode: %d \n", node_id);
         array_info<edge_d> edges = this->node_to_edge_->get_index(node_id);
+
+        array_info<guard_d> invariants = this->node_to_invariant_->get_index(node_id);
+        printf("    Invariant amount: %d \n", invariants.size);
+        for (int invariant_id=0; invariant_id < invariants.size; invariant_id++)
+        {
+            auto invariant = static_cast<guard_d>(invariants.arr[invariant_id]);
+            printf("                %d %d %f\n", invariant.get_timer_id(),invariant.get_type(),invariant.get_value());
+        }
+        
         for (int edge_id = 0; edge_id < edges.size; ++edge_id)
         {
-            array_info<guard_d> guards = this->edge_to_guard_->get_index(edge_id);
-            array_info<update_d> updates = this->edge_to_update_->get_index(edge_id);
-            printf("    Edge id: %d, %d -> %d \n", edge_id, node_id, edges.arr[edge_id].get_dest_node());
+            int id_of_edge = edges.arr[edge_id].get_id();
+            array_info<guard_d> guards = this->edge_to_guard_->get_index(id_of_edge);
+            array_info<update_d> updates = this->edge_to_update_->get_index(id_of_edge);
+            printf("    Edge id: %d, %d -> %d \n", id_of_edge, node_id, edges.arr[edge_id].get_dest_node());
             printf("        Guards amount: %d \n", guards.size);
+            for (int guard_id = 0; guard_id<guards.size; guard_id++)
+            {
+                auto guard = static_cast<guard_d>(guards.arr[guard_id]);
+                printf("                %d %d %f\n", guard.get_timer_id(),guard.get_type(),guard.get_value());
+            }
             printf("        Updates: %d \n", updates.size);
+            for (int update_id = 0; update_id<updates.size; update_id++)
+            {
+                auto update = static_cast<update_d>(updates.arr[update_id]);
+                printf("                %d = %f\n", update.get_timer_id(),update.get_value());
+            }
+            printf("        Weight %f \n", edges.arr[edge_id].get_weight());
             for (int update_id = 0; update_id < updates.size; ++update_id)
             {
                 printf("            Clock: %d, Value: %f \n", updates.arr[update_id].get_timer_id(), updates.arr[update_id].get_value());

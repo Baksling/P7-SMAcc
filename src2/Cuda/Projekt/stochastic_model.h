@@ -23,6 +23,8 @@ private:
         uneven_list<guard_d>* node_to_invariant_;
         uneven_list<guard_d>* edge_to_guard_;
         uneven_list<update_d>* edge_to_update_;
+        int* branchpoint_nodes_;
+        int branchpoint_count_;
 
 
 public:
@@ -31,13 +33,17 @@ public:
                 uneven_list<guard_d>* node_to_invariant,
                 uneven_list<guard_d>* edge_to_guard,
                 uneven_list<update_d>* edge_to_update,
-                timer_d* timers, int timer_count);
+                timer_d* timers,
+                int* branchpoint_nodes,
+                int branchpoint_count,
+                int timer_count);
 
         //array methods
         GPU array_info<edge_d> get_node_edges(int node_id) const;
         GPU array_info<guard_d> get_node_invariants(int node_id) const;
         GPU array_info<guard_d> get_edge_guards(int edge_id) const;
         GPU array_info<update_d> get_updates(int edge_id) const;
+        GPU bool is_branchpoint(int node_id) const;
         GPU void traverse_edge_update(int edge_id, const array_info<timer_d>* local_timers) const;
 
         //state functions

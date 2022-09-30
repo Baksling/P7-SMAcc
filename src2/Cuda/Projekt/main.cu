@@ -6,6 +6,7 @@
 #include <cuda_runtime.h>
 #include <list>
 #include <stdio.h>
+#include "../UPPAALTreeParser/uppaal_tree_parser.h"
 
 #include "uneven_list.h"
 #include "node_d.h"
@@ -14,9 +15,7 @@
 #include "update_d.h"
 #include "timer_d.h"
 #include "cuda_simulator.h"
-#include "stochastic_model.h"
-
-int main()
+int main(int argc, char* argv[])
 {
     // //Nodes
     // list<node_d> nodes_;
@@ -116,19 +115,33 @@ int main()
     // update_list.push_back(update_2_);
     // update_list.push_back(update_3_);
     // update_list.push_back(update_4_);
-    //
-    // // Timers
+
+    // Timers
     // int timer_count = 2;
     // timer_d* timer_list;
     // timer_list = (timer_d*)malloc(sizeof(timer_d) * timer_count);
     // timer_list[0] = timer_d(0, 0);
     // timer_list[1] = timer_d(1, 0);
-    //
+    
     // uneven_list<edge_d> node_to_edge(&edge_list, 5);
     // uneven_list<guard_d> node_to_invariant(&invariant_list, 5);
     // uneven_list<guard_d> edge_to_guard(&guard_list, 5);
     // uneven_list<update_d> edge_to_update(&update_list, 5);
 
+    uppaal_tree_parser parser;
+    auto model = parser.parse_xml(argv[1]);
+    //model.pretty_print();
+
+    
+    // uneven_list<edge_d> node_to_edge(&edge_list, 3);
+    // uneven_list<guard_d> node_to_invariant(&invariant_list, 3);
+    // uneven_list<guard_d> edge_to_guard(&guard_list, 3);
+    // uneven_list<update_d> edge_to_update(&update_list, 3);
+
+    //printf("%d", node_to_edge.get_index(1).size);
+
+
+    
     // NOW ALLOCATE MEMORY ON DEVICE FOR ALL THIS SHIT!
 
     // uneven_list<edge_d>* node_to_edge_d = nullptr;
@@ -164,20 +177,18 @@ int main()
     //     edge_to_guard_d, edge_to_update_d, timers_d, 2);
 
     // list<void*> free_list = list<void*>();
-    // const stochastic_model model(&node_to_edge, &node_to_invariant,
-    //     &edge_to_guard, &edge_to_update, timer_list, timer_count);
     //
     // const cuda_simulator sim = cuda_simulator();
     // simulation_strategy strategy = {
     //     32,
     //     512,
-    //     100,
+    //     3,
     //     1,
-    //     20
+    //     1000
     // };
     // sim.simulate(&model, &strategy, &free_list);
     //
-    // free(timer_list);
+    // // free(timer_list);
     // for(void* p : free_list)
     // {
     //     cudaFree(p);
