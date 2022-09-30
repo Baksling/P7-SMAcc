@@ -8,12 +8,14 @@ class node_t
 private:
     int id_;
     bool is_goal_;
+    bool is_branch_point_;
     constraint_t* invariant_;
     array_t<edge_t> edges_{0};
 public:
-    explicit node_t(int id, constraint_t* invariant = nullptr, bool is_goal = false);
+    explicit node_t(int id, bool is_branch_point = false, constraint_t* invariant = nullptr, bool is_goal = false);
     void set_edges(std::list<edge_t>* list);
     GPU lend_array<edge_t> get_edges();
     GPU bool is_goal_node() const;
     GPU bool evaluate_invariants(const lend_array<timer_t>* timers) const;
+    GPU CPU int get_id() const;
 };

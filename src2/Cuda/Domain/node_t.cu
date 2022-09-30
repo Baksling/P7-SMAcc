@@ -1,10 +1,11 @@
 ﻿#include "node_t.h"
 
-node_t::node_t(const int id, constraint_t* invariant, const bool is_goal)
+node_t::node_t(const int id, const bool is_branch_point, constraint_t* invariant, const bool is_goal)
 {
     this->id_ = id;
     this->is_goal_ = is_goal;
     this->invariant_ = invariant;
+    this->is_branch_point_ = is_branch_point;
     this->edges_ = array_t<edge_t>(0);
 }
 
@@ -21,6 +22,11 @@ GPU lend_array<edge_t> node_t::get_edges()
 GPU bool node_t::is_goal_node() const
 {
     return this->is_goal_;
+}
+
+GPU CPU int node_t::get_id() const
+{
+    return this->id_;
 }
 
 
