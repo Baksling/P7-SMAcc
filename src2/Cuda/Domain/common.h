@@ -4,12 +4,14 @@
 
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include "Design_pattern/element.h"
+#include <list>
 
 #define GPU __device__
 #define CPU __host__
 #define GLOBAL __global__
 #define IS_GPU __CUDACC__
-#include <list>
+
 
 
 template<typename T>

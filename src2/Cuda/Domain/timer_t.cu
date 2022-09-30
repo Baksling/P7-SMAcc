@@ -31,4 +31,9 @@ GPU timer_t timer_t::duplicate() const
     return timer_t{this->id_, this->current_time_};
 }
 
+void timer_t::accept(visistor& v)
+{
+    return;
+}
+
 

@@ -22,7 +22,7 @@ enum logical_operator
     Not,
 };
 
-class constraint_t
+class constraint_t : public element
 {
 private:
     constraint_t* con1_ = nullptr;
@@ -43,7 +43,11 @@ public:
     void find_children(std::list<constraint_t*>* child_lst);
     logical_operator get_type() const;
     double max_time_progression(const lend_array<timer_t>* timers, double max_progression = 100.0);
-    
+    void accept(visistor& v) override;
+    int get_timer1_id() const;
+    int get_timer2_id() const;
+    float get_value() const;
+
     //FACTORY CONSTRUCTORS
     inline static constraint_t less_equal_v(int timer_id, float value);
     inline static constraint_t less_equal_t(int timer_id, int timer_id2);

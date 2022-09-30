@@ -146,6 +146,38 @@ double constraint_t::max_time_progression(const lend_array<timer_t>* timers, dou
     return max_progression;
 }
 
+void constraint_t::accept(visistor& v)
+{
+    switch (this->type_)
+    {
+    case And:
+    case Or:
+        v.visit(this->con1_);
+        v.visit(this->con2_);
+        break;
+    case Not:
+        v.visit(this->con1_);
+        break;
+    default:
+        break;
+    }
+}
+
+int constraint_t::get_timer1_id() const
+{
+    return this->timer_id1_;
+}
+int constraint_t::get_timer2_id() const
+{
+    return this->timer_id2_;
+}
+
+float constraint_t::get_value() const
+{
+    return this->value_;
+}
+
+
 //! LESS THAN OR EQUAL
 constraint_t constraint_t::less_equal_v(const int timer_id, const float value)
 {

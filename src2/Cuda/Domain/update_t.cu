@@ -11,3 +11,23 @@ GPU void update_t::update_timer(const lend_array<timer_t>* timers) const
 {
     timers->at(this->timer_id_)->set_time(this->timer_value_);
 }
+
+void update_t::accept(visistor& v)
+{
+    return;
+}
+
+int update_t::get_timer_id() const
+{
+    return this->timer_id_;
+}
+
+float update_t::get_timer_value() const
+{
+    return this->timer_value_;
+}
+
+int update_t::get_id() const
+{
+    return this->id_;
+}

@@ -5,7 +5,26 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="eb9e7d46-655a-4845-90a7-5d80b5bd2ed2" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Cuda/Domain/Design_pattern/element.cu" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Domain/Design_pattern/element.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Domain/Design_pattern/pretty_visitor.cu" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Domain/Design_pattern/pretty_visitor.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Domain/Design_pattern/visistor.cu" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Domain/Design_pattern/visistor.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Domain/common.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/common.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Domain/constraint_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/constraint_t.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Domain/constraint_t.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/constraint_t.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Domain/edge_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/edge_t.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Domain/edge_t.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/edge_t.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Domain/node_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/node_t.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Domain/node_t.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/node_t.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Domain/stochastic_model_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/stochastic_model_t.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Domain/stochastic_model_t.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/stochastic_model_t.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Domain/timer_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/timer_t.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Domain/timer_t.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/timer_t.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Domain/update_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/update_t.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Domain/update_t.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/update_t.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src2.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/src2.vcxproj" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -18,21 +37,6 @@
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/../../../../../../Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include/unordered_map" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$Cuda$/builtin_types.h" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$Cuda$/cuda.h" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$Cuda$/cuda_runtime.h" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$Cuda$/curand.h" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$Cuda$/curand_kernel.h" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$Cuda$/curand_mtgp32_kernel.h" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$Cuda$/driver_types.h" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Cuda/Domain/common.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Cuda/Domain/constraint_t.h" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Cuda/Domain/edge_t.cu" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Cuda/Domain/edge_t.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Cuda/Domain/node_t.cu" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Cuda/Domain/node_t.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Cuda/Domain/stochastic_model_t.cu" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Cuda/Domain/stochastic_model_t.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Cuda/test/dog.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Cuda/test/test_class.cu" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Main.cpp" root0="FORCE_HIGHLIGHTING" />
@@ -114,6 +118,7 @@
       <option name="presentableId" value="Default" />
       <updated>1664360640391</updated>
       <workItem from="1664360648623" duration="7720000" />
+      <workItem from="1664533811665" duration="7737000" />
     </task>
     <servers />
   </component>

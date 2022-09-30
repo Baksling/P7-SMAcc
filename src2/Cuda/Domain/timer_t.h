@@ -1,7 +1,8 @@
 ﻿#pragma once
 #include "common.h"
 
-class timer_t {
+class timer_t : public element
+{
 private:
     int id_;
     double current_time_;
@@ -12,4 +13,5 @@ public:
     GPU void set_time(double new_value);
     GPU void add_time(double progression);
     GPU timer_t duplicate() const;
+    void accept(visistor& v) override;
 };
