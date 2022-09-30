@@ -43,7 +43,7 @@ GPU edge_t* choose_next_edge(const lend_array<edge_t>* edges,
     return edges->at(edges->size() - 1);
 }
 
-GPU void progress_time(const lend_array<timer_t>* timers, const double difference, curandState* states, const unsigned int thread_id)
+GPU void progress_time(const lend_array<clock_timer_t>* timers, const double difference, curandState* states, const unsigned int thread_id)
 {
     //Get random uniform value between ]0.0f, 0.1f] * difference gives a random uniform range of ]0, diff]
     const double time_progression = difference * curand_uniform_double(&states[thread_id]);
@@ -55,7 +55,7 @@ GPU void progress_time(const lend_array<timer_t>* timers, const double differenc
     }
 }
 
-GPU void simulate_gpu(
+__global__ void simulate_gpu(
     const stochastic_model_t* model,
     const model_options* options,
     curandState* r_state,
@@ -65,8 +65,8 @@ GPU void simulate_gpu(
     const unsigned int idx = threadIdx.x + blockDim.x * blockIdx.x;
     curand_init(options->seed, idx, idx, &r_state[idx]);
 
-    array_t<timer_t> internal_timers = model->create_internal_timers();
-    const lend_array<timer_t> lend_internal_timers = lend_array<timer_t>(&internal_timers);
+    array_t<clock_timer_t> internal_timers = model->create_internal_timers();
+    const lend_array<clock_timer_t> lend_internal_timers = lend_array<clock_timer_t>(&internal_timers);
 
     for (int i = 0; i < options->simulation_amount; ++i)
     {
@@ -88,10 +88,11 @@ GPU void simulate_gpu(
             steps++;
 
             //check current position is valid
-            if(!current_node->evaluate_invariants(&lend_internal_timers))
-            {
-                break;
-            }
+            
+            // if(!current_node->evaluate_invariants(&lend_internal_timers))
+            // {
+            //     break;
+            // }
 
             //Progress time
             const double max_progression = current_node->max_time_progression(&lend_internal_timers);

@@ -18,10 +18,10 @@ private:
 public:
     explicit edge_t(int id, float weight, node_t* dest, constraint_t* guard = nullptr);
     GPU float get_weight() const;
-    GPU node_t* get_dest() const;
+    GPU CPU node_t* get_dest() const;
     void set_updates(std::list<update_t>* updates);
     GPU bool evaluate_constraints(const lend_array<clock_timer_t>* timers) const;
-    GPU void execute_updates(const lend_array<clock_timer_t>* timers) const;
+    GPU void execute_updates(const lend_array<clock_timer_t>* timers);
 };
 
 #endif

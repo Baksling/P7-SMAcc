@@ -17,7 +17,7 @@ GPU float edge_t::get_weight() const
     return this->weight_;
 }
 
-node_t* edge_t::get_dest() const
+GPU CPU node_t* edge_t::get_dest() const
 {
     return this->dest_;
 }
@@ -33,7 +33,7 @@ GPU bool edge_t::evaluate_constraints(const lend_array<clock_timer_t>* timers) c
     return this->guard_->evaluate(timers);
 }
 
-void edge_t::execute_updates(const lend_array<timer_t>* timers) const
+GPU void edge_t::execute_updates(const lend_array<clock_timer_t>* timers)
 {
     for (int i = 0; i < this->updates_.size(); ++i)
     {

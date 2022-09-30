@@ -16,7 +16,7 @@ private:
     array_t<edge_t> edges_{0};
 public:
     explicit node_t(int id, constraint_t* invariant = nullptr, bool is_goal = false);
-    int get_id() const;
+    GPU CPU int get_id() const;
     void set_edges(std::list<edge_t>* list);
     GPU lend_array<edge_t> get_edges();
     GPU bool is_goal_node() const;

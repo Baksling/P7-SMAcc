@@ -8,7 +8,7 @@ node_t::node_t(const int id, constraint_t* invariant, const bool is_goal)
     this->edges_ = array_t<edge_t>(0);
 }
 
-int node_t::get_id() const
+GPU CPU int node_t::get_id() const
 {
     return this->id_;
 }
@@ -35,7 +35,7 @@ GPU bool node_t::evaluate_invariants(const lend_array<clock_timer_t>* timers) co
     return this->invariant_->evaluate(timers);
 }
 
-GPU double node_t::max_time_progression(const lend_array<timer_t>* timers, double max_progression) const
+GPU double node_t::max_time_progression(const lend_array<clock_timer_t>* timers, double max_progression) const
 {
     if(this->invariant_ == nullptr)
     {
