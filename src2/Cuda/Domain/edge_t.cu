@@ -20,7 +20,7 @@ void edge_t::set_updates(std::list<update_t>* updates)
     this->updates_ = to_array(updates);
 }
 
-GPU bool edge_t::evaluate_constraints(const lend_array<timer_t>* timers) const
+GPU bool edge_t::evaluate_constraints(const lend_array<clock_timer_t>* timers) const
 {
     if(this->guard_ == nullptr) return true;
     return this->guard_->evaluate(timers);

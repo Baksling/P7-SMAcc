@@ -1,6 +1,11 @@
 ﻿#pragma once
+
+#ifndef EDGE_T_H
+#define EDGE_T_H
+
 #include "node_t.h"
 #include "update_t.h"
+class node_t;
 
 class edge_t
 {
@@ -14,5 +19,7 @@ public:
     explicit edge_t(int id, float weight, node_t* dest, constraint_t* guard = nullptr);
     GPU float get_weight() const;
     void set_updates(std::list<update_t>* updates);
-    GPU bool evaluate_constraints(const lend_array<timer_t>* timers) const;
+    GPU bool evaluate_constraints(const lend_array<clock_timer_t>* timers) const;
 };
+
+#endif

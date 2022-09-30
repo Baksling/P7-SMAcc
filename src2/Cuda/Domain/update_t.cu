@@ -7,7 +7,7 @@ update_t::update_t(const int id, const int timer_id, const double timer_value)
     this->timer_value_ = timer_value;
 }
 
-GPU void update_t::update_timer(const lend_array<timer_t>* timers) const
+GPU void update_t::update_timer(const lend_array<clock_timer_t>* timers) const
 {
     timers->at(this->timer_id_)->set_time(this->timer_value_);
 }

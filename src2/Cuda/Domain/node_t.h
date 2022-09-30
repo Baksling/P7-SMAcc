@@ -1,7 +1,11 @@
 ﻿#pragma once
+#ifndef NODE_T_H
+#define NODE_T_H
+
 #include "common.h"
 #include "constraint_t.h"
 #include "edge_t.h"
+class edge_t;
 
 class node_t
 {
@@ -15,5 +19,8 @@ public:
     void set_edges(std::list<edge_t>* list);
     GPU lend_array<edge_t> get_edges();
     GPU bool is_goal_node() const;
-    GPU bool evaluate_invariants(const lend_array<timer_t>* timers) const;
+    GPU bool evaluate_invariants(const lend_array<clock_timer_t>* timers) const;
 };
+
+#endif
+

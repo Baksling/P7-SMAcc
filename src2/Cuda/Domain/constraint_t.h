@@ -1,13 +1,16 @@
 ﻿#pragma once
 
+#ifndef CONSTRAINT_T_H
+#define CONSTRAINT_T_H
+
 #define NO_ID (-1)
 #define UNUSED_VALUE (-1.0f)
 #define BIG_DOUBLE (9999999.99)
 #define UNLIMITED_TIME (-2.0)
 
 #include "common.h"
-#include "timer_t.h"
-
+#include "clock_timer_t.h"
+#include <stdexcept>
 
 enum logical_operator
 {
@@ -31,18 +34,18 @@ private:
     int timer_id2_ = NO_ID;
     float value_;
     logical_operator type_;
-    bool get_bool_value(const constraint_t* con, const lend_array<timer_t>* timer_arr) const;
-    double get_logical_value(int timer_id, const lend_array<timer_t>* timer_arr) const;
-    bool validate_type() const;
+    GPU bool get_bool_value(const constraint_t* con, const lend_array<clock_timer_t>* timer_arr) const;
+    GPU double get_logical_value(int timer_id, const lend_array<clock_timer_t>* timer_arr) const;
+    GPU CPU bool validate_type() const;
 
     explicit constraint_t(logical_operator type, constraint_t* con1 = nullptr, constraint_t* con2 = nullptr,
                           int timer_id1 = NO_ID, int timer_id2 = NO_ID, float value = UNUSED_VALUE);
 public:
 
-    bool evaluate(const lend_array<timer_t>* timer_arr) const;
-    void find_children(std::list<constraint_t*>* child_lst);
-    logical_operator get_type() const;
-    double max_time_progression(const lend_array<timer_t>* timers, double max_progression = 100.0);
+    GPU bool evaluate(const lend_array<clock_timer_t>* timer_arr) const;
+    //GPU CPU void find_children(std::list<constraint_t*>* child_lst);
+    GPU CPU logical_operator get_type() const;
+    GPU double max_time_progression(const lend_array<clock_timer_t>* timers, double max_progression = 100.0);
     
     //FACTORY CONSTRUCTORS
     inline static constraint_t less_equal_v(int timer_id, float value);
@@ -72,3 +75,5 @@ public:
     
     inline static constraint_t and_constraint(constraint_t* constraint1, constraint_t* constraint2);
 };
+
+#endif

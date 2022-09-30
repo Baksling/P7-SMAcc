@@ -1,7 +1,5 @@
 ﻿#include "constraint_t.h"
 
-#include <stdexcept>
-
 GPU CPU double cuda_abs(const double f)
 {
     return f < 0 ? -f : f;
@@ -24,14 +22,14 @@ GPU CPU bool is_boolean_operator(const logical_operator op)
     return false;
 }
 
-GPU bool constraint_t::get_bool_value(const constraint_t* con, const lend_array<timer_t>* timer_arr) const
+GPU bool constraint_t::get_bool_value(const constraint_t* con, const lend_array<clock_timer_t>* timer_arr) const
 {
     if(!is_boolean_operator(this->type_)) return false;
     if (con == nullptr) return false;
     return con->evaluate(timer_arr);
 }
 
-GPU double constraint_t::get_logical_value(const int timer_id, const lend_array<timer_t>* timer_arr) const
+GPU double constraint_t::get_logical_value(const int timer_id, const lend_array<clock_timer_t>* timer_arr) const
 {
     if(is_boolean_operator(this->type_)) return BIG_DOUBLE;
 
@@ -47,7 +45,7 @@ GPU double constraint_t::get_logical_value(const int timer_id, const lend_array<
     : timer_arr->at(timer_id)->get_time();
 }
 
-bool constraint_t::validate_type() const
+GPU CPU bool constraint_t::validate_type() const
 {
     switch (this->type_)
     {
@@ -82,7 +80,7 @@ constraint_t::constraint_t(const logical_operator type, constraint_t* con1, cons
     }
 }
 
-GPU bool constraint_t::evaluate(const lend_array<timer_t>* timer_arr) const
+GPU bool constraint_t::evaluate(const lend_array<clock_timer_t>* timer_arr) const
 {
     const bool  b1  = this->get_bool_value(   this->con1_,      timer_arr);
     const bool  b2  = this->get_bool_value(   this->con2_,      timer_arr);
@@ -103,45 +101,45 @@ GPU bool constraint_t::evaluate(const lend_array<timer_t>* timer_arr) const
     return false;
 }
 
-GPU void constraint_t::find_children(std::list<constraint_t*>* child_lst)
-{
-    if (this->con1_ != nullptr)
-    {
-        this->con1_->find_children(child_lst);
-    }
-    if(this->con2_ != nullptr)
-    {
-        this->con2_->find_children(child_lst);
-    }
-    child_lst->push_back(this);
-}
+// GPU CPU void constraint_t::find_children(std::list<constraint_t*>* child_lst)
+// {
+//     // if (this->con1_ != nullptr)
+//     // {
+//     //     this->con1_->find_children(child_lst);
+//     // }
+//     // if(this->con2_ != nullptr)
+//     // {
+//     //     this->con2_->find_children(child_lst);
+//     // }
+//     // child_lst->push_back(this);
+// }
 
-logical_operator constraint_t::get_type() const
+GPU CPU logical_operator constraint_t::get_type() const
 {
     return this->type_;
 }
 
-double constraint_t::max_time_progression(const lend_array<timer_t>* timers, double max_progression)
+GPU double constraint_t::max_time_progression(const lend_array<clock_timer_t>* timers, double max_progression)
 {
-    std::list<constraint_t*> constraint_lst;
-    this->find_children(&constraint_lst);
-
-    if(max_progression < 0.0) max_progression = 0.0;
-    
-    for(const constraint_t* con : constraint_lst)
-    {
-        const logical_operator type = con->get_type();
-        //only relevant if it is upper bounded logical operator.
-        if(!(type == less_equal || type == less)) continue;
-
-        const double t1 = timers->at(this->timer_id1_)->get_time();
-        //case that constraint is between timer and value
-        if(this->value_ >= 0)
-        {
-            const double diff = static_cast<double>(this->value_) - t1;
-            max_progression = diff < max_progression && diff >= 0 ? diff : max_progression;
-        }
-    }
+    // std::list<constraint_t*> constraint_lst;
+    // this->find_children(&constraint_lst);
+    //
+    // if(max_progression < 0.0) max_progression = 0.0;
+    //
+    // for(const constraint_t* con : constraint_lst)
+    // {
+    //     const logical_operator type = con->get_type();
+    //     //only relevant if it is upper bounded logical operator.
+    //     if(!(type == less_equal || type == less)) continue;
+    //
+    //     const double t1 = timers->at(this->timer_id1_)->get_time();
+    //     //case that constraint is between timer and value
+    //     if(this->value_ >= 0)
+    //     {
+    //         const double diff = static_cast<double>(this->value_) - t1;
+    //         max_progression = diff < max_progression && diff >= 0 ? diff : max_progression;
+    //     }
+    // }
 
     return max_progression;
 }

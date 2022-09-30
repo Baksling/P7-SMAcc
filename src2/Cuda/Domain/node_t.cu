@@ -24,7 +24,7 @@ GPU bool node_t::is_goal_node() const
 }
 
 
-GPU bool node_t::evaluate_invariants(const lend_array<timer_t>* timers) const
+GPU bool node_t::evaluate_invariants(const lend_array<clock_timer_t>* timers) const
 {
     if(this->invariant_ == nullptr) return true;
     return this->invariant_->evaluate(timers);
