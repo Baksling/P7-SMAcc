@@ -9,6 +9,11 @@ node_t::node_t(const int id, constraint_t* invariant, const bool is_goal, const 
     this->edges_ = array_t<edge_t>(0);
 }
 
+int node_t::get_id() const
+{
+    return this->id_;
+}
+
 void node_t::set_edges(std::list<edge_t>* list)
 {
     this->edges_ = to_array(list);
@@ -49,4 +54,13 @@ int node_t::get_id() const
 bool node_t::is_branch() const
 {
     return this->is_branch_;
+}
+GPU double node_t::max_time_progression(const lend_array<timer_t>* timers, double max_progression) const
+{
+    if(this->invariant_ == nullptr)
+    {
+        return max_progression;
+    }
+    
+    return this->invariant_->max_time_progression(timers, max_progression); 
 }

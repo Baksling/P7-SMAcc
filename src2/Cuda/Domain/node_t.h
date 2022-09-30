@@ -21,5 +21,6 @@ public:
     void accept(visistor& v) override;
     int get_id() const;
     CPU GPU bool is_branch() const;
+    GPU double max_time_progression(const lend_array<timer_t>* timers, double max_progression = 100.0) const;
 };
 

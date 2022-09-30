@@ -1,5 +1,7 @@
 ﻿#include "edge_t.h"
 
+#include "../../Update.h"
+
 
 edge_t::edge_t(const int id, const float weight, node_t* dest, constraint_t* guard)
 {
@@ -13,6 +15,11 @@ edge_t::edge_t(const int id, const float weight, node_t* dest, constraint_t* gua
 GPU float edge_t::get_weight() const
 {
     return this->weight_;
+}
+
+node_t* edge_t::get_dest() const
+{
+    return this->dest_;
 }
 
 void edge_t::set_updates(std::list<update_t>* updates)
@@ -36,18 +43,17 @@ void edge_t::accept(visistor& v)
     }
 }
 
-node_t* edge_t::get_dest_node() const
-{
-    return this->dest_;
-}
 
 int edge_t::get_id() const
 {
     return this->id_;
 }
 
-lend_array<update_t> edge_t::get_updates()
+
+void edge_t::execute_updates(const lend_array<timer_t>* timers) const
 {
-    const lend_array<update_t> result (&this->updates_);
-    return result;
+    for (int i = 0; i < this->updates_.size(); ++i)
+    {
+        this->updates_.at(i)->update_timer(timers);
+    }
 }
