@@ -29,17 +29,17 @@ int main(int argc, char* argv[])
     node1_lst.push_back(edge1_0);
     node1.set_edges(&node1_lst);
 
+
+    pretty_visitor visitor;
     if (argc > 1)
     {
         uppaal_tree_parser parser;
-        auto model = parser.parse_xml(argv[1]);
-        pretty_visitor visitor;
+        stochastic_model_t model = parser.parse_xml(argv[1]);
         visitor.visit(&model);
     }
     else
     {
         stochastic_model_t model(&node0, nullptr);
-        pretty_visitor visitor;
         visitor.visit(&model);
     }
     
