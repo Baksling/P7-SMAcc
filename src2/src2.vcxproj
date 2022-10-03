@@ -520,6 +520,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Cuda\UPPAALTreeParser\and_guy.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\ff15.xml" />
     <Content Include="Cuda\UPPAALTreeParser\lilleShit.xml" />
     <Content Include="Cuda\UPPAALTreeParser\Lol.xml" />
     <Content Include="Cuda\UPPAALTreeParser\sample1.xml" />

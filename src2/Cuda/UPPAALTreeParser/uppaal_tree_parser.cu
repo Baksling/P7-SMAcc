@@ -72,17 +72,18 @@ int get_expr_value(const string& expr)
 
 float get_expr_value_float(const string& expr)
 {
-    int index = expr.length();
+    const string expr_wo_ws = replace_all(expr, " ", "");
+    int index = expr_wo_ws.length();
     while (true)
     {
         if (index == 0)
         {
-            return stof(expr);
+            return stof(expr_wo_ws);
         }
         
-        if (in_array(expr[--index], {'=',' ','<','>'}))
+        if (in_array(expr_wo_ws[--index], {'=',' ','<','>'}))
         {
-            return stof(expr.substr(index+1));
+            return stof(expr_wo_ws.substr(index+1));
         }
     }
 }
@@ -261,7 +262,8 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
     }
     
     list<node_t> nodes__;
-    int egde_id_ = 0;
+    int update_id = 0;
+    int edge_id = 0;
     //int invariant_id = 0;
 
     init_lists(&doc);
@@ -274,6 +276,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             string string_name = locs.child("name").child_value();
             const int node_id = xml_id_to_int(string_id);
             bool is_goal = false;
+            node_edge_map.insert_or_assign(node_id, list<edge_t>());
             
             list<constraint_t> invariants;
             
@@ -288,11 +291,16 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             {
                 for(auto expr: exprs)
                 {
+                    if (expr == "")
+                        continue;
                     invariants.push_back(get_constraint(expr, get_timer_id(expr), get_expr_value_float(expr)));
                     insert_into_list(&invariance_list_, node_id, get_constraint(expr, get_timer_id(expr), get_expr_value_float(expr)));
                 }
             }
-            nodes_->push_back(new node_t(node_id, false, list_to_arr(invariants), is_goal));
+            if (invariants.size() == 0)
+                nodes_->push_back(new node_t(node_id, false, nullptr, is_goal));
+            else
+                nodes_->push_back(new node_t(node_id, false, list_to_arr(invariants), is_goal));
         }
 
         for (pugi::xml_node locs: templates.children("branchpoint"))
@@ -316,8 +324,6 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             
             list<constraint_t> guards;
             list<update_t> updates;
-            int update_id = 0;
-            int edge_id = 0;
             float probability = 1.0f;
             
             for (pugi::xml_node labels: trans.children("label"))
@@ -332,6 +338,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                     {
                         if (expr == "")
                             continue;
+                        cout << get_constraint(expr,get_timer_id(expr), get_expr_value_float(expr)).get_type() << " \n";
                         guards.push_back(get_constraint(expr,get_timer_id(expr), get_expr_value_float(expr)));
                         //insert_into_list(&guard_list_, egde_id_, constraint_t(get_timer_id(expr),get_expr_enum(expr),get_expr_value(expr)));
                         
@@ -341,8 +348,11 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                 {
                     for(auto expr: exprs)
                     {
+                        if (expr == "")
+                            continue;
                         //updates.push_back(update_t(get_timer_id(expr), get_expr_value(expr)));
-                        insert_into_list(&update_list_, egde_id_, update_t(update_id++, get_timer_id(expr),get_expr_value(expr)));
+                        //insert_into_list(&update_list_, egde_id, update_t(update_id++, get_timer_id(expr),get_expr_value(expr)));
+                        updates.push_back(update_t(update_id,get_timer_id(expr),get_expr_value_float(expr)));
                     }
                 }
                 else if (kind == "probability")
@@ -352,7 +362,14 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             }
             
             node_t* target_node = get_node(target_id);
-            node_edge_map.at(source_id).push_back(edge_t(edge_id++, probability, target_node, list_to_arr(guards)));
+            edge_t result_egde = edge_t(edge_id++, probability, target_node, list_to_arr(guards));
+            
+            if (guards.size() == 0)
+                result_egde = edge_t(edge_id, probability, target_node, nullptr);
+
+            result_egde.set_updates(&updates);
+            node_edge_map.at(source_id).push_back(result_egde);
+            
             
         }
     }
@@ -365,6 +382,8 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
 
     for(node_t* node: *nodes_)
     {
+        cout<< "!";
+        cout.flush();
         node->set_edges(&node_edge_map.at(node->get_id()));
     }
 

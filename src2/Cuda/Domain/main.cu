@@ -1,8 +1,9 @@
 ﻿#include "common.h"
 #include <iostream>
 #include "pretty_visitor.h"
+#include "../UPPAALTreeParser/uppaal_tree_parser.h"
 
-int main()
+int main(int argc, char* argv[])
 {
     std::cout << "Fuck you\n";
 
@@ -28,10 +29,20 @@ int main()
     node1_lst.push_back(edge1_0);
     node1.set_edges(&node1_lst);
 
-    stochastic_model_t model(&node0, nullptr);
+    if (argc > 1)
+    {
+        uppaal_tree_parser parser;
+        auto model = parser.parse_xml(argv[1]);
+        pretty_visitor visitor;
+        visitor.visit(&model);
+    }
+    else
+    {
+        stochastic_model_t model(&node0, nullptr);
+        pretty_visitor visitor;
+        visitor.visit(&model);
+    }
     
-    pretty_visitor visitor;
-    visitor.visit(&model);
     std::cout << "bacon\n";
 
     return 0;
