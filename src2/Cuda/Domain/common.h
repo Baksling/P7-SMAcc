@@ -1,18 +1,18 @@
 ﻿#pragma once
-#ifndef COMMON_INCLUDE_FILE
-#define COMMON_INCLUDE_FILE
+
+#ifndef COMMON_H
+#define COMMON_H
 
 #include <cuda.h>
 #include <cuda_runtime.h>
-#include "Design_pattern/element.h"
 #include <list>
 #include <iostream>
+
 
 #define GPU __device__
 #define CPU __host__
 #define GLOBAL __global__
 #define IS_GPU __CUDACC__
-
 
 template<typename T>
 struct array_t
@@ -122,5 +122,22 @@ array_t<T> to_array_as_pointers(std::list<T*>* list)
     array_t<T> info = array_t<T>(arr, size);
     return info;
 }
+
+class visitor;
+class edge_t;
+class node_t;
+class constraint_t;
+class clock_timer_t;
+class update_t;
+class stochastic_model_t;
+
+#include "visitor.h"
+#include "constraint_t.h"
+#include "edge_t.h"
+#include "stochastic_model_t.h"
+#include "clock_timer_t.h"
+#include "node_t.h"
+#include "update_t.h"
+
 
 #endif

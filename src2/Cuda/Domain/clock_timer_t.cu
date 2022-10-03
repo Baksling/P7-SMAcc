@@ -31,7 +31,7 @@ GPU clock_timer_t clock_timer_t::duplicate() const
     return clock_timer_t{this->id_, this->current_time_};
 }
 
-void clock_timer_t::accept(visistor& v)
+void clock_timer_t::accept(visitor* v)
 {
     //v.visit()
 }

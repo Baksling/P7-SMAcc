@@ -3,15 +3,12 @@
 #ifndef PRETTY_VISITOR_H
 #define PRETTY_VISITOR_H
 
-#include <map>
 #include <set>
-#include <unordered_set>
-
-#include "visistor.h"
-#include "../clock_timer_t.h"
+#include "common.h"
 
 
-class pretty_visitor : public visistor
+
+class pretty_visitor : public visitor
 {
 private:
     std::set<node_t*> checker = {};

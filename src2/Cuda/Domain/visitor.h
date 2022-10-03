@@ -3,12 +3,16 @@
 #ifndef VISITOR_H
 #define VISITOR_H
 
-#include "../constraint_t.h"
-#include "../edge_t.h"
-#include "../stochastic_model_t.h"
-#include "../clock_timer_t.h"
+#include "common.h"
 
-class visistor
+
+class constraint_t;
+class edge_t;
+class node_t;
+class stochastic_model_t;
+class clock_timer_t;
+class update_t;
+class visitor
 {
 public:
     virtual void visit(constraint_t* constraint) = 0;

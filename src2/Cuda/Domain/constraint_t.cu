@@ -144,17 +144,17 @@ GPU double constraint_t::max_time_progression(const lend_array<clock_timer_t>* t
     return max_progression;
 }
 
-void constraint_t::accept(visistor& v)
+void constraint_t::accept(visitor* v)
 {
     switch (this->type_)
     {
     case And:
     case Or:
-        v.visit(this->con1_);
-        v.visit(this->con2_);
+        v->visit(this->con1_);
+        v->visit(this->con2_);
         break;
     case Not:
-        v.visit(this->con1_);
+        v->visit(this->con1_);
         break;
     default:
         break;

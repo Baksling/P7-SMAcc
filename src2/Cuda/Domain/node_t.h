@@ -3,11 +3,10 @@
 #define NODE_T_H
 
 #include "common.h"
-#include "constraint_t.h"
-#include "edge_t.h"
+
 class edge_t;
 
-class node_t final : public element
+class node_t final
 {
 private:
     int id_;
@@ -19,12 +18,12 @@ public:
     explicit node_t(int id, bool is_branch_point = false, constraint_t* invariant = nullptr, bool is_goal = false);
     GPU CPU int get_id() const;
     void set_edges(std::list<edge_t>* list);
-    GPU lend_array<edge_t> get_edges();
-    GPU bool is_goal_node() const;
+    CPU GPU lend_array<edge_t> get_edges();
+    CPU GPU bool is_goal_node() const;
     GPU bool evaluate_invariants(const lend_array<clock_timer_t>* timers) const;
     GPU double max_time_progression(const lend_array<clock_timer_t>* timers, double max_progression = 100.0) const;
     CPU GPU bool is_branch_point() const;
-    void accept(visistor& v) override;
+    void accept(visitor* v);
 };
 
 #endif

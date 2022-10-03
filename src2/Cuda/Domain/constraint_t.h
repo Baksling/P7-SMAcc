@@ -9,8 +9,10 @@
 #define UNLIMITED_TIME (-2.0)
 
 #include "common.h"
-#include "clock_timer_t.h"
 #include <stdexcept>
+
+class clock_timer_t;
+template <typename T> struct lend_array;
 
 enum logical_operator
 {
@@ -25,7 +27,7 @@ enum logical_operator
     Not,
 };
 
-class constraint_t : public element
+class constraint_t
 {
 private:
     constraint_t* con1_ = nullptr;
@@ -46,7 +48,7 @@ public:
     //GPU CPU void find_children(std::list<constraint_t*>* child_lst);
     GPU CPU logical_operator get_type() const;
     GPU double max_time_progression(const lend_array<clock_timer_t>* timers, double max_progression = 100.0);
-    void accept(visistor& v) override;
+    void accept(visitor* v);
     int get_timer1_id() const;
     int get_timer2_id() const;
     float get_value() const;

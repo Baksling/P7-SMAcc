@@ -3,9 +3,9 @@
 #ifndef STOCHASTIC_MODEL_T_H
 #define STOCHASTIC_MODEL_T_H
 
-#include "node_t.h"
+#include "common.h"
 
-class stochastic_model_t : public element
+class stochastic_model_t
 {
 private:
     node_t* start_node_;
@@ -15,7 +15,7 @@ public:
     GPU array_t<clock_timer_t> create_internal_timers() const;
     GPU void reset_timers(array_t<clock_timer_t>* active_timers) const;
     GPU node_t* get_start_node() const;
-    void accept(visistor& v) override;
+    void accept(visitor* v);
 };
 
 #endif

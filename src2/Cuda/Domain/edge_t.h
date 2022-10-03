@@ -3,11 +3,12 @@
 #ifndef EDGE_T_H
 #define EDGE_T_H
 
-#include "node_t.h"
-#include "update_t.h"
+#include "common.h"
+#include <list>
+
 class node_t;
 
-class edge_t : public element
+class edge_t
 {
 private:
     int id_;
@@ -16,13 +17,13 @@ private:
     constraint_t* guard_;
     array_t<update_t> updates_{0};
 public:
-    explicit edge_t(int id, float weight, node_t* dest, constraint_t* guard = nullptr);
-    GPU float get_weight() const;
+    explicit edge_t(int id, float weight, node_t* dest, constraint_t* guard);
+    CPU GPU float get_weight() const;
     GPU CPU node_t* get_dest() const;
     void set_updates(std::list<update_t>* updates);
     GPU bool evaluate_constraints(const lend_array<clock_timer_t>* timers) const;
     GPU void execute_updates(const lend_array<clock_timer_t>* timers);
-    void accept(visistor& v) override;
+    void accept(visitor* v);
     int get_id() const;
 };
 

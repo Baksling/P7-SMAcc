@@ -4,7 +4,6 @@ node_t::node_t(const int id, const bool is_branch_point, constraint_t* invariant
 {
     this->id_ = id;
     this->is_goal_ = is_goal;
-    this->is_branch_ = is_branch;
     this->invariant_ = invariant;
     this->is_branch_point_ = is_branch_point;
     this->edges_ = array_t<edge_t>(0);
@@ -20,12 +19,12 @@ void node_t::set_edges(std::list<edge_t>* list)
     this->edges_ = to_array(list);
 }
 
-GPU lend_array<edge_t> node_t::get_edges()
+CPU GPU lend_array<edge_t> node_t::get_edges()
 {
     return lend_array<edge_t>(&this->edges_);
 }
 
-GPU bool node_t::is_goal_node() const
+CPU GPU bool node_t::is_goal_node() const
 {
     return this->is_goal_;
 }
@@ -36,19 +35,19 @@ GPU bool node_t::evaluate_invariants(const lend_array<clock_timer_t>* timers) co
     return this->invariant_->evaluate(timers);
 }
 
-void node_t::accept(visistor& v)
+void node_t::accept(visitor* v)
 {
     const lend_array<edge_t> edges = this->get_edges();
     for (int i = 0; i < edges.size(); ++i)
     {
-        v.visit(edges.at(i));
+        v->visit(edges.at(i));
     }
-    v.visit(this->invariant_);
+    v->visit(this->invariant_);
 }
 
-bool node_t::is_branch() const
+CPU GPU bool node_t::is_branch_point() const
 {
-    return this->is_branch_;
+    return this->is_branch_point_;
 }
 
 GPU double node_t::max_time_progression(const lend_array<clock_timer_t>* timers, double max_progression) const

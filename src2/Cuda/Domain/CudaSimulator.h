@@ -1,5 +1,9 @@
 ﻿#pragma once
-#include "stochastic_model_t.h"
+
+#ifndef CUDA_SIM_H
+#define CUDA_SIM_H
+
+#include "common.h"
 
 struct model_options
 {
@@ -27,3 +31,4 @@ class cuda_simulator
 public:
     void simulate(const stochastic_model_t* model, simulation_strategy* strategy);
 };
+#endif

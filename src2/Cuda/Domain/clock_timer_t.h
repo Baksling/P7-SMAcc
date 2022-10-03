@@ -1,10 +1,13 @@
 ﻿#pragma once
-#include "common.h"
 
 #ifndef CLOCK_TIMER_T_H
 #define CLOCK_TIMER_T_H
 
-class clock_timer_t : public element {
+#include "common.h"
+
+class visitor;
+
+class clock_timer_t {
 private:
     int id_;
     double current_time_;
@@ -15,7 +18,7 @@ public:
     GPU void set_time(double new_value);
     GPU void add_time(double progression);
     GPU clock_timer_t duplicate() const;
-    void accept(visistor& v) override;
+    void accept(visitor* v);
 };
 
 #endif

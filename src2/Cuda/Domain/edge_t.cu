@@ -1,6 +1,5 @@
 ﻿#include "edge_t.h"
 
-#include "../../Update.h"
 
 
 edge_t::edge_t(const int id, const float weight, node_t* dest, constraint_t* guard)
@@ -12,7 +11,7 @@ edge_t::edge_t(const int id, const float weight, node_t* dest, constraint_t* gua
     this->guard_ = guard;
 }
 
-GPU float edge_t::get_weight() const
+CPU GPU float edge_t::get_weight() const
 {
     return this->weight_;
 }
@@ -33,12 +32,12 @@ GPU bool edge_t::evaluate_constraints(const lend_array<clock_timer_t>* timers) c
     return this->guard_->evaluate(timers);
 }
 
-void edge_t::accept(visistor& v)
+void edge_t::accept(visitor* v)
 {
-    v.visit(this->guard_);
+    v->visit(this->guard_);
     for (int i = 0; i < this->updates_.size(); ++i)
     {
-        v.visit(this->updates_.at(i));
+        v->visit(this->updates_.at(i));
     }
 }
 
