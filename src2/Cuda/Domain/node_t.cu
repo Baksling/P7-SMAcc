@@ -38,11 +38,17 @@ GPU bool node_t::evaluate_invariants(const lend_array<clock_timer_t>* timers) co
 void node_t::accept(visitor* v)
 {
     const lend_array<edge_t> edges = this->get_edges();
+    v->visit(this->invariant_);
     for (int i = 0; i < edges.size(); ++i)
     {
         v->visit(edges.at(i));
     }
-    v->visit(this->invariant_);
+    for (int i = 0; i < edges.size(); ++i)
+    {
+        v->visit(edges.at(i)->get_dest());
+        
+    }
+    
 }
 
 CPU GPU bool node_t::is_branch_point() const

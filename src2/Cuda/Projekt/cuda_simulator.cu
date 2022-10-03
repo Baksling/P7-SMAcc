@@ -2,7 +2,7 @@
 
 #define GPU __device__
 #define CPU __host__
-#define NOT_GOAL_STATE -1
+#define HIT_MAX_STEPS -1
 #include "uneven_list.h"
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -173,7 +173,7 @@ __global__ void simulate_d_2(
     {
         //reset current location
         const int sim_id = i + options->simulation_amount * static_cast<int>(idx);
-        output[sim_id] = NOT_GOAL_STATE;
+        output[sim_id] = HIT_MAX_STEPS;
         
         //reset timers through each simulation
         model->reset_timers(&internal_timers);
@@ -257,12 +257,12 @@ void print_results(unordered_map<int,int>* result_map, const int result_size)
 {
     for (auto& it : (*result_map))
     {
-        if(it.first == NOT_GOAL_STATE) continue;
+        if(it.first == HIT_MAX_STEPS) continue;
         const float percentage = calc_percentage(it.second, result_size);
         cout << "Node: " << it.first << " reached " << it.second << " times. (" << percentage << ")%\n";
     }
-    const float percentage = calc_percentage((*result_map)[NOT_GOAL_STATE], result_size);
-    cout << "No goal state was reached " << (*result_map)[NOT_GOAL_STATE] << " times. (" << percentage << ")%\n";
+    const float percentage = calc_percentage((*result_map)[HIT_MAX_STEPS], result_size);
+    cout << "No goal state was reached " << (*result_map)[HIT_MAX_STEPS] << " times. (" << percentage << ")%\n";
     cout << "Nr of simulations: " << result_size << "\n";
 }
 
@@ -270,7 +270,7 @@ void count_results(const int total_simulations,
     const int* local_results,
     unordered_map<int, int>* node_results)
 {
-    node_results->insert_or_assign(NOT_GOAL_STATE, 0);
+    node_results->insert_or_assign(HIT_MAX_STEPS, 0);
     for (int i = 0; i < total_simulations; i++)
     {
         const int key = local_results[i];

@@ -8,7 +8,7 @@
 #include <chrono>
 
 
-#define NOT_GOAL_STATE (-1)
+#define HIT_MAX_STEPS (-1)
 using namespace std::chrono;
 
 
@@ -71,17 +71,19 @@ __global__ void simulate_gpu(
     {
         //calculate the current simulation id
         const int sim_id = i + options->simulation_amount * static_cast<int>(idx);
-        output[sim_id] = NOT_GOAL_STATE;
+        output[sim_id] = HIT_MAX_STEPS;
 
         model->reset_timers(&internal_timers);
 
         node_t* current_node = model->get_start_node();
         unsigned int steps = 0;
+        bool hit_max_steps = false;
 
         while(true)
         {
             if(steps >= options->max_steps_pr_sim)
             {
+                hit_max_steps = true;
                 break;
             }
             steps++;
@@ -94,8 +96,11 @@ __global__ void simulate_gpu(
             // }
 
             //Progress time
-            const double max_progression = current_node->max_time_progression(&lend_internal_timers);
-            progress_time(&lend_internal_timers, max_progression, r_state, idx);
+            if (!current_node->is_branch_point())
+            {
+                const double max_progression = current_node->max_time_progression(&lend_internal_timers);
+                progress_time(&lend_internal_timers, max_progression, r_state, idx);
+            }
 
             const lend_array<edge_t> outgoing_edges = current_node->get_edges();
             if(outgoing_edges.size() <= 0)
@@ -117,8 +122,14 @@ __global__ void simulate_gpu(
                 break;
             }
         }
-
-        output[sim_id] = current_node->get_id();
+        if (hit_max_steps)
+        {
+            output[sim_id] = HIT_MAX_STEPS;
+        }
+        else
+        {
+            output[sim_id] = current_node->get_id();
+        }
     }
 
     internal_timers.free_array();

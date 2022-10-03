@@ -9,6 +9,7 @@ stochastic_model_t::stochastic_model_t(node_t* start_node, array_t<clock_timer_t
 void stochastic_model_t::accept(visitor* v)
 {
     v->visit(this->start_node_);
+    if (this->timers_ == nullptr) return;
     for (int i = 0; i < this->timers_->size(); ++i)
     {
         v->visit(this->timers_->at(i));
