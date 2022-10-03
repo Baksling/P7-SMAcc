@@ -90,10 +90,10 @@ __global__ void simulate_gpu(
 
             //check current position is valid
             
-            // if(!current_node->evaluate_invariants(&lend_internal_timers))
-            // {
-            //     break;
-            // }
+            if(!current_node->evaluate_invariants(&lend_internal_timers))
+            {
+                break;
+            }
 
             //Progress time
             if (!current_node->is_branch_point())

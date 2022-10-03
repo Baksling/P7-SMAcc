@@ -534,9 +534,6 @@
     <Content Include="UPAALParser\test3.xml" />
     <Content Include="UPAALParser\testBasic.xml" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Cuda\Domain\Design_pattern" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.7.targets" />
