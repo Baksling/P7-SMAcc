@@ -479,6 +479,7 @@
       <SDLCheck>true</SDLCheck>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
+    <ClCompile Include="Cuda\Domain\Constraints\constraint_tt.cpp" />
     <ClCompile Include="Edge.cpp" />
     <ClCompile Include="Guard.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -492,6 +493,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Cuda\Domain\common.h" />
+    <ClCompile Include="Cuda\Domain\Constraints\constraint_tt.h" />
     <ClCompile Include="Cuda\Domain\constraint_t.h" />
     <ClCompile Include="Cuda\Domain\edge_t.h" />
     <ClCompile Include="Cuda\Domain\node_t.h" />

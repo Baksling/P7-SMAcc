@@ -1,5 +1,6 @@
 ﻿#include "CudaSimulator.h"
 
+#include <map>
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include "device_launch_parameters.h"
@@ -12,19 +13,49 @@
 using namespace std::chrono;
 
 
-GPU edge_t* choose_next_edge(const lend_array<edge_t*>* edges,
+GPU edge_t* choose_next_edge(const lend_array<edge_t*>* edges, const lend_array<clock_timer_t>* timer_arr,
     curandState* states, const unsigned int thread_id)
 {
-    //TODO FILTER TO ONLY VALID EDGES!
-    
     //if no possible edges, return null pointer
     if(edges->size() == 0) return nullptr;
+    if(edges->size() == 1)
+    {
+        edge_t* edge = *edges->at(0);
+        return edge->evaluate_constraints(timer_arr)
+                ? edge
+                : nullptr;
+    }
+    
+    edge_t** valid_edges = static_cast<edge_t**>(malloc(sizeof(edge_t*)*edges->size()));
+    int valid_count = 0;
+    
+    for (int i = 0; i < edges->size(); ++i)
+    {
+        edge_t* edge = *edges->at(0);
+        if(edge->evaluate_constraints(timer_arr))
+        {
+            valid_edges[valid_count] = edge;
+            valid_count++;
+        }
+    }
+
+    if(valid_count == 0)
+    {
+        free(valid_edges);
+        return nullptr;
+    }
+    if(valid_count == 1)
+    {
+        edge_t* result = valid_edges[0];
+        free(valid_edges);
+        return result;
+    }
 
     //summed weight
     float weight_sum = 0.0f;
-    for(int i = 0; i < edges->size(); i++)
+    for(int i = 0; i < valid_count; i++)
     {
-        edge_t* temp = *edges->at(i);
+        const edge_t* temp = (valid_edges[i]);
         weight_sum += temp->get_weight();
     }
 
@@ -34,16 +65,22 @@ GPU edge_t* choose_next_edge(const lend_array<edge_t*>* edges,
     float r_acc = 0.0; 
 
     //pick the weighted random value.
-    for (int i = 0; i < edges->size(); ++i)
+    for (int i = 0; i < valid_count; ++i)
     {
-        edge_t* temp = *edges->at(i);
+        edge_t* temp = valid_edges[i];
         r_acc += temp->get_weight();
-        if(r_val < r_acc) return temp;
+        if(r_val < r_acc)
+        {
+            free(valid_edges);
+            return temp;
+        }
     }
 
     //This should be handled in for loop.
     //This is for safety :)
-    return *edges->at(edges->size() - 1);
+    edge_t* edge = valid_edges[valid_count - 1];
+    free(valid_edges);
+    return edge;
 }
 
 GPU void progress_time(const lend_array<clock_timer_t>* timers, const double difference, curandState* states, const unsigned int thread_id)
@@ -112,7 +149,7 @@ __global__ void simulate_gpu(
                 break;
             }
 
-            edge_t* next_edge = choose_next_edge(&outgoing_edges, r_state, idx);
+            edge_t* next_edge = choose_next_edge(&outgoing_edges, &lend_internal_timers, r_state, idx);
             if(next_edge == nullptr)
             {
                 continue;
@@ -139,6 +176,43 @@ __global__ void simulate_gpu(
     internal_timers.free_array();
 }
 
+void read_results(const int* cuda_results, int total_simulations, std::map<int, int>* results)
+{
+    int* local_results = static_cast<int*>(malloc(sizeof(int)*total_simulations));
+    cudaMemcpy(local_results, cuda_results, sizeof(int)*total_simulations, cudaMemcpyDeviceToHost);
+
+    for (int i = 0; i < total_simulations; ++i)
+    {
+        int id = local_results[i];
+        int count = 0;
+        if(results->count(id) == 1)
+        {
+            count = (*results)[id];
+        }
+
+        results->insert_or_assign(id, count+1);
+
+    }
+    free(local_results);
+}
+
+float calc_percentage(const int counter, const int divisor)
+{
+    return (static_cast<float>(counter)/static_cast<float>(divisor))*100;
+} 
+
+void print_results(std::map<int,int>* result_map, const int result_size)
+{
+    for (const std::pair<const int, int> it : (*result_map))
+    {
+        if(it.first == HIT_MAX_STEPS) continue;
+        const float percentage = calc_percentage(it.second, result_size);
+        std::cout << "Node: " << it.first << " reached " << it.second << " times. (" << percentage << ")%\n";
+    }
+    const float percentage = calc_percentage((*result_map)[HIT_MAX_STEPS], result_size);
+    std::cout << "No goal state was reached " << (*result_map)[HIT_MAX_STEPS] << " times. (" << percentage << ")%\n";
+    std::cout << "Nr of simulations: " << result_size << "\n";
+}
 
 void cuda_simulator::simulate(stochastic_model_t* model, simulation_strategy* strategy)
 {
@@ -177,6 +251,10 @@ void cuda_simulator::simulate(stochastic_model_t* model, simulation_strategy* st
 
     std::cout << "I ran for: " << duration_cast<milliseconds>(steady_clock::now() - start).count() << "[ms] \n";
 
+    std::map<int, int> node_results;
+    read_results(results, total_simulations, &node_results);
+    
+    
     cudaFree(results);
     cudaFree(state);
     cudaFree(options_d);
