@@ -2,6 +2,7 @@
 #include <iostream>
 #include "pretty_visitor.h"
 #include "../UPPAALTreeParser/uppaal_tree_parser.h"
+#include "CudaSimulator.h"
 
 int main(int argc, char* argv[])
 {
@@ -31,17 +32,17 @@ int main(int argc, char* argv[])
 
 
     pretty_visitor visitor;
+    stochastic_model_t model(&node0, array_t<clock_timer_t*>(0));
     if (argc > 1)
     {
         uppaal_tree_parser parser;
-        stochastic_model_t model = parser.parse_xml(argv[1]);
-        visitor.visit(&model);
+        model = parser.parse_xml(argv[1]);
     }
-    else
-    {
-        stochastic_model_t model(&node0, array_t<clock_timer_t*>(0));
-        visitor.visit(&model);
-    }
+    visitor.visit(&model);
+    simulation_strategy strategy = {32, 512, 61, 1, 1000};
+    cuda_simulator::simulate(&model, &strategy);
+
+    
     
     std::cout << "bacon\n";
 

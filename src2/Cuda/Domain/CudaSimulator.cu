@@ -154,19 +154,23 @@ void cuda_simulator::simulate(stochastic_model_t* model, simulation_strategy* st
     int* results = nullptr;
     cudaMalloc(&results, sizeof(int)*total_simulations);
 
-
-    //!TODO move stochastic model to device memory
+    std::list<void*> free_list;
+    stochastic_model_t* model_d = nullptr;
+    model->cuda_allocate(&model_d, &free_list);
+    
     //implement here
-
+    model_options* options_d = nullptr;
     const model_options options = {
         strategy->simulation_amounts,
         strategy->max_sim_steps,
         static_cast<unsigned long>(time(nullptr))
     };
-
+    cudaMalloc(&options_d, sizeof(model_options));
+    cudaMemcpy(options_d, &options, sizeof(model_options), cudaMemcpyHostToDevice);
+    
     //run simulations
     simulate_gpu<<<strategy->parallel_degree, strategy->threads_n>>>(
-        model, &options, state, results);
+        model_d, &options, state, results);
 
     //wait for all processes to finish
     cudaDeviceSynchronize();
@@ -175,4 +179,10 @@ void cuda_simulator::simulate(stochastic_model_t* model, simulation_strategy* st
 
     cudaFree(results);
     cudaFree(state);
+    cudaFree(options_d);
+
+    for (void* it : free_list)
+    {
+        cudaFree(it);
+    }
 }

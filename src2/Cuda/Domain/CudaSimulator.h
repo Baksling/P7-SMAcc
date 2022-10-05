@@ -29,6 +29,6 @@ struct simulation_strategy
 class cuda_simulator
 {
 public:
-    void simulate(stochastic_model_t* model, simulation_strategy* strategy);
+    static void simulate(stochastic_model_t* model, simulation_strategy* strategy);
 };
 #endif
