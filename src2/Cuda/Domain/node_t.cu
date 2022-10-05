@@ -63,7 +63,6 @@ void node_t::cuda_allocate(node_t** pointer, std::list<void*>* free_list)
 {
     cudaMalloc(pointer, sizeof(node_t));
     free_list->push_back(*pointer);
-
     std::list<edge_t*> edge_pointers;
     const lend_array<edge_t*> edges = this->get_edges();
     for (int i = 0; i < edges.size(); ++i)
@@ -74,7 +73,10 @@ void node_t::cuda_allocate(node_t** pointer, std::list<void*>* free_list)
         edge_pointers.push_back(edge_p);
     }
     constraint_t* invariant_p = nullptr;
-    this->invariant_->cuda_allocate(&invariant_p, free_list);
+    if (this->invariant_ != nullptr)
+    {
+        this->invariant_->cuda_allocate(&invariant_p, free_list);
+    }
     node_t result(this, invariant_p, cuda_to_array(&edge_pointers, free_list));
     cudaMemcpy(*pointer, &result, sizeof(node_t), cudaMemcpyHostToDevice);
 }

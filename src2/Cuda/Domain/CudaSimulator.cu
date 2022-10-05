@@ -102,24 +102,20 @@ __global__ void simulate_gpu(
     int* output
 )
 {
-    const unsigned int idx = threadIdx.x + blockDim.x * blockIdx.x;
-    curand_init(options->seed, idx, idx, &r_state[idx]);
-
+    const unsigned long long idx = threadIdx.x + blockDim.x * blockIdx.x;
+    curand_init(static_cast<unsigned long long>(options->seed), idx, idx, &r_state[idx]);
     array_t<clock_timer_t> internal_timers = model->create_internal_timers();
     const lend_array<clock_timer_t> lend_internal_timers = lend_array<clock_timer_t>(&internal_timers);
-
-    for (int i = 0; i < options->simulation_amount; ++i)
+    for (unsigned int i = 0; i < options->simulation_amount; ++i)
     {
         //calculate the current simulation id
-        const int sim_id = i + options->simulation_amount * static_cast<int>(idx);
+        const int sim_id = static_cast<int>(i) + options->simulation_amount * static_cast<int>(idx);
         output[sim_id] = HIT_MAX_STEPS;
-
         model->reset_timers(&internal_timers);
-
         node_t* current_node = model->get_start_node();
         unsigned int steps = 0;
         bool hit_max_steps = false;
-
+        
         while(true)
         {
             if(steps >= options->max_steps_pr_sim)
@@ -128,14 +124,12 @@ __global__ void simulate_gpu(
                 break;
             }
             steps++;
-
             //check current position is valid
             
             if(!current_node->evaluate_invariants(&lend_internal_timers))
             {
                 break;
             }
-
             //Progress time
             if (!current_node->is_branch_point())
             {
@@ -157,7 +151,6 @@ __global__ void simulate_gpu(
 
             current_node = next_edge->get_dest();
             next_edge->execute_updates(&lend_internal_timers);
-
             if(current_node->is_goal_node())
             {
                 break;
@@ -219,7 +212,6 @@ void cuda_simulator::simulate(stochastic_model_t* model, simulation_strategy* st
     //setup start variables
     const steady_clock::time_point start = steady_clock::now();
     const int total_simulations = strategy->total_simulations();
-
     //setup random state
     curandState* state;
     cudaMalloc(&state, sizeof(curandState) * strategy->parallel_degree * strategy->threads_n);
@@ -227,11 +219,9 @@ void cuda_simulator::simulate(stochastic_model_t* model, simulation_strategy* st
     //setup results array
     int* results = nullptr;
     cudaMalloc(&results, sizeof(int)*total_simulations);
-
     std::list<void*> free_list;
     stochastic_model_t* model_d = nullptr;
     model->cuda_allocate(&model_d, &free_list);
-    
     //implement here
     model_options* options_d = nullptr;
     const model_options options = {
@@ -241,10 +231,9 @@ void cuda_simulator::simulate(stochastic_model_t* model, simulation_strategy* st
     };
     cudaMalloc(&options_d, sizeof(model_options));
     cudaMemcpy(options_d, &options, sizeof(model_options), cudaMemcpyHostToDevice);
-    
     //run simulations
     simulate_gpu<<<strategy->parallel_degree, strategy->threads_n>>>(
-        model_d, &options, state, results);
+        model_d, options_d, state, results);
 
     //wait for all processes to finish
     cudaDeviceSynchronize();
@@ -253,12 +242,12 @@ void cuda_simulator::simulate(stochastic_model_t* model, simulation_strategy* st
 
     std::map<int, int> node_results;
     read_results(results, total_simulations, &node_results);
-    
+    //print_results(&node_results, total_simulations);
     
     cudaFree(results);
     cudaFree(state);
     cudaFree(options_d);
-
+    
     for (void* it : free_list)
     {
         cudaFree(it);

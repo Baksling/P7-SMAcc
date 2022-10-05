@@ -28,7 +28,6 @@ GPU CPU bool is_boolean_operator(const logical_operator op)
 CPU GPU double constraint_t::get_logical_value(const int timer_id, const lend_array<clock_timer_t>* timer_arr) const
 {
     if(is_boolean_operator(this->type_)) return BIG_DOUBLE;
-    
     return timer_id == NO_ID
     ? static_cast<double>(this->value_)
     : timer_arr->at(timer_id)->get_time();
@@ -182,11 +181,9 @@ public:
 GPU bool constraint_t::evaluate(const lend_array<clock_timer_t>* timer_arr)
 {
     if(is_boolean_operator(this->type_) || this->children_count_ == 0) return this->evaluate_as_leaf(timer_arr); 
-
     cuda_stack<constraint_t*> stack = cuda_stack<constraint_t*>(this->children_count_*2+1);
     cuda_stack<bool> b_stack = cuda_stack<bool>(this->children_count_+1);
     constraint_t* current = this;
-    
     while(true)
     {
         while(current != nullptr)
@@ -316,12 +313,12 @@ void constraint_t::cuda_allocate(constraint_t** pointer, std::list<void*>* free_
 {
     cudaMalloc(pointer, sizeof(constraint_t));
     free_list->push_back(*pointer);
-
     constraint_t* con1 = nullptr;
-    if (this->con1_ != nullptr)
-    {
-        this->con1_->cuda_allocate(&con1, free_list);
-    }
+    // if (this->con1_ != nullptr)
+    // {
+    //     printf("invariant 2\n");
+    //     this->con1_->cuda_allocate(&con1, free_list);
+    // }
     constraint_t* con2 = nullptr;
     if (this->con2_ != nullptr)
     {

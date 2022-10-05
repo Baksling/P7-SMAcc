@@ -52,10 +52,8 @@ void stochastic_model_t::cuda_allocate(stochastic_model_t** pointer, std::list<v
 {
     cudaMalloc(pointer, sizeof(stochastic_model_t));
     free_list->push_back(*pointer);
-    
     node_t* node_p = nullptr;
     this->start_node_->cuda_allocate(&node_p, free_list);
-
     std::list<clock_timer_t*> timer_pointer;
     for (int i = 0; i < timers_.size(); ++i)
     {
@@ -66,5 +64,4 @@ void stochastic_model_t::cuda_allocate(stochastic_model_t** pointer, std::list<v
     }
     stochastic_model_t result(node_p, cuda_to_array(&timer_pointer, free_list));
     cudaMemcpy(*pointer, &result, sizeof(stochastic_model_t), cudaMemcpyHostToDevice);
-    
 }

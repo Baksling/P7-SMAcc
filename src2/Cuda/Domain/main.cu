@@ -18,8 +18,15 @@ int main(int argc, char* argv[])
 
     edge_t* edge0_1 = new edge_t(0, 1, &node1, &con1);
     edge_t* edge0_2 = new edge_t(1, 1, &node2, &con2);
-    edge_t* edge1_0 = new edge_t(2, 1, &node0, nullptr);
+    //edge_t* edge1_0 = new edge_t(2, 1, &node0, nullptr);
 
+    clock_timer_t timer1 = clock_timer_t(0, 0.0);
+    clock_timer_t timer2 = clock_timer_t(1, 0.0);
+
+    std::list<clock_timer_t*> clock_lst;
+    clock_lst.push_back(&timer1);
+    clock_lst.push_back(&timer2);
+    
     std::list<edge_t*> node0_lst;
     std::list<edge_t*> node1_lst;
     
@@ -27,20 +34,21 @@ int main(int argc, char* argv[])
     node0_lst.push_back(edge0_2);
     node0.set_edges(&node0_lst);
 
-    node1_lst.push_back(edge1_0);
-    node1.set_edges(&node1_lst);
+    //node1_lst.push_back(edge1_0);
+    //node1.set_edges(&node1_lst);
 
 
     pretty_visitor visitor;
-    stochastic_model_t model(&node0, array_t<clock_timer_t*>(0));
+    stochastic_model_t model(&node0, to_array(&clock_lst));
     if (argc > 1)
     {
         uppaal_tree_parser parser;
         model = parser.parse_xml(argv[1]);
     }
     visitor.visit(&model);
-    simulation_strategy strategy = {32, 512, 61, 1, 1000};
+    simulation_strategy strategy = {1, 1, 1, 1, 1000};
     cuda_simulator::simulate(&model, &strategy);
+
 
     
     

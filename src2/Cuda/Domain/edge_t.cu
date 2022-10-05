@@ -66,7 +66,10 @@ void edge_t::cuda_allocate(edge_t** pointer, std::list<void*>* free_list)
     this->dest_->cuda_allocate(&node_p, free_list);
 
     constraint_t* guard_p = nullptr;
-    this->guard_->cuda_allocate(&guard_p, free_list);
+    if (this->guard_ != nullptr)
+    {
+        this->guard_->cuda_allocate(&guard_p, free_list);
+    }
 
     std::list<update_t*> update_pointers;
     for (int i = 0; i < this->updates_.size(); ++i)
