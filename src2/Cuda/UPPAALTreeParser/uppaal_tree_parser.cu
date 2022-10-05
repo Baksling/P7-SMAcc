@@ -391,6 +391,6 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
     
     //int* branchpoint_nodes_arr = list_to_arr(branchpoint_nodes);
     
-    return stochastic_model_t(get_node(init_node_id_), new array_t<clock_timer_t>(timer_list_, timer_amount_));
+    return stochastic_model_t(get_node(init_node_id_), array_t<clock_timer_t*>(&timer_list_, timer_amount_));
 }
 

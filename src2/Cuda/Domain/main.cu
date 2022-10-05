@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
     constraint_t con2 = constraint_t::greater_equal_v(0, 0.0f);
     
     node_t node0 = node_t(0, false, &con0,false);
-    node_t node1 = node_t(1, false, nullptr,true);
+    node_t node1     = node_t(1, false, nullptr,true);
     node_t node2 = node_t(2, false, nullptr,false);
 
     edge_t* edge0_1 = new edge_t(0, 1, &node1, &con1);
@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-        stochastic_model_t model(&node0, nullptr);
+        stochastic_model_t model(&node0, array_t<clock_timer_t*>(0));
         visitor.visit(&model);
     }
     

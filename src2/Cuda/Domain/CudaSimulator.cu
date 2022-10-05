@@ -59,7 +59,7 @@ GPU void progress_time(const lend_array<clock_timer_t>* timers, const double dif
 }
 
 __global__ void simulate_gpu(
-    const stochastic_model_t* model,
+    stochastic_model_t* model,
     const model_options* options,
     curandState* r_state,
     int* output
@@ -140,7 +140,7 @@ __global__ void simulate_gpu(
 }
 
 
-void cuda_simulator::simulate(const stochastic_model_t* model, simulation_strategy* strategy)
+void cuda_simulator::simulate(stochastic_model_t* model, simulation_strategy* strategy)
 {
     //setup start variables
     const steady_clock::time_point start = steady_clock::now();
