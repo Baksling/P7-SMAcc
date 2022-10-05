@@ -53,6 +53,7 @@ public:
     CPU GPU int get_timer1_id() const;
     GPU CPU int get_timer2_id() const;
     CPU GPU float get_value() const;
+    void cuda_allocate(constraint_t** pointer, std::list<void*>* free_list);
     
     //FACTORY CONSTRUCTORS
     static constraint_t less_equal_v(int timer_id, float value);

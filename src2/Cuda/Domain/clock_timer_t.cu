@@ -36,4 +36,11 @@ void clock_timer_t::accept(visitor* v)
     //v.visit()
 }
 
+void clock_timer_t::cuda_allocate(clock_timer_t** pointer, std::list<void*>* free_list)
+{
+    cudaMalloc(pointer, sizeof(clock_timer_t));
+    free_list->push_back(*pointer);
+    cudaMemcpy(*pointer, this, sizeof(clock_timer_t), cudaMemcpyHostToDevice);
+}
+
 

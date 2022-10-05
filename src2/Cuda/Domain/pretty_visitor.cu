@@ -3,16 +3,14 @@
 void pretty_visitor::visit(constraint_t* constraint)
 {
     if (constraint == nullptr) return;
-    printf("    Type: %d | Timer 1 id: %3d | Timer 2 id: %3d | value: %10f \n", constraint->get_type(),
+    printf("    Constraint type: %d | Timer 1 id: %3d | Timer 2 id: %3d | value: %10f \n", constraint->get_type(),
            constraint->get_timer1_id(), constraint->get_timer2_id(), constraint->get_value());
     constraint->accept(this);
-        
 }
 
 void pretty_visitor::visit(edge_t* edge)
 {
     if (edge == nullptr) return;
-
     printf("    Edge id: %3d | Weight: %4f | Dest node: %3d \n", edge->get_id(), edge->get_weight(),
            edge->get_dest()->get_id());
     edge->accept(this);

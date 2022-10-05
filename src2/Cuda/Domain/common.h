@@ -107,6 +107,28 @@ array_t<T> to_array(std::list<T>* list)
 }
 
 template<typename T>
+array_t<T> cuda_to_array(std::list<T>* list, std::list<void*>* free_list)
+{
+    int size = static_cast<int>(list->size());
+    T* cuda_arr = nullptr;
+    T* local_arr = static_cast<T*>(malloc(sizeof(T)*size));
+    cudaMalloc(&cuda_arr, sizeof(T) * size);
+    free_list->push_back(cuda_arr);
+    
+    int i = 0;
+    for(T item : *list)
+    {
+        local_arr[i] = item;
+        i++;
+    }
+
+    cudaMemcpy(cuda_arr, local_arr, sizeof(T) * size, cudaMemcpyHostToDevice);
+    array_t<T> info = array_t<T>(cuda_arr, size);
+    free(local_arr);
+    return info;
+}
+
+template<typename T>
 array_t<T> to_array_as_pointers(std::list<T*>* list)
 {
     int size = static_cast<int>(list->size());

@@ -12,7 +12,7 @@
 using namespace std::chrono;
 
 
-GPU edge_t* choose_next_edge(const lend_array<edge_t>* edges,
+GPU edge_t* choose_next_edge(const lend_array<edge_t*>* edges,
     curandState* states, const unsigned int thread_id)
 {
     //TODO FILTER TO ONLY VALID EDGES!
@@ -23,7 +23,10 @@ GPU edge_t* choose_next_edge(const lend_array<edge_t>* edges,
     //summed weight
     float weight_sum = 0.0f;
     for(int i = 0; i < edges->size(); i++)
-        weight_sum += edges->at(i)->get_weight();
+    {
+        edge_t* temp = *edges->at(i);
+        weight_sum += temp->get_weight();
+    }
 
     //curand_uniform return ]0.0f, 1.0f], but we require [0.0f, 1.0f[
     //conversion from float to int is floored, such that a array of 10 (index 0..9) will return valid index.
@@ -33,13 +36,14 @@ GPU edge_t* choose_next_edge(const lend_array<edge_t>* edges,
     //pick the weighted random value.
     for (int i = 0; i < edges->size(); ++i)
     {
-        r_acc += edges->at(i)->get_weight();
-        if(r_val < r_acc) return edges->at(i);
+        edge_t* temp = *edges->at(i);
+        r_acc += temp->get_weight();
+        if(r_val < r_acc) return temp;
     }
 
     //This should be handled in for loop.
     //This is for safety :)
-    return edges->at(edges->size() - 1);
+    return *edges->at(edges->size() - 1);
 }
 
 GPU void progress_time(const lend_array<clock_timer_t>* timers, const double difference, curandState* states, const unsigned int thread_id)
@@ -102,7 +106,7 @@ __global__ void simulate_gpu(
                 progress_time(&lend_internal_timers, max_progression, r_state, idx);
             }
 
-            const lend_array<edge_t> outgoing_edges = current_node->get_edges();
+            const lend_array<edge_t*> outgoing_edges = current_node->get_edges();
             if(outgoing_edges.size() <= 0)
             {
                 break;

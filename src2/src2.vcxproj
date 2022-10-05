@@ -163,6 +163,7 @@
     <ClCompile Include="Cuda\Domain\common.cu" />
     <ClCompile Include="Cuda\Domain\constraint_t.cu" />
     <ClCompile Include="Cuda\Domain\CudaSimulator.cu" />
+    <ClCompile Include="Cuda\Domain\cuda_visitor.cu" />
     <ClCompile Include="Cuda\Domain\edge_t.cu" />
     <ClCompile Include="Cuda\Domain\main.cu" />
     <ClCompile Include="Cuda\Domain\node_t.cu" />
@@ -498,6 +499,7 @@
     <ClCompile Include="Cuda\Domain\clock_timer_t.h" />
     <ClCompile Include="Cuda\Domain\update_t.h" />
     <ClInclude Include="Cuda\Domain\CudaSimulator.h" />
+    <ClInclude Include="Cuda\Domain\cuda_visitor.h" />
     <ClInclude Include="Cuda\Domain\pretty_visitor.h" />
     <ClInclude Include="Cuda\Domain\visitor.h" />
     <ClInclude Include="Cuda\Projekt\common.h" />

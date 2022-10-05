@@ -15,12 +15,12 @@ int main(int argc, char* argv[])
     node_t node1 = node_t(1, false, nullptr,true);
     node_t node2 = node_t(2, false, nullptr,false);
 
-    edge_t edge0_1 = edge_t(0, 1, &node1, &con1);
-    edge_t edge0_2 = edge_t(1, 1, &node2, &con2);
-    edge_t edge1_0 = edge_t(2, 1, &node0, nullptr);
+    edge_t* edge0_1 = new edge_t(0, 1, &node1, &con1);
+    edge_t* edge0_2 = new edge_t(1, 1, &node2, &con2);
+    edge_t* edge1_0 = new edge_t(2, 1, &node0, nullptr);
 
-    std::list<edge_t> node0_lst;
-    std::list<edge_t> node1_lst;
+    std::list<edge_t*> node0_lst;
+    std::list<edge_t*> node1_lst;
     
     node0_lst.push_back(edge0_1);
     node0_lst.push_back(edge0_2);

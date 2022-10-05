@@ -312,6 +312,25 @@ CPU GPU float constraint_t::get_value() const
     return this->value_;
 }
 
+void constraint_t::cuda_allocate(constraint_t** pointer, std::list<void*>* free_list)
+{
+    cudaMalloc(pointer, sizeof(constraint_t));
+    free_list->push_back(*pointer);
+
+    constraint_t* con1 = nullptr;
+    if (this->con1_ != nullptr)
+    {
+        this->con1_->cuda_allocate(&con1, free_list);
+    }
+    constraint_t* con2 = nullptr;
+    if (this->con2_ != nullptr)
+    {
+        this->con2_->cuda_allocate(&con2, free_list);
+    }
+    constraint_t result(this->type_, con1, con2, this->timer_id1_, this->timer_id2_, this->value_);
+    cudaMemcpy(*pointer, &result, sizeof(constraint_t), cudaMemcpyHostToDevice);
+}
+
 
 //! LESS THAN OR EQUAL
 constraint_t constraint_t::less_equal_v(const int timer_id, const float value)

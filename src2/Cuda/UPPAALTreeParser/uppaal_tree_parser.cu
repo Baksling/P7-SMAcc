@@ -253,7 +253,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
     string path = file_path;
     xml_document doc;
 
-    map<int, list<edge_t>> node_edge_map;
+    map<int, list<edge_t*>> node_edge_map;
     
     // load the XML file
     if (!doc.load_file(file_path))
@@ -276,7 +276,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             string string_name = locs.child("name").child_value();
             const int node_id = xml_id_to_int(string_id);
             bool is_goal = false;
-            node_edge_map.insert_or_assign(node_id, list<edge_t>());
+            node_edge_map.insert_or_assign(node_id, list<edge_t*>());
             
             list<constraint_t> invariants;
             
@@ -323,7 +323,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             int target_id = xml_id_to_int(target);
             
             list<constraint_t> guards;
-            list<update_t> updates;
+            list<update_t*> updates;
             float probability = 1.0f;
             
             for (pugi::xml_node labels: trans.children("label"))
@@ -352,7 +352,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                             continue;
                         //updates.push_back(update_t(get_timer_id(expr), get_expr_value(expr)));
                         //insert_into_list(&update_list_, egde_id, update_t(update_id++, get_timer_id(expr),get_expr_value(expr)));
-                        updates.push_back(update_t(update_id,get_timer_id(expr),get_expr_value_float(expr)));
+                        updates.push_back(new update_t(update_id,get_timer_id(expr),get_expr_value_float(expr)));
                     }
                 }
                 else if (kind == "probability")
@@ -362,12 +362,12 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             }
             
             node_t* target_node = get_node(target_id);
-            edge_t result_egde = edge_t(edge_id++, probability, target_node, list_to_arr(guards));
+            edge_t* result_egde = new edge_t(edge_id++, probability, target_node, list_to_arr(guards));
             
             if (guards.size() == 0)
-                result_egde = edge_t(edge_id, probability, target_node, nullptr);
+                result_egde = new edge_t(edge_id, probability, target_node, nullptr);
 
-            result_egde.set_updates(&updates);
+            result_egde->set_updates(&updates);
             node_edge_map.at(source_id).push_back(result_egde);
             
             
