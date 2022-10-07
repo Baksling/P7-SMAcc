@@ -14,15 +14,20 @@ struct model_options
 
 struct simulation_strategy
 {
-    int parallel_degree;
+    int block_n;
     int threads_n;
     unsigned int simulation_amounts;
     int sim_count;
     unsigned int max_sim_steps;
 
-    int total_simulations() const
+    int degree_of_parallelism() const
     {
-        return parallel_degree*threads_n*static_cast<int>(simulation_amounts);
+        return block_n*threads_n;
+    }
+    
+    unsigned long total_simulations() const
+    {
+        return block_n*threads_n*simulation_amounts;
     }
 };
 

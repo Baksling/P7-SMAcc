@@ -1,5 +1,4 @@
 ﻿#include "stochastic_model_t.h"
-#include <cassert>
 
 stochastic_model_t::stochastic_model_t(node_t* start_node, array_t<clock_timer_t*> timers)
 {
@@ -34,7 +33,12 @@ GPU array_t<clock_timer_t> stochastic_model_t::create_internal_timers()
 
 GPU void stochastic_model_t::reset_timers(array_t<clock_timer_t>* active_timers)
 {
-    assert(active_timers->size() == this->timers_.size());
+    if(active_timers->size() != this->timers_.size())
+    {
+        printf("Timers mitchmatch!!");
+        return;
+    }
+    
     for (int i = 0; i < active_timers->size(); i++)
     {
         clock_timer_t* timer = active_timers->at(i);

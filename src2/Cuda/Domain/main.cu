@@ -14,10 +14,10 @@ int main(int argc, char* argv[])
     
     node_t node0 = node_t(0, false, &con0,false);
     node_t node1     = node_t(1, false, nullptr,true);
-    node_t node2 = node_t(2, false, nullptr,false);
+    node_t node2 = node_t(2, false, nullptr,true);
 
-    edge_t* edge0_1 = new edge_t(0, 1, &node1, &con1);
-    edge_t* edge0_2 = new edge_t(1, 1, &node2, &con2);
+    edge_t* edge0_1 = new edge_t(0, 1, &node1, nullptr);
+    edge_t* edge0_2 = new edge_t(1, 1, &node2, nullptr);
     //edge_t* edge1_0 = new edge_t(2, 1, &node0, nullptr);
 
     clock_timer_t timer1 = clock_timer_t(0, 0.0);
@@ -42,15 +42,13 @@ int main(int argc, char* argv[])
     stochastic_model_t model(&node0, to_array(&clock_lst));
     if (argc > 1)
     {
+        printf("USING PARSER\n");
         uppaal_tree_parser parser;
         model = parser.parse_xml(argv[1]);
     }
     visitor.visit(&model);
-    simulation_strategy strategy = {1, 1, 1, 1, 1000};
+    simulation_strategy strategy = {32, 512, 62, 1, 100};
     cuda_simulator::simulate(&model, &strategy);
-
-
-    
     
     std::cout << "bacon\n";
 

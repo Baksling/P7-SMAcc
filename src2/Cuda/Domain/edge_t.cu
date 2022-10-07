@@ -36,8 +36,9 @@ void edge_t::set_updates(std::list<update_t*>* updates)
 
 GPU bool edge_t::evaluate_constraints(const lend_array<clock_timer_t>* timers) const
 {
-    if(this->guard_ == nullptr) return true;
-    return this->guard_->evaluate(timers);
+    const bool valid_dest = this->dest_->evaluate_invariants(timers);
+    if(this->guard_ == nullptr) return valid_dest;
+    return this->guard_->evaluate(timers) && valid_dest;
 }
 
 void edge_t::accept(visitor* v)

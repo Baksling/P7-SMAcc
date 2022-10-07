@@ -1,7 +1,5 @@
 ﻿#include "constraint_t.h"
 
-#include <assert.h>
-
 GPU CPU double cuda_abs(const double f)
 {
     return f < 0 ? -f : f;
@@ -134,7 +132,7 @@ public:
     GPU explicit cuda_stack(int size)
     {
         this->size_ = size;
-        this->stack_ = static_cast<T*>(malloc(sizeof(T)*size_));
+        this->stack_ = static_cast<T*>(malloc(sizeof(T)*size_));  // NOLINT(bugprone-sizeof-expression)
         this->stack_pointer_ = -1;
     }
     GPU void push(T item)
@@ -162,7 +160,7 @@ public:
         --this->stack_pointer_;
         return true;
     }
-    GPU bool is_empty()
+    GPU bool is_empty() const
     {
         return this->stack_pointer_ < 0;
     }
@@ -180,10 +178,11 @@ public:
 
 GPU bool constraint_t::evaluate(const lend_array<clock_timer_t>* timer_arr)
 {
-    if(is_boolean_operator(this->type_) || this->children_count_ == 0) return this->evaluate_as_leaf(timer_arr); 
+    if(is_boolean_operator(this->type_) || this->children_count_ == 0) return this->evaluate_as_leaf(timer_arr);
     cuda_stack<constraint_t*> stack = cuda_stack<constraint_t*>(this->children_count_*2+1);
     cuda_stack<bool> b_stack = cuda_stack<bool>(this->children_count_+1);
     constraint_t* current = this;
+
     while(true)
     {
         while(current != nullptr)
@@ -205,13 +204,21 @@ GPU bool constraint_t::evaluate(const lend_array<clock_timer_t>* timer_arr)
         {
             if(current->type_ == logical_operator::Not)
             {
-                assert(b_stack.get_count() > 0);
+                if(b_stack.get_count() < 1)
+                {
+                    printf("ASSERTION FAILED");
+                    break;
+                }
                 const bool b1 = b_stack.pop();
                 b_stack.push( evaluate_boolean(b1,false, current->get_type()) );
             }
             else if(is_boolean_operator(current->get_type()))
             {
-                assert(b_stack.get_count() > 1);
+                if(b_stack.get_count() < 2)
+                {
+                    printf("ASSERTION FAILED");
+                    break;
+                }
                 const bool b1 = b_stack.pop();
                 const bool b2 = b_stack.pop();
                 b_stack.push( evaluate_boolean(b1,b2, current->get_type()) );
@@ -239,7 +246,7 @@ GPU double constraint_t::max_time_progression(const lend_array<clock_timer_t>* t
 {
     cuda_stack<constraint_t*> stack = cuda_stack<constraint_t*>(this->children_count_);
     constraint_t* current = nullptr;
-    
+
     while(true)
     {
         while(current != nullptr)
@@ -274,7 +281,8 @@ GPU double constraint_t::max_time_progression(const lend_array<clock_timer_t>* t
             current = nullptr;
         }
     }
-
+    
+    stack.free_internal();
     return max_progression;
 }
 

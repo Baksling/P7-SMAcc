@@ -41,6 +41,13 @@ public:
         return &this->store_[i];
     }
 
+    GPU CPU T get(int i)
+    {
+        if(i < 0 || i >= this->size_)
+            return nullptr;
+        return this->store_[i];
+    }
+
     GPU CPU T* arr() const
     {
         return this->store_;
@@ -82,6 +89,13 @@ public:
         return &this->store_[i];
     }
 
+    GPU CPU T get(int i) const
+    {
+        if(i < 0 || i >= this->size_)
+            return nullptr;
+        return this->store_[i];
+    }
+    
     GPU CPU int size() const
     {
         return this->size_;

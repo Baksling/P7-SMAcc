@@ -159,7 +159,6 @@ __global__ void simulate_d_2(
     int* output
     )
 {
-    // printf("HELOL\n");
     // model->pretty_print();
     // printf("HELOLo");
     //init variables and random state
@@ -326,7 +325,6 @@ void cuda_simulator::simulate(const stochastic_model* model, const simulation_st
     //count the results
     unordered_map<int, int> node_results;
     count_results(total_simulations, local_results, &node_results);
-
     print_results(&node_results, total_simulations);
 
     //free heap allocated and cuda memory

@@ -5,36 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c81c9d2a-66d3-4b0c-b40b-c667cea459e8" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/x64/Debug/clock_timer_t.obj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/x64/Debug/common.obj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/x64/Debug/constraint_t.obj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/x64/Debug/cuda_visitor.obj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/x64/Debug/edge_t.obj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/x64/Debug/node_t.obj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/x64/Debug/pretty_visitor.obj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/x64/Debug/stochastic_model_t.obj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/x64/Debug/update_t.obj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/x64/Debug/visitor.obj" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Domain/CudaSimulator.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/CudaSimulator.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Domain/CudaSimulator.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/CudaSimulator.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Domain/common.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/common.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Domain/constraint_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/constraint_t.cu" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Domain/edge_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/edge_t.cu" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Domain/main.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/main.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/node_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/node_t.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Domain/pretty_visitor.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/pretty_visitor.cu" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Domain/stochastic_model_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/stochastic_model_t.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/x64/Debug/Timer.obj" beforeDir="false" afterPath="$PROJECT_DIR$/x64/Debug/Timer.obj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/x64/Debug/Update.obj" beforeDir="false" afterPath="$PROJECT_DIR$/x64/Debug/Update.obj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/x64/Debug/cuda_map.obj" beforeDir="false" afterPath="$PROJECT_DIR$/x64/Debug/cuda_map.obj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/x64/Debug/edge_d.obj" beforeDir="false" afterPath="$PROJECT_DIR$/x64/Debug/edge_d.obj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/x64/Debug/main.obj" beforeDir="false" afterPath="$PROJECT_DIR$/x64/Debug/main.obj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/x64/Debug/src2.tlog/CL.command.1.tlog" beforeDir="false" afterPath="$PROJECT_DIR$/x64/Debug/src2.tlog/CL.command.1.tlog" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/x64/Debug/src2.tlog/CL.read.1.tlog" beforeDir="false" afterPath="$PROJECT_DIR$/x64/Debug/src2.tlog/CL.read.1.tlog" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/x64/Debug/src2.tlog/CL.write.1.tlog" beforeDir="false" afterPath="$PROJECT_DIR$/x64/Debug/src2.tlog/CL.write.1.tlog" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/x64/Debug/stochastic_model.obj" beforeDir="false" afterPath="$PROJECT_DIR$/x64/Debug/stochastic_model.obj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/x64/Debug/timer_d.obj" beforeDir="false" afterPath="$PROJECT_DIR$/x64/Debug/timer_d.obj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/x64/Debug/uneven_list.obj" beforeDir="false" afterPath="$PROJECT_DIR$/x64/Debug/uneven_list.obj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/x64/Debug/vc142.idb" beforeDir="false" afterPath="$PROJECT_DIR$/x64/Debug/vc142.idb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/x64/Debug/vc142.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/x64/Debug/vc142.pdb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/cuda_simulator.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/cuda_simulator.cu" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,9 +25,18 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/../../../../../../Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include/limits" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../../../../../../Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include/unordered_map" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../../../../../../Program Files (x86)/Windows Kits/10/Include/10.0.18362.0/ucrt/corecrt.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$Cuda$/builtin_types.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$Cuda$/cuda.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$Cuda$/cuda_runtime.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$Cuda$/cuda_runtime_api.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$Cuda$/curand.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$Cuda$/curand_kernel.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$Cuda$/curand_mtgp32_kernel.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$Cuda$/driver_types.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Cuda/Domain/Constraints/constraint_tt.cpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Cuda/Domain/Constraints/constraint_tt.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Cuda/Domain/common.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Cuda/Domain/constraint_t.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Cuda/Domain/edge_t.cu" root0="FORCE_HIGHLIGHTING" />
@@ -140,6 +129,8 @@
       <workItem from="1664360648623" duration="7720000" />
       <workItem from="1664791055408" duration="13130000" />
       <workItem from="1664812964966" duration="5090000" />
+      <workItem from="1665000435065" duration="24761000" />
+      <workItem from="1665076128860" duration="4292000" />
     </task>
     <servers />
   </component>
