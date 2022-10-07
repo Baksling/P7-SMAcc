@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
     {
         printf("USING PARSER\n");
         uppaal_tree_parser parser;
-        model = parser.parse_xml(argv[1]);
+        model = parser.parse(argv[1]);
     }
     visitor.visit(&model);
     simulation_strategy strategy = {32, 512, 62, 1, 100};

@@ -8,6 +8,8 @@
 using namespace std;
 using namespace pugi;
 
+#define THROW_LINE(arg); throw parser_exception(arg, __FILE__, __LINE__);
+
 constraint_t get_constraint(const string& expr, const int timer_id, const float value)
 {
     if(expr.find("<=") != std::string::npos)
@@ -20,7 +22,7 @@ constraint_t get_constraint(const string& expr, const int timer_id, const float 
         return constraint_t::less_v(timer_id, value);
     if(expr.find('>') != std::string::npos)
         return constraint_t::greater_v(timer_id, value);
-    throw "Operand in " + expr + " not found, sad..";
+    THROW_LINE("Operand in " + expr + " not found, sad..");
 }
 
 constraint_t get_constraint(const string& expr, const int timer_id_1, const int timer_id_2)
@@ -35,7 +37,7 @@ constraint_t get_constraint(const string& expr, const int timer_id_1, const int 
         return constraint_t::less_t(timer_id_1, timer_id_2);
     if(expr.find('>') != std::string::npos)
         return constraint_t::greater_t(timer_id_1, timer_id_2);
-    throw "Operand in " + expr + " not found, sad..";
+    THROW_LINE("Operand in " + expr + " not found, sad..")
 }
 
 std::string replace_all(std::string str, const std::string& from, const std::string& to) {
@@ -54,8 +56,8 @@ bool in_array(const char &value, const std::vector<char> &array)
 
 int get_expr_value(const string& expr)
 {
-    string expr_wout_spaces = replace_all(expr, " ", "");
-    int index = expr_wout_spaces.length();
+    const string expr_wo_ws = replace_all(expr, " ", "");
+    unsigned long long index = expr_wo_ws.length();
     while (true)
     {
         if (index == 0)
@@ -63,9 +65,9 @@ int get_expr_value(const string& expr)
             return 0;
         }
         
-        if (!in_array(expr_wout_spaces[--index], {'1','2','3','4','5','6','7','8','9','0'}))
+        if (!in_array(expr_wo_ws[--index], {'1','2','3','4','5','6','7','8','9','0'}))
         {
-            return stoi(expr_wout_spaces.substr(index+1));
+            return stoi(expr_wo_ws.substr(index+1));
         }
     }
 }
@@ -73,7 +75,7 @@ int get_expr_value(const string& expr)
 float get_expr_value_float(const string& expr)
 {
     const string expr_wo_ws = replace_all(expr, " ", "");
-    int index = expr_wo_ws.length();
+    unsigned long long index = expr_wo_ws.length();
     while (true)
     {
         if (index == 0)
@@ -90,7 +92,7 @@ float get_expr_value_float(const string& expr)
 
 template <typename T> T* list_to_arr(list<T> l)
 {
-    T* arr = (T*)malloc(sizeof(T)*l.size());
+    T* arr = static_cast<T*>(malloc(sizeof(T) * l.size()));
     int k = 0;
     for (T const &i: l) {
         arr[k++] = i;
@@ -103,45 +105,17 @@ int xml_id_to_int(string id_string)
 {
     return stoi(id_string.replace(0,2,""));
 }
-//
-// void print1(list<edge_t> const &list)
-// {
-//     for (auto i: list) {
-//         std::cout << i.get_weight() << " <-1-> " << i.get_weight()  << std::endl;
-//     }
-// }
-//
-// void print2(list<list<edge_t>> const &list)
-// {
-//     for (auto const &i: list) {
-//         for (auto q: i) {
-//
-//         }
-//     }
-// // }
-//
-// void print_2_guard(list<list<constraint_t>> const &list)
-// {
-//     // int index = 0;
-//     // for (auto const &i: list) {
-//     //     cout << " "<< index++ << ":"<<endl;
-//     //     for (auto q: i) {
-//     //         std::cout << q.get_value() << " -> " << q.get_type()  << std::endl;
-//     //     }
-//     // }
-// }
 
-int uppaal_tree_parser::get_timer_id(string expr) const
+int uppaal_tree_parser::get_timer_id(const string& expr) const
 {
-    size_t sub_end = expr.find("=");
-    string expr_wout_spaces = replace_all(expr, string(" "), string(""));
+    const string expr_wout_spaces = replace_all(expr, string(" "), string(""));
     int index = 0;
 
     while (true)
     {
-        if (index == expr.length())
+        if (static_cast<int>(expr.size()) == index)
         {
-            return expr.length();
+            THROW_LINE("sum tin wong")
         }
         
         if (in_array(expr_wout_spaces[++index], {'<','>','='}))
@@ -150,12 +124,17 @@ int uppaal_tree_parser::get_timer_id(string expr) const
         }
     }
 
-    string sub = expr_wout_spaces.substr(0, index);
+    const string sub = expr_wout_spaces.substr(0, index);
+
+    if ( timers_map_.count(sub) == 0)
+    {
+        THROW_LINE("sum tin wong")
+    }
     
-    return timers_map_.count(sub) == 1 ?  timers_map_.at(sub) : throw "sum tin wong";
+    return timers_map_.at(sub);
 }
 
-list<string> split_expr(string expr)
+list<string> split_expr(const string& expr)
 {
     list<string> result;
     std::stringstream test(expr);
@@ -168,17 +147,16 @@ list<string> split_expr(string expr)
     return result;
 }
 
-void uppaal_tree_parser::init_lists(xml_document* doc)
+void uppaal_tree_parser::init_clocks(const xml_document* doc)
 {
     for (pugi::xml_node templates: doc->child("nta").children("template"))
     {
         string decl = templates.child("declaration").child_value();
+
+        const size_t clock_start = decl.find("clock");
+
+        const size_t clock_end = decl.find(';');
         
-        size_t clock_start = decl.find("clock");
-        
-        size_t clock_end = decl.find(";");
-        
-        //string vars = decl.substr(clock_start, clock_end-1);
         string clocks = decl.substr(clock_start+5,clock_end-1);
         clocks = replace_all(clocks, string(" "), string(""));
 
@@ -193,44 +171,21 @@ void uppaal_tree_parser::init_lists(xml_document* doc)
                 clock_without = replace_all(clock, ";", "");
             timers_map_.insert_or_assign(clock_without,var_amount++);
         }
-
-        timer_list_ = static_cast<clock_timer_t*>(malloc(sizeof(clock_timer_t) * var_amount));
+        
         timer_amount_ = var_amount;
+        cout << "INIT VAR AMOUNT SIZE: " << var_amount << "\n";
         for (int i = 0; i < var_amount; i++)
         {
-            timer_list_[i] = clock_timer_t(i, 0);
-        }
-        
-        for (pugi::xml_node locs: templates.children("location"))
-        {
-            edge_list_.push_back(list<edge_t>());
-            invariance_list_.push_back(list<constraint_t>());
-        }
-
-        for (pugi::xml_node locs: templates.children("branchpoint"))
-        {
-            string string_id = locs.attribute("id").as_string();
-            branchpoint_nodes.push_back(xml_id_to_int(string_id));
-            edge_list_.push_back(list<edge_t>());
-            invariance_list_.push_back(list<constraint_t>());
-        }
-
-        string init_node = templates.child("init").attribute("ref").as_string();
-        init_node_id_ = xml_id_to_int(init_node);
-        
-        for (pugi::xml_node trans: templates.children("transition"))
-        {
-            guard_list_.push_back(list<constraint_t>());
-            update_list_.push_back(list<update_t>());
+            cout << "INIT CLOCK WITH ID: " << i << "\n";
+            timer_list_.push_back(new clock_timer_t(i, 0));
         }
     }
 }
 
 uppaal_tree_parser::uppaal_tree_parser()
-{
-}
+= default;
 
-node_t* uppaal_tree_parser::get_node(int target_id)
+node_t* uppaal_tree_parser::get_node(const int target_id) const
 {
     for(node_t* node: *nodes_)
     {
@@ -258,15 +213,13 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
     // load the XML file
     if (!doc.load_file(file_path))
     {
-        throw "!";
+        THROW_LINE("The specified file does not exist.. stupid.")
     }
-    
-    list<node_t> nodes__;
-    int update_id = 0;
-    int edge_id = 0;
-    //int invariant_id = 0;
 
-    init_lists(&doc);
+    int edge_id = 0;
+    int update_id = 0;
+
+    init_clocks(&doc);
     
     for (pugi::xml_node templates: doc.child("nta").children("template"))
     {
@@ -286,18 +239,17 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             string kind = locs.child("label").attribute("kind").as_string();
             string expr_string = locs.child("label").child_value();
 
-            list<string> exprs = split_expr(expr_string);
+            list<string> expressions = split_expr(expr_string);
             if (kind == "invariant")
             {
-                for(auto expr: exprs)
+                for(const auto& expr: expressions)
                 {
-                    if (expr == "")
+                    if (expr.empty())
                         continue;
                     invariants.push_back(get_constraint(expr, get_timer_id(expr), get_expr_value_float(expr)));
-                    insert_into_list(&invariance_list_, node_id, get_constraint(expr, get_timer_id(expr), get_expr_value_float(expr)));
                 }
             }
-            if (invariants.size() == 0)
+            if (invariants.empty())
                 nodes_->push_back(new node_t(node_id, false, nullptr, is_goal));
             else
                 nodes_->push_back(new node_t(node_id, false, list_to_arr(invariants), is_goal));
@@ -307,7 +259,6 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
         {
             string string_id = locs.attribute("id").as_string();
             const int node_id = xml_id_to_int(string_id);
-
             nodes_->push_back(new node_t(node_id, true));
         }
 
@@ -331,28 +282,24 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                 string kind = labels.attribute("kind").as_string();
                 string expr_string = labels.child_value();
 
-                list<string> exprs = split_expr(expr_string);
+                list<string> expressions = split_expr(expr_string);
                 if(kind == "guard")
                 {
-                    for(auto expr: exprs)
+                    for(const auto& expr: expressions)
                     {
-                        if (expr == "")
+                        if (expr.empty())
                             continue;
                         cout << get_constraint(expr,get_timer_id(expr), get_expr_value_float(expr)).get_type() << " \n";
                         guards.push_back(get_constraint(expr,get_timer_id(expr), get_expr_value_float(expr)));
-                        //insert_into_list(&guard_list_, egde_id_, constraint_t(get_timer_id(expr),get_expr_enum(expr),get_expr_value(expr)));
-                        
                     }
                 }
                 else if (kind == "assignment")
                 {
-                    for(auto expr: exprs)
+                    for(const auto& expr: expressions)
                     {
-                        if (expr == "")
+                        if (expr.empty())
                             continue;
-                        //updates.push_back(update_t(get_timer_id(expr), get_expr_value(expr)));
-                        //insert_into_list(&update_list_, egde_id, update_t(update_id++, get_timer_id(expr),get_expr_value(expr)));
-                        updates.push_back(new update_t(update_id,get_timer_id(expr),get_expr_value_float(expr)));
+                        updates.push_back(new update_t(update_id++,get_timer_id(expr),get_expr_value_float(expr)));
                     }
                 }
                 else if (kind == "probability")
@@ -362,35 +309,33 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             }
             
             node_t* target_node = get_node(target_id);
-            edge_t* result_egde = new edge_t(edge_id++, probability, target_node, list_to_arr(guards));
+            auto result_edge = new edge_t(edge_id++, probability, target_node, list_to_arr(guards));
             
-            if (guards.size() == 0)
-                result_egde = new edge_t(edge_id, probability, target_node, nullptr);
+            if (guards.empty())
+                result_edge = new edge_t(edge_id, probability, target_node, nullptr);
 
-            result_egde->set_updates(&updates);
-            node_edge_map.at(source_id).push_back(result_egde);
-            
-            
+            result_edge->set_updates(&updates);
+            node_edge_map.at(source_id).push_back(result_edge);
         }
     }
-    
-    // auto edges = new uneven_list<edge_d>(&edge_list_, edge_list_.size());
-    // auto invariants = new uneven_list<constraint_t>(&invariance_list_, invariance_list_.size());
-    // auto guards = new uneven_list<constraint_t>(&guard_list_, guard_list_.size());
-    // auto updates = new uneven_list<update_d>(&update_list_, update_list_.size());
-    // list<constraint_t> guard_0_;
 
     for(node_t* node: *nodes_)
     {
-        cout<< "!";
-        cout.flush();
         node->set_edges(&node_edge_map.at(node->get_id()));
     }
 
-    //print_2_guard(guard_list_);
-    
-    //int* branchpoint_nodes_arr = list_to_arr(branchpoint_nodes);
-    
-    return stochastic_model_t(get_node(init_node_id_), array_t<clock_timer_t*>(&timer_list_, timer_amount_));
+    return stochastic_model_t(get_node(init_node_id_), to_array(&timer_list_));
 }
 
+__host__ stochastic_model_t uppaal_tree_parser::parse(char* file_path)
+{
+    try
+    {
+        return parse_xml(file_path);
+    }
+    catch (const std::runtime_error &ex)
+    {
+        cout << "Parse error: " << ex.what() << "\n";
+        throw runtime_error("parse error");
+    }
+}

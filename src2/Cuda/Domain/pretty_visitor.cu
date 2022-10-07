@@ -37,7 +37,8 @@ void pretty_visitor::visit(stochastic_model_t* model)
 void pretty_visitor::visit(clock_timer_t* timer)
 {
     if (timer == nullptr) return;
-    printf("            Timer id: %3d | Value: %10f \n", timer->get_id(), timer->get_time());
+    printf("|&|");
+    printf("Timer id: %3d | Value: %10f \n", timer->get_id(), timer->get_time());
     timer->accept(this);
 }
 

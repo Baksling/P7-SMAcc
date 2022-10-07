@@ -527,6 +527,7 @@
     <Content Include="Cuda\UPPAALTreeParser\ff15.xml" />
     <Content Include="Cuda\UPPAALTreeParser\lilleShit.xml" />
     <Content Include="Cuda\UPPAALTreeParser\Lol.xml" />
+    <ClInclude Include="Cuda\UPPAALTreeParser\parser_exception.h" />
     <Content Include="Cuda\UPPAALTreeParser\sample1.xml" />
     <Content Include="Cuda\UPPAALTreeParser\test2.xml" />
     <Content Include="Cuda\UPPAALTreeParser\test3.xml" />

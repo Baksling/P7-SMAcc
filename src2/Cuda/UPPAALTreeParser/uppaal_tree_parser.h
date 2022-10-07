@@ -18,27 +18,25 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include "parser_exception.h"
 
 using namespace std;
 
 class uppaal_tree_parser
 {
 private:
-    int init_node_id_;
-    clock_timer_t* timer_list_;
+    int init_node_id_{};
+    list<clock_timer_t*> timer_list_;
     int timer_amount_ = 0;
     map<string, int> timers_map_;
     list<node_t*>* nodes_ = new list<node_t*>();
-    list<list<edge_t>> edge_list_;
-    list<list<constraint_t>> guard_list_;
-    list<list<constraint_t>> invariance_list_;
-    list<list<update_t>> update_list_;
     list<int> branchpoint_nodes;
-    int get_timer_id(string expr) const;
-    node_t* get_node(int target_id);
-    void init_lists(pugi::xml_document* doc);
+    int get_timer_id(const string& expr) const;
+    node_t* get_node(int target_id) const;
+    void init_clocks(const pugi::xml_document* doc);
+    stochastic_model_t parse_xml(char* file_path);
 public:
     uppaal_tree_parser();
-    __host__ stochastic_model_t parse_xml(char* file_path);
+    __host__ stochastic_model_t parse(char* file_path);
 };
 #endif

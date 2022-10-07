@@ -5,16 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c81c9d2a-66d3-4b0c-b40b-c667cea459e8" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/parser_exception.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/CudaSimulator.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/CudaSimulator.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/CudaSimulator.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/CudaSimulator.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/common.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/common.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/constraint_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/constraint_t.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/edge_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/edge_t.cu" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Domain/main.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/main.cu" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Domain/pretty_visitor.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/pretty_visitor.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/stochastic_model_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/stochastic_model_t.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/cuda_simulator.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Projekt/cuda_simulator.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/ff15.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/ff15.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/uppaal_tree_parser.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/uppaal_tree_parser.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/uppaal_tree_parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/uppaal_tree_parser.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src2.sln.DotSettings.user" beforeDir="false" afterPath="$PROJECT_DIR$/src2.sln.DotSettings.user" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src2.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/src2.vcxproj" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,16 +24,6 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/../../../../../../Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include/limits" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../../../../../../Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include/unordered_map" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$Cuda$/builtin_types.h" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$Cuda$/cuda.h" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$Cuda$/cuda_runtime.h" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$Cuda$/cuda_runtime_api.h" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$Cuda$/curand.h" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$Cuda$/curand_kernel.h" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$Cuda$/curand_mtgp32_kernel.h" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$Cuda$/driver_types.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Cuda/Domain/Constraints/constraint_tt.cpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Cuda/Domain/Constraints/constraint_tt.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Cuda/Domain/common.h" root0="FORCE_HIGHLIGHTING" />
@@ -61,15 +50,16 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "ReSpellerSettingsId",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RunManager">
     <configuration name="src2" type="CppProject" factoryName="C++ Project">
       <configuration_1>
@@ -131,6 +121,7 @@
       <workItem from="1664812964966" duration="5090000" />
       <workItem from="1665000435065" duration="24761000" />
       <workItem from="1665076128860" duration="4292000" />
+      <workItem from="1665128745683" duration="8407000" />
     </task>
     <servers />
   </component>
