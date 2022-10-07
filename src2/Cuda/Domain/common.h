@@ -36,14 +36,14 @@ public:
         this->store_ = store;
     }
 
-    GPU CPU T* at(int i)
+    GPU CPU T* at(int i) const
     {
         if(i < 0 || i >= this->size_)
             return nullptr;
         return &this->store_[i];
     }
 
-    GPU CPU T get(int i)
+    GPU CPU T get(int i) const
     {
         if(i < 0 || i >= this->size_)
             return nullptr;

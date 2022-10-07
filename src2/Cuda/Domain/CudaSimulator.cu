@@ -150,6 +150,7 @@ __global__ void simulate_gpu(
             const lend_array<edge_t*> outgoing_edges = current_node->get_edges();
             if(outgoing_edges.size() <= 0)
             {
+                hit_max_steps = false;
                 break;
             }
 
@@ -163,6 +164,7 @@ __global__ void simulate_gpu(
             next_edge->execute_updates(&lend_internal_timers);
             if(current_node->is_goal_node())
             {
+                hit_max_steps = false;
                 break;
             }
         }

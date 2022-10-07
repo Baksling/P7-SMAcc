@@ -259,6 +259,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
         {
             string string_id = locs.attribute("id").as_string();
             const int node_id = xml_id_to_int(string_id);
+            node_edge_map.insert_or_assign(node_id, list<edge_t*>());
             nodes_->push_back(new node_t(node_id, true));
         }
 
@@ -310,6 +311,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             
             node_t* target_node = get_node(target_id);
             auto result_edge = new edge_t(edge_id++, probability, target_node, list_to_arr(guards));
+            cout << "guard size: " << guards.size() << "\n";
             
             if (guards.empty())
                 result_edge = new edge_t(edge_id, probability, target_node, nullptr);

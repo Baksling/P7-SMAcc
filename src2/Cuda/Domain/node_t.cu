@@ -2,20 +2,20 @@
 
 #include "CudaSimulator.h"
 
-node_t::node_t(node_t* source, constraint_t* invariant, array_t<edge_t*> edges)
+node_t::node_t(node_t* source, const array_t<constraint_t*> invariant, const array_t<edge_t*> edges)
 {
     this->id_ = source->id_;
     this->is_branch_point_ = source->is_branch_point_;
-    this->invariant_ = invariant;
+    this->invariants_ = invariant;
     this->is_goal_ = source->is_goal_;
     this->edges_ = edges;
 }
 
-node_t::node_t(const int id, const bool is_branch_point, constraint_t* invariant, const bool is_goal)
+node_t::node_t(const int id, const array_t<constraint_t*> invariants, const bool is_branch_point, const bool is_goal)
 {
     this->id_ = id;
     this->is_goal_ = is_goal;
-    this->invariant_ = invariant;
+    this->invariants_ = invariants;
     this->is_branch_point_ = is_branch_point;
     this->edges_ = array_t<edge_t*>(0);
 }
@@ -42,21 +42,33 @@ CPU GPU bool node_t::is_goal_node() const
 
 GPU bool node_t::evaluate_invariants(const lend_array<clock_timer_t>* timers) const
 {
-    if(this->invariant_ == nullptr) return true;
-    return this->invariant_->evaluate(timers);
+    for (int i = 0; i < this->invariants_.size(); ++i)
+    {
+        if(!this->invariants_.get(i)->evaluate(timers))
+            return false;
+    }
+
+    return true;
 }
 
-void node_t::accept(visitor* v)
+void node_t::accept(visitor* v) const
 {
-    const lend_array<edge_t*> edges = this->get_edges();
-    v->visit(this->invariant_);
-    for (int i = 0; i < edges.size(); ++i)
+    //visit node constraints
+    for (int i = 0; i < this->invariants_.size(); ++i)
     {
-        v->visit(*edges.at(i));
+        v->visit(this->invariants_.get(i));
     }
-    for (int i = 0; i < edges.size(); ++i)
+
+    //visit edges
+    for (int i = 0; i < this->edges_.size(); ++i)
     {
-        v->visit(edges.get(i)->get_dest());
+        v->visit(this->edges_.get(i));
+    }
+
+    //visit edge destinations
+    for (int i = 0; i < this->edges_.size(); ++i)
+    {
+        v->visit(this->edges_.get(i)->get_dest());
     }
 }
 
@@ -74,13 +86,18 @@ void node_t::cuda_allocate(node_t** pointer, const allocation_helper* helper)
         this->edges_.get(i)->cuda_allocate(&edge_p, helper);
         edge_lst.push_back(edge_p);
     }
-    constraint_t* invariant_p = nullptr;
-    if (this->invariant_ != nullptr)
+
+    std::list<constraint_t*> invariant_lst;
+    for (int i = 0; i < this->invariants_.size(); ++i)
     {
-        this->invariant_->cuda_allocate(&invariant_p, helper);
+        constraint_t* invariant_p = nullptr;
+        this->invariants_.get(i)->cuda_allocate(&invariant_p, helper);
+        invariant_lst.push_back(invariant_p);
     }
     
-    const node_t result(this, invariant_p, cuda_to_array(&edge_lst, helper->free_list));
+    const node_t result(this,
+        cuda_to_array(&invariant_lst, helper->free_list),
+        cuda_to_array(&edge_lst, helper->free_list));
     cudaMemcpy(*pointer, &result, sizeof(node_t), cudaMemcpyHostToDevice);
 }
 
@@ -91,10 +108,13 @@ CPU GPU bool node_t::is_branch_point() const
 
 GPU double node_t::max_time_progression(const lend_array<clock_timer_t>* timers, double max_progression) const
 {
-    if(this->invariant_ == nullptr)
+    if(this->invariants_.size() <= 0) return max_progression;
+
+    for (int i = 0; i < this->invariants_.size(); ++i)
     {
-        return max_progression;
+        const double temp_progression = this->invariants_.get(i)->max_time_progression(timers, max_progression);
+        max_progression = temp_progression < max_progression ? temp_progression : max_progression;
     }
     
-    return this->invariant_->max_time_progression(timers, max_progression); 
+    return max_progression; 
 }
