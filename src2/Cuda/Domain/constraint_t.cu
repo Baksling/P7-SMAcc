@@ -71,6 +71,12 @@ void constraint_t::cuda_allocate(constraint_t** pointer, const allocation_helper
     cudaMemcpy(*pointer, &con, sizeof(constraint_t), cudaMemcpyHostToDevice);
 }
 
+void constraint_t::cuda_allocate_2(constraint_t* cuda_pointer, const allocation_helper* helper) const
+{
+    const constraint_t con = constraint_t(this->type_, this->timer_id1_, this->timer_id2_, this->value_);
+    cudaMemcpy(cuda_pointer, &con, sizeof(constraint_t), cudaMemcpyHostToDevice);
+}
+
 int constraint_t::get_timer1_id() const
 {
     return this->timer_id1_;

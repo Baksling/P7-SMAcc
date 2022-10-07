@@ -27,6 +27,7 @@ public:
     CPU GPU bool is_branch_point() const;
     void accept(visitor* v) const;
     void cuda_allocate(node_t** pointer, const allocation_helper* helper);
+    void cuda_allocate_2(node_t* cuda_p, const allocation_helper* helper) const;
 };
 
 #endif

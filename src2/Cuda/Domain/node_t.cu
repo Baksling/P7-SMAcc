@@ -101,6 +101,33 @@ void node_t::cuda_allocate(node_t** pointer, const allocation_helper* helper)
     cudaMemcpy(*pointer, &result, sizeof(node_t), cudaMemcpyHostToDevice);
 }
 
+
+void node_t::cuda_allocate_2(node_t* cuda_p, const allocation_helper* helper) const
+{
+    edge_t* edges = nullptr; 
+    cudaMalloc(&edges,sizeof(edge_t)*this->edges_.size());
+    helper->free_list->push_back(edges);
+
+    for (int i = 0; i < this->edges_.size(); ++i)
+    {
+        this->edges_.get(i)->cuda_allocate_2(&edges[i], helper);
+    }
+
+    constraint_t* invariants = nullptr; 
+    cudaMalloc(&invariants,sizeof(constraint_t)*this->invariants_.size());
+    helper->free_list->push_back(cuda_p);
+    for (int i = 0; i < this->invariants_.size(); ++i)
+    {
+        this->invariants_.get(i)->cuda_allocate_2(&invariants[i], helper);
+    }
+    
+    // const node_t result(this,
+    //     array_t<constraint_t>(invariants, this->invariants_.size()),
+    //     array_t<edge_t>(edges, this->edges_.size()));
+    
+    // cudaMemcpy(cuda_p, &result, sizeof(node_t), cudaMemcpyHostToDevice);
+}
+
 CPU GPU bool node_t::is_branch_point() const
 {
     return this->is_branch_point_;

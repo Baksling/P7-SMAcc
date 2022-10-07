@@ -32,8 +32,9 @@ public:
     GPU double max_time_progression(const lend_array<clock_timer_t>* timer_arr, double max_progression = 100.0) const;
     void accept(visitor* v);
     void cuda_allocate(constraint_t** pointer, const allocation_helper* helper) const;
- 
-    
+    void cuda_allocate_2(constraint_t* cuda_pointer, const allocation_helper* helper) const;
+
+
     CPU GPU int get_timer1_id() const;
     GPU CPU int get_timer2_id() const;
     CPU GPU float get_value() const;

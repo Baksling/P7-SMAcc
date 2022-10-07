@@ -27,6 +27,7 @@ public:
     void accept(visitor* v) const;
     int get_id() const;
     void cuda_allocate(edge_t** pointer, const allocation_helper* helper);
+    void cuda_allocate_2(edge_t* cuda_p, const allocation_helper* helper);
 };
 
 #endif
