@@ -10,7 +10,7 @@ using namespace pugi;
 
 #define THROW_LINE(arg); throw parser_exception(arg, __FILE__, __LINE__);
 
-constraint_t get_constraint(const string& expr, const int timer_id, const float value)
+constraint_t* get_constraint(const string& expr, const int timer_id, const float value)
 {
     if(expr.find("<=") != std::string::npos)
         return constraint_t::less_equal_v(timer_id, value);
@@ -25,7 +25,7 @@ constraint_t get_constraint(const string& expr, const int timer_id, const float 
     THROW_LINE("Operand in " + expr + " not found, sad..");
 }
 
-constraint_t get_constraint(const string& expr, const int timer_id_1, const int timer_id_2)
+constraint_t* get_constraint(const string& expr, const int timer_id_1, const int timer_id_2)
 {
     if(expr.find("<=") != std::string::npos)
         return constraint_t::less_equal_t(timer_id_1, timer_id_2);
@@ -231,7 +231,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             bool is_goal = false;
             node_edge_map.insert_or_assign(node_id, list<edge_t*>());
             
-            list<constraint_t> invariants;
+            list<constraint_t*> invariants;
             
             if (string_name == "Goal")
                 is_goal = true;
@@ -250,9 +250,9 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                 }
             }
             if (invariants.empty())
-                nodes_->push_back(new node_t(node_id, false, nullptr, is_goal));
+                nodes_->push_back(new node_t(node_id, array_t<constraint_t*>(0), false, is_goal));
             else
-                nodes_->push_back(new node_t(node_id, false, list_to_arr(invariants), is_goal));
+                nodes_->push_back(new node_t(node_id, to_array(&invariants),false, is_goal));
         }
 
         for (pugi::xml_node locs: templates.children("branchpoint"))
@@ -260,7 +260,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             string string_id = locs.attribute("id").as_string();
             const int node_id = xml_id_to_int(string_id);
             node_edge_map.insert_or_assign(node_id, list<edge_t*>());
-            nodes_->push_back(new node_t(node_id, true));
+            nodes_->push_back(new node_t(node_id,array_t<constraint_t*>(0), true));
         }
 
         string init_node = templates.child("init").attribute("ref").as_string();
@@ -274,7 +274,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             int source_id = xml_id_to_int(source);
             int target_id = xml_id_to_int(target);
             
-            list<constraint_t> guards;
+            list<constraint_t*> guards;
             list<update_t*> updates;
             float probability = 1.0f;
             
@@ -290,7 +290,6 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                     {
                         if (expr.empty())
                             continue;
-                        cout << get_constraint(expr,get_timer_id(expr), get_expr_value_float(expr)).get_type() << " \n";
                         guards.push_back(get_constraint(expr,get_timer_id(expr), get_expr_value_float(expr)));
                     }
                 }
@@ -310,11 +309,11 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             }
             
             node_t* target_node = get_node(target_id);
-            auto result_edge = new edge_t(edge_id++, probability, target_node, list_to_arr(guards));
+            auto result_edge = new edge_t(edge_id++, probability, target_node, to_array(&guards));
             cout << "guard size: " << guards.size() << "\n";
             
             if (guards.empty())
-                result_edge = new edge_t(edge_id, probability, target_node, nullptr);
+                result_edge = new edge_t(edge_id, probability, target_node, array_t<constraint_t*>(0));
 
             result_edge->set_updates(&updates);
             node_edge_map.at(source_id).push_back(result_edge);
