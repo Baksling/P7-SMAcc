@@ -16,11 +16,6 @@
 		</location>
 		<init ref="id0"/>
 		<transition>
-			<source ref="id1"/>
-			<target ref="id0"/>
-			<nail x="-42" y="-34"/>
-		</transition>
-		<transition>
 			<source ref="id0"/>
 			<target ref="id2"/>
 			<label kind="guard" x="25" y="-51">x&gt;=0</label>

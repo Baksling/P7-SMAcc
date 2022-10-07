@@ -3,6 +3,7 @@
 #define NODE_T_H
 
 #include "common.h"
+#include "CudaSimulator.h"
 
 class edge_t;
 
@@ -25,7 +26,7 @@ public:
     GPU double max_time_progression(const lend_array<clock_timer_t>* timers, double max_progression = 100.0) const;
     CPU GPU bool is_branch_point() const;
     void accept(visitor* v);
-    void cuda_allocate(node_t** pointer, std::list<void*>* free_list);
+    void cuda_allocate(node_t** pointer, const allocation_helper* helper);
 };
 
 #endif

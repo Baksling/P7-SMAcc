@@ -18,7 +18,7 @@ public:
     int get_timer_id() const;
     float get_timer_value() const;
     int get_id() const;
-    void cuda_allocate(update_t** pointer, std::list<void*>* free_list);
+    void cuda_allocate(update_t** pointer, const allocation_helper* helper) const;
 };
 
 #endif

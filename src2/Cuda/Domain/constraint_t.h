@@ -48,12 +48,12 @@ public:
     GPU bool evaluate(const lend_array<clock_timer_t>* timer_arr);
     //GPU CPU void find_children(std::list<constraint_t*>* child_lst);
     GPU CPU logical_operator get_type() const;
-    GPU double max_time_progression(const lend_array<clock_timer_t>* timer_arr, double max_progression = 100.0) const;
+    GPU double max_time_progression(const lend_array<clock_timer_t>* timer_arr, double max_progression = 100.0);
     void accept(visitor* v);
     CPU GPU int get_timer1_id() const;
     GPU CPU int get_timer2_id() const;
     CPU GPU float get_value() const;
-    void cuda_allocate(constraint_t** pointer, std::list<void*>* free_list);
+    void cuda_allocate(constraint_t** pointer, const allocation_helper* helper) const;
     
     //FACTORY CONSTRUCTORS
     static constraint_t less_equal_v(int timer_id, float value);

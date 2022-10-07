@@ -16,7 +16,7 @@ public:
     GPU array_t<clock_timer_t> create_internal_timers();
     GPU void reset_timers(array_t<clock_timer_t>* active_timers);
     GPU node_t* get_start_node() const;
-    void cuda_allocate(stochastic_model_t** pointer, std::list<void*>* free_list);
+    void cuda_allocate(stochastic_model_t** pointer, const allocation_helper* helper);
     void accept(visitor* v);
 };
 

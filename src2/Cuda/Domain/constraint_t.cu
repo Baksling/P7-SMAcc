@@ -242,10 +242,10 @@ GPU CPU logical_operator constraint_t::get_type() const
     return this->type_;
 }
 
-GPU double constraint_t::max_time_progression(const lend_array<clock_timer_t>* timer_arr, double max_progression) const
+GPU double constraint_t::max_time_progression(const lend_array<clock_timer_t>* timer_arr, double max_progression)
 {
     cuda_stack<constraint_t*> stack = cuda_stack<constraint_t*>(this->children_count_);
-    constraint_t* current = nullptr;
+    constraint_t* current = this;
 
     while(true)
     {
@@ -266,14 +266,13 @@ GPU double constraint_t::max_time_progression(const lend_array<clock_timer_t>* t
         }
         else
         {
+            if(current->timer_id2_ != NO_ID) continue;
             if(current->type_ == less_equal || current->type_ == less)
             {
-                double time = timer_arr->at(current->get_timer1_id())->get_time();
-                double value = current->timer_id2_ != NO_ID
-                    ? timer_arr->at(current->get_timer2_id())->get_time()
-                    : static_cast<double>(current->get_value());
+                const double time = timer_arr->at(current->get_timer1_id())->get_time();
+                const double value = static_cast<double>(current->get_value());
 
-                double diff = current->timer_id2_ != NO_ID ? value - time : max_progression;
+                double diff = value - time;
                 if(diff < 0) diff = 0.0;
                 max_progression = diff < max_progression ? diff : max_progression;
             }
@@ -290,6 +289,12 @@ void constraint_t::accept(visitor* v)
 {
     switch (this->type_)
     {
+    case less_equal: break;
+    case greater_equal: break;
+    case less: break;
+    case greater: break;
+    case equal: break;
+    case not_equal: break;
     case And:
     case Or:
         v->visit(this->con1_);
@@ -297,8 +302,6 @@ void constraint_t::accept(visitor* v)
         break;
     case Not:
         v->visit(this->con1_);
-        break;
-    default:
         break;
     }
 }
@@ -317,22 +320,28 @@ CPU GPU float constraint_t::get_value() const
     return this->value_;
 }
 
-void constraint_t::cuda_allocate(constraint_t** pointer, std::list<void*>* free_list)
+void constraint_t::cuda_allocate(constraint_t** pointer, const allocation_helper* helper) const
 {
+    //allocate space for self
     cudaMalloc(pointer, sizeof(constraint_t));
-    free_list->push_back(*pointer);
+    helper->free_list->push_back(*pointer);
+
+    //allocate left leg
     constraint_t* con1 = nullptr;
-    // if (this->con1_ != nullptr)
-    // {
-    //     printf("invariant 2\n");
-    //     this->con1_->cuda_allocate(&con1, free_list);
-    // }
+    if (this->con1_ != nullptr)
+    {
+        this->con1_->cuda_allocate(&con1, helper);
+    }
+    //allocate right leg
     constraint_t* con2 = nullptr;
     if (this->con2_ != nullptr)
     {
-        this->con2_->cuda_allocate(&con2, free_list);
+        this->con2_->cuda_allocate(&con2, helper);
     }
-    constraint_t result(this->type_, con1, con2, this->timer_id1_, this->timer_id2_, this->value_);
+
+    //copy self
+    const constraint_t result(this->type_, con1, con2,
+        this->timer_id1_, this->timer_id2_, this->value_);
     cudaMemcpy(*pointer, &result, sizeof(constraint_t), cudaMemcpyHostToDevice);
 }
 

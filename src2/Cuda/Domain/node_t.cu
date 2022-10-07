@@ -1,5 +1,7 @@
 ﻿#include "node_t.h"
 
+#include "CudaSimulator.h"
+
 node_t::node_t(node_t* source, constraint_t* invariant, array_t<edge_t*> edges)
 {
     this->id_ = source->id_;
@@ -54,30 +56,31 @@ void node_t::accept(visitor* v)
     }
     for (int i = 0; i < edges.size(); ++i)
     {
-        edge_t* temp = *edges.at(i);
-        v->visit(temp->get_dest());
+        v->visit(edges.get(i)->get_dest());
     }
 }
 
-void node_t::cuda_allocate(node_t** pointer, std::list<void*>* free_list)
+void node_t::cuda_allocate(node_t** pointer, const allocation_helper* helper)
 {
+    if(helper->node_map->count(this) == 1) return;
     cudaMalloc(pointer, sizeof(node_t));
-    free_list->push_back(*pointer);
-    std::list<edge_t*> edge_pointers;
-    const lend_array<edge_t*> edges = this->get_edges();
-    for (int i = 0; i < edges.size(); ++i)
+    helper->free_list->push_back(*pointer);
+    helper->node_map->insert(std::pair<node_t*, node_t*>(this, *pointer) );
+    
+    std::list<edge_t*> edge_lst;
+    for (int i = 0; i < this->edges_.size(); ++i)
     {
         edge_t* edge_p = nullptr;
-        edge_t* temp = *edges.at(i);
-        temp->cuda_allocate(&edge_p, free_list);
-        edge_pointers.push_back(edge_p);
+        this->edges_.get(i)->cuda_allocate(&edge_p, helper);
+        edge_lst.push_back(edge_p);
     }
     constraint_t* invariant_p = nullptr;
     if (this->invariant_ != nullptr)
     {
-        this->invariant_->cuda_allocate(&invariant_p, free_list);
+        this->invariant_->cuda_allocate(&invariant_p, helper);
     }
-    node_t result(this, invariant_p, cuda_to_array(&edge_pointers, free_list));
+    
+    const node_t result(this, invariant_p, cuda_to_array(&edge_lst, helper->free_list));
     cudaMemcpy(*pointer, &result, sizeof(node_t), cudaMemcpyHostToDevice);
 }
 

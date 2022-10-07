@@ -137,12 +137,14 @@ __global__ void simulate_gpu(
             
             if(!current_node->evaluate_invariants(&lend_internal_timers))
             {
+                hit_max_steps = true;
                 break;
             }
             //Progress time
             if (!current_node->is_branch_point())
             {
                 const double max_progression = current_node->max_time_progression(&lend_internal_timers);
+                printf("diff: %f\n", max_progression);
                 progress_time(&lend_internal_timers, max_progression, r_state, idx);
             }
 
@@ -236,10 +238,14 @@ void cuda_simulator::simulate(stochastic_model_t* model, simulation_strategy* st
     printf("allocated %lu (%lu*%lu) bytes successfully: %s\n" ,
         size, static_cast<unsigned long>(sizeof(int)), total_simulations, (r == cudaSuccess ? "True" : "False") );
 
-    //allocate model to cuda
+    //prepare allocation helper
     std::list<void*> free_list;
+    std::unordered_map<node_t*, node_t*> node_map;
+    const allocation_helper allocator = { &free_list, &node_map };
+
+    //allocate model to cuda
     stochastic_model_t* model_d = nullptr;
-    model->cuda_allocate(&model_d, &free_list);
+    model->cuda_allocate(&model_d, &allocator);
     
     //implement here
     model_options* options_d = nullptr;

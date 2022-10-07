@@ -26,7 +26,7 @@ public:
     GPU void execute_updates(const lend_array<clock_timer_t>* timers);
     void accept(visitor* v);
     int get_id() const;
-    void cuda_allocate(edge_t** pointer, std::list<void*>* free_list);
+    void cuda_allocate(edge_t** pointer, const allocation_helper* helper);
 };
 
 #endif

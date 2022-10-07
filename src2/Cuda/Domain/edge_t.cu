@@ -58,29 +58,37 @@ int edge_t::get_id() const
     return this->id_;
 }
 
-void edge_t::cuda_allocate(edge_t** pointer, std::list<void*>* free_list)
+void edge_t::cuda_allocate(edge_t** pointer, const allocation_helper* helper)
 {
     cudaMalloc(pointer, sizeof(edge_t));
-    free_list->push_back(*pointer);
+    helper->free_list->push_back(*pointer);
 
+    //allocate node
     node_t* node_p = nullptr;
-    this->dest_->cuda_allocate(&node_p, free_list);
+    if (helper->node_map->count(this->dest_) == 1)
+    {
+        node_p = (*helper->node_map)[this->dest_];
+    }
+    else
+    {
+        this->dest_->cuda_allocate(&node_p, helper); //linear node
+    }
 
     constraint_t* guard_p = nullptr;
     if (this->guard_ != nullptr)
     {
-        this->guard_->cuda_allocate(&guard_p, free_list);
+        this->guard_->cuda_allocate(&guard_p, helper);
     }
-
-    std::list<update_t*> update_pointers;
+    
+    std::list<update_t*> updates;
     for (int i = 0; i < this->updates_.size(); ++i)
     {
-        update_t* update = nullptr;
-        update_t* temp = *updates_.at(i);
-        temp->cuda_allocate(&update, free_list);
-        update_pointers.push_back(update);
+        update_t* update_p = nullptr;
+        this->updates_.get(i)->cuda_allocate(&update_p, helper);
+        updates.push_back(update_p);
     }
-    edge_t result(this, node_p, guard_p, cuda_to_array(&update_pointers, free_list));
+    
+    const edge_t result(this, node_p, guard_p, cuda_to_array(&updates, helper->free_list));
     cudaMemcpy(*pointer, &result, sizeof(edge_t), cudaMemcpyHostToDevice);
 }
 
@@ -89,7 +97,6 @@ GPU void edge_t::execute_updates(const lend_array<clock_timer_t>* timers)
 {
     for (int i = 0; i < this->updates_.size(); ++i)
     {
-        update_t* temp = *updates_.at(i);
-        temp->update_timer(timers);
+        this->updates_.get(i)->update_timer(timers);
     }
 }
