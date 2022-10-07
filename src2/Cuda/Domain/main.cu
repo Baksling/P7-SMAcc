@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
         model = parser.parse_xml(argv[1]);
     }
     visitor.visit(&model);
-    simulation_strategy strategy = {10, 10, 1, 1, 100};
+    simulation_strategy strategy = {32, 512, 63, 1, 10};
     cuda_simulator::simulate(&model, &strategy);
     
     std::cout << "pully porky\n";

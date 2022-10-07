@@ -5,24 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c81c9d2a-66d3-4b0c-b40b-c667cea459e8" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Domain/CudaSimulator.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/CudaSimulator.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/CudaSimulator.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/CudaSimulator.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/clock_timer_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/clock_timer_t.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/clock_timer_t.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/clock_timer_t.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/common.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/common.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/constraint_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/constraint_t.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/constraint_t.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/constraint_t.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/edge_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/edge_t.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/edge_t.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/edge_t.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Domain/main.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/main.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/node_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/node_t.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/node_t.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/node_t.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/stochastic_model_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/stochastic_model_t.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/stochastic_model_t.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/stochastic_model_t.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/update_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/update_t.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/update_t.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/update_t.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/ff15.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/ff15.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -138,7 +122,7 @@
       <workItem from="1664791055408" duration="13130000" />
       <workItem from="1664812964966" duration="5090000" />
       <workItem from="1665000435065" duration="24761000" />
-      <workItem from="1665076128860" duration="12549000" />
+      <workItem from="1665076128860" duration="12861000" />
     </task>
     <servers />
   </component>

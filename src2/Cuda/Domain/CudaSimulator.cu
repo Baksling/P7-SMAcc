@@ -144,7 +144,6 @@ __global__ void simulate_gpu(
             if (!current_node->is_branch_point())
             {
                 const double max_progression = current_node->max_time_progression(&lend_internal_timers);
-                printf("diff: %f\n", max_progression);
                 progress_time(&lend_internal_timers, max_progression, r_state, idx);
             }
 
