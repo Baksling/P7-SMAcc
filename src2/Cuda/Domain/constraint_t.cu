@@ -89,72 +89,72 @@ float constraint_t::get_value() const
 
 
 //! LESS THAN OR EQUAL
-constraint_t constraint_t::less_equal_v(const int timer_id, const float value)
+constraint_t* constraint_t::less_equal_v(const int timer_id, const float value)
 {
-    return constraint_t{logical_operator_t::less_equal_t, timer_id, NO_ID, value};
+    return new constraint_t{logical_operator_t::less_equal_t, timer_id, NO_ID, value};
 }
 
-constraint_t constraint_t::less_equal_t(const int timer_id, const int timer_id2)
+constraint_t* constraint_t::less_equal_t(const int timer_id, const int timer_id2)
 {
-    return constraint_t{logical_operator_t::less_equal_t, timer_id, timer_id2, UNUSED_VALUE};
+    return new constraint_t{logical_operator_t::less_equal_t, timer_id, timer_id2, UNUSED_VALUE};
 
 }
 
 //! GREATER THAN OR EQUAL
-constraint_t constraint_t::greater_equal_v(const int timer_id, const float value)
+constraint_t* constraint_t::greater_equal_v(const int timer_id, const float value)
 {
-    return constraint_t{logical_operator_t::greater_equal_t, timer_id, NO_ID, value};
+    return new constraint_t{logical_operator_t::greater_equal_t, timer_id, NO_ID, value};
 
 }
 
-constraint_t constraint_t::greater_equal_t(const int timer_id, const int timer_id2)
+constraint_t* constraint_t::greater_equal_t(const int timer_id, const int timer_id2)
 {
-    return constraint_t{logical_operator_t::greater_equal_t, timer_id, timer_id2, UNUSED_VALUE};
+    return new constraint_t{logical_operator_t::greater_equal_t, timer_id, timer_id2, UNUSED_VALUE};
 }
 
 //! LESS THAN
-constraint_t constraint_t::less_v(const int timer_id, const float value)
+constraint_t* constraint_t::less_v(const int timer_id, const float value)
 {
-    return constraint_t{logical_operator_t::less_t, timer_id, NO_ID, value};
+    return new constraint_t{logical_operator_t::less_t, timer_id, NO_ID, value};
 
 }
 
-constraint_t constraint_t::less_t(const int timer_id, const int timer_id2)
+constraint_t* constraint_t::less_t(const int timer_id, const int timer_id2)
 {
-    return constraint_t{logical_operator_t::less_t, timer_id, timer_id2, UNUSED_VALUE};
+    return new constraint_t{logical_operator_t::less_t, timer_id, timer_id2, UNUSED_VALUE};
 }
 
 //! GREATER THAN
-constraint_t constraint_t::greater_v(const int timer_id, const float value)
+constraint_t* constraint_t::greater_v(const int timer_id, const float value)
 {
-    return constraint_t{logical_operator_t::greater_t, timer_id, NO_ID, value};
+    return new constraint_t{logical_operator_t::greater_t, timer_id, NO_ID, value};
 
 }
 
-constraint_t constraint_t::greater_t(const int timer_id, const int timer_id2)
+constraint_t* constraint_t::greater_t(const int timer_id, const int timer_id2)
 {
-    return constraint_t{logical_operator_t::greater_t, timer_id, timer_id2, UNUSED_VALUE};
+    return new constraint_t{logical_operator_t::greater_t, timer_id, timer_id2, UNUSED_VALUE};
 }
 
 //! equal
-constraint_t constraint_t::equal_v(const int timer_id, const float value)
+constraint_t* constraint_t::equal_v(const int timer_id, const float value)
 {
-    return constraint_t{logical_operator_t::equal_t, timer_id, NO_ID, value};
+    return new constraint_t{logical_operator_t::equal_t, timer_id, NO_ID, value};
 
 }
 
-constraint_t constraint_t::equal_t(const int timer_id, const int timer_id2)
+constraint_t* constraint_t::equal_t(const int timer_id, const int timer_id2)
 {
-    return constraint_t{logical_operator_t::equal_t, timer_id, timer_id2, UNUSED_VALUE};
+    return new constraint_t{logical_operator_t::equal_t, timer_id, timer_id2, UNUSED_VALUE};
 }
 
 //! NOT EQUAL
-constraint_t constraint_t::not_equal_v(const int timer_id, const float value)
+constraint_t* constraint_t::not_equal_v(const int timer_id, const float value)
 {
-    return constraint_t{logical_operator_t::not_equal_t, timer_id, NO_ID, value};
+    return new constraint_t{logical_operator_t::not_equal_t, timer_id, NO_ID, value};
 }
 
-constraint_t constraint_t::not_equal_t(const int timer_id, const int timer_id2)
+constraint_t* constraint_t::not_equal_t(const int timer_id, const int timer_id2)
 {
-    return constraint_t{logical_operator_t::not_equal_t, timer_id, timer_id2, UNUSED_VALUE};
+    return new constraint_t{logical_operator_t::not_equal_t, timer_id, timer_id2, UNUSED_VALUE};
 }

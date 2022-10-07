@@ -40,21 +40,21 @@ public:
 
 
     //FACTORY CONSTRUCTORS
-    static constraint_t less_equal_v(int timer_id, float value);
-    static constraint_t less_equal_t(int timer_id, int timer_id2);
+    static constraint_t* less_equal_v(int timer_id, float value);
+    static constraint_t* less_equal_t(int timer_id, int timer_id2);
     
-    static constraint_t greater_equal_v(int timer_id, float value);
-    static constraint_t greater_equal_t(int timer_id, int timer_id2);
+    static constraint_t* greater_equal_v(int timer_id, float value);
+    static constraint_t* greater_equal_t(int timer_id, int timer_id2);
     
-    static constraint_t less_v(int timer_id, float value);
-    static constraint_t less_t(int timer_id, int timer_id2);
+    static constraint_t* less_v(int timer_id, float value);
+    static constraint_t* less_t(int timer_id, int timer_id2);
     
-    static constraint_t greater_v(int timer_id, float value);
-    static constraint_t greater_t(int timer_id, int timer_id2);
+    static constraint_t* greater_v(int timer_id, float value);
+    static constraint_t* greater_t(int timer_id, int timer_id2);
     
-    static constraint_t equal_v(int timer_id, float value);
-    static constraint_t equal_t(int timer_id, int timer_id2);
+    static constraint_t* equal_v(int timer_id, float value);
+    static constraint_t* equal_t(int timer_id, int timer_id2);
 
-    static constraint_t not_equal_v(int timer_id, float value);
-    static constraint_t not_equal_t(int timer_id, int timer_id2);
+    static constraint_t* not_equal_v(int timer_id, float value);
+    static constraint_t* not_equal_t(int timer_id, int timer_id2);
 };
