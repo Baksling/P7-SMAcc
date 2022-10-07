@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
         model = parser.parse(argv[1]);
     }
     visitor.visit(&model);
-    simulation_strategy strategy = {32, 512, 63, 1, 10};
+    simulation_strategy strategy = {2560, 512, 26, 1, 1000};
     cuda_simulator::simulate(&model, &strategy);
     
     std::cout << "pully porky\n";

@@ -29,7 +29,7 @@ GPU edge_t* choose_next_edge(const lend_array<edge_t*>* edges, const lend_array<
 
     // return nullptr;
     edge_t** valid_edges = static_cast<edge_t**>(malloc(sizeof(void*) * edges->size()));
-    if(valid_edges == nullptr) printf("COULD NOT ALLOCATE HEAP MEMORY");
+    if(valid_edges == nullptr) printf("COULD NOT ALLOCATE HEAP MEMORY\n");
     int valid_count = 0;
     
     for (int i = 0; i < edges->size(); ++i)
@@ -37,10 +37,7 @@ GPU edge_t* choose_next_edge(const lend_array<edge_t*>* edges, const lend_array<
         valid_edges[i] = nullptr; //clean malloc
         edge_t* edge = edges->get(i);
         if(edge->evaluate_constraints(timer_arr))
-        {
-            valid_edges[valid_count] = edge;
-            valid_count++;
-        }
+            valid_edges[valid_count++] = edge;
     }
     
     if(valid_count == 0)
@@ -59,8 +56,7 @@ GPU edge_t* choose_next_edge(const lend_array<edge_t*>* edges, const lend_array<
     float weight_sum = 0.0f;
     for(int i = 0; i < valid_count; i++)
     {
-        const edge_t* temp = (valid_edges[i]);
-        weight_sum += temp->get_weight();
+        weight_sum += valid_edges[i]->get_weight();
     }
 
     //curand_uniform return ]0.0f, 1.0f], but we require [0.0f, 1.0f[

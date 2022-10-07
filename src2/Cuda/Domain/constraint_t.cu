@@ -41,9 +41,7 @@ GPU bool constraint_t::evaluate(const lend_array<clock_timer_t>* timers) const
 
 GPU double constraint_t::max_time_progression(const lend_array<clock_timer_t>* timer_arr, double max_progression) const
 {
-    if(this->timer_id1_ != NO_ID || this->timer_id2_ != NO_ID)
-        return BIG_DOUBLE;
-
+    if(this->timer_id2_ != NO_ID) return max_progression;
     if(this->type_ == logical_operator_t::less_t || this->type_ == logical_operator_t::less_equal_t)
     {
         const double time = timer_arr->at(this->timer_id1_)->get_time();
@@ -55,7 +53,7 @@ GPU double constraint_t::max_time_progression(const lend_array<clock_timer_t>* t
         return max_progression;
     }
     
-    return BIG_DOUBLE;
+    return max_progression;
 }
 
 void constraint_t::accept(visitor* v)
