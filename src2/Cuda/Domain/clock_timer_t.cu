@@ -31,15 +31,17 @@ GPU clock_timer_t clock_timer_t::duplicate() const
     return clock_timer_t{this->id_, this->current_time_};
 }
 
+// ReSharper disable once CppMemberFunctionMayBeStatic
 void clock_timer_t::accept(visitor* v)
 {
+    return;
     //v.visit()
 }
 
-void clock_timer_t::cuda_allocate(clock_timer_t** pointer, std::list<void*>* free_list)
+void clock_timer_t::cuda_allocate(clock_timer_t** pointer, const allocation_helper* helper) const
 {
     cudaMalloc(pointer, sizeof(clock_timer_t));
-    free_list->push_back(*pointer);
+    helper->free_list->push_back(*pointer);
     cudaMemcpy(*pointer, this, sizeof(clock_timer_t), cudaMemcpyHostToDevice);
 }
 

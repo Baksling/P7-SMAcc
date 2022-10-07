@@ -7,12 +7,14 @@
 #include <cuda_runtime.h>
 #include <list>
 #include <iostream>
-
+#include <unordered_map>
 
 #define GPU __device__
 #define CPU __host__
 #define GLOBAL __global__
 #define IS_GPU __CUDACC__
+
+
 
 template<typename T>
 struct array_t
@@ -166,6 +168,12 @@ class constraint_t;
 class clock_timer_t;
 class update_t;
 class stochastic_model_t;
+
+struct allocation_helper
+{
+    std::list<void*>* free_list;
+    std::unordered_map<node_t*, node_t*>* node_map;
+};
 
 #include "visitor.h"
 #include "constraint_t.h"

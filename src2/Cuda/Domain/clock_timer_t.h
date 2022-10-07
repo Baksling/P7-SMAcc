@@ -19,7 +19,7 @@ public:
     GPU void add_time(double progression);
     GPU clock_timer_t duplicate() const;
     void accept(visitor* v);
-    void cuda_allocate(clock_timer_t** pointer, std::list<void*>* free_list);
+    void cuda_allocate(clock_timer_t** pointer, const allocation_helper* helper) const;
 };
 
 #endif

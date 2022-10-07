@@ -32,9 +32,9 @@ int update_t::get_id() const
     return this->id_;
 }
 
-void update_t::cuda_allocate(update_t** pointer, std::list<void*>* free_list)
+void update_t::cuda_allocate(update_t** pointer, const allocation_helper* helper) const
 {
     cudaMalloc(pointer, sizeof(update_t));
-    free_list->push_back(*pointer);
+    helper->free_list->push_back(*pointer);
     cudaMemcpy(*pointer, this, sizeof(update_t), cudaMemcpyHostToDevice);
 }

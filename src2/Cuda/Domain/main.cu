@@ -13,12 +13,12 @@ int main(int argc, char* argv[])
     constraint_t con2 = constraint_t::greater_equal_v(0, 0.0f);
     
     node_t node0 = node_t(0, false, &con0,false);
-    node_t node1     = node_t(1, false, nullptr,true);
+    node_t node1     = node_t(1, false, &con0,false);
     node_t node2 = node_t(2, false, nullptr,true);
 
     edge_t* edge0_1 = new edge_t(0, 1, &node1, nullptr);
     edge_t* edge0_2 = new edge_t(1, 1, &node2, nullptr);
-    //edge_t* edge1_0 = new edge_t(2, 1, &node0, nullptr);
+    edge_t* edge1_0 = new edge_t(2, 1, &node0, nullptr);
 
     clock_timer_t timer1 = clock_timer_t(0, 0.0);
     clock_timer_t timer2 = clock_timer_t(1, 0.0);
@@ -34,8 +34,8 @@ int main(int argc, char* argv[])
     node0_lst.push_back(edge0_2);
     node0.set_edges(&node0_lst);
 
-    //node1_lst.push_back(edge1_0);
-    //node1.set_edges(&node1_lst);
+    node1_lst.push_back(edge1_0);
+    node1.set_edges(&node1_lst);
 
 
     pretty_visitor visitor;
@@ -47,10 +47,10 @@ int main(int argc, char* argv[])
         model = parser.parse(argv[1]);
     }
     visitor.visit(&model);
-    simulation_strategy strategy = {32, 512, 62, 1, 100};
+    simulation_strategy strategy = {32, 512, 63, 1, 10};
     cuda_simulator::simulate(&model, &strategy);
     
-    std::cout << "bacon\n";
+    std::cout << "pully porky\n";
 
     return 0;
 }

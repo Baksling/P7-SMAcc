@@ -3,7 +3,10 @@
 #ifndef CUDA_SIM_H
 #define CUDA_SIM_H
 
+#include <unordered_map>
+
 #include "common.h"
+
 
 struct model_options
 {
