@@ -183,5 +183,4 @@ struct allocation_helper
 #include "node_t.h"
 #include "update_t.h"
 
-
 #endif
