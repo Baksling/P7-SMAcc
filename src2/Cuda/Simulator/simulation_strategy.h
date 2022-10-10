@@ -1,12 +1,8 @@
 ﻿#pragma once
 
-#ifndef CUDA_SIM_H
-#define CUDA_SIM_H
 
-#include <unordered_map>
-
-#include "common.h"
-
+#ifndef SIMULATION_STRATEGY_H
+#define SIMULATION_STRATEGY_H
 
 struct model_options
 {
@@ -14,6 +10,8 @@ struct model_options
     unsigned int max_steps_pr_sim;
     unsigned long seed;
 };
+
+
 
 struct simulation_strategy
 {
@@ -34,9 +32,4 @@ struct simulation_strategy
     }
 };
 
-class cuda_simulator
-{
-public:
-    static void simulate(stochastic_model_t* model, simulation_strategy* strategy);
-};
 #endif

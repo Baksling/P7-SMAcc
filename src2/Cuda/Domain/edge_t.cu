@@ -24,7 +24,7 @@ CPU GPU float edge_t::get_weight() const
     return this->weight_;
 }
 
-GPU CPU node_t* edge_t::get_dest() const
+CPU GPU node_t* edge_t::get_dest() const
 {
     return this->dest_;
 }
@@ -34,7 +34,7 @@ void edge_t::set_updates(std::list<update_t*>* updates)
     this->updates_ = to_array(updates);
 }
 
-GPU bool edge_t::evaluate_constraints(const lend_array<clock_timer_t>* timers) const
+CPU GPU bool edge_t::evaluate_constraints(const lend_array<clock_timer_t>* timers) const
 {
     const bool valid_dest = this->dest_->evaluate_invariants(timers);
     if(!valid_dest) return false;
@@ -118,10 +118,10 @@ void edge_t::cuda_allocate_2(edge_t* cuda_p, const allocation_helper* helper)
 }
 
 
-GPU void edge_t::execute_updates(const lend_array<clock_timer_t>* timers)
+CPU GPU void edge_t::execute_updates(const lend_array<clock_timer_t>* timers) const
 {
     for (int i = 0; i < this->updates_.size(); ++i)
     {
-        this->updates_.get(i)->update_timer(timers);
+        this->updates_.get(i)->apply_update(timers);
     }
 }

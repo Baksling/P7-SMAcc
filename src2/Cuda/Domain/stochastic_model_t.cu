@@ -5,7 +5,8 @@ stochastic_model_t::stochastic_model_t(node_t* start_node, const array_t<clock_t
     this->start_node_ = start_node;
     this->timers_ = timers;
 }
-void stochastic_model_t::accept(visitor* v)
+
+void stochastic_model_t::accept(visitor* v) const
 {
     v->visit(this->start_node_);
     for (int i = 0; i < this->timers_.size(); ++i)
@@ -15,7 +16,7 @@ void stochastic_model_t::accept(visitor* v)
     }
 }
 
-GPU array_t<clock_timer_t> stochastic_model_t::create_internal_timers()
+CPU GPU array_t<clock_timer_t> stochastic_model_t::create_internal_timers() const
 {
     const int size = this->timers_.size();
     clock_timer_t* internal_timers_arr =
@@ -31,7 +32,7 @@ GPU array_t<clock_timer_t> stochastic_model_t::create_internal_timers()
     return internal_timers;
 }
 
-GPU void stochastic_model_t::reset_timers(array_t<clock_timer_t>* active_timers)
+CPU GPU void stochastic_model_t::reset_timers(array_t<clock_timer_t>* active_timers) const
 {
     if(active_timers->size() != this->timers_.size())
     {

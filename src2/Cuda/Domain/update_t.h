@@ -13,11 +13,15 @@ private:
     double timer_value_;
 public:
     update_t(int id, int timer_id, double timer_value);
-    GPU void update_timer(const lend_array<clock_timer_t>* timers) const;
-    void accept(visitor* v);
+
+    //SIMULATOR METHODS
+    CPU GPU void apply_update(const lend_array<clock_timer_t>* timers) const;
+    
+    //HOST METHODS
+    int get_id() const;
     int get_timer_id() const;
     float get_timer_value() const;
-    int get_id() const;
+    void accept(visitor* v);
     void cuda_allocate(update_t** pointer, const allocation_helper* helper) const;
 };
 

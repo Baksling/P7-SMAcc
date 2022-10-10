@@ -1,7 +1,5 @@
 ﻿#include "node_t.h"
 
-#include "CudaSimulator.h"
-
 node_t::node_t(node_t* source, const array_t<constraint_t*> invariant, const array_t<edge_t*> edges)
 {
     this->id_ = source->id_;
@@ -40,7 +38,7 @@ CPU GPU bool node_t::is_goal_node() const
     return this->is_goal_;
 }
 
-GPU bool node_t::evaluate_invariants(const lend_array<clock_timer_t>* timers) const
+CPU GPU bool node_t::evaluate_invariants(const lend_array<clock_timer_t>* timers) const
 {
     for (int i = 0; i < this->invariants_.size(); ++i)
     {
@@ -133,7 +131,7 @@ CPU GPU bool node_t::is_branch_point() const
     return this->is_branch_point_;
 }
 
-GPU double node_t::max_time_progression(const lend_array<clock_timer_t>* timers, double max_progression) const
+CPU GPU double node_t::max_time_progression(const lend_array<clock_timer_t>* timers, double max_progression) const
 {
     if(this->invariants_.size() <= 0) return max_progression;
 

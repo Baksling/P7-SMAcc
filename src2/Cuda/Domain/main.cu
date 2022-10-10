@@ -2,7 +2,8 @@
 #include <iostream>
 #include "pretty_visitor.h"
 #include "../UPPAALTreeParser/uppaal_tree_parser.h"
-#include "CudaSimulator.h"
+#include "../Simulator/cuda_simulator.h"
+#include "../Simulator/cpu_simulator.h"
 
 int main(int argc, char* argv[])
 {
@@ -50,7 +51,9 @@ int main(int argc, char* argv[])
     }
     visitor.visit(&model);
     simulation_strategy strategy = {2560, 512, 26, 1, 1000};
-    cuda_simulator::simulate(&model, &strategy);
+
+    cpu_simulator::simulate(&model, &strategy);
+    // cuda_simulator::simulate(&model, &strategy);
     
     std::cout << "pully porky\n";
 
