@@ -4,7 +4,8 @@
 #define CUDA_SIM_H
 
 
-#include "stochastic_simulator.cu"
+//#include "stochastic_simulator.cu"
+#include "../Domain/common.h"
 #include "simulation_strategy.h"
 
 

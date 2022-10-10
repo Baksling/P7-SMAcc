@@ -727,6 +727,7 @@
     <ClInclude Include="Cuda\Simulator\cpu_simulator.h" />
     <ClInclude Include="Cuda\Simulator\cuda_simulator.h" />
     <ClInclude Include="Cuda\Simulator\simulation_strategy.h" />
+    <ClInclude Include="Cuda\Simulator\stochastic_simulator.h" />
     <ClInclude Include="Cuda\Simulator\thread_pool.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\pugiconfig.hpp" />
     <ClInclude Include="Cuda\UPPAALTreeParser\pugixml.hpp" />

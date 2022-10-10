@@ -7,6 +7,7 @@
 #include <mutex>
 #include <functional>
 #include <thread>
+#include <condition_variable>
 
 class thread_pool
 {
