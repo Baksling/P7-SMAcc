@@ -3,7 +3,7 @@
 void pretty_visitor::visit(constraint_t* constraint)
 {
     if (constraint == nullptr) return;
-    printf("    Constraint type: %d | Timer 1 id: %3d | Timer 2 id: %3d | value: %10f \n", constraint->get_type(),
+    printf("Constraint type: %s | Timer 1 id: %3d | Timer 2 id: %3d | value: %10f \n", constraint_t::to_string(constraint->get_type()).c_str(),
            constraint->get_timer1_id(), constraint->get_timer2_id(), constraint->get_value());
     constraint->accept(this);
 }
@@ -21,7 +21,7 @@ void pretty_visitor::visit(node_t* node)
     if (node == nullptr) return;
     if (checker.find(node) != checker.end()) return;
     checker.insert(node);
-    printf("Node id: %3d | Is branch: %d | Is goal: %d \n", node->get_id(), node->is_branch_point(),
+    printf("\nNode id: %3d | Is branch: %d | Is goal: %d \n", node->get_id(), node->is_branch_point(),
            node->is_goal_node());
     node->accept(this);
 }
@@ -37,7 +37,7 @@ void pretty_visitor::visit(stochastic_model_t* model)
 void pretty_visitor::visit(clock_timer_t* timer)
 {
     if (timer == nullptr) return;
-    printf("|&|");
+    //printf("|&|"); why we do this????
     printf("Timer id: %3d | Value: %10f \n", timer->get_id(), timer->get_time());
     timer->accept(this);
 }

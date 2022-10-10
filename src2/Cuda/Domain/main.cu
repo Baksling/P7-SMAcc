@@ -9,16 +9,20 @@ int main(int argc, char* argv[])
     std::cout << "Fuck you\n";
 
     constraint_t* con0 = constraint_t::less_equal_v(0, 10.0f);
+    constraint_t* con1 = constraint_t::greater_equal_t(0, 10.0f);
     // constraint_t con1 = constraint_t::less_equal_v(1, 10.0f);
     // constraint_t con2 = constraint_t::greater_equal_v(0, 0.0f);
 
     array_t<constraint_t*> con0_arr = array_t<constraint_t*>(1);
+    array_t<constraint_t*> con1_arr = array_t<constraint_t*>(1);
+
     con0_arr.arr()[0] = con0;
+    con1_arr.arr()[0] = con1;
     node_t node0 = node_t(0, con0_arr, false,false);
     node_t node1     = node_t(1, con0_arr, false,false);
     node_t node2 = node_t(2, array_t<constraint_t*>(0),false,true);
 
-    edge_t* edge0_1 = new edge_t(0, 1, &node1, array_t<constraint_t*>(0));
+    edge_t* edge0_1 = new edge_t(0, 1, &node1, con1_arr);
     edge_t* edge0_2 = new edge_t(1, 1, &node2, array_t<constraint_t*>(0));
     edge_t* edge1_0 = new edge_t(2, 1, &node0, array_t<constraint_t*>(0));
 

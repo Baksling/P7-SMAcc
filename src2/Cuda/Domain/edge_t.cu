@@ -50,11 +50,10 @@ GPU bool edge_t::evaluate_constraints(const lend_array<clock_timer_t>* timers) c
 
 void edge_t::accept(visitor* v) const
 {
-    printf("    ");
-
     //visit edge guards
     for (int i = 0; i < this->guards_.size(); ++i)
     {
+        printf("        ");
         v->visit(this->guards_.get(i));
     }
 

@@ -33,6 +33,7 @@ public:
     void accept(visitor* v);
     void cuda_allocate(constraint_t** pointer, const allocation_helper* helper) const;
     void cuda_allocate_2(constraint_t* cuda_pointer, const allocation_helper* helper) const;
+    CPU static std::string to_string(logical_operator_t op);
 
 
     CPU GPU int get_timer1_id() const;
