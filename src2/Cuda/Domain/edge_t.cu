@@ -40,10 +40,7 @@ CPU GPU bool edge_t::evaluate_constraints(const lend_array<clock_timer_t>* timer
     {
         update_t* update = this->updates_.get(i);
         clock_timer_t* clock = timers->at(update->get_timer_id());
-        if (clock->get_temp_time() > update->get_timer_value())
-        {
-            clock->set_temp_time(update->get_timer_value());
-        }
+        clock->set_temp_time(update->get_timer_value());
     }
     const bool valid_dest = this->dest_->evaluate_invariants(timers);
 
