@@ -22,6 +22,7 @@ int main(int argc, const char* argv[])
     parser.add_argument("-a", "--amount", "Number of simulations", false);
     parser.add_argument("-c", "--count", "number of times to repeat simulations", false);
     parser.add_argument("-s", "--steps", "maximum number of steps per simulation", false);
+    parser.add_argument("-p", "--maxtime", "Maximum numper to progrss in time", false );
     parser.enable_help();
     auto err = parser.parse(argc, argv);
     
@@ -43,8 +44,7 @@ int main(int argc, const char* argv[])
     if (parser.exists("a")) strategy.simulation_amounts = parser.get<unsigned int>("a");
     if (parser.exists("c")) strategy.sim_count = parser.get<int>("c");
     if (parser.exists("s")) strategy.max_sim_steps = parser.get<unsigned int>("s");
-
-
+    if (parser.exists("p")) strategy.max_time_progression = parser.get<double>("p");
     
     std::cout << "Fuck you\n";
 
@@ -104,7 +104,7 @@ int main(int argc, const char* argv[])
     }
     visitor.visit(&model);
 
-    stochastic_simulator::simulate_cpu(&model, &strategy);
+    // stochastic_simulator::simulate_cpu(&model, &strategy);
     stochastic_simulator::simulate_gpu(&model, &strategy);
     
     std::cout << "pully porky\n";

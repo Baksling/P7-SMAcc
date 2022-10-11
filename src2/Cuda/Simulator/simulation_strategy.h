@@ -20,6 +20,7 @@ struct simulation_strategy
     unsigned int simulation_amounts = 26;
     int sim_count = 1;
     unsigned int max_sim_steps = 1000;
+    double max_time_progression = 10.0;
 
     int degree_of_parallelism() const
     {

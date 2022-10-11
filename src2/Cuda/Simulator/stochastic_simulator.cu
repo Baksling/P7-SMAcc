@@ -148,7 +148,8 @@ CPU GPU void simulate_stochastic_model(
     const model_options* options,
     curandState* r_state,
     int* output,
-    const unsigned long idx
+    const unsigned long idx,
+    double max_time_progression
 )
 {
     curand_init(options->seed, idx, idx, &r_state[idx]);
@@ -184,7 +185,7 @@ CPU GPU void simulate_stochastic_model(
             //Progress time
             if (!current_node->is_branch_point())
             {
-                const double max_progression = current_node->max_time_progression(&lend_internal_timers);
+                const double max_progression = current_node->max_time_progression(&lend_internal_timers, max_time_progression);
                 progress_time(&lend_internal_timers, max_progression, r_state, idx);
             }
             const lend_array<edge_t*> outgoing_edges = current_node->get_edges();
@@ -213,7 +214,10 @@ CPU GPU void simulate_stochastic_model(
         }
         else
         {
-            output[sim_id] = current_node->get_id();
+            if(current_node->is_goal_node())
+                output[sim_id] = current_node->get_id();
+            else
+                output[sim_id] = HIT_MAX_STEPS;
         }
     }
 
@@ -226,11 +230,12 @@ __global__ void gpu_simulate(
     const stochastic_model_t* model,
     const model_options* options,
     curandState* r_state,
-    int* output
+    int* output,
+    double max_time_progression
 )
 {
     const unsigned long idx = threadIdx.x + blockDim.x * blockIdx.x;
-    simulate_stochastic_model(model, options, r_state, output, idx);
+    simulate_stochastic_model(model, options, r_state, output, idx, max_time_progression);
 }
 
 
@@ -266,7 +271,7 @@ void stochastic_simulator::simulate_cpu(stochastic_model_t* model, simulation_st
     {
         pool.queue_job([model, options, state, sim_results, i]()
         {
-            simulate_stochastic_model(model, &options, state, sim_results, i);
+            simulate_stochastic_model(model, &options, state, sim_results, i, 0.01);
         });
     }
     pool.start();
@@ -331,7 +336,7 @@ void stochastic_simulator::simulate_gpu(stochastic_model_t* model, simulation_st
     for (int i = 0; i < strategy->sim_count; ++i)
     {
         //simulate on device
-        gpu_simulate<<<strategy->block_n, strategy->threads_n>>>(model_d, options_d, state, cuda_results);
+        gpu_simulate<<<strategy->block_n, strategy->threads_n>>>(model_d, options_d, state, cuda_results, strategy->max_time_progression);
 
         //wait for all processes to finish
         cudaDeviceSynchronize();

@@ -7,10 +7,10 @@
 		<name x="5" y="5">Template</name>
 		<declaration>// Place local declarations here.
 clock x,y;</declaration>
-		<location id="id0" x="-238" y="-136">
-			<name x="-248" y="-170">Node1</name>
-			<label kind="invariant" x="-255" y="-170">x&lt;10</label>
-			<label kind="exponentialrate" x="-248" y="-102">1</label>
+		<location id="id0" x="-255" y="-178">
+			<name x="-265" y="-212">Node1</name>
+			<label kind="invariant" x="-272" y="-212">x&lt;10</label>
+			<label kind="exponentialrate" x="-265" y="-144">1</label>
 		</location>
 		<location id="id1" x="-42" y="-136">
 			<name x="-52" y="-170">Node2</name>
