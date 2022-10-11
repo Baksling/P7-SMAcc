@@ -22,10 +22,10 @@ logical_operator_t constraint_t::get_type() const
 
 CPU GPU bool constraint_t::evaluate(const lend_array<clock_timer_t>* timers) const
 {
-    const double v1 = timers->at(this->timer_id1_)->get_time();
+    const double v1 = timers->at(this->timer_id1_)->get_temp_time();
     const double v2 = this->timer_id2_ == NO_ID
                 ? static_cast<double>(this->value_)
-                : timers->at(this->timer_id2_)->get_time();
+                : timers->at(this->timer_id2_)->get_temp_time();
 
     switch(this->type_)
     {

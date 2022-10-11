@@ -19,8 +19,8 @@ public:
     
     //HOST METHODS
     int get_id() const;
-    int get_timer_id() const;
-    float get_timer_value() const;
+    CPU GPU int get_timer_id() const;
+    CPU GPU float get_timer_value() const;
     void accept(visitor* v);
     void cuda_allocate(update_t** pointer, const allocation_helper* helper) const;
 };
