@@ -477,8 +477,7 @@
     <ClCompile Include="Cuda\Projekt\uneven_list.h" />
     <ClCompile Include="Cuda\Projekt\main.cu" />
     <ClCompile Include="Cuda\Projekt\main.h" />
-    <ClCompile Include="Cuda\Simulator\cpu_simulator.cu" />
-    <ClCompile Include="Cuda\Simulator\cuda_simulator.cu" />
+    <ClCompile Include="Cuda\Simulator\simulator_tools.cu" />
     <ClCompile Include="Cuda\Simulator\stochastic_simulator.cu">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -724,9 +723,8 @@
     <ClInclude Include="Cuda\Projekt\cuda_map.h" />
     <ClInclude Include="Cuda\Projekt\cuda_simulator.h" />
     <ClInclude Include="Cuda\Projekt\stochastic_model.h" />
-    <ClInclude Include="Cuda\Simulator\cpu_simulator.h" />
-    <ClInclude Include="Cuda\Simulator\cuda_simulator.h" />
     <ClInclude Include="Cuda\Simulator\simulation_strategy.h" />
+    <ClInclude Include="Cuda\Simulator\simulator_tools.h" />
     <ClInclude Include="Cuda\Simulator\stochastic_simulator.h" />
     <ClInclude Include="Cuda\Simulator\thread_pool.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\pugiconfig.hpp" />

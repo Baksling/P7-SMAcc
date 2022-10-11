@@ -1,8 +1,8 @@
-﻿#pragma once
-
-
-#ifndef SIMULATION_STRATEGY_H
+﻿#ifndef SIMULATION_STRATEGY_H
 #define SIMULATION_STRATEGY_H
+
+#define HIT_MAX_STEPS (-1)
+
 
 struct model_options
 {

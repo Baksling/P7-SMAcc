@@ -1,4 +1,5 @@
-﻿#include "common.h"
+﻿
+#include "common.h"
 #include <iostream>
 #include "pretty_visitor.h"
 #include "../UPPAALTreeParser/uppaal_tree_parser.h"
@@ -52,7 +53,7 @@ int main(int argc, char* argv[])
         model = parser.parse(argv[1]);
     }
     visitor.visit(&model);
-    simulation_strategy strategy = {2560/4, 512, 100, 1, 1000};
+    simulation_strategy strategy = {32, 512, 1000, 1, 1000};
 
     stochastic_simulator::simulate_cpu(&model, &strategy);
     stochastic_simulator::simulate_gpu(&model, &strategy);

@@ -12,7 +12,11 @@
 class thread_pool
 {
 public:
-    explicit thread_pool() = default;
+    //Will check hardware capable concurrency on negative 
+    explicit thread_pool(const unsigned int max_concurrency = 0)
+    {
+        this->max_concurrency_ = max_concurrency;
+    }
     void start();
     void queue_job(const std::function<void()>& job);
     void stop();
@@ -20,7 +24,8 @@ public:
 
 private:
     void thread_loop();
-
+    
+    unsigned int max_concurrency_;
     bool should_terminate_ = false;           // Tells threads to stop looking for jobs
     std::mutex queue_mutex_;                  // Prevents data races to the job queue
     std::condition_variable mutex_condition_; // Allows threads to wait on new jobs or termination 

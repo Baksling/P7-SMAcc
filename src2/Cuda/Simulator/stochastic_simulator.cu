@@ -1,30 +1,12 @@
-﻿
-#ifndef STOCHASTIC_SIMULATOR_CU
-#define STOCHASTIC_SIMULATOR_CU
-
-
-#include "stochastic_simulator.h"
-
-
-#define HIT_MAX_STEPS (-1)
+﻿#include "stochastic_simulator.h"
 using namespace std::chrono;
 
 
-CPU GPU edge_t* choose_next_edge(const lend_array<edge_t*>* edges, const lend_array<clock_timer_t>* timer_arr,
+CPU GPU edge_t* find_valid_edge_heap(const lend_array<edge_t*>* edges, const lend_array<clock_timer_t>* timer_arr,
     curandState* states, const unsigned int thread_id)
 {
-    //if no possible edges, return null pointer
-    if(edges->size() == 0) return nullptr;
-    if(edges->size() == 1)
-    {
-        edge_t* edge = edges->get(0);
-        return edge->evaluate_constraints(timer_arr)
-                ? edge
-                : nullptr;
-    }
-
     // return nullptr;
-    edge_t** valid_edges = static_cast<edge_t**>(malloc(sizeof(void*) * edges->size()));
+    edge_t** valid_edges = static_cast<edge_t**>(malloc(sizeof(edge_t*) * edges->size()));  // NOLINT(bugprone-sizeof-expression)
     if(valid_edges == nullptr) printf("COULD NOT ALLOCATE HEAP MEMORY\n");
     int valid_count = 0;
     
@@ -77,6 +59,75 @@ CPU GPU edge_t* choose_next_edge(const lend_array<edge_t*>* edges, const lend_ar
     edge_t* edge = valid_edges[valid_count - 1];
     free(valid_edges);
     return edge;
+}
+
+CPU GPU edge_t* find_valid_edge_fast(const lend_array<edge_t*>* edges, const lend_array<clock_timer_t>* timer_arr,
+    curandState* states, const unsigned int thread_id)
+{
+    unsigned long long valid_edges_bitarray = 0UL;
+    unsigned int valid_count = 0;
+    edge_t* valid_edge = nullptr;
+    
+    for (int i = 0; i < edges->size(); ++i)
+    {
+        edge_t* edge = edges->get(i);
+        if(edge->evaluate_constraints(timer_arr))
+        {
+            bit_handler::set_bit(&valid_edges_bitarray, i);
+            valid_edge = edge;
+            valid_count++;
+        }
+    }
+    
+    if(valid_count == 0) return nullptr;
+    if(valid_count == 1 && valid_edge != nullptr) return valid_edge;
+
+    //summed weight
+    float weight_sum = 0.0f;
+    for(int i = 0; i  < edges->size(); i++)
+    {
+        if(bit_handler::bit_is_set(&valid_edges_bitarray, i))
+            weight_sum += edges->get(i)->get_weight();
+    }
+
+    //curand_uniform return ]0.0f, 1.0f], but we require [0.0f, 1.0f[
+    //conversion from float to int is floored, such that a array of 10 (index 0..9) will return valid index.
+    const float r_val = (1.0f - curand_uniform(&states[thread_id])) * weight_sum;
+    float r_acc = 0.0; 
+
+    //pick the weighted random value.
+    valid_edge = nullptr; //reset valid edge !IMPORTANT
+    for (int i = 0; i < edges->size(); ++i)
+    {
+        if(!bit_handler::bit_is_set(&valid_edges_bitarray, i)) continue;
+
+        valid_edge = edges->get(i);
+        r_acc += valid_edge->get_weight();
+        if(r_val < r_acc)
+        {
+            return valid_edge;
+        }
+    }
+    return valid_edge;
+}
+
+CPU GPU edge_t* choose_next_edge(const lend_array<edge_t*>* edges, const lend_array<clock_timer_t>* timer_arr,
+    curandState* states, const unsigned int thread_id)
+{
+    //if no possible edges, return null pointer
+    if(edges->size() == 0) return nullptr;
+    if(edges->size() == 1)
+    {
+        edge_t* edge = edges->get(0);
+        return edge->evaluate_constraints(timer_arr)
+                ? edge
+                : nullptr;
+    }
+
+    if(static_cast<unsigned long long>(edges->size()) < sizeof(unsigned long long)*8)
+        return find_valid_edge_fast(edges, timer_arr, states, thread_id);
+    else
+        return find_valid_edge_heap(edges, timer_arr, states, thread_id);
 }
 
 CPU GPU void progress_time(const lend_array<clock_timer_t>* timers, const double difference, curandState* states, const unsigned int thread_id)
@@ -182,43 +233,7 @@ __global__ void gpu_simulate(
     simulate_stochastic_model(model, options, r_state, output, idx);
 }
 
-void read_results(const int* cuda_results, const unsigned long total_simulations, std::map<int, unsigned long>* results)
-{
-    for (unsigned long i = 0; i < total_simulations; ++i)
-    {
-        int id = cuda_results[i];
-        int count = 0;
-        if(results->count(id) == 1)
-        {
-            count = (*results)[id];
-        }
 
-        results->insert_or_assign(id, count+1);
-
-    }
-}
-
-float calc_percentage(const unsigned long counter, const unsigned long divisor)
-{
-    return (static_cast<float>(counter)/static_cast<float>(divisor))*100;
-} 
-
-void print_results(std::map<int,unsigned long>* result_map, const unsigned long result_size)
-{
-    std::cout << "\n";
-    for (const std::pair<const int, int> it : (*result_map))
-    {
-        if(it.first == HIT_MAX_STEPS) continue;
-        const float percentage = calc_percentage(it.second, result_size);
-        std::cout << "Node: " << it.first << " reached " << it.second << " times. (" << percentage << ")%\n";
-    }
-    const float percentage = calc_percentage((*result_map)[HIT_MAX_STEPS], result_size);
-    std::cout << "No goal state was reached " << (*result_map)[HIT_MAX_STEPS] << " times. (" << percentage << ")%\n";
-    std::cout << "\n";
-    std::cout << "Nr of simulations: " << result_size << "\n";
-    std::cout << "\n";
-
-}
 
 
 void stochastic_simulator::simulate_cpu(stochastic_model_t* model, simulation_strategy* strategy)
@@ -245,7 +260,7 @@ void stochastic_simulator::simulate_cpu(stochastic_model_t* model, simulation_st
     std::map<int, unsigned long> node_results;
     const steady_clock::time_point start = steady_clock::now();
     std::cout << "Started running!\n";
-    thread_pool pool;
+    thread_pool pool(0);
 
     for (int i = 0; i < strategy->degree_of_parallelism(); i++)
     {
@@ -264,8 +279,8 @@ void stochastic_simulator::simulate_cpu(stochastic_model_t* model, simulation_st
 
     std::cout << "Simulation ran for: " << duration_cast<milliseconds>(steady_clock::now() - start).count() << "[ms] \n";
     std::cout << "Reading results...\n";
-    read_results(sim_results, total_simulations, &node_results);
-    print_results(&node_results, total_simulations * strategy->sim_count);
+    result_handler::read_results(sim_results, total_simulations, &node_results);
+    result_handler::print_results(&node_results, total_simulations * strategy->sim_count);
 
     free(sim_results);
     free(state);
@@ -326,21 +341,23 @@ void stochastic_simulator::simulate_gpu(stochastic_model_t* model, simulation_st
         if(i < strategy->sim_count) 
         {
             std::cout << "Simulation ran for: " << duration_cast<milliseconds>(steady_clock::now() - start).count() << "[ms] \n";
+            std::cout << "Reading results...\n";
             int* local_results = static_cast<int*>(malloc(sizeof(int)*total_simulations));
             cudaMemcpy(local_results, cuda_results, sizeof(int)*total_simulations, cudaMemcpyDeviceToHost);
-            read_results(local_results, total_simulations, &node_results);
+            result_handler::read_results(local_results, total_simulations, &node_results);
             free(local_results);
         }
     }
-    
+
+    if(strategy->sim_count > 1)
+    {
+        std::cout << "Total Simulation time: " << duration_cast<milliseconds>(steady_clock::now() - start).count() << "[ms] \n";
+    }
 
     const cudaError status = cudaPeekAtLastError();
     if(cudaPeekAtLastError() == cudaSuccess)
     {
-        std::cout << "Reading results...\n";
-        // read_results(cuda_results, total_simulations, &node_results);
-        // print_results(&node_results, total_simulations * strategy->sim_count);
-        print_results(&node_results, total_simulations * strategy->sim_count);
+        result_handler::print_results(&node_results, total_simulations * strategy->sim_count);
     }
     else
     {
@@ -359,7 +376,3 @@ void stochastic_simulator::simulate_gpu(stochastic_model_t* model, simulation_st
         cudaFree(it);
     }
 }
-
-
-
-#endif

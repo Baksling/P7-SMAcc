@@ -16,6 +16,8 @@
 #include <curand_kernel.h>
 #undef QUALIFIERS
 #include <chrono>
+#include "simulator_tools.h"
+
 
 
 class stochastic_simulator

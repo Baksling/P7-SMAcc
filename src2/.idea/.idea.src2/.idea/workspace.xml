@@ -8,14 +8,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c81c9d2a-66d3-4b0c-b40b-c667cea459e8" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Cuda/Simulator/stochastic_simulator.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Simulator/simulator_tools.cu" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Simulator/simulator_tools.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Domain/main.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/main.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Simulator/cpu_simulator.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Simulator/cpu_simulator.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Simulator/cpu_simulator.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Simulator/cpu_simulator.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Simulator/cuda_simulator.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Simulator/cuda_simulator.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Simulator/cuda_simulator.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Simulator/cuda_simulator.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Simulator/cpu_simulator.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Simulator/cpu_simulator.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Simulator/cuda_simulator.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Simulator/cuda_simulator.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Simulator/simulation_strategy.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Simulator/simulation_strategy.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Simulator/stochastic_simulator.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Simulator/stochastic_simulator.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Simulator/stochastic_simulator.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Simulator/stochastic_simulator.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Simulator/thread_pool.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Simulator/thread_pool.cu" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Simulator/thread_pool.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Simulator/thread_pool.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src2.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/src2.vcxproj" afterDir="false" />
@@ -29,9 +32,19 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/../../../../../../Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.7/include/curand_kernel.h" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../../../../../../Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.7/include/curand_precalc.h" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../../../../../../Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.7/include/curand_uniform.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../../../../../Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include/limits" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../../../../../Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include/unordered_map" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$Cuda$/builtin_types.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$Cuda$/cuda.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$Cuda$/cuda_runtime.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$Cuda$/cuda_runtime_api.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$Cuda$/curand.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$Cuda$/curand_globals.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$Cuda$/curand_kernel.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$Cuda$/curand_mtgp32_kernel.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$Cuda$/curand_precalc.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$Cuda$/curand_uniform.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$Cuda$/driver_types.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Cuda/Domain/common.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Cuda/Domain/constraint_t.cu" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Cuda/Domain/constraint_t.h" root0="FORCE_HIGHLIGHTING" />
@@ -57,17 +70,17 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "ReSpellerSettingsId",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;ReSpellerSettingsId&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="src2" type="CppProject" factoryName="C++ Project">
       <configuration_1>
@@ -131,6 +144,7 @@
       <workItem from="1665076128860" duration="4292000" />
       <workItem from="1665128745683" duration="8407000" />
       <workItem from="1665387157587" duration="4493000" />
+      <workItem from="1665473753363" duration="5433000" />
     </task>
     <servers />
   </component>
