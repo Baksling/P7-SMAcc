@@ -8,20 +8,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c81c9d2a-66d3-4b0c-b40b-c667cea459e8" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Cuda/Simulator/simulator_tools.cu" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Cuda/Simulator/simulator_tools.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/main.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/main.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Simulator/cpu_simulator.cu" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Simulator/cpu_simulator.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Simulator/cuda_simulator.cu" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Simulator/cuda_simulator.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Simulator/simulation_strategy.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Simulator/simulation_strategy.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Simulator/stochastic_simulator.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Simulator/stochastic_simulator.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Simulator/stochastic_simulator.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Simulator/stochastic_simulator.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Simulator/thread_pool.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Simulator/thread_pool.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Simulator/thread_pool.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Simulator/thread_pool.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src2.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/src2.vcxproj" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -144,7 +131,7 @@
       <workItem from="1665076128860" duration="4292000" />
       <workItem from="1665128745683" duration="8407000" />
       <workItem from="1665387157587" duration="4493000" />
-      <workItem from="1665473753363" duration="5433000" />
+      <workItem from="1665473753363" duration="6402000" />
     </task>
     <servers />
   </component>

@@ -156,10 +156,9 @@ CPU GPU void simulate_stochastic_model(
     array_t<clock_timer_t> internal_timers = model->create_internal_timers();
 
     const lend_array<clock_timer_t> lend_internal_timers = lend_array<clock_timer_t>(&internal_timers);
-    if(idx == 0) printf("Progress: %d/%d\n", 0, options->simulation_amount);
     for (unsigned int i = 0; i < options->simulation_amount; ++i)
     {
-        if(idx == 0 && i+1 % 100 == 0) printf("Progress: %d/%d\n", i+1, options->simulation_amount);
+        if(idx == 0 && i % 10 == 0) printf("Progress: %d/%d\n", i, options->simulation_amount);
         //calculate the current simulation id
         const unsigned int sim_id = i + options->simulation_amount * static_cast<unsigned int>(idx);
         
@@ -219,6 +218,7 @@ CPU GPU void simulate_stochastic_model(
     }
 
     internal_timers.free_array();
+    if(idx == 0) printf("Progress: %d/%d\n", options->simulation_amount, options->simulation_amount);
 }
 
 
