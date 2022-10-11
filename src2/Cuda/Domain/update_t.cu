@@ -17,12 +17,12 @@ void update_t::accept(visitor* v)
     return;
 }
 
-int update_t::get_timer_id() const
+CPU GPU int update_t::get_timer_id() const
 {
     return this->timer_id_;
 }
 
-float update_t::get_timer_value() const
+CPU GPU float update_t::get_timer_value() const
 {
     return static_cast<float>(this->timer_value_);
 }

@@ -36,7 +36,24 @@ void edge_t::set_updates(std::list<update_t*>* updates)
 
 CPU GPU bool edge_t::evaluate_constraints(const lend_array<clock_timer_t>* timers) const
 {
+    for (int i = 0; i < this->updates_.size(); ++i)
+    {
+        update_t* update = this->updates_.get(i);
+        clock_timer_t* clock = timers->at(update->get_timer_id());
+        if (clock->get_temp_time() > update->get_timer_value())
+        {
+            clock->set_temp_time(update->get_timer_value());
+        }
+    }
     const bool valid_dest = this->dest_->evaluate_invariants(timers);
+
+    for (int i = 0; i < this->updates_.size(); ++i)
+    {
+        clock_timer_t* clock = timers->at(this->updates_.get(i)->get_timer_id());
+        if (clock != nullptr)
+            clock->reset_temp_time();
+    }
+    
     if(!valid_dest) return false;
 
     for (int i = 0; i < this->guards_.size(); ++i)
