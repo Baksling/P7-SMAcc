@@ -54,6 +54,7 @@ void node_t::accept(visitor* v) const
     //visit node constraints
     for (int i = 0; i < this->invariants_.size(); ++i)
     {
+        printf("    ");
         v->visit(this->invariants_.get(i));
     }
 

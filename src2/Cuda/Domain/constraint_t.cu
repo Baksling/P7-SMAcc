@@ -75,6 +75,27 @@ void constraint_t::cuda_allocate_2(constraint_t* cuda_pointer, const allocation_
     cudaMemcpy(cuda_pointer, &con, sizeof(constraint_t), cudaMemcpyHostToDevice);
 }
 
+std::string constraint_t::to_string(const logical_operator_t op)
+{
+    switch (op)
+    {
+    case logical_operator_t::less_equal_t:
+        return "<=";
+    case logical_operator_t::greater_equal_t:
+        return ">=";
+    case logical_operator_t::less_t:
+        return "<";
+    case logical_operator_t::greater_t:
+        return ">";
+    case logical_operator_t::equal_t:
+        return "==";
+    case logical_operator_t::not_equal_t:
+        return "!=";
+    default:
+        return "not a boolean operator";
+    }
+}
+
 int constraint_t::get_timer1_id() const
 {
     return this->timer_id1_;

@@ -24,6 +24,8 @@ public:
     virtual void visit(clock_timer_t* timer) override;
 
     virtual void visit(update_t* update) override;
+
+    void pretty_helper();
 };
 
 #endif

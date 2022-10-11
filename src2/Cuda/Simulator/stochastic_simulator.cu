@@ -362,7 +362,7 @@ void stochastic_simulator::simulate_gpu(stochastic_model_t* model, simulation_st
     else
     {
         printf("An error occured during device execution" );
-        printf("CUDA error code: %d\n", status);
+        printf("CUDA error code: %s\n", cudaGetErrorString(status));
         exit(status);  // NOLINT(concurrency-mt-unsafe)
         return;
     }

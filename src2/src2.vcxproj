@@ -716,6 +716,7 @@
     <ClCompile Include="Cuda\Domain\stochastic_model_t.h" />
     <ClCompile Include="Cuda\Domain\clock_timer_t.h" />
     <ClCompile Include="Cuda\Domain\update_t.h" />
+    <ClInclude Include="Cuda\Domain\argparser.h" />
     <ClInclude Include="Cuda\Domain\cuda_visitor.h" />
     <ClInclude Include="Cuda\Domain\pretty_visitor.h" />
     <ClInclude Include="Cuda\Domain\visitor.h" />
