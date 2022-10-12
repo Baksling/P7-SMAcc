@@ -31,7 +31,7 @@ public:
 
     //SIMULATOR METHODS
     CPU GPU bool evaluate(const lend_array<clock_timer_t>* timers) const;
-    CPU GPU double max_time_progression(const lend_array<clock_timer_t>* timer_arr, double max_progression = 100.0) const;
+    CPU GPU bool check_max_time_progression(const lend_array<clock_timer_t>* timer_arr, double* out_max_progression) const;
     
 
     //HOST METHODS

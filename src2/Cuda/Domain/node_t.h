@@ -26,7 +26,7 @@ public:
     CPU GPU lend_array<edge_t*> get_edges();
     CPU GPU bool is_goal_node() const;
     CPU GPU bool evaluate_invariants(const lend_array<clock_timer_t>* timers) const;
-    CPU GPU double max_time_progression(const lend_array<clock_timer_t>* timers, double max_progression = 100.0) const;
+    CPU GPU bool max_time_progression(const lend_array<clock_timer_t>* timers, double* out_max_progression) const;
     CPU GPU bool is_branch_point() const;
 
     //HOST METHODS

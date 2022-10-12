@@ -131,25 +131,35 @@ CPU GPU edge_t* choose_next_edge(const lend_array<edge_t*>* edges, const lend_ar
 }
 
 CPU GPU void progress_time(const lend_array<clock_timer_t>* timers, const node_t* node,
-    const double max_global_progress, curandState* states)
+    const double max_global_progress, curandState* r_state)
 {
     //Get random uniform value between ]0.0f, 0.1f] * difference gives a random uniform range of ]0, diff]
-    const double max_progression = node->max_time_progression(timers, max_global_progress);
+    double max_progression = 0.0;
+    const bool has_upper_bound = node->max_time_progression(timers, &max_progression);
     const double lambda = static_cast<double>(node->get_lambda());
     double time_progression;
-    if(lambda <= 0) //chose uniform distribution
+    
+    if(lambda <= 0 && has_upper_bound) //chose uniform distribution between 0 and upper bound
     {
-        time_progression = (1.0 - curand_uniform_double(states)) * max_progression;
+        time_progression = (1.0 - curand_uniform_double(r_state)) * max_progression;
     }
-    else //choose exponential distribution
+    else if(lambda > 0 && has_upper_bound) //choose exponential distribution between 0 and upper bound
     {
         time_progression = (max_progression
-        - ( (1 - lambda*exp(-lambda* curand_uniform_double(states) * max_progression))
+        - ( (1 - lambda*exp(-lambda* curand_uniform_double(r_state) * max_progression))
         * max_progression)) / lambda; 
+    }
+    else if(lambda > 0) //choose exponential distribution between 0 and infinity
+    {
+        time_progression = (-log(curand_uniform_double(r_state))) / lambda;
+    }
+    else //choose uniform distribution between 0 and global max
+    {
+        time_progression = (1.0 - curand_uniform_double(r_state)) * max_global_progress;
     }
     
     
-    if(time_progression > max_progression)
+    if(has_upper_bound && time_progression > max_progression)
     {
         printf("FUUUUUUUCK ANDEMAND %lf | %lf\n", time_progression, max_progression);
         time_progression = max_progression;

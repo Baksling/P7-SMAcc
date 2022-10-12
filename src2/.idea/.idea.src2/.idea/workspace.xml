@@ -8,8 +8,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c81c9d2a-66d3-4b0c-b40b-c667cea459e8" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/main.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/main.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Domain/constraint_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/constraint_t.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Domain/constraint_t.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/constraint_t.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Domain/node_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/node_t.cu" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Domain/node_t.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/node_t.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Simulator/stochastic_simulator.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Simulator/stochastic_simulator.cu" afterDir="false" />

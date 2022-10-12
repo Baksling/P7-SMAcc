@@ -140,15 +140,24 @@ CPU GPU bool node_t::is_branch_point() const
     return this->is_branch_point_;
 }
 
-CPU GPU double node_t::max_time_progression(const lend_array<clock_timer_t>* timers, double max_progression) const
+CPU GPU bool node_t::max_time_progression(const lend_array<clock_timer_t>* timers, double* out_max_progression) const
 {
-    if(this->invariants_.size() <= 0) return max_progression;
+    if(this->invariants_.size() <= 0) return false;
 
+    bool changes = false;
+    double node_max = -1.0;
     for (int i = 0; i < this->invariants_.size(); ++i)
     {
-        const double temp_progression = this->invariants_.get(i)->max_time_progression(timers, max_progression);
-        max_progression = temp_progression < max_progression ? temp_progression : max_progression;
+        double local_max = 0.0;
+        
+        if(this->invariants_.get(i)->check_max_time_progression(timers, &local_max))
+        {
+            if(node_max < 0) node_max = local_max;
+            node_max = node_max < local_max ? node_max : local_max;
+            changes = true;
+        }
     }
-    
-    return max_progression; 
+
+    (*out_max_progression) = node_max;
+    return changes; 
 }
