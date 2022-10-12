@@ -478,6 +478,8 @@
     <ClCompile Include="Cuda\Projekt\uneven_list.h" />
     <ClCompile Include="Cuda\Projekt\main.cu" />
     <ClCompile Include="Cuda\Projekt\main.h" />
+    <ClCompile Include="Cuda\UPPAALTreeParser\declaration_parser.cpp" />
+    <ClCompile Include="Cuda\UPPAALTreeParser\main.cpp" />
     <ClCompile Include="Cuda\UPPAALTreeParser\pugixml.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -651,6 +653,9 @@
     <ClInclude Include="Cuda\Projekt\cuda_map.h" />
     <ClInclude Include="Cuda\Projekt\cuda_simulator.h" />
     <ClInclude Include="Cuda\Projekt\stochastic_model.h" />
+    <ClInclude Include="Cuda\UPPAALTreeParser\declaration.h" />
+    <ClInclude Include="Cuda\UPPAALTreeParser\declaration_parser.h" />
+    <ClInclude Include="Cuda\UPPAALTreeParser\main.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\pugiconfig.hpp" />
     <ClInclude Include="Cuda\UPPAALTreeParser\pugixml.hpp" />
     <ClInclude Include="Cuda\UPPAALTreeParser\uppaal_tree_parser.h" />
@@ -666,15 +671,15 @@
     <ClInclude Include="Update.h" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Cuda\UPPAALTreeParser\and_guy.xml" />
-    <Content Include="Cuda\UPPAALTreeParser\ff15.xml" />
-    <Content Include="Cuda\UPPAALTreeParser\lilleShit.xml" />
-    <Content Include="Cuda\UPPAALTreeParser\Lol.xml" />
     <ClInclude Include="Cuda\UPPAALTreeParser\parser_exception.h" />
-    <Content Include="Cuda\UPPAALTreeParser\sample1.xml" />
-    <Content Include="Cuda\UPPAALTreeParser\test2.xml" />
-    <Content Include="Cuda\UPPAALTreeParser\test3.xml" />
-    <Content Include="Cuda\UPPAALTreeParser\testBasic.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\and_guy.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\ff15.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\lilleShit.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\Lol.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\sample1.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\test2.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\test3.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\testBasic.xml" />
     <Content Include="UPAALParser\and_guy.xml" />
     <Content Include="UPAALParser\Lol.xml" />
     <Content Include="UPAALParser\lilleShit.xml" />

@@ -149,6 +149,9 @@ list<string> split_expr(const string& expr)
 
 void uppaal_tree_parser::init_clocks(const xml_document* doc)
 {
+
+    string global_decl = doc->child("declaration").child_value();
+    
     for (pugi::xml_node templates: doc->child("nta").children("template"))
     {
         string decl = templates.child("declaration").child_value();
