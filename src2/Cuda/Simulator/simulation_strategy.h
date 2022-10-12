@@ -18,6 +18,7 @@ struct simulation_strategy
     int block_n = 2560;
     int threads_n = 512;
     unsigned int simulation_amounts = 26;
+    unsigned int cpu_threads_n = 8;
     int sim_count = 1;
     unsigned int max_sim_steps = 1000;
     double max_time_progression = 10.0;

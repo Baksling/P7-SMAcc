@@ -265,7 +265,7 @@ void stochastic_simulator::simulate_cpu(stochastic_model_t* model, simulation_st
     std::map<int, unsigned long> node_results;
     const steady_clock::time_point start = steady_clock::now();
     std::cout << "Started running!\n";
-    thread_pool pool(0);
+    thread_pool pool(strategy->cpu_threads_n);
 
     for (int i = 0; i < strategy->degree_of_parallelism(); i++)
     {

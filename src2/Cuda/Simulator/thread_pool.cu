@@ -3,7 +3,10 @@
 void thread_pool::start()
 {
     const unsigned int hardware_max = std::thread::hardware_concurrency();
-    this->max_concurrency_ = this->max_concurrency_ < 1 ? hardware_max : this->max_concurrency_;
+    // if 0 threads supplied, default to hardware default
+    this->max_concurrency_ = this->max_concurrency_ == 0 ? hardware_max : this->max_concurrency_;
+
+    //pick lowest between user parameter and supported concurrency.
     const unsigned int num_threads = this->max_concurrency_ < hardware_max ? this->max_concurrency_ : hardware_max;
 
     threads_.resize(num_threads);

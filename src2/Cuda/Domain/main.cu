@@ -22,8 +22,9 @@ int main(int argc, const char* argv[])
     parser.add_argument("-a", "--amount", "Number of simulations", false);
     parser.add_argument("-c", "--count", "number of times to repeat simulations", false);
     parser.add_argument("-s", "--steps", "maximum number of steps per simulation", false);
-    parser.add_argument("-p", "--maxtime", "Maximum numper to progrss in time", false );
+    parser.add_argument("-p", "--maxtime", "Maximum number to progress in time", false );
     parser.add_argument("-d", "--device", "What simulation to run (GPU (0) / CPU (1) / BOTH (2))", false);
+    parser.add_argument("-u", "--cputhread", "The number of threads to use on the CPU", false);
     parser.enable_help();
     auto err = parser.parse(argc, argv);
     
@@ -46,6 +47,7 @@ int main(int argc, const char* argv[])
     if (parser.exists("c")) strategy.sim_count = parser.get<int>("c");
     if (parser.exists("s")) strategy.max_sim_steps = parser.get<unsigned int>("s");
     if (parser.exists("p")) strategy.max_time_progression = parser.get<double>("p");
+    if (parser.exists("u")) strategy.cpu_threads_n = parser.get<unsigned int>("u");
     if (parser.exists("d")) mode = parser.get<int>("d");
     
     
