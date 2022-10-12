@@ -10,9 +10,9 @@
     <list default="true" id="c81c9d2a-66d3-4b0c-b40b-c667cea459e8" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Domain/main.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/main.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Simulator/simulation_strategy.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Simulator/simulation_strategy.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Domain/node_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/node_t.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Domain/node_t.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/node_t.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Simulator/stochastic_simulator.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Simulator/stochastic_simulator.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Simulator/thread_pool.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Simulator/thread_pool.cu" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,6 +25,7 @@
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/../../../../../../Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include/limits" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../../../../../../Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include/unordered_map" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../../../../../Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/ucrt/corecrt_math.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$Cuda$/builtin_types.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$Cuda$/cuda.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$Cuda$/cuda_runtime.h" root0="SKIP_HIGHLIGHTING" />

@@ -7,13 +7,16 @@ node_t::node_t(node_t* source, const array_t<constraint_t*> invariant, const arr
     this->invariants_ = invariant;
     this->is_goal_ = source->is_goal_;
     this->edges_ = edges;
+    this->ex_lambda_ = source->ex_lambda_; 
 }
 
-node_t::node_t(const int id, const array_t<constraint_t*> invariants, const bool is_branch_point, const bool is_goal)
+node_t::node_t(const int id, const array_t<constraint_t*> invariants,
+    const bool is_branch_point, const bool is_goal, const float ex_lambda)
 {
     this->id_ = id;
     this->is_goal_ = is_goal;
     this->invariants_ = invariants;
+    this->ex_lambda_ = ex_lambda;
     this->is_branch_point_ = is_branch_point;
     this->edges_ = array_t<edge_t*>(0);
 }
@@ -21,6 +24,11 @@ node_t::node_t(const int id, const array_t<constraint_t*> invariants, const bool
 GPU CPU int node_t::get_id() const
 {
     return this->id_;
+}
+
+GPU CPU float node_t::get_lambda() const
+{
+    return this->ex_lambda_ >= 0 ? (this->ex_lambda_) : (-this->ex_lambda_);
 }
 
 void node_t::set_edges(std::list<edge_t*>* list)

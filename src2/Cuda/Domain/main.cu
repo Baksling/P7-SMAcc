@@ -22,7 +22,7 @@ int main(int argc, const char* argv[])
     parser.add_argument("-a", "--amount", "Number of simulations", false);
     parser.add_argument("-c", "--count", "number of times to repeat simulations", false);
     parser.add_argument("-s", "--steps", "maximum number of steps per simulation", false);
-    parser.add_argument("-p", "--maxtime", "Maximum number to progress in time", false );
+    parser.add_argument("-p", "--maxtime", "Maximum number to progress in time (default=100)", false );
     parser.add_argument("-d", "--device", "What simulation to run (GPU (0) / CPU (1) / BOTH (2))", false);
     parser.add_argument("-u", "--cputhread", "The number of threads to use on the CPU", false);
     parser.enable_help();

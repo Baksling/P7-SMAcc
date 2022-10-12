@@ -130,10 +130,31 @@ CPU GPU edge_t* choose_next_edge(const lend_array<edge_t*>* edges, const lend_ar
         return find_valid_edge_heap(edges, timer_arr, states, thread_id);
 }
 
-CPU GPU void progress_time(const lend_array<clock_timer_t>* timers, const double difference, curandState* states, const unsigned int thread_id)
+CPU GPU void progress_time(const lend_array<clock_timer_t>* timers, const node_t* node,
+    const double max_global_progress, curandState* states)
 {
     //Get random uniform value between ]0.0f, 0.1f] * difference gives a random uniform range of ]0, diff]
-    const double time_progression = difference * curand_uniform_double(&states[thread_id]);
+    const double max_progression = node->max_time_progression(timers, max_global_progress);
+    const double lambda = static_cast<double>(node->get_lambda());
+    double time_progression;
+    if(lambda <= 0) //chose uniform distribution
+    {
+        time_progression = (1.0 - curand_uniform_double(states)) * max_progression;
+    }
+    else //choose exponential distribution
+    {
+        time_progression = (max_progression
+        - ( (1 - lambda*exp(-lambda* curand_uniform_double(states) * max_progression))
+        * max_progression)) / lambda; 
+    }
+    
+    
+    if(time_progression > max_progression)
+    {
+        printf("FUUUUUUUCK ANDEMAND %lf | %lf\n", time_progression, max_progression);
+        time_progression = max_progression;
+
+    }
 
     //update all timers by adding time_progression to each
     for(int i = 0; i < timers->size(); i++)
@@ -149,17 +170,17 @@ CPU GPU void simulate_stochastic_model(
     curandState* r_state,
     int* output,
     const unsigned long idx,
-    double max_time_progression
+    const double max_global_progression
 )
 {
     curand_init(options->seed, idx, idx, &r_state[idx]);
-    // curand_init(options->seed, idx, idx, &r_state[idx]);
-    array_t<clock_timer_t> internal_timers = model->create_internal_timers();
 
+    array_t<clock_timer_t> internal_timers = model->create_internal_timers();
     const lend_array<clock_timer_t> lend_internal_timers = lend_array<clock_timer_t>(&internal_timers);
+
     for (unsigned int i = 0; i < options->simulation_amount; ++i)
     {
-        if(idx == 0 && i % 10 == 0) printf("Progress: %d/%d\n", i, options->simulation_amount);
+        if(idx == 0 && i % 100 == 0) printf("Progress: %d/%d\n", i, options->simulation_amount);
         //calculate the current simulation id
         const unsigned int sim_id = i + options->simulation_amount * static_cast<unsigned int>(idx);
         
@@ -185,8 +206,7 @@ CPU GPU void simulate_stochastic_model(
             //Progress time
             if (!current_node->is_branch_point())
             {
-                const double max_progression = current_node->max_time_progression(&lend_internal_timers, max_time_progression);
-                progress_time(&lend_internal_timers, max_progression, r_state, idx);
+                progress_time(&lend_internal_timers, current_node, max_global_progression,  &r_state[idx]);
             }
             const lend_array<edge_t*> outgoing_edges = current_node->get_edges();
             if(outgoing_edges.size() <= 0)
@@ -194,7 +214,7 @@ CPU GPU void simulate_stochastic_model(
                 hit_max_steps = false;
                 break;
             }
-            edge_t* next_edge = choose_next_edge(&outgoing_edges, &lend_internal_timers, r_state, idx);
+            const edge_t* next_edge = choose_next_edge(&outgoing_edges, &lend_internal_timers, r_state, idx);
             if(next_edge == nullptr)
             {
                 continue;
