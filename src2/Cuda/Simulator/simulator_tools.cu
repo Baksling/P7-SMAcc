@@ -3,14 +3,13 @@
 
 CPU GPU bool bit_handler::bit_is_set(const unsigned long long* n, const unsigned int i)
 {
-    return (*n) & (1 << i);
+    return (*n) & (1UL << i);
 }
 
 
 CPU GPU void bit_handler::set_bit(unsigned long long* n, const unsigned int i)
 {
     (*n) |=  (1UL << (i));
-
 }
 
 CPU GPU void bit_handler::unset_bit(unsigned long long* n, const unsigned int i)

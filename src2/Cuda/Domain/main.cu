@@ -23,6 +23,7 @@ int main(int argc, const char* argv[])
     parser.add_argument("-c", "--count", "number of times to repeat simulations", false);
     parser.add_argument("-s", "--steps", "maximum number of steps per simulation", false);
     parser.add_argument("-p", "--maxtime", "Maximum numper to progrss in time", false );
+    parser.add_argument("-d", "--device", "What simulation to run (GPU (0) / CPU (1) / BOTH (2))", false);
     parser.enable_help();
     auto err = parser.parse(argc, argv);
     
@@ -36,7 +37,7 @@ int main(int argc, const char* argv[])
         return 0;
     }
 
-    
+    int mode = 0; // 0 = GPU, 1 = CPU, 2 = BOTH
 
 
     if (parser.exists("b")) strategy.block_n = parser.get<int>("b");
@@ -45,6 +46,8 @@ int main(int argc, const char* argv[])
     if (parser.exists("c")) strategy.sim_count = parser.get<int>("c");
     if (parser.exists("s")) strategy.max_sim_steps = parser.get<unsigned int>("s");
     if (parser.exists("p")) strategy.max_time_progression = parser.get<double>("p");
+    if (parser.exists("d")) mode = parser.get<int>("d");
+    
     
     std::cout << "Fuck you\n";
 
@@ -104,8 +107,18 @@ int main(int argc, const char* argv[])
     }
     visitor.visit(&model);
 
-    // stochastic_simulator::simulate_cpu(&model, &strategy);
-    stochastic_simulator::simulate_gpu(&model, &strategy);
+    if (mode == 2 || mode == 0)
+    {
+        cout << "GPU SIMULATIONS STARTED! \n";
+        stochastic_simulator::simulate_gpu(&model, &strategy);
+        cout << "GPU SIMULATION DONE! \n";
+    }
+    if (mode > 0)
+    {
+        cout << "CPU SIMULATION STARTED! \n";
+        stochastic_simulator::simulate_cpu(&model, &strategy);
+        cout << "CPU SIMULATION DONE! \n";
+    }
     
     std::cout << "pully porky\n";
 

@@ -269,9 +269,9 @@ void stochastic_simulator::simulate_cpu(stochastic_model_t* model, simulation_st
 
     for (int i = 0; i < strategy->degree_of_parallelism(); i++)
     {
-        pool.queue_job([model, options, state, sim_results, i]()
+        pool.queue_job([model, options, state, sim_results, i, strategy]()
         {
-            simulate_stochastic_model(model, &options, state, sim_results, i, 0.01);
+            simulate_stochastic_model(model, &options, state, sim_results, i, strategy->max_time_progression);
         });
     }
     pool.start();
