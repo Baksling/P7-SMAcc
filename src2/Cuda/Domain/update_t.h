@@ -4,6 +4,7 @@
 #define UPDATE_T_H
 
 #include "common.h"
+#include "system_variable.h"
 
 class update_t
 {
@@ -11,11 +12,13 @@ private:
     int id_;
     int timer_id_;
     double timer_value_;
+    
 public:
     update_t(int id, int timer_id, double timer_value);
 
     //SIMULATOR METHODS
-    CPU GPU void apply_update(const lend_array<clock_timer_t>* timers) const;
+    CPU GPU void apply_update(
+        const lend_array<clock_timer_t>* timers, const lend_array<system_variable>* variables) const;
     
     //HOST METHODS
     int get_id() const;

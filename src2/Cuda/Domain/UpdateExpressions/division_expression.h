@@ -1,0 +1,25 @@
+﻿#pragma once
+
+#ifndef DIVISION_EXPRESSION_H
+#define DIVISION_EXPRESSION_H
+
+#include "update_expression.h"
+
+class division_expression : public update_expression
+{
+private:
+    update_expression* left_;
+    update_expression* right_;
+public:
+    explicit division_expression(update_expression* left, update_expression* right);
+    void evaluate(cuda_stack<double>* stack, lend_array<clock_timer_t>* timers, lend_array<system_variable>* variables) override;
+    void accept(visitor* v) override;
+    update_expression* cuda_allocate(allocation_helper* helper) override;
+    unsigned int get_depth() const override;    
+};
+
+
+#endif
+
+
+

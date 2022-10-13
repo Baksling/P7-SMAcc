@@ -161,7 +161,7 @@ CPU GPU void progress_time(const lend_array<clock_timer_t>* timers, const node_t
     
     if(has_upper_bound && time_progression > max_progression)
     {
-        printf("FUUUUUUUCK ANDEMAND %lf | %lf\n", time_progression, max_progression);
+        printf("Adjusted clock bound, %lf to %lf\n", time_progression, max_progression);
         time_progression = max_progression;
 
     }

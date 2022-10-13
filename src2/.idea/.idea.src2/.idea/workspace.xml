@@ -8,11 +8,30 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c81c9d2a-66d3-4b0c-b40b-c667cea459e8" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/constraint_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/constraint_t.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/constraint_t.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/constraint_t.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/node_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/node_t.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/node_t.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/node_t.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Domain/UpdateExpressions/clock_expression.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Domain/UpdateExpressions/clock_expression.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Domain/UpdateExpressions/const_expression.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Domain/UpdateExpressions/const_expression.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Domain/UpdateExpressions/cuda_stack.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Domain/UpdateExpressions/cuda_stack.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Domain/UpdateExpressions/division_expression.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Domain/UpdateExpressions/division_expression.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Domain/UpdateExpressions/minus_expression.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Domain/UpdateExpressions/minus_expression.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Domain/UpdateExpressions/multiply_expression.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Domain/UpdateExpressions/multiply_expression.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Domain/UpdateExpressions/plus_expression.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Domain/UpdateExpressions/plus_expression.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Domain/UpdateExpressions/update_expression.cu" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Domain/UpdateExpressions/update_expression.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Domain/UpdateExpressions/variable_expression.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Domain/UpdateExpressions/variable_expression.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Domain/system_variable.cu" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/Domain/system_variable.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Domain/update_t.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/update_t.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Simulator/stochastic_simulator.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Simulator/stochastic_simulator.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src2.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/src2.vcxproj" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
