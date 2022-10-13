@@ -18,7 +18,6 @@ public:
     unsigned int get_depth() const override;    
 };
 
-
 #endif
 
 
