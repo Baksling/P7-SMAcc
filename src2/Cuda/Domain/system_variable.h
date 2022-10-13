@@ -12,7 +12,7 @@ private:
     int id_;
 public:
     explicit system_variable(int id, int initial_value = 0);
-    CPU GPU int get_value();
+    CPU GPU int get_value() const;
     CPU GPU int set_value(int new_value);
     void accept(visitor* v);
     
