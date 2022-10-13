@@ -5,16 +5,21 @@
 
 #include "common.h"
 #include "system_variable.h"
+#include "UpdateExpressions/update_expression.h"
 
 class update_t
 {
 private:
     int id_;
     int timer_id_;
-    double timer_value_;
+    bool clock_update_;
+    update_expression* expression_;
+    cuda_stack<double> value_stack_{0};
+    cuda_stack<update_expression*> evaluation_stack_{0};
+    double evaluate_expression();
     
 public:
-    update_t(int id, int timer_id, double timer_value);
+    update_t(int id, int timer_id, bool is_clock_update, update_expression* expression);
 
     //SIMULATOR METHODS
     CPU GPU void apply_update(
