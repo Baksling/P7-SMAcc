@@ -388,7 +388,6 @@
     <ClCompile Include="Cuda\Domain\clock_timer_t.cu" />
     <ClCompile Include="Cuda\Domain\system_variable.cu" />
     <ClCompile Include="Cuda\Domain\UpdateExpressions\clock_expression.cpp" />
-    <ClCompile Include="Cuda\Domain\UpdateExpressions\cuda_stack.cpp" />
     <ClCompile Include="Cuda\Domain\UpdateExpressions\division_expression.cpp" />
     <ClCompile Include="Cuda\Domain\UpdateExpressions\const_expression.cpp" />
     <ClCompile Include="Cuda\Domain\UpdateExpressions\minus_expression.cpp" />

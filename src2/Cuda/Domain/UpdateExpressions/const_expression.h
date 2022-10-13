@@ -12,7 +12,11 @@ private:
     double value_;
 public:
     explicit const_expression(double value);
+
+    //SIMULATION methods
     void evaluate(cuda_stack<double>* stack, lend_array<clock_timer_t>* timers, lend_array<system_variable>* variables) override;
+
+    //HOST methods
     void accept(visitor* v) override;
     update_expression* cuda_allocate(allocation_helper* helper) override;
     unsigned int get_depth() const override;

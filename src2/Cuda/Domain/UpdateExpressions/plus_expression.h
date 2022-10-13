@@ -14,6 +14,7 @@ public:
 
     //SIMULATION methods
     void evaluate(cuda_stack<double>* stack, lend_array<clock_timer_t>* timers, lend_array<system_variable>* variables) override;
+    void push_children(cuda_stack<update_expression*> stack) override;
 
     //HOST methods
     void accept(visitor* v) override;
