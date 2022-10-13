@@ -7,8 +7,9 @@
 
 using namespace std;
 using namespace pugi;
+using namespace helper;
 
-#define THROW_LINE(arg); throw parser_exception(arg, __FILE__, __LINE__);
+
 
 constraint_t* get_constraint(const string& expr, const int timer_id, const float value)
 {
@@ -40,55 +41,6 @@ constraint_t* get_constraint(const string& expr, const int timer_id_1, const int
     THROW_LINE("Operand in " + expr + " not found, sad..")
 }
 
-std::string replace_all(std::string str, const std::string& from, const std::string& to) {
-    size_t start_pos = 0;
-    while((start_pos = str.find(from, start_pos)) != std::string::npos) {
-        str.replace(start_pos, from.length(), to);
-        start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
-    }
-    return str;
-}
-
-bool in_array(const char &value, const std::vector<char> &array)
-{
-    return std::find(array.begin(), array.end(), value) != array.end();
-}
-
-int get_expr_value(const string& expr)
-{
-    const string expr_wo_ws = replace_all(expr, " ", "");
-    unsigned long long index = expr_wo_ws.length();
-    while (true)
-    {
-        if (index == 0)
-        {
-            return 0;
-        }
-        
-        if (!in_array(expr_wo_ws[--index], {'1','2','3','4','5','6','7','8','9','0'}))
-        {
-            return stoi(expr_wo_ws.substr(index+1));
-        }
-    }
-}
-
-float get_expr_value_float(const string& expr)
-{
-    const string expr_wo_ws = replace_all(expr, " ", "");
-    unsigned long long index = expr_wo_ws.length();
-    while (true)
-    {
-        if (index == 0)
-        {
-            return stof(expr_wo_ws);
-        }
-        
-        if (in_array(expr_wo_ws[--index], {'=',' ','<','>'}))
-        {
-            return stof(expr_wo_ws.substr(index+1));
-        }
-    }
-}
 
 template <typename T> T* list_to_arr(list<T> l)
 {
@@ -101,10 +53,6 @@ template <typename T> T* list_to_arr(list<T> l)
     return arr;
 }
 
-int xml_id_to_int(string id_string)
-{
-    return stoi(id_string.replace(0,2,""));
-}
 
 int uppaal_tree_parser::get_timer_id(const string& expr) const
 {
@@ -132,19 +80,6 @@ int uppaal_tree_parser::get_timer_id(const string& expr) const
     }
     
     return timers_map_.at(sub);
-}
-
-list<string> split_expr(const string& expr)
-{
-    list<string> result;
-    std::stringstream test(expr);
-    std::string segment;
-    while(std::getline(test, segment, '&'))
-    {
-        string s = replace_all(segment, "&", "");
-        result.push_back(s);
-    }
-    return result;
 }
 
 void uppaal_tree_parser::init_clocks(const xml_document* doc)

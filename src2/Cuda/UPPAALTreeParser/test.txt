@@ -1,0 +1,6 @@
+// Place global declarations here.
+ clock x=1.0;
+clock y=0.1;
+clock z=0.5;
+const double gamma = 100-50/2+2/5*100;
+const double alpha = 1/5.1;

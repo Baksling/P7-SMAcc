@@ -11,14 +11,14 @@ enum declaration_types {clock_type, double_type, int_type};
 
 using namespace std;
 
-
 class declaration
 {
 private:
     declaration_types type_;
     string var_name_;
-    int i_value_;
-    float f_value_;
+    float value_;
+    int id_;
+
     std::map<declaration_types, std::string> print_map_;
     void populate_map()
     {
@@ -27,20 +27,13 @@ private:
         print_map_.insert_or_assign(int_type, "int");
     }
 public:
-    declaration(const declaration_types type, const string& var_name, int val) : f_value_(-1)
+    declaration(const declaration_types type, const string& var_name, const string& val, const int id)
     {
         this->type_ = type;
         this->var_name_ = var_name;
-        this-> i_value_ = val;
+        this->value_ = stof(val);
+        this->id_ = id;
     }
-    
-    declaration(const declaration_types type, const string& var_name, float val) : i_value_(-1)
-    {
-        this->type_ = type;
-        this->var_name_ = var_name;
-        this-> f_value_ = val;
-    }
-    
     
     declaration_types get_type() const
     {
@@ -51,21 +44,20 @@ public:
     {
         return this->var_name_;
     }
-    
-    void get_value(int& out) const
+
+    float get_value() const
     {
-        out = this->i_value_;
+        return this->value_;
     }
 
-    void get_value(float& out) const
+    int get_id() const
     {
-        out = this->f_value_;
+        return this->id_;
     }
 
     void to_string()
     {
         populate_map();
-        cout << "TYPE: " + print_map_[type_] << " " << var_name_ << " = " << (type_ == int_type ? i_value_ : f_value_) << "\n";
+        cout << "TYPE: " + print_map_[type_] << " " << var_name_ << " = " << value_ << "\n";
     }
-    
 };
