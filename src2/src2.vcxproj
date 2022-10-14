@@ -478,9 +478,9 @@
     <ClCompile Include="Cuda\Projekt\uneven_list.h" />
     <ClCompile Include="Cuda\Projekt\main.cu" />
     <ClCompile Include="Cuda\Projekt\main.h" />
+    <ClCompile Include="Cuda\UPPAALTreeParser\arithmetic-expression-evaluator.cpp" />
     <ClCompile Include="Cuda\UPPAALTreeParser\declaration_parser.cpp" />
     <ClCompile Include="Cuda\UPPAALTreeParser\helper_methods.cpp" />
-    <ClCompile Include="Cuda\UPPAALTreeParser\main.cpp" />
     <ClCompile Include="Cuda\UPPAALTreeParser\pugixml.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -654,10 +654,10 @@
     <ClInclude Include="Cuda\Projekt\cuda_map.h" />
     <ClInclude Include="Cuda\Projekt\cuda_simulator.h" />
     <ClInclude Include="Cuda\Projekt\stochastic_model.h" />
+    <ClInclude Include="Cuda\UPPAALTreeParser\arithmetic-expression-evaluator.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\declaration.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\declaration_parser.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\helper_methods.h" />
-    <ClInclude Include="Cuda\UPPAALTreeParser\main.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\pugiconfig.hpp" />
     <ClInclude Include="Cuda\UPPAALTreeParser\pugixml.hpp" />
     <ClInclude Include="Cuda\UPPAALTreeParser\uppaal_tree_parser.h" />
@@ -674,7 +674,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Cuda\UPPAALTreeParser\parser_exception.h" />
-    <Content Include="Cuda\UPPAALTreeParser\test.txt" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\and_guy.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\ff15.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\lilleShit.xml" />

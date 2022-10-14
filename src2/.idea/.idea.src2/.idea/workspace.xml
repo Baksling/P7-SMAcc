@@ -5,17 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c81c9d2a-66d3-4b0c-b40b-c667cea459e8" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/helper_methods.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/helper_methods.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/test.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/arithmetic-expression-evaluator.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/arithmetic-expression-evaluator.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/declaration.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/declaration.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/XmlFiles/Lol.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/XmlFiles/Lol.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/XmlFiles/ff15.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/XmlFiles/ff15.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/a.exe" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/declaration_parser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/declaration_parser.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/declaration_parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/declaration_parser.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/parser_exception.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/parser_exception.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/main.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/main.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/test.txt" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/uppaal_tree_parser.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/uppaal_tree_parser.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/uppaal_tree_parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/uppaal_tree_parser.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src2.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/src2.vcxproj" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -27,7 +27,6 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/../../../../../../../Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Tools/MSVC/14.29.30133/include/xutility" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Cuda/Domain/common.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Cuda/Domain/constraint_t.cu" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Cuda/Domain/constraint_t.h" root0="FORCE_HIGHLIGHTING" />
@@ -128,6 +127,8 @@
       <workItem from="1665592802415" duration="464000" />
       <workItem from="1665594201808" duration="2629000" />
       <workItem from="1665606100027" duration="17495000" />
+      <workItem from="1665647630115" duration="4748000" />
+      <workItem from="1665652746085" duration="10554000" />
     </task>
     <servers />
   </component>

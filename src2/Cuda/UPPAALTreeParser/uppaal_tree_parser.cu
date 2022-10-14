@@ -1,4 +1,7 @@
 ﻿#include "uppaal_tree_parser.h"
+
+#include "declaration.h"
+#include "declaration_parser.h"
 //#include "../Domain/uneven_list.h"
 
 
@@ -84,38 +87,21 @@ int uppaal_tree_parser::get_timer_id(const string& expr) const
 
 void uppaal_tree_parser::init_clocks(const xml_document* doc)
 {
-
+    declaration_parser dp;
     string global_decl = doc->child("declaration").child_value();
     
     for (pugi::xml_node templates: doc->child("nta").children("template"))
     {
         string decl = templates.child("declaration").child_value();
-
-        const size_t clock_start = decl.find("clock");
-
-        const size_t clock_end = decl.find(';');
-        
-        string clocks = decl.substr(clock_start+5,clock_end-1);
-        clocks = replace_all(clocks, string(" "), string(""));
-
-        std::stringstream clocks_stream(clocks);
-        std::string clock;
-        
-        int var_amount = 0;
-        while(std::getline(clocks_stream, clock, ','))
+        decl = replace_all(decl, " ", "");
+        list<declaration> declarations = dp.parse(decl);
+        cout << "\nSIZE: " << declarations.size() << "\n";
+        int clock_id = 0;
+        for (declaration d : declarations)
         {
-            string clock_without = clock;
-            if (clock.find(';') != std::string::npos)
-                clock_without = replace_all(clock, ";", "");
-            timers_map_.insert_or_assign(clock_without,var_amount++);
-        }
-        
-        timer_amount_ = var_amount;
-        cout << "INIT VAR AMOUNT SIZE: " << var_amount << "\n";
-        for (int i = 0; i < var_amount; i++)
-        {
-            cout << "INIT CLOCK WITH ID: " << i << "\n";
-            timer_list_.push_back(new clock_timer_t(i, 0));
+            d.to_string();
+            timers_map_.insert_or_assign(d.get_name(),clock_id);
+            timer_list_.push_back(new clock_timer_t(clock_id++, d.get_value()));
         }
     }
 }
