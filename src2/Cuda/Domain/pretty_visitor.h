@@ -25,6 +25,10 @@ public:
 
     virtual void visit(update_t* update) override;
 
+    virtual void visit(system_variable* variable) override;
+
+    virtual void visit(update_expression* expression) override;
+    
     void pretty_helper();
 };
 

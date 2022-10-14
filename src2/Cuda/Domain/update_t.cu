@@ -76,9 +76,9 @@ CPU GPU void update_t::apply_update(const lend_array<clock_timer_t>* timers, con
     }
 }
 
-void update_t::accept(visitor* v)
+void update_t::accept(visitor* v) const
 {
-    return;
+    v->visit(this->expression_);
 }
 
 CPU GPU int update_t::get_timer_id() const

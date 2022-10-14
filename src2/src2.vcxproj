@@ -307,7 +307,6 @@
       <SDLCheck>true</SDLCheck>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
-    <ClCompile Include="Cuda\Domain\cuda_visitor.cu" />
     <ClCompile Include="Cuda\Domain\edge_t.cu" />
     <ClCompile Include="Cuda\Domain\main.cu" />
     <ClCompile Include="Cuda\Domain\node_t.cu" />
@@ -719,7 +718,6 @@
     <ClCompile Include="Cuda\Domain\clock_timer_t.h" />
     <ClCompile Include="Cuda\Domain\update_t.h" />
     <ClInclude Include="Cuda\Domain\argparser.h" />
-    <ClInclude Include="Cuda\Domain\cuda_visitor.h" />
     <ClInclude Include="Cuda\Domain\pretty_visitor.h" />
     <ClInclude Include="Cuda\Domain\system_variable.h" />
     <ClInclude Include="Cuda\Domain\UpdateExpressions\cuda_stack.h" />
