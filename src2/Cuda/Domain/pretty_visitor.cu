@@ -50,6 +50,19 @@ void pretty_visitor::visit(update_t* update)
     update->accept(this);
 }
 
+void pretty_visitor::visit(system_variable* variable)
+{
+    if (variable == nullptr) return;
+    printf("Variable id: %3d | Value: %10d\n", variable->get_id(), variable->get_value());
+}
+
+void pretty_visitor::visit(update_expression* expression)
+{
+    if (expression == nullptr) return;
+    std::cout << expression->to_string();
+    expression->accept(this);
+}
+
 void pretty_visitor::pretty_helper()
 {
     printf("⠀⠀⠀⠀⠀⢰⡿⠋⠁⠀⠀⠈⠉⠙⠻⣷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n");

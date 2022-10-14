@@ -169,6 +169,7 @@ class clock_timer_t;
 class update_t;
 class stochastic_model_t;
 class system_variable;
+class update_expression;
 
 struct allocation_helper
 {

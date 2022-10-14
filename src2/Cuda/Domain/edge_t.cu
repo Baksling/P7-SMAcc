@@ -10,12 +10,12 @@ edge_t::edge_t(edge_t* source, node_t* dest, const array_t<constraint_t*> guard,
     this->guards_ = guard;
 }
 
-edge_t::edge_t(const int id, const float weight, node_t* dest, const array_t<constraint_t*> guard)
+edge_t::edge_t(const int id, const float weight, node_t* dest, const array_t<constraint_t*> guard, array_t<update_t*> updates)
 {
     this->id_ = id;
     this->dest_ = dest;
     this->weight_ = weight;
-    this->updates_ = array_t<update_t*>(0);
+    this->updates_ = updates;
     this->guards_ = guard;
 }
 
@@ -75,7 +75,7 @@ void edge_t::accept(visitor* v) const
     for (int i = 0; i < this->updates_.size(); ++i)
     {
         update_t* temp = *updates_.at(i);
-        v->visit(*&*&*&*&*&*&*&*&*&*&temp);
+        v->visit(*&*&*&*/*&*&*&*/&*&*&*&temp);
     }
 
     //dont visit destination. Handled by node itself.

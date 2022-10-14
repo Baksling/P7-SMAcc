@@ -12,6 +12,9 @@ class node_t;
 class stochastic_model_t;
 class clock_timer_t;
 class update_t;
+class system_variable;
+class update_expression;
+
 class visitor
 {
 public:
@@ -21,6 +24,8 @@ public:
     virtual void visit(stochastic_model_t* model) = 0;
     virtual void visit(clock_timer_t* timer) = 0;
     virtual void visit(update_t* update) = 0;
+    virtual void visit(system_variable* variable) = 0;
+    virtual void visit(update_expression* expression) = 0;
 };
 
 #endif

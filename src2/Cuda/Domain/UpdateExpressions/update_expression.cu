@@ -1,7 +1,9 @@
 ﻿#include "update_expression.h"
 
+#include <string>
+
 update_expression::update_expression(const expression_type type, update_expression* left,
-                                                 update_expression* right, const int value, const unsigned variable_id)
+                                     update_expression* right, const int value, const unsigned variable_id)
 {
     this->type_ = type;
     this->left_ = left;
@@ -53,6 +55,55 @@ void update_expression::evaluate(cuda_stack<int>* stack, const lend_array<clock_
     }
 }
 
+std::string update_expression::type_to_string()
+{
+    std::string result;
+    switch (this->type_)
+    {
+    case literal_e:
+        result = "literal";
+        break;
+    case clock_variable_e:
+        result = "clock variable";
+        break;
+    case system_variable_e:
+        result = "system variable";
+        break;
+    case plus_e:
+        result = "+";
+        break;
+    case minus_e:
+        result = "-";
+        break;
+    case multiply_e:
+        result = "*";
+        break;
+    case division_e:
+        result = "/";
+        break;
+    default:
+        result = "Not implemented yet";
+    }
+    return result;
+}
+
+std::string update_expression::to_string()
+{
+    std::string left, right;
+    
+    if (this->get_left() != nullptr) left = this->get_left()->type_to_string();
+    else left = "nullptr";
+    if (this->get_right() != nullptr) right = this->get_right()->type_to_string();
+    else right = "nullptr";
+
+    return "    Type: " + this->type_to_string() + " | value: " + std::to_string(this->get_value()) + " | left: " + left + " | right: " + right + "\n";
+}
+
+int update_expression::get_value()
+{
+    return this->value_;
+}
+
 GPU CPU update_expression* update_expression::get_left() const
 {
     return this->left_;
@@ -63,10 +114,10 @@ GPU CPU update_expression* update_expression::get_right() const
     return this->right_;
 }
 
-void update_expression::accept(visitor* v)
+void update_expression::accept(visitor* v) const
 {
-    //TODO fix visitors.
-    return;
+    if (this->left_ != nullptr) v->visit(this->left_);
+    if (this->right_ != nullptr) v->visit(this->right_);
 }
 
 unsigned update_expression::get_depth() const

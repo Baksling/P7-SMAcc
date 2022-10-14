@@ -238,14 +238,14 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             }
             
             node_t* target_node = get_node(target_id);
-            auto result_edge = new edge_t(edge_id++, probability, target_node, to_array(&guards));
-            cout << "guard size: " << guards.size() << "\n";
-            
-            if (guards.empty())
-                result_edge = new edge_t(edge_id, probability, target_node, array_t<constraint_t*>(0));
-
-            result_edge->set_updates(&updates);
-            node_edge_map.at(source_id).push_back(result_edge);
+            // auto result_edge = new edge_t(edge_id++, probability, target_node, to_array(&guards));
+            // cout << "guard size: " << guards.size() << "\n";
+            //
+            // if (guards.empty())
+            //     result_edge = new edge_t(edge_id, probability, target_node, array_t<constraint_t*>(0));
+            //
+            // result_edge->set_updates(&updates);
+            // node_edge_map.at(source_id).push_back(result_edge);
         }
     }
 

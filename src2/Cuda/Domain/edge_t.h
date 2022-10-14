@@ -18,7 +18,7 @@ private:
     array_t<update_t*> updates_{0};
     explicit edge_t(edge_t* source, node_t* dest, array_t<constraint_t*> guard, array_t<update_t*> updates);
 public:
-    explicit edge_t(int id, float weight, node_t* dest, array_t<constraint_t*> guard);
+    explicit edge_t(int id, float weight, node_t* dest, array_t<constraint_t*> guard, array_t<update_t*> updates);
 
     //SIMULATION METHODS
     GPU CPU node_t* get_dest() const;

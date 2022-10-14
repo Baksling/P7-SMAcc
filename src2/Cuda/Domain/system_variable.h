@@ -19,8 +19,9 @@ public:
     CPU GPU system_variable duplicate() const;
     
     //HOST methods
+    int get_id() const; 
     void accept(visitor* v);
-    CPU GPU void cuda_allocate(system_variable** p, const allocation_helper* helper);
+    void cuda_allocate(system_variable** p, const allocation_helper* helper);
 };
 
 #endif

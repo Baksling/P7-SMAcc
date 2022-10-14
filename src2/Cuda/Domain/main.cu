@@ -67,12 +67,26 @@ int main(int argc, const char* argv[])
     node_t node1     = node_t(1, con0_arr, false,false);
     node_t node2 = node_t(2, array_t<constraint_t*>(0),false,true);
 
-    edge_t* edge0_1 = new edge_t(0, 1, &node1, con1_arr);
-    edge_t* edge0_2 = new edge_t(1, 1, &node2, array_t<constraint_t*>(0));
-    edge_t* edge1_0 = new edge_t(2, 1, &node0, array_t<constraint_t*>(0));
+    update_expression* exp1 = update_expression::plus_expression(update_expression::literal_expression(3), update_expression::literal_expression(4));
+    update_expression* exp2 = update_expression::minus_expression(update_expression::literal_expression(6), update_expression::literal_expression(4));
+
+    std::list<update_t*> update_lst;
+
+    update_t update1 = update_t(0, 0, true, exp1);
+    update_t update2 = update_t(0, 1, true, exp2);
+    
+    update_lst.push_back(&update1);
+    update_lst.push_back(&update2);
+
+    array_t<update_t*> update_arr = to_array(&update_lst);
+    
+    edge_t* edge0_1 = new edge_t(0, 1, &node1, con1_arr, update_arr);
+    edge_t* edge0_2 = new edge_t(1, 1, &node2, array_t<constraint_t*>(0), update_arr);
+    edge_t* edge1_0 = new edge_t(2, 1, &node0, array_t<constraint_t*>(0), update_arr);
 
     clock_timer_t timer1 = clock_timer_t(0, 0.0);
     clock_timer_t timer2 = clock_timer_t(1, 0.0);
+
 
     std::list<clock_timer_t*> clock_lst;
     clock_lst.push_back(&timer1);

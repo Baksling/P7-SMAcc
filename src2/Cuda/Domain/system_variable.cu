@@ -21,6 +21,11 @@ CPU GPU system_variable system_variable::duplicate() const
     return system_variable{this->id_, this->value_};
 }
 
+int system_variable::get_id() const
+{
+    return this->id_;
+}
+
 void system_variable::accept(visitor* v)
 {
     //TODO fix this
