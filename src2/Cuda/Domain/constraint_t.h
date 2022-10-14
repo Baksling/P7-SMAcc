@@ -24,21 +24,25 @@ class constraint_t
     int timer_id2_;
     float value_;
     logical_operator_t type_;
+    
     explicit constraint_t(logical_operator_t type,
         int timer_id1 = NO_ID, int timer_id2 = NO_ID, float value = UNUSED_VALUE );
 public:
-    GPU CPU logical_operator_t get_type() const;
-    GPU CPU bool evaluate(const lend_array<clock_timer_t>* timers) const;
-    GPU double max_time_progression(const lend_array<clock_timer_t>* timer_arr, double max_progression = 100.0) const;
+
+    //SIMULATOR METHODS
+    CPU GPU bool evaluate(const lend_array<clock_timer_t>* timers) const;
+    CPU GPU bool check_max_time_progression(const lend_array<clock_timer_t>* timer_arr, double* out_max_progression) const;
+    
+
+    //HOST METHODS
+    logical_operator_t get_type() const;
+    int get_timer1_id() const;
+    int get_timer2_id() const;
+    float get_value() const;
     void accept(visitor* v);
     void cuda_allocate(constraint_t** pointer, const allocation_helper* helper) const;
     void cuda_allocate_2(constraint_t* cuda_pointer, const allocation_helper* helper) const;
     CPU static std::string to_string(logical_operator_t op);
-
-
-    CPU GPU int get_timer1_id() const;
-    GPU CPU int get_timer2_id() const;
-    CPU GPU float get_value() const;
 
 
     //FACTORY CONSTRUCTORS

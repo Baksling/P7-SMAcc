@@ -1,7 +1,5 @@
 ﻿#include "node_t.h"
 
-#include "CudaSimulator.h"
-
 node_t::node_t(node_t* source, const array_t<constraint_t*> invariant, const array_t<edge_t*> edges)
 {
     this->id_ = source->id_;
@@ -9,13 +7,16 @@ node_t::node_t(node_t* source, const array_t<constraint_t*> invariant, const arr
     this->invariants_ = invariant;
     this->is_goal_ = source->is_goal_;
     this->edges_ = edges;
+    this->ex_lambda_ = source->ex_lambda_; 
 }
 
-node_t::node_t(const int id, const array_t<constraint_t*> invariants, const bool is_branch_point, const bool is_goal)
+node_t::node_t(const int id, const array_t<constraint_t*> invariants,
+    const bool is_branch_point, const bool is_goal, const float ex_lambda)
 {
     this->id_ = id;
     this->is_goal_ = is_goal;
     this->invariants_ = invariants;
+    this->ex_lambda_ = ex_lambda;
     this->is_branch_point_ = is_branch_point;
     this->edges_ = array_t<edge_t*>(0);
 }
@@ -23,6 +24,11 @@ node_t::node_t(const int id, const array_t<constraint_t*> invariants, const bool
 GPU CPU int node_t::get_id() const
 {
     return this->id_;
+}
+
+GPU CPU float node_t::get_lambda() const
+{
+    return this->ex_lambda_ >= 0 ? (this->ex_lambda_) : (-this->ex_lambda_);
 }
 
 void node_t::set_edges(std::list<edge_t*>* list)
@@ -40,7 +46,7 @@ CPU GPU bool node_t::is_goal_node() const
     return this->is_goal_;
 }
 
-GPU bool node_t::evaluate_invariants(const lend_array<clock_timer_t>* timers) const
+CPU GPU bool node_t::evaluate_invariants(const lend_array<clock_timer_t>* timers) const
 {
     for (int i = 0; i < this->invariants_.size(); ++i)
     {
@@ -134,15 +140,24 @@ CPU GPU bool node_t::is_branch_point() const
     return this->is_branch_point_;
 }
 
-GPU double node_t::max_time_progression(const lend_array<clock_timer_t>* timers, double max_progression) const
+CPU GPU bool node_t::max_time_progression(const lend_array<clock_timer_t>* timers, double* out_max_progression) const
 {
-    if(this->invariants_.size() <= 0) return max_progression;
+    if(this->invariants_.size() <= 0) return false;
 
+    bool changes = false;
+    double node_max = -1.0;
     for (int i = 0; i < this->invariants_.size(); ++i)
     {
-        const double temp_progression = this->invariants_.get(i)->max_time_progression(timers, max_progression);
-        max_progression = temp_progression < max_progression ? temp_progression : max_progression;
+        double local_max = 0.0;
+        
+        if(this->invariants_.get(i)->check_max_time_progression(timers, &local_max))
+        {
+            if(node_max < 0) node_max = local_max;
+            node_max = node_max < local_max ? node_max : local_max;
+            changes = true;
+        }
     }
-    
-    return max_progression; 
+
+    (*out_max_progression) = node_max;
+    return changes; 
 }

@@ -24,7 +24,7 @@ CPU GPU float edge_t::get_weight() const
     return this->weight_;
 }
 
-GPU CPU node_t* edge_t::get_dest() const
+CPU GPU node_t* edge_t::get_dest() const
 {
     return this->dest_;
 }
@@ -34,9 +34,23 @@ void edge_t::set_updates(std::list<update_t*>* updates)
     this->updates_ = to_array(updates);
 }
 
-GPU bool edge_t::evaluate_constraints(const lend_array<clock_timer_t>* timers) const
+CPU GPU bool edge_t::evaluate_constraints(const lend_array<clock_timer_t>* timers, const lend_array<system_variable>* variables) const
 {
+    for (int i = 0; i < this->updates_.size(); ++i)
+    {
+        update_t* update = this->updates_.get(i);
+        clock_timer_t* clock = timers->at(update->get_timer_id());
+        clock->set_temp_time(update->evaluate_expression(timers, variables));
+    }
     const bool valid_dest = this->dest_->evaluate_invariants(timers);
+
+    for (int i = 0; i < this->updates_.size(); ++i)
+    {
+        clock_timer_t* clock = timers->at(this->updates_.get(i)->get_timer_id());
+        if (clock != nullptr)
+            clock->reset_temp_time();
+    }
+    
     if(!valid_dest) return false;
 
     for (int i = 0; i < this->guards_.size(); ++i)
@@ -101,7 +115,10 @@ void edge_t::cuda_allocate(edge_t** pointer, const allocation_helper* helper)
     for (int i = 0; i < this->updates_.size(); ++i)
     {
         update_t* update_p = nullptr;
-        this->updates_.get(i)->cuda_allocate(&update_p, helper);
+        cudaMalloc(&update_p, sizeof(update_t));
+        helper->free_list->push_back(update_p);
+        
+        this->updates_.get(i)->cuda_allocate(update_p, helper);
         updates.push_back(update_p);
     }
     
@@ -117,10 +134,12 @@ void edge_t::cuda_allocate_2(edge_t* cuda_p, const allocation_helper* helper)
 }
 
 
-GPU void edge_t::execute_updates(const lend_array<clock_timer_t>* timers)
+CPU GPU void edge_t::execute_updates(
+    const lend_array<clock_timer_t>* timers,
+    const lend_array<system_variable>* variables) const
 {
     for (int i = 0; i < this->updates_.size(); ++i)
     {
-        this->updates_.get(i)->update_timer(timers);
+        this->updates_.get(i)->apply_update(timers, variables);
     }
 }

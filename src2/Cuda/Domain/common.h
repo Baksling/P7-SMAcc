@@ -168,6 +168,7 @@ class constraint_t;
 class clock_timer_t;
 class update_t;
 class stochastic_model_t;
+class system_variable;
 
 struct allocation_helper
 {
@@ -182,5 +183,7 @@ struct allocation_helper
 #include "clock_timer_t.h"
 #include "node_t.h"
 #include "update_t.h"
+#include "system_variable.h"
+
 
 #endif

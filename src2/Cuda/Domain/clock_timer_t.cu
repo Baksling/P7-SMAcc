@@ -4,29 +4,47 @@ CPU GPU clock_timer_t::clock_timer_t(const int id, const double start_value)
 {
     this->id_ = id;
     this->current_time_ = start_value;
+    this->temp_time_ = start_value;
 }
 
-GPU CPU int clock_timer_t::get_id() const
+int clock_timer_t::get_id() const
 {
     return this->id_;
 }
 
-GPU CPU double clock_timer_t::get_time() const
+CPU GPU double clock_timer_t::get_time() const
 {
     return this->current_time_;
 }
 
-GPU void clock_timer_t::set_time(const double new_value)
+double clock_timer_t::get_temp_time() const
+{
+    return this->temp_time_;
+}
+
+void clock_timer_t::set_temp_time(double new_value)
+{
+    this->temp_time_ = new_value;
+}
+
+void clock_timer_t::reset_temp_time()
+{
+    this->temp_time_ = this->current_time_;
+}
+
+CPU GPU void clock_timer_t::set_time(const double new_value)
 {
     this->current_time_ = new_value;
+    set_temp_time(new_value);
 }
 
-GPU void clock_timer_t::add_time(const double progression)
+CPU GPU void clock_timer_t::add_time(const double progression)
 {
     this->current_time_ += progression;
+    set_temp_time(this->current_time_);
 }
 
-GPU clock_timer_t clock_timer_t::duplicate() const
+CPU GPU clock_timer_t clock_timer_t::duplicate() const
 {
     return clock_timer_t{this->id_, this->current_time_};
 }

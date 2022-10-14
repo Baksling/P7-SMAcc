@@ -1,8 +1,11 @@
-﻿#include "common.h"
+﻿
+#include "common.h"
 #include <iostream>
 #include "pretty_visitor.h"
 #include "../UPPAALTreeParser/uppaal_tree_parser.h"
-#include "CudaSimulator.h"
+
+#include "../Simulator/simulation_strategy.h"
+#include "../Simulator/stochastic_simulator.h"
 #include "argparser.h"
 
 using namespace argparse;
@@ -19,6 +22,9 @@ int main(int argc, const char* argv[])
     parser.add_argument("-a", "--amount", "Number of simulations", false);
     parser.add_argument("-c", "--count", "number of times to repeat simulations", false);
     parser.add_argument("-s", "--steps", "maximum number of steps per simulation", false);
+    parser.add_argument("-p", "--maxtime", "Maximum number to progress in time (default=100)", false );
+    parser.add_argument("-d", "--device", "What simulation to run (GPU (0) / CPU (1) / BOTH (2))", false);
+    parser.add_argument("-u", "--cputhread", "The number of threads to use on the CPU", false);
     parser.enable_help();
     auto err = parser.parse(argc, argv);
     
@@ -32,7 +38,7 @@ int main(int argc, const char* argv[])
         return 0;
     }
 
-    
+    int mode = 0; // 0 = GPU, 1 = CPU, 2 = BOTH
 
 
     if (parser.exists("b")) strategy.block_n = parser.get<int>("b");
@@ -40,8 +46,10 @@ int main(int argc, const char* argv[])
     if (parser.exists("a")) strategy.simulation_amounts = parser.get<unsigned int>("a");
     if (parser.exists("c")) strategy.sim_count = parser.get<int>("c");
     if (parser.exists("s")) strategy.max_sim_steps = parser.get<unsigned int>("s");
-
-
+    if (parser.exists("p")) strategy.max_time_progression = parser.get<double>("p");
+    if (parser.exists("u")) strategy.cpu_threads_n = parser.get<unsigned int>("u");
+    if (parser.exists("d")) mode = parser.get<int>("d");
+    
     
     std::cout << "Fuck you\n";
 
@@ -80,11 +88,11 @@ int main(int argc, const char* argv[])
     node1_lst.push_back(edge1_0);
     node1.set_edges(&node1_lst);
 
-    
+    array_t<system_variable*> variable_arr = array_t<system_variable*>(0);
 
 
     pretty_visitor visitor;
-    stochastic_model_t model(&node0, to_array(&clock_lst));
+    stochastic_model_t model(&node0, to_array(&clock_lst), variable_arr);
     if (parser.exists("m"))
     {
         printf("USING PARSER\n");
@@ -100,7 +108,19 @@ int main(int argc, const char* argv[])
         delete[] writeable;
     }
     visitor.visit(&model);
-    cuda_simulator::simulate(&model, &strategy);
+
+    if (mode == 2 || mode == 0)
+    {
+        cout << "GPU SIMULATIONS STARTED! \n";
+        stochastic_simulator::simulate_gpu(&model, &strategy);
+        cout << "GPU SIMULATION DONE! \n";
+    }
+    if (mode > 0)
+    {
+        cout << "CPU SIMULATION STARTED! \n";
+        stochastic_simulator::simulate_cpu(&model, &strategy);
+        cout << "CPU SIMULATION DONE! \n";
+    }
     
     std::cout << "pully porky\n";
 
