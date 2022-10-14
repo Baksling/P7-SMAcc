@@ -387,14 +387,7 @@
     <ClCompile Include="Cuda\Domain\stochastic_model_t.cu" />
     <ClCompile Include="Cuda\Domain\clock_timer_t.cu" />
     <ClCompile Include="Cuda\Domain\system_variable.cu" />
-    <ClCompile Include="Cuda\Domain\UpdateExpressions\clock_expression.cpp" />
-    <ClCompile Include="Cuda\Domain\UpdateExpressions\division_expression.cpp" />
-    <ClCompile Include="Cuda\Domain\UpdateExpressions\const_expression.cpp" />
-    <ClCompile Include="Cuda\Domain\UpdateExpressions\minus_expression.cpp" />
-    <ClCompile Include="Cuda\Domain\UpdateExpressions\multiply_expression.cpp" />
-    <ClCompile Include="Cuda\Domain\UpdateExpressions\plus_expression.cpp" />
     <ClCompile Include="Cuda\Domain\UpdateExpressions\update_expression.cu" />
-    <ClCompile Include="Cuda\Domain\UpdateExpressions\variable_expression.cpp" />
     <ClCompile Include="Cuda\Domain\update_t.cu" />
     <ClCompile Include="Cuda\Domain\visitor.cu">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
@@ -729,15 +722,8 @@
     <ClInclude Include="Cuda\Domain\cuda_visitor.h" />
     <ClInclude Include="Cuda\Domain\pretty_visitor.h" />
     <ClInclude Include="Cuda\Domain\system_variable.h" />
-    <ClInclude Include="Cuda\Domain\UpdateExpressions\clock_expression.h" />
     <ClInclude Include="Cuda\Domain\UpdateExpressions\cuda_stack.h" />
-    <ClInclude Include="Cuda\Domain\UpdateExpressions\division_expression.h" />
-    <ClInclude Include="Cuda\Domain\UpdateExpressions\const_expression.h" />
-    <ClInclude Include="Cuda\Domain\UpdateExpressions\minus_expression.h" />
-    <ClInclude Include="Cuda\Domain\UpdateExpressions\multiply_expression.h" />
-    <ClInclude Include="Cuda\Domain\UpdateExpressions\plus_expression.h" />
     <ClInclude Include="Cuda\Domain\UpdateExpressions\update_expression.h" />
-    <ClInclude Include="Cuda\Domain\UpdateExpressions\variable_expression.h" />
     <ClInclude Include="Cuda\Domain\visitor.h" />
     <ClInclude Include="Cuda\Projekt\common.h" />
     <ClInclude Include="Cuda\Projekt\cuda_map.h" />

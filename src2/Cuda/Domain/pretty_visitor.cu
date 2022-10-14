@@ -46,7 +46,7 @@ void pretty_visitor::visit(clock_timer_t* timer)
 void pretty_visitor::visit(update_t* update)
 {
     if (update == nullptr) return;
-    printf("        Update id: %3d | Timer id: %3d | Value: %10f \n", update->get_id(), update->get_timer_id(), update->get_timer_value());
+    // printf("        Update id: %3d | Timer id: %3d | Value: %10f \n", update->get_id(), update->get_timer_id(), update->get_timer_value());
     update->accept(this);
 }
 

@@ -2,7 +2,8 @@
 using namespace std::chrono;
 
 
-CPU GPU edge_t* find_valid_edge_heap(const lend_array<edge_t*>* edges, const lend_array<clock_timer_t>* timer_arr,
+CPU GPU edge_t* find_valid_edge_heap(const lend_array<edge_t*>* edges,
+    const lend_array<clock_timer_t>* timer_arr, const lend_array<system_variable>* variables,
     curandState* states, const unsigned int thread_id)
 {
     // return nullptr;
@@ -14,7 +15,7 @@ CPU GPU edge_t* find_valid_edge_heap(const lend_array<edge_t*>* edges, const len
     {
         valid_edges[i] = nullptr; //clean malloc
         edge_t* edge = edges->get(i);
-        if(edge->evaluate_constraints(timer_arr))
+        if(edge->evaluate_constraints(timer_arr, variables))
             valid_edges[valid_count++] = edge;
     }
     
@@ -61,7 +62,8 @@ CPU GPU edge_t* find_valid_edge_heap(const lend_array<edge_t*>* edges, const len
     return edge;
 }
 
-CPU GPU edge_t* find_valid_edge_fast(const lend_array<edge_t*>* edges, const lend_array<clock_timer_t>* timer_arr,
+CPU GPU edge_t* find_valid_edge_fast(const lend_array<edge_t*>* edges,
+    const lend_array<clock_timer_t>* timers, const lend_array<system_variable>* variables,
     curandState* states, const unsigned int thread_id)
 {
     unsigned long long valid_edges_bitarray = 0UL;
@@ -71,7 +73,7 @@ CPU GPU edge_t* find_valid_edge_fast(const lend_array<edge_t*>* edges, const len
     for (int i = 0; i < edges->size(); ++i)
     {
         edge_t* edge = edges->get(i);
-        if(edge->evaluate_constraints(timer_arr))
+        if(edge->evaluate_constraints(timers,variables))
         {
             bit_handler::set_bit(&valid_edges_bitarray, i);
             valid_edge = edge;
@@ -111,7 +113,8 @@ CPU GPU edge_t* find_valid_edge_fast(const lend_array<edge_t*>* edges, const len
     return valid_edge;
 }
 
-CPU GPU edge_t* choose_next_edge(const lend_array<edge_t*>* edges, const lend_array<clock_timer_t>* timer_arr,
+CPU GPU edge_t* choose_next_edge(const lend_array<edge_t*>* edges,
+    const lend_array<clock_timer_t>* timer_arr, const lend_array<system_variable>* variables,
     curandState* states, const unsigned int thread_id)
 {
     //if no possible edges, return null pointer
@@ -119,22 +122,22 @@ CPU GPU edge_t* choose_next_edge(const lend_array<edge_t*>* edges, const lend_ar
     if(edges->size() == 1)
     {
         edge_t* edge = edges->get(0);
-        return edge->evaluate_constraints(timer_arr)
+        return edge->evaluate_constraints(timer_arr, variables)
                 ? edge
                 : nullptr;
     }
 
     if(static_cast<unsigned long long>(edges->size()) < sizeof(unsigned long long)*8)
-        return find_valid_edge_fast(edges, timer_arr, states, thread_id);
+        return find_valid_edge_fast(edges, timer_arr, variables, states, thread_id);
     else
-        return find_valid_edge_heap(edges, timer_arr, states, thread_id);
+        return find_valid_edge_heap(edges, timer_arr, variables, states, thread_id);
 }
 
 CPU GPU void progress_time(const lend_array<clock_timer_t>* timers, const node_t* node,
     const double max_global_progress, curandState* r_state)
 {
     //Get random uniform value between ]0.0f, 0.1f] * difference gives a random uniform range of ]0, diff]
-    double max_progression = 0.0;
+    double max_progression = 0.0; //only set when has_upper_bound == true
     const bool has_upper_bound = node->max_time_progression(timers, &max_progression);
     const double lambda = static_cast<double>(node->get_lambda());
     double time_progression;
@@ -145,9 +148,15 @@ CPU GPU void progress_time(const lend_array<clock_timer_t>* timers, const node_t
     }
     else if(lambda > 0 && has_upper_bound) //choose exponential distribution between 0 and upper bound
     {
-        time_progression = (max_progression
-        - ( (1 - lambda*exp(-lambda* curand_uniform_double(r_state) * max_progression))
-        * max_progression)) / lambda; 
+        // time_progression = (max_progression
+        // - ( (1 - lambda*exp(-lambda* curand_uniform_double(r_state) * max_progression))
+        // * max_progression)) / lambda;
+        
+        // time_progression = (exp(-lambda*0) - exp(-lambda*curand_uniform_double(r_state) * max_progression))
+        //                 /  (exp(-lambda*0) - exp(-lambda*max_progression));
+        
+        time_progression = (1 - exp(-lambda*curand_uniform_double(r_state) * max_progression))
+                        /  (1 - exp(-lambda*max_progression));
     }
     else if(lambda > 0) //choose exponential distribution between 0 and infinity
     {
@@ -186,7 +195,9 @@ CPU GPU void simulate_stochastic_model(
     curand_init(options->seed, idx, idx, &r_state[idx]);
 
     array_t<clock_timer_t> internal_timers = model->create_internal_timers();
+    array_t<system_variable> internal_variables = model->create_internal_variables();
     const lend_array<clock_timer_t> lend_internal_timers = lend_array<clock_timer_t>(&internal_timers);
+    const lend_array<system_variable> lend_internal_variables = lend_array<system_variable>(&internal_variables);
 
     for (unsigned int i = 0; i < options->simulation_amount; ++i)
     {
@@ -224,13 +235,14 @@ CPU GPU void simulate_stochastic_model(
                 hit_max_steps = false;
                 break;
             }
-            const edge_t* next_edge = choose_next_edge(&outgoing_edges, &lend_internal_timers, r_state, idx);
+            const edge_t* next_edge = choose_next_edge(&outgoing_edges,
+                &lend_internal_timers, &lend_internal_variables, r_state, idx);
             if(next_edge == nullptr)
             {
                 continue;
             }
             current_node = next_edge->get_dest();
-            next_edge->execute_updates(&lend_internal_timers);
+            next_edge->execute_updates(&lend_internal_timers, &lend_internal_variables);
             if(current_node->is_goal_node())
             {
                 hit_max_steps = false;

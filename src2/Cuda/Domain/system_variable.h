@@ -11,12 +11,16 @@ private:
     int value_;
     int id_;
 public:
-    explicit system_variable(int id, int initial_value = 0);
+    CPU GPU explicit system_variable(int id, int initial_value = 0);
+
+    //SIMULATION methods
     CPU GPU int get_value() const;
-    CPU GPU int set_value(int new_value);
-    void accept(visitor* v);
+    CPU GPU void set_value(int new_value);
+    CPU GPU system_variable duplicate() const;
     
-    CPU GPU void cuda_allocate(system_variable** p, allocation_helper* helper);
+    //HOST methods
+    void accept(visitor* v);
+    CPU GPU void cuda_allocate(system_variable** p, const allocation_helper* helper);
 };
 
 #endif

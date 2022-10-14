@@ -88,11 +88,11 @@ int main(int argc, const char* argv[])
     node1_lst.push_back(edge1_0);
     node1.set_edges(&node1_lst);
 
-    
+    array_t<system_variable*> variable_arr = array_t<system_variable*>(0);
 
 
     pretty_visitor visitor;
-    stochastic_model_t model(&node0, to_array(&clock_lst));
+    stochastic_model_t model(&node0, to_array(&clock_lst), variable_arr);
     if (parser.exists("m"))
     {
         printf("USING PARSER\n");
