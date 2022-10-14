@@ -2,6 +2,7 @@
 
 #include "declaration.h"
 #include "declaration_parser.h"
+#include "update_parser.h"
 //#include "../Domain/uneven_list.h"
 
 
@@ -207,9 +208,10 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                 string kind = labels.attribute("kind").as_string();
                 string expr_string = labels.child_value();
 
-                list<string> expressions = split_expr(expr_string);
+                
                 if(kind == "guard")
                 {
+                    list<string> expressions = split_expr(expr_string);
                     for(const auto& expr: expressions)
                     {
                         if (expr.empty())
@@ -219,11 +221,14 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                 }
                 else if (kind == "assignment")
                 {
+                    list<string> expressions = split_expr(expr_string, ',');
                     for(const auto& expr: expressions)
                     {
                         if (expr.empty())
                             continue;
-                        // updates.push_back(new update_t(update_id++, get_timer_id(expr), true, get_expr_value_float(expr)));
+                        
+                        updates.push_back(new update_t(update_id++, get_timer_id(expr), true, update_parser::parse(expr, vars_map_)));
+                        // updates.push_back(
                     }
                 }
                 else if (kind == "probability")

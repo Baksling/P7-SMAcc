@@ -1,4 +1,7 @@
-﻿#include <iostream>
+﻿#ifndef ARITHMETIC_EXPRESSION_EVALUATOR_H
+#define ARITHMETIC_EXPRESSION_EVALUATOR_H
+
+#include <iostream>
 #include <cstdlib>
 #include <cctype>
 #include <cstring>
@@ -11,7 +14,7 @@
  
 using namespace std;
  
-enum types { DELIMITER = 1, VARIABLE, NUMBER, FUNCTION };
+enum arith_types { DELIMITER = 1, VARIABLE, NUMBER, FUNCTION };
 const int NUMVARS = 26;
 class parser {
     char *exp_ptr; // points to the expression
@@ -270,6 +273,19 @@ namespace evalguy
     {
         //cout << "\nEVALUATING: " <<input.substr(0,input.length()-1)<<"\n";
         parser ob;
+        // char expstr[256];
+        // do
+        // {
+        //     cout << "Enter expression: ";
+        //     cin.getline(expstr, 255);
+        //     double ans = ob.eval_exp(expstr);
+        //     if (*ob.errormsg)
+        //         cout << "Error: " << ob.errormsg << "\n\n";
+        //     else
+        //         cout << "Answer: " << ans << "\n\n";
+        // } while (*expstr);
+
+        
         double ans = ob.eval_exp((char*)input.substr(0,input.length()).c_str());
         if (*ob.errormsg)
             cout << "Error: " << ob.errormsg << "\n\n";
@@ -277,3 +293,5 @@ namespace evalguy
             return ans;
     }
 }
+
+#endif

@@ -4,7 +4,6 @@
 using namespace std;
 using namespace helper;
 using namespace evalguy;
-
 // float calculate(float num1, float num2, string op)
 // {
 //     //cout << num1 << " " << num2 << " " << op << " \n";
@@ -235,11 +234,11 @@ using namespace evalguy;
 //     return to_string(current_num);
 // }
 
-declaration number_parser(const string& line)
+declaration number_parser(const string& line, declaration_types type)
 {
     string line_wo_ws = replace_all(line, " ", "");
     string nums = take_after(line_wo_ws, '=');
-    return declaration(double_type, take_while(line_wo_ws, '='), to_string(eval_expr(nums)), 1);
+    return declaration(type, take_while(line_wo_ws, '='), to_string(eval_expr(nums)), 1);
 }
 
 list<declaration> declaration_parser::parse_clocks(const string& line)
@@ -295,9 +294,17 @@ list<declaration> declaration_parser::parse(string decl)
         {
             string const_string = remove_while(line_trimmed.substr(5), ' ');
             if (const_string.substr(0, 6) == "double")
-                result.emplace_back(number_parser(const_string.substr(6)));
+                result.emplace_back(number_parser(const_string.substr(6), double_type));
+            if (const_string.substr(0, 3) == "int")
+                result.emplace_back(number_parser(const_string.substr(3), int_type));
             
         }
+
+        if (line_trimmed.substr(0, 6) == "double")
+            result.emplace_back(number_parser(line_trimmed.substr(6), double_type));
+        
+        if (line_trimmed.substr(0, 3) == "int")
+            result.emplace_back(number_parser(line_trimmed.substr(3), int_type));
         //result.emplace_back(clock_type,line_trimmed,"3.0", 0);
     }
     

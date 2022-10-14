@@ -630,6 +630,8 @@
       <SDLCheck>true</SDLCheck>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
+    <ClCompile Include="Cuda\UPPAALTreeParser\update_expression_evaluator.cpp" />
+    <ClCompile Include="Cuda\UPPAALTreeParser\update_parser.cpp" />
     <ClCompile Include="Cuda\UPPAALTreeParser\uppaal_tree_parser.cu">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -742,6 +744,8 @@
     <ClInclude Include="Cuda\Simulator\thread_pool.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\pugiconfig.hpp" />
     <ClInclude Include="Cuda\UPPAALTreeParser\pugixml.hpp" />
+    <ClInclude Include="Cuda\UPPAALTreeParser\update_expression_evaluator.h" />
+    <ClInclude Include="Cuda\UPPAALTreeParser\update_parser.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\uppaal_tree_parser.h" />
     <ClInclude Include="Edge.h" />
     <ClInclude Include="Guard.h" />
