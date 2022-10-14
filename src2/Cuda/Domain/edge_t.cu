@@ -29,18 +29,15 @@ CPU GPU node_t* edge_t::get_dest() const
     return this->dest_;
 }
 
-void edge_t::set_updates(std::list<update_t*>* updates)
-{
-    this->updates_ = to_array(updates);
-}
-
-CPU GPU bool edge_t::evaluate_constraints(const lend_array<clock_timer_t>* timers, const lend_array<system_variable>* variables) const
+CPU GPU bool edge_t::evaluate_constraints(
+    cuda_stack<update_expression*>* expression_stack, cuda_stack<double>* value_stack,
+    const lend_array<clock_timer_t>* timers, const lend_array<system_variable>* variables) const
 {
     for (int i = 0; i < this->updates_.size(); ++i)
     {
-        update_t* update = this->updates_.get(i);
+        const update_t* update = this->updates_.get(i);
         clock_timer_t* clock = timers->at(update->get_timer_id());
-        clock->set_temp_time(update->evaluate_expression(timers, variables));
+        clock->set_temp_time(update->evaluate_expression(expression_stack, value_stack, timers, variables));
     }
     const bool valid_dest = this->dest_->evaluate_invariants(timers);
 
@@ -60,6 +57,15 @@ CPU GPU bool edge_t::evaluate_constraints(const lend_array<clock_timer_t>* timer
     }
     
     return true;
+}
+
+CPU GPU void edge_t::execute_updates(cuda_stack<update_expression*>* expression_stack, cuda_stack<double>* value_stack,
+    const lend_array<clock_timer_t>* timers, const lend_array<system_variable>* variables) const
+{
+    for (int i = 0; i < this->updates_.size(); ++i)
+    {
+        this->updates_.get(i)->apply_update(expression_stack, value_stack, timers, variables);
+    }
 }
 
 void edge_t::accept(visitor* v) const
@@ -131,15 +137,4 @@ void edge_t::cuda_allocate(edge_t** pointer, const allocation_helper* helper)
 void edge_t::cuda_allocate_2(edge_t* cuda_p, const allocation_helper* helper)
 {
     return;
-}
-
-
-CPU GPU void edge_t::execute_updates(
-    const lend_array<clock_timer_t>* timers,
-    const lend_array<system_variable>* variables) const
-{
-    for (int i = 0; i < this->updates_.size(); ++i)
-    {
-        this->updates_.get(i)->apply_update(timers, variables);
-    }
 }

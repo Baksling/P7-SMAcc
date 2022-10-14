@@ -7,6 +7,7 @@
 
 #include "../common.h"
 
+
 template<typename T>
 class cuda_stack
 {
@@ -15,7 +16,7 @@ class cuda_stack
     unsigned int stack_pointer_ = 0;
     cuda_stack(T* store, unsigned int size);
 public:
-    explicit cuda_stack(unsigned int size);
+    CPU GPU explicit cuda_stack(unsigned int size);
 
     //SIMULATION methods
     CPU GPU T peak() const;
@@ -131,3 +132,5 @@ cuda_stack<T>* cuda_stack<T>::cuda_allocate(const allocation_helper* helper)
 }
 
 #endif
+
+

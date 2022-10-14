@@ -21,7 +21,7 @@ public:
     //HOST methods
     int get_id() const; 
     void accept(visitor* v);
-    void cuda_allocate(system_variable** p, const allocation_helper* helper);
+    void cuda_allocate(system_variable* p, const allocation_helper* helper) const;
 };
 
 #endif

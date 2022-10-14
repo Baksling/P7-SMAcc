@@ -32,7 +32,7 @@ void system_variable::accept(visitor* v)
     return;
 }
 
-void system_variable::cuda_allocate(system_variable** p, const allocation_helper* helper)
+void system_variable::cuda_allocate(system_variable* p, const allocation_helper* helper) const
 {
-    return; //fix this
+    cudaMemcpy(p, this, sizeof(system_variable), cudaMemcpyHostToDevice);
 }

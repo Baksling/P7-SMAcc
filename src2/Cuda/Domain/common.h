@@ -15,7 +15,6 @@
 #define IS_GPU __CUDACC__
 
 
-
 template<typename T>
 struct array_t
 {
@@ -171,6 +170,9 @@ class stochastic_model_t;
 class system_variable;
 class update_expression;
 
+class update_expression;
+template<typename  T> class cuda_stack;
+
 struct allocation_helper
 {
     std::list<void*>* free_list;
@@ -185,6 +187,7 @@ struct allocation_helper
 #include "node_t.h"
 #include "update_t.h"
 #include "system_variable.h"
+#include "UpdateExpressions/update_expression.h"
 
 
 #endif
