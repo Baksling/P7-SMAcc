@@ -46,10 +46,8 @@ cuda_stack<T>::cuda_stack(unsigned size)
     this->size_ = size;
     this->stack_pointer_ = 0;
 
-    if(size > 0)
-    {
-        this->store_ = static_cast<T*>(malloc(sizeof(T)*size));
-    }
+    if(size > 0) this->store_ = static_cast<T*>(malloc(sizeof(T)*size));
+    else this->store_ = nullptr;
 }
 
 template <typename T>
@@ -91,6 +89,11 @@ CPU GPU bool cuda_stack<T>::is_empty() const
 template <typename T>
 CPU GPU void cuda_stack<T>::push(T value)
 {
+    if(this->stack_pointer_ >= this->size_)
+    {
+        printf("Stack is full");
+        return;
+    }
     store_[stack_pointer_++] = value;
 }
 

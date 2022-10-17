@@ -2,12 +2,10 @@
 using namespace std::chrono;
 
 
+
 CPU GPU edge_t* find_valid_edge_heap(
-    cuda_stack<update_expression*>* expression_stack,
-    cuda_stack<double>* value_stack,
+    simulator_state* state,
     const lend_array<edge_t*>* edges,
-    const lend_array<clock_timer_t>* timer_arr,
-    const lend_array<system_variable>* variables,
     curandState* r_state)
 {
     // return nullptr;
@@ -19,7 +17,7 @@ CPU GPU edge_t* find_valid_edge_heap(
     {
         valid_edges[i] = nullptr; //clean malloc
         edge_t* edge = edges->get(i);
-        if(edge->evaluate_constraints(expression_stack, value_stack, timer_arr, variables))
+        if(edge->evaluate_constraints(state))
             valid_edges[valid_count++] = edge;
     }
     
@@ -67,10 +65,8 @@ CPU GPU edge_t* find_valid_edge_heap(
 }
 
 CPU GPU edge_t* find_valid_edge_fast(
-    cuda_stack<update_expression*>* expression_stack,
-    cuda_stack<double>* value_stack,
+    simulator_state* state,
     const lend_array<edge_t*>* edges,
-    const lend_array<clock_timer_t>* timers, const lend_array<system_variable>* variables,
     curandState* r_state)
 {
     unsigned long long valid_edges_bitarray = 0UL;
@@ -80,7 +76,7 @@ CPU GPU edge_t* find_valid_edge_fast(
     for (int i = 0; i < edges->size(); ++i)
     {
         edge_t* edge = edges->get(i);
-        if(edge->evaluate_constraints(expression_stack, value_stack, timers, variables))
+        if(edge->evaluate_constraints(state))
         {
             bit_handler::set_bit(&valid_edges_bitarray, i);
             valid_edge = edge;
@@ -120,36 +116,30 @@ CPU GPU edge_t* find_valid_edge_fast(
     return valid_edge;
 }
 
-CPU GPU edge_t* choose_next_edge(
-    cuda_stack<update_expression*>* expression_stack,
-    cuda_stack<double>* value_stack,
-    const lend_array<edge_t*>* edges,
-    const lend_array<clock_timer_t>* timer_arr,
-    const lend_array<system_variable>* variables,
-    curandState* r_state)
+CPU GPU edge_t* choose_next_edge(simulator_state* state, const lend_array<edge_t*>* edges, curandState* r_state)
 {
     //if no possible edges, return null pointer
     if(edges->size() == 0) return nullptr;
     if(edges->size() == 1)
     {
         edge_t* edge = edges->get(0);
-        return edge->evaluate_constraints(expression_stack, value_stack, timer_arr, variables)
+        return edge->evaluate_constraints(state)
                 ? edge
                 : nullptr;
     }
 
     if(static_cast<unsigned long long>(edges->size()) < sizeof(unsigned long long)*8)
-        return find_valid_edge_fast(expression_stack, value_stack, edges, timer_arr, variables, r_state);
+        return find_valid_edge_fast(state, edges, r_state);
     else
-        return find_valid_edge_heap(expression_stack, value_stack, edges, timer_arr, variables, r_state);
+        return find_valid_edge_heap(state, edges, r_state);
 }
 
-CPU GPU void progress_time(const lend_array<clock_timer_t>* timers, const node_t* node,
+CPU GPU void progress_time(const simulator_state* state, const node_t* node,
     const double max_global_progress, curandState* r_state)
 {
     //Get random uniform value between ]0.0f, 0.1f] * difference gives a random uniform range of ]0, diff]
     double max_progression = 0.0; //only set when has_upper_bound == true
-    const bool has_upper_bound = node->max_time_progression(timers, &max_progression);
+    const bool has_upper_bound = node->max_time_progression(&state->timers, &max_progression);
     const double lambda = static_cast<double>(node->get_lambda());
     double time_progression;
     
@@ -187,9 +177,9 @@ CPU GPU void progress_time(const lend_array<clock_timer_t>* timers, const node_t
     }
 
     //update all timers by adding time_progression to each
-    for(int i = 0; i < timers->size(); i++)
+    for(int i = 0; i < state->timers.size(); i++)
     {
-        timers->at(i)->add_time(time_progression);
+        state->timers.at(i)->add_time(time_progression);
     }
 }
 
@@ -203,14 +193,19 @@ CPU GPU void simulate_stochastic_model(
 )
 {
     curand_init(options->seed, idx, idx, &r_state[idx]);
-
+    
     array_t<clock_timer_t> internal_timers = model->create_internal_timers();
     array_t<system_variable> internal_variables = model->create_internal_variables();
-    const lend_array<clock_timer_t> lend_internal_timers = lend_array<clock_timer_t>(&internal_timers);
-    const lend_array<system_variable> lend_internal_variables = lend_array<system_variable>(&internal_variables);
 
-    cuda_stack<double> value_stack = cuda_stack<double>(options->max_expression_depth);
-    cuda_stack<update_expression*> expression_stack = cuda_stack<update_expression*>(options->max_expression_depth*2+1);
+    
+    simulator_state state = {
+        cuda_stack<double>(options->max_expression_depth),
+        cuda_stack<update_expression*>(options->max_expression_depth*2+1),
+        lend_array<system_variable>(&internal_variables),
+        lend_array<clock_timer_t>(&internal_timers)
+    };
+
+    
     
     for (unsigned int i = 0; i < options->simulation_amount; ++i)
     {
@@ -223,6 +218,7 @@ CPU GPU void simulate_stochastic_model(
         node_t* current_node = model->get_start_node();
         unsigned int steps = 0;
         bool hit_max_steps;
+        
         while(true)
         {
             if(steps >= options->max_steps_pr_sim)
@@ -232,33 +228,32 @@ CPU GPU void simulate_stochastic_model(
             }
             steps++;
             //check current position is valid
-            if(!current_node->evaluate_invariants(&lend_internal_timers))
+            if(!current_node->evaluate_invariants(&state))
             {
                 hit_max_steps = true;
                 break;
             }
+            
             //Progress time
             if (!current_node->is_branch_point())
             {
-                progress_time(&lend_internal_timers, current_node, options->max_global_progression,  &r_state[idx]);
+                progress_time(&state, current_node, options->max_global_progression,  &r_state[idx]);
             }
+            
             const lend_array<edge_t*> outgoing_edges = current_node->get_edges();
             if(outgoing_edges.size() <= 0)
             {
                 hit_max_steps = false;
                 break;
             }
-            const edge_t* next_edge = choose_next_edge(
-                &expression_stack,
-                &value_stack,
-                &outgoing_edges,
-                &lend_internal_timers, &lend_internal_variables, &r_state[idx]);
+            
+            const edge_t* next_edge = choose_next_edge(&state, &outgoing_edges, &r_state[idx]);
             if(next_edge == nullptr)
             {
                 continue;
             }
             current_node = next_edge->get_dest();
-            next_edge->execute_updates(&expression_stack, &value_stack, &lend_internal_timers, &lend_internal_variables);
+            next_edge->execute_updates(&state);
             if(current_node->is_goal_node())
             {
                 hit_max_steps = false;

@@ -46,11 +46,11 @@ CPU GPU bool node_t::is_goal_node() const
     return this->is_goal_;
 }
 
-CPU GPU bool node_t::evaluate_invariants(const lend_array<clock_timer_t>* timers) const
+CPU GPU bool node_t::evaluate_invariants(const simulator_state* state) const
 {
     for (int i = 0; i < this->invariants_.size(); ++i)
     {
-        if(!this->invariants_.get(i)->evaluate(timers))
+        if(!this->invariants_.get(i)->evaluate(&state->timers))
             return false;
     }
 
@@ -62,7 +62,7 @@ void node_t::accept(visitor* v) const
     //visit node constraints
     for (int i = 0; i < this->invariants_.size(); ++i)
     {
-        printf("    ");
+        printf("    "); //TODO wtf is this shit????
         v->visit(this->invariants_.get(i));
     }
 

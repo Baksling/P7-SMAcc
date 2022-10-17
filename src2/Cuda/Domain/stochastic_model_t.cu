@@ -21,9 +21,10 @@ void stochastic_model_t::accept(visitor* v) const
 CPU GPU array_t<clock_timer_t> stochastic_model_t::create_internal_timers() const
 {
     const int size = this->timers_.size();
+    if(size == 0) return array_t<clock_timer_t>(0);
+
     clock_timer_t* internal_timers_arr =
         static_cast<clock_timer_t*>(malloc(sizeof(clock_timer_t) * size));
-    
     
     for (int i = 0; i < size; i++)
     {
@@ -37,6 +38,7 @@ CPU GPU array_t<clock_timer_t> stochastic_model_t::create_internal_timers() cons
 array_t<system_variable> stochastic_model_t::create_internal_variables() const
 {
     const int size = this->variables_.size();
+    if(size == 0) return array_t<system_variable>(0);
     system_variable* internal_variable_arr =
         static_cast<system_variable*>(malloc(sizeof(system_variable) * size));
     

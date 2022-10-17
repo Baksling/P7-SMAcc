@@ -12,16 +12,19 @@
       <change beforePath="$PROJECT_DIR$/Cuda/Domain/UpdateExpressions/cuda_stack.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/UpdateExpressions/cuda_stack.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Domain/UpdateExpressions/update_expression.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/UpdateExpressions/update_expression.cu" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Domain/UpdateExpressions/update_expression.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/UpdateExpressions/update_expression.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Domain/clock_timer_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/clock_timer_t.cu" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Domain/common.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/common.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Domain/constraint_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/constraint_t.cu" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Domain/edge_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/edge_t.cu" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Domain/edge_t.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/edge_t.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Domain/main.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/main.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Domain/node_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/node_t.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Domain/node_t.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/node_t.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Domain/stochastic_model_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/stochastic_model_t.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/stochastic_model_t.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/stochastic_model_t.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Domain/system_variable.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/system_variable.cu" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Domain/system_variable.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/system_variable.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Domain/update_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/update_t.cu" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Domain/update_t.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/update_t.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Simulator/simulation_strategy.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Simulator/simulation_strategy.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/Simulator/stochastic_simulator.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Simulator/stochastic_simulator.cu" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -151,7 +154,8 @@
       <workItem from="1665387157587" duration="4493000" />
       <workItem from="1665473753363" duration="6402000" />
       <workItem from="1665665715800" duration="5596000" />
-      <workItem from="1665732743667" duration="19629000" />
+      <workItem from="1665732743667" duration="20449000" />
+      <workItem from="1665992057896" duration="9994000" />
     </task>
     <servers />
   </component>

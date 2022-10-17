@@ -1,48 +1,46 @@
 ﻿#include "update_t.h"
 
-double update_t::evaluate_expression(cuda_stack<update_expression*>* expression_stack,
-                                     cuda_stack<double>* value_stack,
-                                     const lend_array<clock_timer_t>* timers,
-                                     const lend_array<system_variable>* variables) const
+double update_t::evaluate_expression(simulator_state* state) const
 {
-    value_stack->clear();
-    expression_stack->clear();
+    state->value_stack.clear();
+    state->expression_stack.clear();
     
     update_expression* current = this->expression_;
     while (true)
     {
         while(current != nullptr)
         {
-            expression_stack->push(current);
-            expression_stack->push(current);
+            
+            state->expression_stack.push(current);
+            state->expression_stack.push(current);
 
             // if(!current->is_leaf()) //only push twice if it has children
             //      this->expression_stack_->push(current);
             current = current->get_left();
         }
-        if(expression_stack->is_empty())
+        if(state->expression_stack.is_empty())
         {
             break;
         }
-        current = expression_stack->pop();
+        current = state->expression_stack.pop();
         
-        if(!expression_stack->is_empty() && expression_stack->peak() == current)
+        if(!state->expression_stack.is_empty() && state->expression_stack.peak() == current)
         {
-            current = current->get_right(value_stack);
+            current = current->get_right(&state->value_stack);
         }
         else
         {
-            current->evaluate(value_stack, timers, variables);
+            current->evaluate(state);
             current = nullptr;
         }
     }
 
-    if(value_stack->count() == 0)
+    if(state->value_stack.count() == 0)
     {
         printf("Expression evaluation ended in no values! PANIC!\n");
         return 0;
     }
-    return value_stack->pop();
+    return state->value_stack.pop();
 }
 
 update_t::update_t(const update_t* source, update_expression* expression)
@@ -53,27 +51,54 @@ update_t::update_t(const update_t* source, update_expression* expression)
     this->expression_ = expression;
 }
 
-update_t::update_t(const int id, const int timer_id, const bool is_clock_update, update_expression* expression)
+update_t::update_t(const int id, const int variable_id, const bool is_clock_update, update_expression* expression)
 {
     this->id_ = id;
-    this->variable_id_ = timer_id;
+    this->variable_id_ = variable_id;
     this->is_clock_update_ = is_clock_update;
     this->expression_ = expression;
 }
 
-CPU GPU void update_t::apply_update(
-    cuda_stack<update_expression*>* expression_stack, cuda_stack<double>* value_stack,
-    const lend_array<clock_timer_t>* timers, const lend_array<system_variable>* variables) const
+CPU GPU void update_t::apply_update(simulator_state* state) const
 {
-    const double value = evaluate_expression(expression_stack, value_stack, timers, variables);
+    const double value = evaluate_expression(state);
     if(this->is_clock_update_)
     {
-        timers->at(this->variable_id_)->set_time(value);
+        state->timers.at(this->variable_id_)->set_time(value);
     }
     else
     {
         //value is rounded correctly by adding 0.5. casting always rounds down.
-        variables->at(this->variable_id_)->set_value(static_cast<int>(value + 0.5));  // NOLINT(bugprone-incorrect-roundings)
+        state->variables.at(this->variable_id_)->set_value(static_cast<int>(value + 0.5));  // NOLINT(bugprone-incorrect-roundings)
+    }
+}
+
+CPU GPU void update_t::apply_temp_update(simulator_state* state) const
+{
+    const double value = evaluate_expression(state);
+    if(this->is_clock_update_)
+    {
+        state->timers.at(this->variable_id_)->set_temp_time(value);
+    }
+    else
+    {
+        //value is rounded correctly by adding 0.5. casting always rounds down.
+        state->variables.at(this->variable_id_)
+            ->set_temp_value(static_cast<int>(value + 0.5));  // NOLINT(bugprone-incorrect-roundings)
+    }
+}
+
+void update_t::reset_temp_update(const simulator_state* state) const
+{
+    if(this->is_clock_update_)
+    {
+        state->timers.at(this->variable_id_)->reset_temp_time();
+    }
+    else
+    {
+        //value is rounded correctly by adding 0.5. casting always rounds down.
+        //TODO FIX THIS LATER
+        state->variables.at(this->variable_id_)->reset_temp();  // NOLINT(bugprone-incorrect-roundings)
     }
 }
 

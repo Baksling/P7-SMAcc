@@ -17,12 +17,12 @@ CPU GPU double clock_timer_t::get_time() const
     return this->current_time_;
 }
 
-double clock_timer_t::get_temp_time() const
+CPU GPU double clock_timer_t::get_temp_time() const
 {
     return this->temp_time_;
 }
 
-void clock_timer_t::set_temp_time(double new_value)
+void clock_timer_t::set_temp_time(const double new_value)
 {
     this->temp_time_ = new_value;
 }

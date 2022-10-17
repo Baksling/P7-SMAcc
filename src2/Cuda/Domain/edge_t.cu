@@ -29,42 +29,40 @@ CPU GPU node_t* edge_t::get_dest() const
     return this->dest_;
 }
 
-CPU GPU bool edge_t::evaluate_constraints(
-    cuda_stack<update_expression*>* expression_stack, cuda_stack<double>* value_stack,
-    const lend_array<clock_timer_t>* timers, const lend_array<system_variable>* variables) const
+CPU GPU bool edge_t::evaluate_constraints(simulator_state* state) const
 {
+    //Evaluate guards
+    for (int i = 0; i < this->guards_.size(); ++i)
+    {
+        if(!this->guards_.get(i)->evaluate(&state->timers))
+            return false;
+    }
+
+    //Evaluate destination node
+    //Only if guards pass
     for (int i = 0; i < this->updates_.size(); ++i)
     {
         const update_t* update = this->updates_.get(i);
-        clock_timer_t* clock = timers->at(update->get_timer_id());
-        clock->set_temp_time(update->evaluate_expression(expression_stack, value_stack, timers, variables));
+        update->apply_temp_update(state);
     }
-    const bool valid_dest = this->dest_->evaluate_invariants(timers);
+    //check destination node using temporary update values
+    const bool valid_dest = this->dest_->evaluate_invariants(state);
 
+    //reset updates
     for (int i = 0; i < this->updates_.size(); ++i)
     {
-        clock_timer_t* clock = timers->at(this->updates_.get(i)->get_timer_id());
-        if (clock != nullptr)
-            clock->reset_temp_time();
+        this->updates_.get(i)->reset_temp_update(state);
     }
-    
-    if(!valid_dest) return false;
 
-    for (int i = 0; i < this->guards_.size(); ++i)
-    {
-        if(!this->guards_.get(i)->evaluate(timers))
-            return false;
-    }
-    
-    return true;
+    //reset updates first
+    return valid_dest;
 }
 
-CPU GPU void edge_t::execute_updates(cuda_stack<update_expression*>* expression_stack, cuda_stack<double>* value_stack,
-    const lend_array<clock_timer_t>* timers, const lend_array<system_variable>* variables) const
+CPU GPU void edge_t::execute_updates(simulator_state* state) const
 {
     for (int i = 0; i < this->updates_.size(); ++i)
     {
-        this->updates_.get(i)->apply_update(expression_stack, value_stack, timers, variables);
+        this->updates_.get(i)->apply_update(state);
     }
 }
 
@@ -73,7 +71,7 @@ void edge_t::accept(visitor* v) const
     //visit edge guards
     for (int i = 0; i < this->guards_.size(); ++i)
     {
-        printf("        ");
+        printf("        "); //TODO wtf is this?
         v->visit(this->guards_.get(i));
     }
 
@@ -81,7 +79,7 @@ void edge_t::accept(visitor* v) const
     for (int i = 0; i < this->updates_.size(); ++i)
     {
         update_t* temp = *updates_.at(i);
-        v->visit(*&*&*&*/*&*&*&*/&*&*&*&temp);
+        v->visit(temp);
     }
 
     //dont visit destination. Handled by node itself.
@@ -109,12 +107,12 @@ void edge_t::cuda_allocate(edge_t** pointer, const allocation_helper* helper)
         this->dest_->cuda_allocate(&node_p, helper); //linear node
     }
 
-    std::list<constraint_t*> invariant_lst;
+    std::list<constraint_t*> guard_lst;
     for (int i = 0; i < this->guards_.size(); ++i)
     {
         constraint_t* invariant_p = nullptr;
         this->guards_.get(i)->cuda_allocate(&invariant_p, helper);
-        invariant_lst.push_back(invariant_p);
+        guard_lst.push_back(invariant_p);
     }
     
     std::list<update_t*> updates;
@@ -129,7 +127,7 @@ void edge_t::cuda_allocate(edge_t** pointer, const allocation_helper* helper)
     }
     
     const edge_t result(this, node_p,
-        cuda_to_array(&invariant_lst, helper->free_list), cuda_to_array(&updates, helper->free_list));
+        cuda_to_array(&guard_lst, helper->free_list), cuda_to_array(&updates, helper->free_list));
     cudaMemcpy(*pointer, &result, sizeof(edge_t), cudaMemcpyHostToDevice);
 }
 

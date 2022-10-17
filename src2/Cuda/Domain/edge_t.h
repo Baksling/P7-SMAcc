@@ -22,11 +22,9 @@ public:
 
     //SIMULATION METHODS
     GPU CPU node_t* get_dest() const;
-    CPU GPU bool evaluate_constraints(cuda_stack<update_expression*>* expression_stack, cuda_stack<double>* value_stack, const lend_array<clock_timer_t>*
-                                      timers, const lend_array<system_variable>* variables) const;
-    CPU GPU void execute_updates(
-    cuda_stack<update_expression*>* expression_stack, cuda_stack<double>* value_stack,
-    const lend_array<clock_timer_t>* timers, const lend_array<system_variable>* variables) const;
+    CPU GPU bool evaluate_constraints(simulator_state* state) const;
+    CPU GPU void execute_updates(simulator_state* state
+    ) const;
     CPU GPU float get_weight() const;
 
 

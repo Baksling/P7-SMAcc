@@ -3,6 +3,8 @@
 #ifndef UPDATE_EXPRESSION
 #define UPDATE_EXPRESSION
 
+struct simulator_state;
+
 #include "../common.h"
 #include "cuda_stack.h"
 
@@ -61,13 +63,13 @@ public:
     //SIMULATION methods
     GPU CPU update_expression* get_left() const;
     GPU CPU update_expression* get_right(const cuda_stack<double>* value_stack) const;
-    GPU CPU void evaluate(cuda_stack<double>* stack,
-                          const lend_array<clock_timer_t>* timers, const lend_array<system_variable>* variables) const;
+    GPU CPU void evaluate(simulator_state* state
+    ) const;
     GPU CPU bool is_leaf() const;
     
 
     //HOST methods
-    std::string type_to_string();
+    std::string type_to_string() const;
     std::string to_string();
     int get_value();
     void accept(visitor* v) const;
