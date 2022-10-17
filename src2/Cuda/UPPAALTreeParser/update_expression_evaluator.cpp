@@ -1,22 +1,28 @@
 ﻿#include "update_expression_evaluator.h"
 
 // Parser constructor.
-update_expression_evaluator::update_expression_evaluator(map<string, int> vars)
+update_expression_evaluator::update_expression_evaluator()
+{
+    exp_ptr = NULL;
+}
+
+void update_expression_evaluator::set_var_list(map<string, int>* vars)
 {
     this->vars_ = vars;
-    int i;
-    exp_ptr = NULL;
-    for (i = 0; i < UPDATE_NUMVARS; i++)
-        this->vars[i] = 0.0;
-    errormsg[0] = '\0';
 }
 
 // Parser entry point.
 update_expression* update_expression_evaluator::eval_exp(char *exp)
 {
-    errormsg[0] = '\0';
+    cout << "\n ::::3::::";
+    cout.flush();
+    
     exp_ptr = exp;
+    cout << "\n ::::4::::";
+    cout.flush();
     get_token();
+    cout << "\n ::::5::::";
+    cout.flush();
     
     if (!*token) 
     {
@@ -28,7 +34,10 @@ update_expression* update_expression_evaluator::eval_exp(char *exp)
     {
         THROW_LINE("Syntax Error")
     }
-    
+    cout << "\n ::::12::::";
+    cout.flush();
+    cout << "\n ::::77::::"<<result->get_value();
+    cout.flush();
     return result;
 }
 // Process an assignment.
@@ -36,6 +45,7 @@ update_expression* update_expression_evaluator::eval_exp1()
 {
     int slot;
     char temp_token[80];
+    update_expression* result;
     if (tok_type == UPDATEVARIABLE) 
     {
         // save old token
@@ -52,19 +62,25 @@ update_expression* update_expression_evaluator::eval_exp1()
         }
         else {
             get_token(); // get next part of exp
-            update_expression* result = eval_exp2();
+            
+            result = eval_exp2();
             //vars[slot] = result;
             return result;
         }
     }
-    return eval_exp2();
+    result = eval_exp2();
+    cout << "\n ::::66::::"<<result->get_value();
+    cout.flush();
+    return result;
 }
 // Add or subtract two terms.
-update_expression* update_expression_evaluator::eval_exp2()
+ update_expression* update_expression_evaluator::eval_exp2()
 {
     char op;
-    double temp;
     update_expression* result = eval_exp3();
+    cout << "\n ::::55::::"<<result->get_value();
+    cout.flush();
+    
     while ((op = *token) == '+' || op == '-')
     {
         get_token();
@@ -72,11 +88,13 @@ update_expression* update_expression_evaluator::eval_exp2()
         switch (op) 
         {
         case '-':
-            return update_expression::minus_expression(result, temp);
+            result = update_expression::minus_expression(result, temp);
         case '+':
-            return update_expression::plus_expression(result, temp);
+            result = update_expression::plus_expression(result, temp);
         }
     }
+
+    return  result;
 }
 // Multiply or divide two factors.
 update_expression* update_expression_evaluator::eval_exp3()
@@ -84,26 +102,30 @@ update_expression* update_expression_evaluator::eval_exp3()
     char op;
     double temp;
     update_expression* result = eval_exp4();
-    while ((op = *token) == '*' || op == '/') 
+    cout << "\n ::::44::::"<<result->get_value();
+    cout.flush();
+    while ((op = *token) == '*' || op == '/')
     {
         get_token();
         update_expression* temp = eval_exp4();
         switch (op) 
         {
         case '*':
-            return update_expression::multiply_expression(result, temp);
-            break;
+            result = update_expression::multiply_expression(result, temp);
         case '/':
-            return update_expression::division_expression(result, temp);
-            break;
+            result = update_expression::division_expression(result, temp);
         }
     }
+
+    return result;
 }
 // Process an exponent.
 update_expression* update_expression_evaluator::eval_exp4()
 {
     double temp;
     update_expression* result = eval_exp5();
+    cout << "\n ::::33::::"<<result->get_value();
+    cout.flush();
     while (*token == '^')
     {
         // get_token();
@@ -123,6 +145,8 @@ update_expression* update_expression_evaluator::eval_exp5()
         get_token();
     }
     update_expression* result = eval_exp6();
+    cout << "\n ::::22::::"<<result->get_value();
+    cout.flush();
     return result;
     if (op == '-')
     {
@@ -140,7 +164,7 @@ update_expression* update_expression_evaluator::eval_exp6()
         strcpy(temp_token, token);
         get_token();
     } 
-    if ((*token == '(')) 
+    if (*token == '(') 
     {
         get_token();
         return eval_exp2();
@@ -195,25 +219,31 @@ update_expression* update_expression_evaluator::eval_exp6()
     else
         switch (tok_type)
         {
-        case UPDATEVARIABLE:
-            {
-                update_expression* result = update_expression::variable_expression(vars_.at(token));
-                get_token();
-                return result;
-            }
-            //result = vars[*token - 'A'];
-            
-        case UPDATENUMBER:
-            {
-                update_expression* result =  update_expression::literal_expression(atof(token));
-                //result = atof(token);
-                get_token();
-                return result;
-            }
-        default:
-            {
-                THROW_LINE("Syntax Error")
-            }
+            case UPDATEVARIABLE:
+                {
+                    cout << "\n ::::101::::";
+                    update_expression* result =  update_expression::literal_expression(atof(token));
+                    // update_expression* result = update_expression::variable_expression(vars_.at(token));
+                    get_token();
+                    return result;
+                }
+                //result = vars[*token - 'A'];
+                
+            case UPDATENUMBER:
+                {
+                    cout << "\n ::::10::::";
+                    cout.flush();
+                    update_expression* result =  update_expression::literal_expression(atof(token));
+                    //result = atof(token);
+                    get_token();
+                    cout << "\n ::::11::::"<<result->get_value();
+                    cout.flush();
+                    return result;
+                }
+            default:
+                {
+                    THROW_LINE("Syntax Error")
+                }
         }
 }
 // Obtain the next token.
@@ -251,9 +281,18 @@ void update_expression_evaluator::get_token()
         strcpy(errormsg, "Only first letter of variables is considered");
 }
 
-update_expression* update_expression_evaluator::parse_update_expr(string input, map<string, int> vars)
+update_expression* update_expression_evaluator::parse_update_expr(string input, map<string, int>* vars)
 {
-    update_expression_evaluator ob(vars);
+    cout << "\n ::::1::::" << input;
+    update_expression_evaluator ob;
+    cout << "\n ::::3::::" << input;
+    ob.set_var_list(vars);
+    cout << "\n ::::2::::" << input;
+    cout.flush();
     update_expression* ans = ob.eval_exp((char*)input.substr(0,input.length()).c_str());
+    cout << "\n13: " <<"\n";
+    cout.flush();
+    cout << "\n ::::88::::"<<ans->get_value();
+    cout.flush();
     return ans;
 }

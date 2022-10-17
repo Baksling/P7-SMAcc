@@ -109,6 +109,10 @@ template<typename T>
 array_t<T> to_array(std::list<T>* list)
 {
     int size = static_cast<int>(list->size());
+
+    if (size == 0)
+        return array_t<T>(0);
+    
     T* arr = static_cast<T*>(malloc(sizeof(T)*size));
 
     int i = 0;

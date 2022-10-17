@@ -286,11 +286,8 @@ namespace evalguy
         // } while (*expstr);
 
         
-        double ans = ob.eval_exp((char*)input.substr(0,input.length()).c_str());
-        if (*ob.errormsg)
-            cout << "Error: " << ob.errormsg << "\n\n";
-        else
-            return ans;
+        float ans = ob.eval_exp((char*)input.substr(0,input.length()).c_str());
+        return ans;
     }
 }
 

@@ -122,6 +122,7 @@ void update_expression::accept(visitor* v) const
 
 unsigned update_expression::get_depth() const
 {
+    printf("\n!!!FDAMFW!!");
     const unsigned left = this->left_ != nullptr ? this->left_->get_depth() : 0;
     const unsigned right = this->right_ != nullptr ? this->right_->get_depth() : 0;
 

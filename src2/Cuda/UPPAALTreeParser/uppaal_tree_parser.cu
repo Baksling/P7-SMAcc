@@ -102,6 +102,7 @@ void uppaal_tree_parser::init_clocks(const xml_document* doc)
         {
             d.to_string();
             timers_map_.insert_or_assign(d.get_name(),clock_id);
+            vars_map_.insert_or_assign(d.get_name(), clock_id);
             timer_list_.push_back(new clock_timer_t(clock_id++, d.get_value()));
         }
     }
@@ -222,13 +223,15 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                 else if (kind == "assignment")
                 {
                     list<string> expressions = split_expr(expr_string, ',');
+                    cout << "\nASS0: " << expressions.size() << " " << expr_string <<"\n";
                     for(const auto& expr: expressions)
                     {
                         if (expr.empty())
                             continue;
-                        
-                        updates.push_back(new update_t(update_id++, get_timer_id(expr), true, update_parser::parse(expr, vars_map_)));
-                        // updates.push_back(
+                        cout << "\nASS: " << expr <<"\n";
+                        updates.push_back(new update_t(update_id++, get_timer_id(expr), true, update_parser::parse(expr, &vars_map_)));
+                        cout << "\nIT OK: " << expr <<"\n";
+                        cout.flush();
                     }
                 }
                 else if (kind == "probability")
@@ -236,16 +239,17 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                     probability = get_expr_value_float(expr_string);
                 }
             }
-            
+            cout << "\nIT OK:2 "  <<"\n";
+            cout.flush();
             node_t* target_node = get_node(target_id);
-            // auto result_edge = new edge_t(edge_id++, probability, target_node, to_array(&guards));
-            // cout << "guard size: " << guards.size() << "\n";
-            //
+            auto result_edge = new edge_t(edge_id++, probability, target_node, to_array(&guards), to_array(&updates));
+            cout << "guard size: " << guards.size() << "\n";
+            
             // if (guards.empty())
             //     result_edge = new edge_t(edge_id, probability, target_node, array_t<constraint_t*>(0));
-            //
-            // result_edge->set_updates(&updates);
-            // node_edge_map.at(source_id).push_back(result_edge);
+            //result_edge->set_updates(&updates);
+            
+            node_edge_map.at(source_id).push_back(result_edge);
         }
     }
 
