@@ -1,5 +1,7 @@
 ﻿#include "update_expression_evaluator.h"
 
+#include "helper_methods.h"
+
 // Parser constructor.
 update_expression_evaluator::update_expression_evaluator()
 {
@@ -221,8 +223,12 @@ update_expression* update_expression_evaluator::eval_exp6()
         {
             case UPDATEVARIABLE:
                 {
-                    cout << "\n ::::101::::";
-                    update_expression* result =  update_expression::literal_expression(atof(token));
+                    cout << "\nTEST" << token - 'A';
+                    cout << "\n ::::101::::" << token;
+                    cout.flush();
+                    string var = token;
+                    
+                    update_expression* result =  update_expression::literal_expression(vars_->at(var));
                     // update_expression* result = update_expression::variable_expression(vars_.at(token));
                     get_token();
                     return result;
@@ -265,7 +271,7 @@ void update_expression_evaluator::get_token()
     else if (isalpha(*exp_ptr)) 
     {
         while (!strchr(" +-/*%^=()\t\r", *exp_ptr) && (*exp_ptr))
-            *temp++ = toupper(*exp_ptr++);
+            *temp++ = *exp_ptr++;
         while (isspace(*exp_ptr))  // skip over white space
             ++exp_ptr;
         tok_type = (*exp_ptr == '(') ? UPDATEFUNCTION : UPDATEVARIABLE;

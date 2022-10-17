@@ -102,7 +102,7 @@ void uppaal_tree_parser::init_clocks(const xml_document* doc)
         {
             d.to_string();
             timers_map_.insert_or_assign(d.get_name(),clock_id);
-            vars_map_.insert_or_assign(d.get_name(), clock_id);
+            vars_map_.insert_or_assign(d.get_name(), d.get_value());
             timer_list_.push_back(new clock_timer_t(clock_id++, d.get_value()));
         }
     }
