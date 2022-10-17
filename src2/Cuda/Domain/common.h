@@ -16,7 +16,6 @@
 #define IS_GPU __CUDACC__
 
 
-
 template<typename T>
 struct array_t
 {
@@ -110,6 +109,7 @@ template<typename T>
 array_t<T> to_array(std::list<T>* list)
 {
     int size = static_cast<int>(list->size());
+    if(size == 0) return array_t<T>(0);
     T* arr = static_cast<T*>(malloc(sizeof(T)*size));
 
     int i = 0;
@@ -127,6 +127,7 @@ template<typename T>
 array_t<T> cuda_to_array(std::list<T>* list, std::list<void*>* free_list)
 {
     int size = static_cast<int>(list->size());
+    if(size == 0) return array_t<T>(0);
     T* cuda_arr = nullptr;
     T* local_arr = static_cast<T*>(malloc(sizeof(T)*size));
     cudaMalloc(&cuda_arr, sizeof(T) * size);
@@ -145,23 +146,6 @@ array_t<T> cuda_to_array(std::list<T>* list, std::list<void*>* free_list)
     return info;
 }
 
-template<typename T>
-array_t<T> to_array_as_pointers(std::list<T*>* list)
-{
-    int size = static_cast<int>(list->size());
-    T* arr = static_cast<T*>(malloc(sizeof(T)*size));
-
-    int i = 0;
-    for(T* item : *list)
-    {
-        arr[i] = *item;
-        i++;
-    }
-
-    array_t<T> info = array_t<T>(arr, size);
-    return info;
-}
-
 class visitor;
 class edge_t;
 class node_t;
@@ -172,12 +156,28 @@ class stochastic_model_t;
 class system_variable;
 class update_expression;
 
+class update_expression;
+template<typename  T> class cuda_stack;
+
 struct allocation_helper
 {
     std::list<void*>* free_list;
     std::unordered_map<node_t*, node_t*>* node_map;
 };
 
+
+
+#include "UpdateExpressions/cuda_stack.h"
+
+struct simulator_state
+{
+    cuda_stack<double> value_stack;
+    cuda_stack<update_expression*> expression_stack;
+    lend_array<system_variable> variables;
+    lend_array<clock_timer_t> timers;
+};
+
+#include "UpdateExpressions/update_expression.h"
 #include "visitor.h"
 #include "constraint_t.h"
 #include "edge_t.h"
@@ -186,6 +186,8 @@ struct allocation_helper
 #include "node_t.h"
 #include "update_t.h"
 #include "system_variable.h"
+
+
 
 
 #endif

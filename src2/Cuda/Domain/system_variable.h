@@ -9,6 +9,7 @@ class system_variable
 {
 private:
     int value_;
+    int temp_value_;
     int id_;
 public:
     CPU GPU explicit system_variable(int id, int initial_value = 0);
@@ -16,12 +17,17 @@ public:
     //SIMULATION methods
     CPU GPU int get_value() const;
     CPU GPU void set_value(int new_value);
+
+    CPU GPU int get_temp_value() const;
+    CPU GPU void set_temp_value(int temp_value);
+    CPU GPU void reset_temp();
+    
     CPU GPU system_variable duplicate() const;
     
     //HOST methods
     int get_id() const; 
     void accept(visitor* v);
-    void cuda_allocate(system_variable** p, const allocation_helper* helper);
+    void cuda_allocate(system_variable* p, const allocation_helper* helper) const;
 };
 
 #endif

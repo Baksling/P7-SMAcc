@@ -25,7 +25,7 @@ public:
     GPU CPU float get_lambda() const;
     CPU GPU lend_array<edge_t*> get_edges();
     CPU GPU bool is_goal_node() const;
-    CPU GPU bool evaluate_invariants(const lend_array<clock_timer_t>* timers) const;
+    CPU GPU bool evaluate_invariants(const simulator_state* state) const;
     CPU GPU bool max_time_progression(const lend_array<clock_timer_t>* timers, double* out_max_progression) const;
     CPU GPU bool is_branch_point() const;
 

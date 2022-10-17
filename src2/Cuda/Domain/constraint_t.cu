@@ -26,7 +26,7 @@ CPU GPU bool constraint_t::evaluate(const lend_array<clock_timer_t>* timers) con
     const double v2 = this->timer_id2_ == NO_ID
                 ? static_cast<double>(this->value_)
                 : timers->at(this->timer_id2_)->get_temp_time();
-
+    
     switch(this->type_)
     {
         case logical_operator_t::less_equal_t: return v1 <= v2;

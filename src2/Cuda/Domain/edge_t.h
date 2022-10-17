@@ -22,13 +22,13 @@ public:
 
     //SIMULATION METHODS
     GPU CPU node_t* get_dest() const;
-    CPU GPU bool evaluate_constraints(const lend_array<clock_timer_t>* timers, const lend_array<system_variable>* variables) const;
-    CPU GPU void execute_updates(const lend_array<clock_timer_t>* timers, const lend_array<system_variable>* variables) const;
+    CPU GPU bool evaluate_constraints(simulator_state* state) const;
+    CPU GPU void execute_updates(simulator_state* state
+    ) const;
     CPU GPU float get_weight() const;
 
 
     //HOST METHODS
-    void set_updates(std::list<update_t*>* updates);
     int get_id() const;
     void accept(visitor* v) const;
     void cuda_allocate(edge_t** pointer, const allocation_helper* helper);

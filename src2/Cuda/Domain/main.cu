@@ -55,8 +55,8 @@ int main(int argc, const char* argv[])
     std::cout << "Fuck you\n";
 
     constraint_t* con0 = constraint_t::less_equal_v(0, 10.0f);
-    constraint_t* con1 = constraint_t::greater_equal_t(0, 10.0f);
-    // constraint_t con1 = constraint_t::less_equal_v(1, 10.0f);
+    constraint_t* con1 = constraint_t::less_equal_v(0, 10.0f);
+    // constraint_t con1 = constraint_t::less_equal_v(1, 10.0f);dbq84
     // constraint_t con2 = constraint_t::greater_equal_v(0, 0.0f);
 
     array_t<constraint_t*> con0_arr = array_t<constraint_t*>(1);

@@ -9,6 +9,8 @@ struct model_options
     unsigned int simulation_amount;
     unsigned int max_steps_pr_sim;
     unsigned long seed;
+    const double max_global_progression;
+    unsigned int max_expression_depth;
 };
 
 
