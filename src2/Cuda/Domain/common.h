@@ -8,6 +8,7 @@
 #include <list>
 #include <iostream>
 #include <unordered_map>
+#include <tuple>
 
 #define GPU __device__
 #define CPU __host__
