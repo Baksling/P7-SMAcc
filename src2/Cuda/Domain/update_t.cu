@@ -83,3 +83,19 @@ void update_t::cuda_allocate(update_t* cuda, const allocation_helper* helper) co
     const update_t copy = update_t(this, expr);
     cudaMemcpy(cuda, &copy, sizeof(update_t), cudaMemcpyHostToDevice);
 }
+
+update_expression* update_t::get_expression_root() const
+{
+    return this->expression_;
+}
+
+int update_t::get_expression_depth(const update_expression* exp)
+{
+    int left, right;
+    if(exp->get_left() == nullptr) left = 0;
+    else left = get_expression_depth(exp->get_left());
+    if(exp->get_right() == nullptr) right = 0;
+    else right = get_expression_depth(exp->get_right());
+
+    return ((left<right)?right:left) + 1;
+}

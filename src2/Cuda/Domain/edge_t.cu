@@ -137,3 +137,19 @@ void edge_t::cuda_allocate_2(edge_t* cuda_p, const allocation_helper* helper)
 {
     return;
 }
+
+int edge_t::get_updates_size() const
+{
+    return this->updates_.size();
+}
+
+
+CPU GPU void edge_t::execute_updates(
+    const lend_array<clock_timer_t>* timers,
+    const lend_array<system_variable>* variables) const
+{
+    for (int i = 0; i < this->updates_.size(); ++i)
+    {
+        this->updates_.get(i)->apply_update(timers, variables);
+    }
+}

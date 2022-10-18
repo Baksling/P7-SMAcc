@@ -1,5 +1,6 @@
 ﻿
 #include <iostream>
+#include "Visitors/domain_analysis_visitor.h"
 #include "Visitors/pretty_visitor.h"
 #include "UPPAALTreeParser/uppaal_tree_parser.h"
 #include "Simulator/simulation_strategy.h"
@@ -65,7 +66,7 @@ int main(int argc, const char* argv[])
     con0_arr.arr()[0] = con0;
     con1_arr.arr()[0] = con1;
     node_t node0 = node_t(0, con0_arr, false,false);
-    node_t node1     = node_t(1, con0_arr, false,false);
+    node_t node1 = node_t(1, con0_arr, false,false);
     node_t node2 = node_t(2, array_t<constraint_t*>(0),false,true);
 
     expression* exp1 = expression::plus_expression(expression::literal_expression(3), expression::literal_expression(4));
@@ -74,7 +75,9 @@ int main(int argc, const char* argv[])
     std::list<update_t*> update_lst;
 
     update_t update1 = update_t(0, 0, true, exp1);
-    update_t update2 = update_t(1, 1, true, exp2);
+    update_t update2 = update_t(0, 1, true, exp2);
+
+    printf("Depth of update1 expression: %d\n", update_t::get_expression_depth(update1.get_expression_root()));
     
     update_lst.push_back(&update1);
     update_lst.push_back(&update2);
@@ -106,7 +109,9 @@ int main(int argc, const char* argv[])
     array_t<clock_variable*> variable_arr = array_t<clock_variable*>(0);
 
 
-    pretty_visitor visitor;
+    pretty_visitor p_visitor;
+    domain_analysis_visitor d_visitor;
+    
     stochastic_model_t model(&node0, to_array(&clock_lst), variable_arr);
     if (parser.exists("m"))
     {
@@ -122,8 +127,10 @@ int main(int argc, const char* argv[])
 
         delete[] writeable;
     }
-    visitor.visit(&model);
-
+    p_visitor.visit(&model);
+    d_visitor.visit(&model);
+    auto [max_expression, max_updates] = d_visitor.get_results();
+    printf("Max exp: %d | Max updates: %d\n", max_expression, max_updates);
     if (mode == 2 || mode == 0)
     {
         cout << "GPU SIMULATIONS STARTED! \n";

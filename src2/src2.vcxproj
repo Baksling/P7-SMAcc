@@ -306,6 +306,7 @@
       <SDLCheck>true</SDLCheck>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
+    <ClCompile Include="Cuda\Domain\domain_analysis_visitor.cu" />
     <ClCompile Include="Cuda\Domain\edge_t.cu" />
     <ClCompile Include="Cuda\Domain\node_t.cu" />
     <ClCompile Include="Cuda\Domain\simulator_state.cu" />
