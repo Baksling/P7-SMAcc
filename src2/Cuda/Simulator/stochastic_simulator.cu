@@ -1,4 +1,11 @@
 ﻿#include "stochastic_simulator.h"
+#include "thread_pool.h"
+#include <map>
+#include "device_launch_parameters.h"
+#include <chrono>
+#include "simulator_tools.h"
+#include "../Domain/edge_t.h"
+
 using namespace std::chrono;
 
 
@@ -134,13 +141,13 @@ CPU GPU edge_t* choose_next_edge(simulator_state* state, const lend_array<edge_t
         return find_valid_edge_heap(state, edges, r_state);
 }
 
-CPU GPU void progress_time(const simulator_state* state, const node_t* node,
+CPU GPU void progress_time(simulator_state* state, const node_t* node,
     const double max_global_progress, curandState* r_state)
 {
     //Get random uniform value between ]0.0f, 0.1f] * difference gives a random uniform range of ]0, diff]
     double max_progression = 0.0; //only set when has_upper_bound == true
     const bool has_upper_bound = node->max_time_progression(&state->timers, &max_progression);
-    const double lambda = static_cast<double>(node->get_lambda());
+    const double lambda = node->get_lambda(state);
     double time_progression;
     
     if(lambda <= 0 && has_upper_bound) //chose uniform distribution between 0 and upper bound
@@ -149,13 +156,6 @@ CPU GPU void progress_time(const simulator_state* state, const node_t* node,
     }
     else if(lambda > 0 && has_upper_bound) //choose exponential distribution between 0 and upper bound
     {
-        // time_progression = (max_progression
-        // - ( (1 - lambda*exp(-lambda* curand_uniform_double(r_state) * max_progression))
-        // * max_progression)) / lambda;
-        
-        // time_progression = (exp(-lambda*0) - exp(-lambda*curand_uniform_double(r_state) * max_progression))
-        //                 /  (exp(-lambda*0) - exp(-lambda*max_progression));
-        
         time_progression = (max_progression) * (1 - (1 - exp(-lambda*curand_uniform_double(r_state) * max_progression))
                         /  (1 - exp(-lambda*max_progression)));
     }
@@ -194,15 +194,15 @@ CPU GPU void simulate_stochastic_model(
 {
     curand_init(options->seed, idx, idx, &r_state[idx]);
     
-    array_t<clock_timer_t> internal_timers = model->create_internal_timers();
-    array_t<system_variable> internal_variables = model->create_internal_variables();
+    array_t<clock_variable> internal_timers = model->create_internal_timers();
+    array_t<clock_variable> internal_variables = model->create_internal_variables();
 
     
     simulator_state state = {
         cuda_stack<double>(options->max_expression_depth),
-        cuda_stack<update_expression*>(options->max_expression_depth*2+1),
-        lend_array<system_variable>(&internal_variables),
-        lend_array<clock_timer_t>(&internal_timers)
+        cuda_stack<expression*>(options->max_expression_depth*2+1),
+        lend_array<clock_variable>(&internal_variables),
+        lend_array<clock_variable>(&internal_timers)
     };
 
     

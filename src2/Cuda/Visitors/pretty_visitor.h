@@ -4,14 +4,13 @@
 #define PRETTY_VISITOR_H
 
 #include <set>
-#include "common.h"
+#include "visitor.h"
 
 
-
-class pretty_visitor : public visitor
+class pretty_visitor final : public visitor
 {
 private:
-    std::set<node_t*> checker = {};
+    std::set<node_t*> checker_ = {};
 public:
     virtual void visit(constraint_t* constraint) override;
 
@@ -21,13 +20,11 @@ public:
 
     virtual void visit(stochastic_model_t* model) override;
 
-    virtual void visit(clock_timer_t* timer) override;
+    virtual void visit(clock_variable* timer) override;
 
     virtual void visit(update_t* update) override;
 
-    virtual void visit(system_variable* variable) override;
-
-    virtual void visit(update_expression* expression) override;
+    virtual void visit(expression* expression) override;
     
     void pretty_helper();
 };

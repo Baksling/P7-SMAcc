@@ -4,9 +4,8 @@
 #define CUDA_STACK_H
 #include <cstdio>
 #include <cstdlib>
-
-#include "../common.h"
-
+#include "macro.h"
+#include "allocation_helper.h"
 
 template<typename T>
 class cuda_stack

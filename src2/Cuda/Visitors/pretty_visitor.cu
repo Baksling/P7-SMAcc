@@ -1,5 +1,10 @@
 ﻿#include "pretty_visitor.h"
 
+#include "../Domain/constraint_t.h"
+#include "../Domain/edge_t.h"
+#include "../Domain/node_t.h"
+#include "../Domain/stochastic_model_t.h"
+
 void pretty_visitor::visit(constraint_t* constraint)
 {
     if (constraint == nullptr) return;
@@ -19,8 +24,8 @@ void pretty_visitor::visit(edge_t* edge)
 void pretty_visitor::visit(node_t* node)
 {
     if (node == nullptr) return;
-    if (checker.find(node) != checker.end()) return;
-    checker.insert(node);
+    if (checker_.find(node) != checker_.end()) return;
+    checker_.insert(node);
     printf("\nNode id: %3d | Is branch: %d | Is goal: %d \n", node->get_id(), node->is_branch_point(),
            node->is_goal_node());
     node->accept(this);
@@ -35,7 +40,7 @@ void pretty_visitor::visit(stochastic_model_t* model)
     pretty_helper();
 }
 
-void pretty_visitor::visit(clock_timer_t* timer)
+void pretty_visitor::visit(clock_variable* timer)
 {
     if (timer == nullptr) return;
     //printf("|&|"); why we do this????
@@ -50,13 +55,7 @@ void pretty_visitor::visit(update_t* update)
     update->accept(this);
 }
 
-void pretty_visitor::visit(system_variable* variable)
-{
-    if (variable == nullptr) return;
-    printf("Variable id: %3d | Value: %10d\n", variable->get_id(), variable->get_value());
-}
-
-void pretty_visitor::visit(update_expression* expression)
+void pretty_visitor::visit(expression* expression)
 {
     if (expression == nullptr) return;
     std::cout << expression->to_string();
@@ -76,6 +75,7 @@ void pretty_visitor::pretty_helper()
     printf("⠀⠻⣷⣶⣿⣇⠀⠀⠀⢠⣼⣿⣿⣿⣿⣿⣿⣿⣛⣛⣻⠉⠁⠀⠀⠀⠀⠀⠀⠀\n");
     printf("⠀⠀⠀⠀⢸⣿⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀\n");
     printf("⠀⠀⠀⠀⢸⣿⣀⣀⣀⣼⡿⢿⣿⣿⣿⣿⣿⡿⣿⣿⡿\n");
+    printf("         BIGUS DICKUS        \n");
 }
 
 

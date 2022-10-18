@@ -20,7 +20,7 @@ logical_operator_t constraint_t::get_type() const
     return this->type_;
 }
 
-CPU GPU bool constraint_t::evaluate(const lend_array<clock_timer_t>* timers) const
+CPU GPU bool constraint_t::evaluate(const lend_array<clock_variable>* timers) const
 {
     const double v1 = timers->at(this->timer_id1_)->get_temp_time();
     const double v2 = this->timer_id2_ == NO_ID
@@ -39,7 +39,7 @@ CPU GPU bool constraint_t::evaluate(const lend_array<clock_timer_t>* timers) con
     return false;
 }
 
-CPU GPU bool constraint_t::check_max_time_progression(const lend_array<clock_timer_t>* timer_arr, double* out_max_progression) const
+CPU GPU bool constraint_t::check_max_time_progression(const lend_array<clock_variable>* timer_arr, double* out_max_progression) const
 {
     if(this->timer_id2_ != NO_ID) return false;
     if(this->type_ == logical_operator_t::less_t || this->type_ == logical_operator_t::less_equal_t)

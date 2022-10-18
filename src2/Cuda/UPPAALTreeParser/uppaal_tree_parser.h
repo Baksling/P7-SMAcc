@@ -5,7 +5,7 @@
 
 #include <list>
 #include "pugixml.hpp"
-#include "../Domain/clock_timer_t.h"
+#include "../Domain/clock_variable.h"
 #include "../Domain/update_t.h"
 #include "../Domain/node_t.h"
 #include "../Domain/constraint_t.h"
@@ -26,7 +26,7 @@ class uppaal_tree_parser
 {
 private:
     int init_node_id_{};
-    list<clock_timer_t*> timer_list_;
+    list<clock_variable*> timer_list_;
     int timer_amount_ = 0;
     map<string, int> timers_map_;
     list<node_t*>* nodes_ = new list<node_t*>();

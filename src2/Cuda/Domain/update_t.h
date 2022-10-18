@@ -3,7 +3,11 @@
 #ifndef UPDATE_T_H
 #define UPDATE_T_H
 
-#include "common.h"
+#include "../common/macro.h"
+#include "../common/allocation_helper.h"
+#include "expressions/expression.h"
+#include "simulator_state.h"
+#include "../Visitors/visitor.h"
 
 class update_t
 {
@@ -11,14 +15,13 @@ private:
     int id_;
     int variable_id_;
     bool is_clock_update_;
-    update_expression* expression_;
-    explicit update_t(const update_t* source, update_expression* expression);
+    expression* expression_;
+    explicit update_t(const update_t* source, expression* expression);
     
 public:
-    explicit update_t(int id, int variable_id, bool is_clock_update, update_expression* expression);
+    explicit update_t(int id, int variable_id, bool is_clock_update, expression* expression);
 
     //SIMULATOR METHODS
-    CPU GPU double evaluate_expression(simulator_state* state) const;
     CPU GPU void apply_update(simulator_state* state) const;
     CPU GPU void apply_temp_update(simulator_state* state) const;
     CPU GPU void reset_temp_update(const simulator_state* state) const;

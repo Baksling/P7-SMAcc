@@ -1,8 +1,8 @@
-﻿#include "update_expression.h"
-#include <string>
+﻿#include "expression.h"
+#include "../simulator_state.h"
 
-update_expression::update_expression(const expression_type type, const double value, const unsigned variable_id,
-                                             update_expression* left, update_expression* right, update_expression* condition)
+expression::expression(const expression_type type, const double value, const unsigned variable_id,
+                                             expression* left, expression* right, expression* condition)
 {
     this->type_        = type;
     this->left_        = left;
@@ -12,7 +12,7 @@ update_expression::update_expression(const expression_type type, const double va
     this->variable_id_ = variable_id;
 }
 
-void update_expression::evaluate(simulator_state* state) const
+void expression::evaluate(simulator_state* state) const
 {
     //! The stack has values in reverse order. 
     double v1, v2;
@@ -25,7 +25,7 @@ void update_expression::evaluate(simulator_state* state) const
         state->value_stack.push(static_cast<int>(state->timers.at(static_cast<int>(this->variable_id_))->get_time()));
         break;
     case system_variable_e:
-        state->value_stack.push(state->variables.at(static_cast<int>(this->variable_id_))->get_value());
+        state->value_stack.push(state->variables.at(static_cast<int>(this->variable_id_))->get_time());
         break;
     case plus_e:
         if(state->value_stack.count() < 2) printf("stack not big enough to evaluate plus expression\n");
@@ -122,7 +122,7 @@ void update_expression::evaluate(simulator_state* state) const
     }
 }
 
-std::string update_expression::type_to_string() const
+std::string expression::type_to_string() const
 {
     std::string result;
     switch (this->type_)
@@ -165,7 +165,7 @@ std::string update_expression::type_to_string() const
     return result;
 }
 
-std::string update_expression::to_string()
+std::string expression::to_string()
 {
     std::string str = "Hello, i broke update_expression::to_string :=). Plz fix\n"; //TODO do this :)
     return str;
@@ -179,24 +179,24 @@ std::string update_expression::to_string()
     // return "    Type: " + this->type_to_string() + " | value: " + std::to_string(this->get_value()) + " | left: " + left + " | right: " + right + "\n";
 }
 
-int update_expression::get_value()
+int expression::get_value()
 {
     return this->value_;
 }
 
-GPU CPU bool update_expression::is_leaf() const
+GPU CPU bool expression::is_leaf() const
 {
     return this->left_ == nullptr && this->right_ == nullptr && this->condition_ == nullptr;
 }
 
-GPU CPU update_expression* update_expression::get_left() const
+GPU CPU expression* expression::get_left() const
 {
     //The left node is dependent on the type. The condition is the switch
     return this->type_ == conditional_e ? this->condition_ : this->left_;
 }
 
 
-GPU CPU update_expression* update_expression::get_right(const cuda_stack<double>* value_stack) const
+GPU CPU expression* expression::get_right(const cuda_stack<double>* value_stack) const
 {
     if(this->type_ == conditional_e)
     {
@@ -207,13 +207,13 @@ GPU CPU update_expression* update_expression::get_right(const cuda_stack<double>
     return this->right_;
 }
 
-void update_expression::accept(visitor* v) const
+void expression::accept(visitor* v) const
 {
     if (this->left_ != nullptr) v->visit(this->left_);
     if (this->right_ != nullptr) v->visit(this->right_);
 }
 
-unsigned update_expression::get_depth() const
+unsigned expression::get_depth() const
 {
     const unsigned conditional = this->condition_ != nullptr ? this->condition_->get_depth() : 0;
     const unsigned left = this->left_ != nullptr ? this->left_->get_depth() : 0;
@@ -223,126 +223,126 @@ unsigned update_expression::get_depth() const
     return (conditional > temp ? conditional : temp) + 1;
 }
 
-void update_expression::cuda_allocate(update_expression* cuda_p, const allocation_helper* helper) const
+void expression::cuda_allocate(expression* cuda_p, const allocation_helper* helper) const
 {
-    update_expression* left_cuda = nullptr;
+    expression* left_cuda = nullptr;
     if(this->left_ != nullptr)
     {
-        cudaMalloc(&left_cuda, sizeof(update_expression));
+        cudaMalloc(&left_cuda, sizeof(expression));
         helper->free_list->push_back(left_cuda);
         this->left_->cuda_allocate(left_cuda, helper);
     }
 
-    update_expression* right_cuda = nullptr;
+    expression* right_cuda = nullptr;
     if(this->right_ != nullptr)
     {
-        cudaMalloc(&right_cuda, sizeof(update_expression));
+        cudaMalloc(&right_cuda, sizeof(expression));
         helper->free_list->push_back(right_cuda);
         this->right_->cuda_allocate(right_cuda, helper);
     }
 
-    update_expression* condition_cuda = nullptr;
+    expression* condition_cuda = nullptr;
     if(this->condition_ != nullptr)
     {
-        cudaMalloc(&condition_cuda, sizeof(update_expression));
+        cudaMalloc(&condition_cuda, sizeof(expression));
         helper->free_list->push_back(condition_cuda);
         this->condition_->cuda_allocate(condition_cuda, helper);
     }
 
-    const update_expression copy = update_expression(this->type_,
+    const expression copy = expression(this->type_,
         this->value_, this->variable_id_, left_cuda, right_cuda, condition_cuda);
-    cudaMemcpy(cuda_p, &copy, sizeof(update_expression), cudaMemcpyHostToDevice);
+    cudaMemcpy(cuda_p, &copy, sizeof(expression), cudaMemcpyHostToDevice);
 }
 
 
 //FACTORY CONSTRUCTORS
-update_expression* update_expression::literal_expression(const double value)
+expression* expression::literal_expression(const double value)
 {
-    return new update_expression(literal_e,  value, NO_V_ID, nullptr, nullptr, nullptr);
+    return new expression(literal_e,  value, NO_V_ID, nullptr, nullptr, nullptr);
 }
 
-update_expression* update_expression::clock_expression(const unsigned clock_id)
+expression* expression::clock_expression(const unsigned clock_id)
 {
-    return new update_expression(clock_variable_e,  NO_VALUE, clock_id, nullptr, nullptr, nullptr);
+    return new expression(clock_variable_e,  NO_VALUE, clock_id, nullptr, nullptr, nullptr);
 }
 
-update_expression* update_expression::variable_expression(const unsigned variable_id)
+expression* expression::variable_expression(const unsigned variable_id)
 {
-    return new update_expression(system_variable_e, NO_VALUE, variable_id, NO_VALUE, nullptr, nullptr);
+    return new expression(system_variable_e, NO_VALUE, variable_id, NO_VALUE, nullptr, nullptr);
 }
 
-update_expression* update_expression::plus_expression(update_expression* left, update_expression* right)
+expression* expression::plus_expression(expression* left, expression* right)
 {
-    return new update_expression(plus_e, NO_VALUE, NO_V_ID, left, right, nullptr);
+    return new expression(plus_e, NO_VALUE, NO_V_ID, left, right, nullptr);
 }
 
-update_expression* update_expression::minus_expression(update_expression* left, update_expression* right)
+expression* expression::minus_expression(expression* left, expression* right)
 {
-    return new update_expression(minus_e, NO_VALUE, NO_V_ID, left, right, nullptr);
+    return new expression(minus_e, NO_VALUE, NO_V_ID, left, right, nullptr);
 }
 
-update_expression* update_expression::multiply_expression(update_expression* left, update_expression* right)
+expression* expression::multiply_expression(expression* left, expression* right)
 {
-    return new update_expression(multiply_e, NO_VALUE, NO_V_ID, left, right, nullptr);
+    return new expression(multiply_e, NO_VALUE, NO_V_ID, left, right, nullptr);
 }
 
-update_expression* update_expression::division_expression(update_expression* left, update_expression* right)
+expression* expression::division_expression(expression* left, expression* right)
 {
-    return new update_expression(division_e, NO_VALUE, NO_V_ID, left, right, nullptr);
+    return new expression(division_e, NO_VALUE, NO_V_ID, left, right, nullptr);
 }
 
-update_expression* update_expression::power_expression(update_expression* left, update_expression* right)
+expression* expression::power_expression(expression* left, expression* right)
 {
-    return new update_expression(power_e, NO_VALUE, NO_V_ID, left, right, nullptr);
+    return new expression(power_e, NO_VALUE, NO_V_ID, left, right, nullptr);
 }
 
-update_expression* update_expression::negate_expression(update_expression* expression)
+expression* expression::negate_expression(expression* expr)
 {
-    return new update_expression(negation_e, NO_VALUE, NO_V_ID, expression, nullptr, nullptr);
+    return new expression(negation_e, NO_VALUE, NO_V_ID, expr, nullptr, nullptr);
 }
 
-update_expression* update_expression::sqrt_expression(update_expression* expression)
+expression* expression::sqrt_expression(expression* expr)
 {
-    return new update_expression(sqrt_e, NO_VALUE, NO_V_ID, expression, nullptr, nullptr);
+    return new expression(sqrt_e, NO_VALUE, NO_V_ID, expr, nullptr, nullptr);
 }
 
-update_expression* update_expression::less_equal_expression(update_expression* left, update_expression* right)
+expression* expression::less_equal_expression(expression* left, expression* right)
 {
-    return new update_expression(less_equal_e, NO_VALUE, NO_V_ID, left, right, nullptr);
+    return new expression(less_equal_e, NO_VALUE, NO_V_ID, left, right, nullptr);
 }
 
-update_expression* update_expression::less_expression(update_expression* left, update_expression* right)
+expression* expression::less_expression(expression* left, expression* right)
 {
-    return new update_expression(less_e, NO_VALUE, NO_V_ID, left, right, nullptr);
+    return new expression(less_e, NO_VALUE, NO_V_ID, left, right, nullptr);
 }
 
-update_expression* update_expression::greater_equal_expression(update_expression* left, update_expression* right)
+expression* expression::greater_equal_expression(expression* left, expression* right)
 {
-    return new update_expression(greater_equal_e, NO_VALUE, NO_V_ID, left, right, nullptr);
+    return new expression(greater_equal_e, NO_VALUE, NO_V_ID, left, right, nullptr);
 }
 
-update_expression* update_expression::greater_expression(update_expression* left, update_expression* right)
+expression* expression::greater_expression(expression* left, expression* right)
 {
-    return new update_expression(greater_e, NO_VALUE, NO_V_ID, left, right, nullptr);
+    return new expression(greater_e, NO_VALUE, NO_V_ID, left, right, nullptr);
 }
 
-update_expression* update_expression::equal_expression(update_expression* left, update_expression* right)
+expression* expression::equal_expression(expression* left, expression* right)
 {
-    return new update_expression(equal_e, NO_VALUE, NO_V_ID, left, right, nullptr);
+    return new expression(equal_e, NO_VALUE, NO_V_ID, left, right, nullptr);
 }
 
-update_expression* update_expression::not_equal_expression(update_expression* left, update_expression* right)
+expression* expression::not_equal_expression(expression* left, expression* right)
 {
-    return new update_expression(equal_e, NO_VALUE, NO_V_ID, left, right, nullptr);
+    return new expression(equal_e, NO_VALUE, NO_V_ID, left, right, nullptr);
 }
 
-update_expression* update_expression::not_expression(update_expression* expression)
+expression* expression::not_expression(expression* expr)
 {
-    return new update_expression(equal_e, NO_VALUE, NO_V_ID, expression, nullptr, nullptr);
+    return new expression(equal_e, NO_VALUE, NO_V_ID, expr, nullptr, nullptr);
 }
 
-update_expression* update_expression::conditional_expression(update_expression* condition, update_expression* left,
-    update_expression* right)
+expression* expression::conditional_expression(expression* condition, expression* left,
+    expression* right)
 {
-    return new update_expression(conditional_e, NO_VALUE, NO_V_ID, left, right, condition);
+    return new expression(conditional_e, NO_VALUE, NO_V_ID, left, right, condition);
 }

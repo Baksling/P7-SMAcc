@@ -1,4 +1,5 @@
 ﻿#include "edge_t.h"
+#include "node_t.h"
 
 
 edge_t::edge_t(edge_t* source, node_t* dest, const array_t<constraint_t*> guard, const array_t<update_t*> updates)

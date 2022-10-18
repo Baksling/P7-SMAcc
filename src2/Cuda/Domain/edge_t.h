@@ -3,10 +3,15 @@
 #ifndef EDGE_T_H
 #define EDGE_T_H
 
-#include "common.h"
 #include <list>
+#include "../common/macro.h"
+#include "../common/array_t.h"
+#include "../common/allocation_helper.h"
+#include "constraint_t.h"
+#include "update_t.h"
+#include "simulator_state.h"
+#include "../Visitors/visitor.h"
 
-class node_t;
 
 class edge_t
 {

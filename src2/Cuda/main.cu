@@ -1,14 +1,15 @@
 ﻿
-#include "common.h"
 #include <iostream>
-#include "pretty_visitor.h"
-#include "../UPPAALTreeParser/uppaal_tree_parser.h"
+#include "Visitors/pretty_visitor.h"
+#include "UPPAALTreeParser/uppaal_tree_parser.h"
+#include "Simulator/simulation_strategy.h"
+#include "Simulator/stochastic_simulator.h"
+#include "common/argparser.h"
 
-#include "../Simulator/simulation_strategy.h"
-#include "../Simulator/stochastic_simulator.h"
-#include "argparser.h"
+#include "Domain/edge_t.h"
 
 using namespace argparse;
+
 
 int main(int argc, const char* argv[])
 {
@@ -67,8 +68,8 @@ int main(int argc, const char* argv[])
     node_t node1     = node_t(1, con0_arr, false,false);
     node_t node2 = node_t(2, array_t<constraint_t*>(0),false,true);
 
-    update_expression* exp1 = update_expression::plus_expression(update_expression::literal_expression(3), update_expression::literal_expression(4));
-    update_expression* exp2 = update_expression::minus_expression(update_expression::literal_expression(6), update_expression::literal_expression(4));
+    expression* exp1 = expression::plus_expression(expression::literal_expression(3), expression::literal_expression(4));
+    expression* exp2 = expression::minus_expression(expression::literal_expression(6), expression::literal_expression(4));
 
     std::list<update_t*> update_lst;
 
@@ -84,11 +85,11 @@ int main(int argc, const char* argv[])
     edge_t* edge0_2 = new edge_t(1, 1, &node2, array_t<constraint_t*>(0), update_arr);
     edge_t* edge1_0 = new edge_t(2, 1, &node0, array_t<constraint_t*>(0), update_arr);
 
-    clock_timer_t timer1 = clock_timer_t(0, 0.0);
-    clock_timer_t timer2 = clock_timer_t(1, 0.0);
+    clock_variable timer1 = clock_variable(0, 0.0);
+    clock_variable timer2 = clock_variable(1, 0.0);
 
 
-    std::list<clock_timer_t*> clock_lst;
+    std::list<clock_variable*> clock_lst;
     clock_lst.push_back(&timer1);
     clock_lst.push_back(&timer2);
     
@@ -102,7 +103,7 @@ int main(int argc, const char* argv[])
     node1_lst.push_back(edge1_0);
     node1.set_edges(&node1_lst);
 
-    array_t<system_variable*> variable_arr = array_t<system_variable*>(0);
+    array_t<clock_variable*> variable_arr = array_t<clock_variable*>(0);
 
 
     pretty_visitor visitor;

@@ -177,7 +177,7 @@ void uppaal_tree_parser::init_clocks(const xml_document* doc)
         for (int i = 0; i < var_amount; i++)
         {
             cout << "INIT CLOCK WITH ID: " << i << "\n";
-            timer_list_.push_back(new clock_timer_t(i, 0));
+            timer_list_.push_back(new clock_variable(i, 0));
         }
     }
 }
@@ -325,7 +325,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
         node->set_edges(&node_edge_map.at(node->get_id()));
     }
 
-    return stochastic_model_t(get_node(init_node_id_), to_array(&timer_list_), array_t<system_variable*>(0));
+    return stochastic_model_t(get_node(init_node_id_), to_array(&timer_list_), array_t<clock_variable*>(0));
 }
 
 __host__ stochastic_model_t uppaal_tree_parser::parse(char* file_path)
