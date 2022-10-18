@@ -7,68 +7,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c81c9d2a-66d3-4b0c-b40b-c667cea459e8" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Cuda/Domain/simulator_state.cu" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Cuda/Domain/simulator_state.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Cuda/common/lend_array.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Cuda/common/macro.h" afterDir="false" />
+    <list default="true" id="092c45cf-d8fe-4212-82a8-95c94a67213f" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/UpdateExpressions/cuda_stack.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/common/cuda_stack.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/UpdateExpressions/update_expression.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/expressions/expression.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/UpdateExpressions/update_expression.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/expressions/expression.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/argparser.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/common/argparser.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/clock_timer_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/clock_variable.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/clock_timer_t.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/clock_variable.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/common.cu" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/common.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/common/array_t.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/compile.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/constraint_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/constraint_t.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/constraint_t.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/constraint_t.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/edge_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/edge_t.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/edge_t.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/edge_t.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/main.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/main.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/node_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/node_t.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/node_t.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/node_t.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/pretty_visitor.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Visitors/pretty_visitor.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/pretty_visitor.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Visitors/pretty_visitor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/stochastic_model_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/stochastic_model_t.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/stochastic_model_t.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/stochastic_model_t.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/system_variable.cu" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/system_variable.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/update_t.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/update_t.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/update_t.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Domain/update_t.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/visitor.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Visitors/visitor.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Domain/visitor.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Visitors/visitor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/CMakeLists.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/common.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/cuda_map.cu" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/cuda_map.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/cuda_simulator.cu" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/cuda_simulator.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/edge_d.cu" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/edge_d.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/guard_d.cu" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/guard_d.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/main.cu" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/main.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/node_d.cu" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/node_d.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/stochastic_model.cu" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/stochastic_model.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/timer_d.cu" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/timer_d.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/uneven_list.cu" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/uneven_list.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/update_d.cu" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Projekt/update_d.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Simulator/simulator_tools.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Simulator/simulator_tools.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Simulator/stochastic_simulator.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Simulator/stochastic_simulator.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/Simulator/stochastic_simulator.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Simulator/stochastic_simulator.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/uppaal_tree_parser.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/uppaal_tree_parser.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/uppaal_tree_parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/uppaal_tree_parser.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/test/dog.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/test/test.cu" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/test/test_class.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Domain/domain_analysis_visitor.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Visitors/domain_analysis_visitor.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/Domain/domain_analysis_visitor.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/Visitors/domain_analysis_visitor.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src2.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/src2.vcxproj" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -104,6 +46,14 @@
     <setting file="file://$PROJECT_DIR$/Cuda/Domain/node_t.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Cuda/Domain/stochastic_model_t.cu" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Cuda/Domain/stochastic_model_t.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Cuda/Simulator/simulator_tools.cu" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Cuda/Simulator/simulator_tools.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Cuda/Simulator/stochastic_simulator.cu" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Cuda/Simulator/stochastic_simulator.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Cuda/Visitors/pretty_visitor.cu" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Cuda/Visitors/pretty_visitor.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Cuda/Visitors/visitor.cu" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Cuda/Visitors/visitor.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Cuda/common/cuda_stack.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Main.cpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/UPAALParser/pugixml.cpp" root0="SKIP_HIGHLIGHTING" />

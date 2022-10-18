@@ -77,8 +77,6 @@ int main(int argc, const char* argv[])
     update_t update1 = update_t(0, 0, true, exp1);
     update_t update2 = update_t(0, 1, true, exp2);
 
-    printf("Depth of update1 expression: %d\n", update_t::get_expression_depth(update1.get_expression_root()));
-    
     update_lst.push_back(&update1);
     update_lst.push_back(&update2);
 

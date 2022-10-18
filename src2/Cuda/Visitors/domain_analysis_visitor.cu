@@ -1,4 +1,10 @@
 ﻿#include "domain_analysis_visitor.h"
+#include "../Domain/constraint_t.h"
+#include "../Domain/edge_t.h"
+#include "../Domain/node_t.h"
+#include "../Domain/stochastic_model_t.h"
+#include "../common/lend_array.h"
+
 
 void domain_analysis_visitor::visit(constraint_t* constraint)
 {
@@ -34,7 +40,7 @@ void domain_analysis_visitor::visit(stochastic_model_t* model)
     model->accept(this);
 }
 
-void domain_analysis_visitor::visit(clock_timer_t* timer)
+void domain_analysis_visitor::visit(clock_variable* timer)
 {
     return;
 }
@@ -42,17 +48,13 @@ void domain_analysis_visitor::visit(clock_timer_t* timer)
 void domain_analysis_visitor::visit(update_t* update)
 {
     if (update == nullptr) return;
-    const int temp = update_t::get_expression_depth(update->get_expression_root());
+    const unsigned int temp = update->get_expression_depth();
     if(temp > max_expression_) max_expression_ = temp;
     update->accept(this);
 }
 
-void domain_analysis_visitor::visit(system_variable* variable)
-{
-    return;
-}
 
-void domain_analysis_visitor::visit(update_expression* expression)
+void domain_analysis_visitor::visit(expression* expression)
 {
     return;
 }

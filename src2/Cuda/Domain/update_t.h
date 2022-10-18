@@ -31,8 +31,7 @@ public:
     CPU GPU int get_timer_id() const;
     void accept(visitor* v) const;
     void cuda_allocate(update_t* cuda, const allocation_helper* helper) const;
-    update_expression* get_expression_root() const; //haha bak is gonna get mad at me >:)
-    static int get_expression_depth(const update_expression* exp);
+    unsigned get_expression_depth() const;
 };
 
 #endif
