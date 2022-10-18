@@ -72,7 +72,6 @@ void edge_t::accept(visitor* v) const
     //visit edge guards
     for (int i = 0; i < this->guards_.size(); ++i)
     {
-        printf("        "); //TODO wtf is this?
         v->visit(this->guards_.get(i));
     }
 
@@ -82,14 +81,12 @@ void edge_t::accept(visitor* v) const
         update_t* temp = *updates_.at(i);
         v->visit(temp);
     }
-
-    //dont visit destination. Handled by node itself.
 }
 
-
-int edge_t::get_id() const
+void edge_t::pretty_print() const
 {
-    return this->id_;
+    printf("Edge id: %3d | Weight: %4f | Dest node: %3d \n", this->id_, this->weight_,
+           this->dest_->get_id());
 }
 
 void edge_t::cuda_allocate(edge_t** pointer, const allocation_helper* helper)

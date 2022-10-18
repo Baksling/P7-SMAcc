@@ -18,6 +18,11 @@ void stochastic_model_t::accept(visitor* v) const
     }
 }
 
+void stochastic_model_t::pretty_print() const
+{
+    printf("Model start\n");
+}
+
 CPU GPU array_t<clock_variable> stochastic_model_t::create_internal_timers() const
 {
     const int size = this->timers_.size();

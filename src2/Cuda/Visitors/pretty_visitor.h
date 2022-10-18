@@ -11,6 +11,8 @@ class pretty_visitor final : public visitor
 {
 private:
     std::set<node_t*> checker_ = {};
+    int scope_ = 0;
+    void indentation() const;
 public:
     virtual void visit(constraint_t* constraint) override;
 

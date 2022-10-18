@@ -30,6 +30,7 @@ public:
     //HOST METHODS
     void cuda_allocate(stochastic_model_t** pointer, const allocation_helper* helper) const;
     void accept(visitor* v) const;
+    void pretty_print() const;
 };
 
 #endif

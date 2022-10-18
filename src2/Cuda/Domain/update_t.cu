@@ -63,14 +63,9 @@ void update_t::accept(visitor* v) const
     v->visit(this->expression_);
 }
 
-CPU GPU int update_t::get_timer_id() const
+void update_t::pretty_print() const
 {
-    return this->variable_id_;
-}
-
-int update_t::get_id() const
-{
-    return this->id_;
+    printf("Update id: %3d | Timer id: %3d\n", this->id_, this->variable_id_);
 }
 
 void update_t::cuda_allocate(update_t* cuda, const allocation_helper* helper) const

@@ -27,9 +27,8 @@ public:
     CPU GPU void reset_temp_update(const simulator_state* state) const;
     
     //HOST METHODS
-    int get_id() const;
-    CPU GPU int get_timer_id() const;
     void accept(visitor* v) const;
+    void pretty_print() const;
     void cuda_allocate(update_t* cuda, const allocation_helper* helper) const;
     unsigned get_expression_depth() const;
 };
