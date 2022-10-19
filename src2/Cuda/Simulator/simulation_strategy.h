@@ -17,12 +17,12 @@ struct model_options
 
 struct simulation_strategy
 {
-    int block_n = 2560;
-    int threads_n = 512;
-    unsigned int simulation_amounts = 26;
-    unsigned int cpu_threads_n = 8;
+    int block_n = 1;
+    int threads_n = 1;
+    unsigned int simulation_amounts = 1;
+    unsigned int cpu_threads_n = 1;
     int sim_count = 1;
-    unsigned int max_sim_steps = 1000;
+    unsigned int max_sim_steps = 100;
     double max_time_progression = 10.0;
 
     int degree_of_parallelism() const

@@ -26,6 +26,7 @@ public:
     CPU GPU unsigned int count() const;
     CPU GPU void clear();
     CPU GPU unsigned int max_size() const;
+    CPU GPU void free_internal() const;
 
     //Host methods
     cuda_stack<T>* cuda_allocate(const allocation_helper* helper);
@@ -112,6 +113,12 @@ template <typename T>
 unsigned cuda_stack<T>::max_size() const
 {
     return this->size_;
+}
+
+template <typename T>
+void cuda_stack<T>::free_internal() const
+{
+    free(this->store_);
 }
 
 template <typename T>

@@ -118,3 +118,8 @@ void stochastic_model_t::cuda_allocate(stochastic_model_t** pointer, const alloc
     
     cudaMemcpy(*pointer, &result, sizeof(stochastic_model_t), cudaMemcpyHostToDevice);
 }
+
+unsigned stochastic_model_t::get_variable_count() const
+{
+    return this->variables_.size();
+}

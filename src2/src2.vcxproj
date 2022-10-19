@@ -386,6 +386,7 @@
       <SDLCheck>true</SDLCheck>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
+    <ClCompile Include="Cuda\Simulator\simulation_result.cpp" />
     <ClCompile Include="Cuda\Simulator\simulator_tools.cu" />
     <ClCompile Include="Cuda\Simulator\stochastic_simulator.cu">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
@@ -850,6 +851,7 @@
     <ClInclude Include="Cuda\common\lend_array.h" />
     <ClInclude Include="Cuda\common\macro.h" />
     <ClInclude Include="Cuda\Domain\expressions\expression.h" />
+    <ClInclude Include="Cuda\Simulator\simulation_result.h" />
     <ClInclude Include="Cuda\Simulator\simulation_strategy.h" />
     <ClInclude Include="Cuda\Simulator\simulator_tools.h" />
     <ClInclude Include="Cuda\Simulator\stochastic_simulator.h" />

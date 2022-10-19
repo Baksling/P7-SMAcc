@@ -141,40 +141,24 @@ CPU GPU edge_t* choose_next_edge(simulator_state* state, const lend_array<edge_t
         return find_valid_edge_heap(state, edges, r_state);
 }
 
-CPU GPU void progress_time(simulator_state* state, const node_t* node,
-    const double max_global_progress, curandState* r_state)
+CPU GPU void progress_time(simulator_state* state, const node_t* node, curandState* r_state)
 {
     //Get random uniform value between ]0.0f, 0.1f] * difference gives a random uniform range of ]0, diff]
     double max_progression = 0.0; //only set when has_upper_bound == true
     const bool has_upper_bound = node->max_time_progression(&state->timers, &max_progression);
-    const double lambda = node->get_lambda(state);
     double time_progression;
-    
-    if(lambda <= 0 && has_upper_bound) //chose uniform distribution between 0 and upper bound
+
+
+    if(has_upper_bound)
     {
         time_progression = (1.0 - curand_uniform_double(r_state)) * max_progression;
     }
-    else if(lambda > 0 && has_upper_bound) //choose exponential distribution between 0 and upper bound
+    else
     {
-        time_progression = (max_progression) * (1 - (1 - exp(-lambda*curand_uniform_double(r_state) * max_progression))
-                        /  (1 - exp(-lambda*max_progression)));
-    }
-    else if(lambda > 0) //choose exponential distribution between 0 and infinity
-    {
+        const double lambda = node->get_lambda(state);
         time_progression = (-log(curand_uniform_double(r_state))) / lambda;
     }
-    else //choose uniform distribution between 0 and global max
-    {
-        time_progression = (1.0 - curand_uniform_double(r_state)) * max_global_progress;
-    }
     
-    
-    if(has_upper_bound && time_progression > max_progression)
-    {
-        printf("Adjusted clock bound, %lf to %lf\n", time_progression, max_progression);
-        time_progression = max_progression;
-
-    }
 
     //update all timers by adding time_progression to each
     for(int i = 0; i < state->timers.size(); i++)
@@ -184,11 +168,24 @@ CPU GPU void progress_time(simulator_state* state, const node_t* node,
 }
 
 
+
+CPU GPU void populate_simulation_result(simulation_result* result,
+    const int id, const unsigned steps, const simulator_state* state)
+{
+    result->id = id;
+    result->steps = steps;
+
+    for (int i = 0; i < state->variables.size(); ++i)
+    {
+        result->variables_max_value[i] = state->variables.at(i)->get_max_value();
+    }
+}
+
 CPU GPU void simulate_stochastic_model(
     const stochastic_model_t* model,
     const model_options* options,
     curandState* r_state,
-    int* output,
+    simulation_result* output,
     const unsigned long idx
 )
 {
@@ -206,14 +203,14 @@ CPU GPU void simulate_stochastic_model(
     };
 
     
-    
     for (unsigned int i = 0; i < options->simulation_amount; ++i)
     {
         if(idx == 0 && i % 100 == 0) printf("Progress: %d/%d\n", i, options->simulation_amount);
         //calculate the current simulation id
         const unsigned int sim_id = i + options->simulation_amount * static_cast<unsigned int>(idx);
+
+        populate_simulation_result(&output[sim_id], HIT_MAX_STEPS, 0, &state);
         
-        output[sim_id] = HIT_MAX_STEPS;
         model->reset_timers(&internal_timers, &internal_variables);
         node_t* current_node = model->get_start_node();
         unsigned int steps = 0;
@@ -237,7 +234,7 @@ CPU GPU void simulate_stochastic_model(
             //Progress time
             if (!current_node->is_branch_point())
             {
-                progress_time(&state, current_node, options->max_global_progression,  &r_state[idx]);
+                progress_time(&state, current_node, &r_state[idx]);
             }
             
             const lend_array<edge_t*> outgoing_edges = current_node->get_edges();
@@ -263,18 +260,22 @@ CPU GPU void simulate_stochastic_model(
         
         if (hit_max_steps)
         {
-            output[sim_id] = HIT_MAX_STEPS;
+            populate_simulation_result(&output[sim_id], HIT_MAX_STEPS, steps, &state);
         }
         else
         {
             if(current_node->is_goal_node())
-                output[sim_id] = current_node->get_id();
+                populate_simulation_result(&output[sim_id], current_node->get_id(), steps, &state);
             else
-                output[sim_id] = HIT_MAX_STEPS;
+                populate_simulation_result(&output[sim_id], HIT_MAX_STEPS, steps, &state);
+
         }
     }
 
     internal_timers.free_array();
+    internal_variables.free_array();
+    state.expression_stack.free_internal();
+    state.value_stack.free_internal();
     if(idx == 0) printf("Progress: %d/%d\n", options->simulation_amount, options->simulation_amount);
 }
 
@@ -283,7 +284,7 @@ __global__ void gpu_simulate(
     const stochastic_model_t* model,
     const model_options* options,
     curandState* r_state,
-    int* output
+    simulation_result* output
     )
 {
     const unsigned long idx = threadIdx.x + blockDim.x * blockIdx.x;
@@ -301,11 +302,15 @@ void stochastic_simulator::simulate_cpu(stochastic_model_t* model, simulation_st
     curandState* state = static_cast<curandState*>(malloc(sizeof(curandState) * strategy->degree_of_parallelism()));
     
     //setup results array
-    const unsigned long size = sizeof(int)*total_simulations;
-    int* sim_results = static_cast<int*>(malloc(size));
+    const unsigned int variable_count = model->get_variable_count();
+    std::list<void*> free_list;
+    std::unordered_map<node_t*, node_t*> node_map;
+    std::map<int, node_result> node_results;
+    const allocation_helper allocator = { &free_list, &node_map };
     
-    printf("allocated %lu (%lu*%lu) bytes successfully: %s\n" ,
-        size, static_cast<unsigned long>(sizeof(int)), total_simulations, (sim_results != nullptr ? "True" : "False") );
+    array_t<variable_result> variable_r = result_handler::allocate_variable_results(variable_count);
+    const lend_array<variable_result> lend_variable_r = lend_array<variable_result>(&variable_r);
+    simulation_result* sim_results = result_handler::allocate_results(strategy, variable_count, &allocator, false);
 
     //setup simulation options
     const model_options options = {
@@ -316,7 +321,6 @@ void stochastic_simulator::simulate_cpu(stochastic_model_t* model, simulation_st
         500
     };
 
-    std::map<int, unsigned long> node_results;
     const steady_clock::time_point start = steady_clock::now();
     std::cout << "Started running!\n";
     thread_pool pool(strategy->cpu_threads_n);
@@ -338,9 +342,10 @@ void stochastic_simulator::simulate_cpu(stochastic_model_t* model, simulation_st
 
     std::cout << "Simulation ran for: " << duration_cast<milliseconds>(steady_clock::now() - start).count() << "[ms] \n";
     std::cout << "Reading results...\n";
-    result_handler::read_results(sim_results, total_simulations, &node_results);
-    result_handler::print_results(&node_results, total_simulations * strategy->sim_count);
+    result_handler::read_results(sim_results, total_simulations, &node_results, &lend_variable_r);
+    result_handler::print_results(&node_results, &lend_variable_r, total_simulations);
 
+    variable_r.free_array();
     free(sim_results);
     free(state);
 }
@@ -354,16 +359,14 @@ void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, simulat
     cudaMalloc(&state, sizeof(curandState) * strategy->degree_of_parallelism());
     
     //setup results array
-    const unsigned long size = sizeof(int)*total_simulations;
-    int* cuda_results = nullptr;
-    const auto r = cudaMalloc(&cuda_results, sizeof(int)*total_simulations);
-    printf("allocated %lu (%lu*%lu) bytes successfully: %s\n" ,
-        size, static_cast<unsigned long>(sizeof(int)), total_simulations, (r == cudaSuccess ? "True" : "False") );
-
-    //prepare allocation helper
+    const unsigned int variable_count = model->get_variable_count();
     std::list<void*> free_list;
     std::unordered_map<node_t*, node_t*> node_map;
+    std::map<int, node_result> node_results;
     const allocation_helper allocator = { &free_list, &node_map };
+    array_t<variable_result> variable_r = result_handler::allocate_variable_results(variable_count);
+    const lend_array<variable_result> lend_variable_r = lend_array<variable_result>(&variable_r);
+    simulation_result* sim_results = result_handler::allocate_results(strategy, variable_count, &allocator, true);
 
     //allocate model to cuda
     stochastic_model_t* model_d = nullptr;
@@ -383,29 +386,33 @@ void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, simulat
 
 
     //run simulations
-    std::map<int, unsigned long> node_results;
     std::cout << "Started running!\n";
     if(cudaSuccess != cudaDeviceSetLimit(cudaLimitMallocHeapSize, 8589934592))
         printf("COULD NOT CHANGE LIMIT");
+    
     const steady_clock::time_point start = steady_clock::now();
+
+    
     
     for (int i = 0; i < strategy->sim_count; ++i)
     {
         //simulate on device
-        gpu_simulate<<<strategy->block_n, strategy->threads_n>>>(model_d, options_d, state, cuda_results);
-
+        gpu_simulate<<<strategy->block_n, strategy->threads_n>>>(model_d, options_d, state, sim_results);
+        
         //wait for all processes to finish
         cudaDeviceSynchronize();
+        printf("I do the reee1");
         if(cudaPeekAtLastError() != cudaSuccess) break;
 
+        printf("I do the REEEEEEEEEEE");
         //count result unless last sim
         if(i < strategy->sim_count) 
         {
             std::cout << "Simulation ran for: " << duration_cast<milliseconds>(steady_clock::now() - start).count() << "[ms] \n";
             std::cout << "Reading results...\n";
-            int* local_results = static_cast<int*>(malloc(sizeof(int)*total_simulations));
-            cudaMemcpy(local_results, cuda_results, sizeof(int)*total_simulations, cudaMemcpyDeviceToHost);
-            result_handler::read_results(local_results, total_simulations, &node_results);
+            simulation_result* local_results = static_cast<simulation_result*>(malloc(sizeof(simulation_result)*total_simulations));
+            cudaMemcpy(local_results, sim_results, sizeof(simulation_result)*total_simulations, cudaMemcpyDeviceToHost);
+            result_handler::read_results(local_results, total_simulations, &node_results, &lend_variable_r);
             free(local_results);
         }
     }
@@ -418,7 +425,7 @@ void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, simulat
     const cudaError status = cudaPeekAtLastError();
     if(cudaPeekAtLastError() == cudaSuccess)
     {
-        result_handler::print_results(&node_results, total_simulations * strategy->sim_count);
+        result_handler::print_results(&node_results, &lend_variable_r, total_simulations * strategy->sim_count);
     }
     else
     {
@@ -427,8 +434,9 @@ void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, simulat
         exit(status);  // NOLINT(concurrency-mt-unsafe)
         return;
     }
-    
-    cudaFree(cuda_results);
+
+    variable_r.free_array();
+    cudaFree(sim_results);
     cudaFree(state);
     cudaFree(options_d);
     

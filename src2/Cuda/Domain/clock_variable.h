@@ -25,6 +25,7 @@ public:
     CPU GPU void set_time(double new_value);
     CPU GPU void add_time(double progression);
     CPU GPU clock_variable duplicate() const;
+    CPU GPU double get_max_value() const;
     
     //HOST METHODS
     int get_id() const;

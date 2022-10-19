@@ -51,6 +51,11 @@ CPU GPU clock_variable clock_variable::duplicate() const
     return clock_variable{this->id_, this->current_time_};
 }
 
+double clock_variable::get_max_value() const
+{
+    return this->max_value_;
+}
+
 // ReSharper disable once CppMemberFunctionMayBeStatic
 void clock_variable::accept(visitor* v)
 {

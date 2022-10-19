@@ -28,8 +28,7 @@ public:
     //SIMULATION METHODS
     GPU CPU node_t* get_dest() const;
     CPU GPU bool evaluate_constraints(simulator_state* state) const;
-    CPU GPU void execute_updates(simulator_state* state
-    ) const;
+    CPU GPU void execute_updates(simulator_state* state) const;
     CPU GPU float get_weight() const;
 
 
