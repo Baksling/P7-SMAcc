@@ -68,7 +68,6 @@ void node_t::accept(visitor* v) const
     //visit node constraints
     for (int i = 0; i < this->invariants_.size(); ++i)
     {
-        printf("    "); //TODO wtf is this shit????
         v->visit(this->invariants_.get(i));
     }
 
@@ -83,6 +82,12 @@ void node_t::accept(visitor* v) const
     {
         v->visit(this->edges_.get(i)->get_dest());
     }
+}
+
+void node_t::pretty_print() const
+{
+    printf("\nNode id: %3d | Is branch: %d | Is goal: %d \n", this->id_, this->is_branch_point_,
+           this->is_goal_);
 }
 
 void node_t::cuda_allocate(node_t** pointer, const allocation_helper* helper)

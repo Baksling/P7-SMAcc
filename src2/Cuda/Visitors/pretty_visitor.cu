@@ -5,36 +5,62 @@
 #include "../Domain/node_t.h"
 #include "../Domain/stochastic_model_t.h"
 
+void pretty_visitor::indentation() const
+{
+    for (int i = 0; i < scope_; ++i)
+    {
+        printf("    ");
+    }
+}
+
 void pretty_visitor::visit(constraint_t* constraint)
 {
-    if (constraint == nullptr) return;
-    printf("Constraint type: %s | Timer 1 id: %3d | Timer 2 id: %3d | value: %10f \n", constraint_t::to_string(constraint->get_type()).c_str(),
-           constraint->get_timer1_id(), constraint->get_timer2_id(), constraint->get_value());
+    if (constraint == nullptr)
+    {
+        return;
+    }
+    indentation();
+    constraint->pretty_print();
+    scope_++;
     constraint->accept(this);
+    scope_--;
 }
 
 void pretty_visitor::visit(edge_t* edge)
 {
-    if (edge == nullptr) return;
-    printf("    Edge id: %3d | Weight: %4f | Dest node: %3d \n", edge->get_id(), edge->get_weight(),
-           edge->get_dest()->get_id());
+    if (edge == nullptr)
+    {
+        return;
+    }
+    indentation();
+    edge->pretty_print();
+    scope_++;
     edge->accept(this);
+    scope_--;
 }
 
 void pretty_visitor::visit(node_t* node)
 {
-    if (node == nullptr) return;
-    if (checker_.find(node) != checker_.end()) return;
+    if (node == nullptr)
+    {
+        return;
+    }
+    if (checker_.find(node) != checker_.end())
+    {
+        return;
+    }
     checker_.insert(node);
-    printf("\nNode id: %3d | Is branch: %d | Is goal: %d \n", node->get_id(), node->is_branch_point(),
-           node->is_goal_node());
+    indentation();
+    node->pretty_print();
+    scope_++;
     node->accept(this);
+    scope_--;
 }
 
 void pretty_visitor::visit(stochastic_model_t* model)
 {
     if (model == nullptr) return;
-    printf("Model start: \n");
+    model->pretty_print();
     model->accept(this);
     printf("Model end\n");
     pretty_helper();
@@ -42,40 +68,86 @@ void pretty_visitor::visit(stochastic_model_t* model)
 
 void pretty_visitor::visit(clock_variable* timer)
 {
-    if (timer == nullptr) return;
-    //printf("|&|"); why we do this????
-    printf("Timer id: %3d | Value: %10f \n", timer->get_id(), timer->get_time());
+    if (timer == nullptr)
+    {
+        return;
+    }
+    indentation();
+    timer->pretty_print();
+    scope_++;
     timer->accept(this);
+    scope_--;
 }
 
 void pretty_visitor::visit(update_t* update)
 {
-    if (update == nullptr) return;
-    // printf("        Update id: %3d | Timer id: %3d | Value: %10f \n", update->get_id(), update->get_timer_id(), update->get_timer_value());
+    if (update == nullptr)
+    {
+        return;
+    }
+    indentation();
+    update->pretty_print();
+    scope_++;
     update->accept(this);
+    scope_--;
 }
 
 void pretty_visitor::visit(expression* expression)
 {
-    if (expression == nullptr) return;
+    if (expression == nullptr)
+    {
+        return;
+    }
+    indentation();
     std::cout << expression->to_string();
+    scope_++;
     expression->accept(this);
+    scope_--;
 }
 
 void pretty_visitor::pretty_helper()
 {
-    printf("⠀⠀⠀⠀⠀⢰⡿⠋⠁⠀⠀⠈⠉⠙⠻⣷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n");
-    printf("⠀⠀⠀⠀⢀⣿⠇⠀⢀⣴⣶⡾⠿⠿⠿⢿⣿⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n");
-    printf("⠀⠀⣀⣀⣸⡿⠀⠀⢸⣿⣇⠀⠀⠀⠀⠀⠀⠙⣷⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n");
-    printf("⠀⣾⡟⠛⣿⡇⠀⠀⢸⣿⣿⣷⣤⣤⣤⣤⣶⣶⣿⠇⠀⠀⠀⠀⠀⠀⠀⣀⠀⠀\n");
-    printf("⢀⣿⠀⢀⣿⡇⠀⠀⠀⠻⢿⣿⣿⣿⣿⣿⠿⣿⡏⠀⠀⠀⠀⢴⣶⣶⣿⣿⣿⣆\n");
-    printf("⢸⣿⠀⢸⣿⡇⠀⠀⠀⠀⠀⠈⠉⠁⠀⠀⠀⣿⡇⣀⣠⣴⣾⣮⣝⠿⠿⠿⣻⡟\n");
-    printf("⢸⣿⠀⠘⣿⡇⠀⠀⠀⠀⠀⠀⠀⣠⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠁⠉⠀\n");
-    printf("⠸⣿⠀⠀⣿⡇⠀⠀⠀⠀⠀⣠⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠟⠉⠀⠀⠀⠀\n");
-    printf("⠀⠻⣷⣶⣿⣇⠀⠀⠀⢠⣼⣿⣿⣿⣿⣿⣿⣿⣛⣛⣻⠉⠁⠀⠀⠀⠀⠀⠀⠀\n");
-    printf("⠀⠀⠀⠀⢸⣿⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀\n");
-    printf("⠀⠀⠀⠀⢸⣿⣀⣀⣀⣼⡿⢿⣿⣿⣿⣿⣿⡿⣿⣿⡿\n");
-    printf("         BIGUS DICKUS        \n");
+    // printf("⠀⠀⠀⠀⠀⢰⡿⠋⠁⠀⠀⠈⠉⠙⠻⣷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n");
+    // printf("⠀⠀⠀⠀⢀⣿⠇⠀⢀⣴⣶⡾⠿⠿⠿⢿⣿⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n");
+    // printf("⠀⠀⣀⣀⣸⡿⠀⠀⢸⣿⣇⠀⠀⠀⠀⠀⠀⠙⣷⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n");
+    // printf("⠀⣾⡟⠛⣿⡇⠀⠀⢸⣿⣿⣷⣤⣤⣤⣤⣶⣶⣿⠇⠀⠀⠀⠀⠀⠀⠀⣀⠀⠀\n");
+    // printf("⢀⣿⠀⢀⣿⡇⠀⠀⠀⠻⢿⣿⣿⣿⣿⣿⠿⣿⡏⠀⠀⠀⠀⢴⣶⣶⣿⣿⣿⣆\n");
+    // printf("⢸⣿⠀⢸⣿⡇⠀⠀⠀⠀⠀⠈⠉⠁⠀⠀⠀⣿⡇⣀⣠⣴⣾⣮⣝⠿⠿⠿⣻⡟\n");
+    // printf("⢸⣿⠀⠘⣿⡇⠀⠀⠀⠀⠀⠀⠀⣠⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠁⠉⠀\n");
+    // printf("⠸⣿⠀⠀⣿⡇⠀⠀⠀⠀⠀⣠⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠟⠉⠀⠀⠀⠀\n");
+    // printf("⠀⠻⣷⣶⣿⣇⠀⠀⠀⢠⣼⣿⣿⣿⣿⣿⣿⣿⣛⣛⣻⠉⠁⠀⠀⠀⠀⠀⠀⠀\n");
+    // printf("⠀⠀⠀⠀⢸⣿⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀\n");
+    // printf("⠀⠀⠀⠀⢸⣿⣀⣀⣀⣼⡿⢿⣿⣿⣿⣿⣿⡿⣿⣿⡿\n");
+    // printf("         BIGUS DICKUS        \n");
+
+
+    printf("⠀⠀⠀⠀⠀⢀⣴⡾⠿⠿⠿⠿⢶⣦⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n");
+    printf("⠀⠀⠀⠀⢠⣿⠁⠀⠀⠀⣀⣀⣀⣈⣻⣷⡄⠀⠀⠀⠀⠀⠀⠀⠀\n");
+    printf("⠀⠀⠀⠀⣾⡇⠀⠀⣾⣟⠛⠋⠉⠉⠙⠛⢷⣄⠀⠀⠀⠀⠀⠀⠀\n");
+    printf("⢀⣤⣴⣶⣿⠀⠀⢸⣿⣿⣧⠀⠀⠀⠀⢀⣀⢹⡆⠀⠀⠀⠀⠀⠀\n");
+    printf("⢸⡏⠀⢸⣿⠀⠀⠀⢿⣿⣿⣷⣶⣶⣿⣿⣿⣿⠃⠀⠀⠀⠀⠀⠀\n");
+    printf("⣼⡇⠀⢸⣿⠀⠀⠀⠈⠻⠿⣿⣿⠿⠿⠛⢻⡇⠀⠀⠀⠀⠀⠀⠀\n");
+    printf("⣿⡇⠀⢸⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣼⣷⣶⣶⣶⣤⡀⠀⠀\n");
+    printf("⣿⡇⠀⢸⣿⠀⠀⠀⠀⠀⠀⣀⣴⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⡀\n");
+    printf("⢻⡇⠀⢸⣿⠀⠀⠀⠀⢀⣾⣿⣿⣿⣿⣿⣿⣿⡿⠿⣿⣿⣿⣿⡇\n");
+    printf("⠈⠻⠷⠾⣿⠀⠀⠀⠀⣾⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⢸⣿⣿⣿⣇\n");
+    printf("⠀⠀⠀⠀⣿⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⠃⠀⢸⣿⣿⣿⡿\n");
+    printf("⠀⠀⠀⠀⢿⣧⣀⣠⣴⡿⠙⠛⠿⠿⠿⠿⠉⠀⠀⢠⣿⣿⣿⣿⠇\n");
+    printf("⠀⠀⠀⠀⠀⢈⣩⣭⣥⣤⣤⣤⣤⣤⣤⣤⣤⣤⣶⣿⣿⣿⣿⠏⠀\n");
+    printf("⠀⠀⠀⠀⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠋⠀⠀\n");
+    printf("⠀⠀⠀⢸⣿⣿⣿⡟⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠋⠁⠀⠀⠀⠀\n");
+    printf("⠀⠀⠀⢸⣿⣿⣿⣷⣄⣀⣀⣀⣀⣀⣀⣀⣀⣀⡀⠀⠀⠀⠀⠀⠀\n");
+    printf("⠀⠀⠀⠀⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣦⡀⠀⠀⠀\n");
+    printf("⠀⠀⠀⠀⠀⠈⠛⠿⠿⣿⣿⣿⣿⣿⠿⠿⢿⣿⣿⣿⣿⣿⡄⠀⠀\n");
+    printf("⠀⠀⠀⠀⠀⠀⢀⣀⣀⣀⡀⠀⠀⠀⠀⠀⠀⢀⣹⣿⣿⣿⡇⠀⠀\n");
+    printf("⠀⠀⠀⠀⠀⢰⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠁⠀⠀\n");
+    printf("⠀⠀⠀⠀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠛⠁⠀⠀⠀\n");
+    printf("⠀⠀⠀⠀⣿⣿⣿⣿⠁⠀⠀⠀⠀⠀⠉⠉⠁⢤⣤⣤⣤⣤⣤⣤⡀\n");
+    printf("⠀⠀⠀⠀⢿⣿⣿⣿⣷⣶⣶⣶⣶⣾⣿⣿⣿⣆⢻⣿⣿⣿⣿⣿⡇\n");
+    printf("⠀⠀⠀⠀⠈⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⠻⣿⣿⣿⡿⠁\n");
+    printf("⠀⠀⠀⠀⠀⠀⠈⠙⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠉⠀⠙⠛⠉⠀⠀\n");
+    printf("          BIGUS DICKUS        \n");
 }
+
 
 

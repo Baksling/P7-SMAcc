@@ -8,12 +8,6 @@ clock_variable::clock_variable(const int id, const double start_value)
     this->max_value_ = start_value;
 }
 
-
-int clock_variable::get_id() const
-{
-    return this->id_;
-}
-
 CPU GPU double clock_variable::get_time() const
 {
     return this->current_time_;
@@ -62,6 +56,12 @@ void clock_variable::accept(visitor* v)
     return;
     //v.visit()
 }
+
+void clock_variable::pretty_print() const
+{
+    printf("Timer id: %3d | Value: %10f \n", this->id_, this->current_time_);
+}
+
 
 void clock_variable::cuda_allocate(clock_variable* pointer, const allocation_helper* helper) const
 {

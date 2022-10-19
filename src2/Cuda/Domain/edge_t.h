@@ -33,8 +33,8 @@ public:
 
 
     //HOST METHODS
-    int get_id() const;
     void accept(visitor* v) const;
+    void pretty_print() const;
     void cuda_allocate(edge_t** pointer, const allocation_helper* helper);
     void cuda_allocate_2(edge_t* cuda_p, const allocation_helper* helper);
     int get_updates_size() const;

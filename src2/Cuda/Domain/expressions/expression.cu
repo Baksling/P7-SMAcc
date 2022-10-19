@@ -148,17 +148,39 @@ std::string expression::type_to_string() const
     case division_e:
         result = "/";
         break;
-    case power_e: break;
-    case negation_e: break;
-    case sqrt_e: break;
-    case less_equal_e: break;
-    case greater_equal_e: break;
-    case less_e: break;
-    case greater_e: break;
-    case equal_e: break;
-    case not_equal_e: break;
-    case not_e: break;
-    case conditional_e: break;
+    case power_e:
+        result = "^";
+        break;
+    case negation_e:
+        result = "~";
+        break;
+    case sqrt_e:
+        result = "sqrt";
+        break;
+    case less_equal_e:
+        result = "<=";
+        break;
+    case greater_equal_e:
+        result = ">=";
+        break;
+    case less_e:
+        result = "<";
+        break;
+    case greater_e:
+        result = ">";
+        break;
+    case equal_e:
+        result = "==";
+        break;
+    case not_equal_e:
+        result = "!=";
+        break;
+    case not_e:
+        result = "!";
+        break;
+    case conditional_e:
+        result = "if";
+        break;
     default:
         result = "Not implemented yet";
     }
@@ -167,16 +189,15 @@ std::string expression::type_to_string() const
 
 std::string expression::to_string()
 {
-    std::string str = "Hello, i broke update_expression::to_string :=). Plz fix\n"; //TODO do this :)
-    return str;
-    // std::string left, right;
-    //
-    // if (this->get_left() != nullptr) left = this->get_left()->type_to_string();
-    // else left = "nullptr";
-    // if (this->get_right() != nullptr) right = this->get_right()->type_to_string();
-    // else right = "nullptr";
-    //
-    // return "    Type: " + this->type_to_string() + " | value: " + std::to_string(this->get_value()) + " | left: " + left + " | right: " + right + "\n";
+    std::string left, right, con;
+    if (this->condition_ != nullptr) con = this->condition_->type_to_string();
+    else con = "nullptr";
+    if (this->left_ != nullptr) left = this->left_->type_to_string();
+    else left = "nullptr";
+    if (this->right_ != nullptr) right = this->right_->type_to_string();
+    else right = "nullptr";
+    
+    return "Type: " + this->type_to_string() + " | Value: " + std::to_string(this->value_) + " | Condition: " + con + " | Left: " + left + " | Right: " + right + "\n";
 }
 
 int expression::get_value()
@@ -209,6 +230,7 @@ GPU CPU expression* expression::get_right(const cuda_stack<double>* value_stack)
 
 void expression::accept(visitor* v) const
 {
+    if (this->condition_ != nullptr) v->visit(this->condition_);
     if (this->left_ != nullptr) v->visit(this->left_);
     if (this->right_ != nullptr) v->visit(this->right_);
 }

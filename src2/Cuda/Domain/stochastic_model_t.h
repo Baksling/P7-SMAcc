@@ -31,6 +31,7 @@ public:
     void cuda_allocate(stochastic_model_t** pointer, const allocation_helper* helper) const;
     unsigned int get_variable_count() const; 
     void accept(visitor* v) const;
+    void pretty_print() const;
 };
 
 #endif

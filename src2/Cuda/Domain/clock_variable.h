@@ -28,8 +28,8 @@ public:
     CPU GPU double get_max_value() const;
     
     //HOST METHODS
-    int get_id() const;
     void accept(visitor* v);
+    void pretty_print() const;
     void cuda_allocate(clock_variable* pointer, const allocation_helper* helper) const;
 };
 
