@@ -1,18 +1,5 @@
 #include "uppaal_tree_parser.h"
 
-#include "declaration.h"
-#include "declaration_parser.h"
-#include "update_parser.h"
-//#include "../Domain/uneven_list.h"
-
-
-#define GPU __device__
-#define CPU __host__
-
-using namespace std;
-using namespace pugi;
-using namespace helper;
-
 
 
 constraint_t* get_constraint(const string& expr, const int timer_id, const float value)
@@ -93,7 +80,7 @@ void uppaal_tree_parser::init_clocks(const xml_document* doc)
     string global_decl = doc->child("nta").child("declaration").child_value();
     cout << "\nGLOBAL GUYS: " << global_decl << " :NICE\n";
     global_decl = replace_all(global_decl, " ", "");
-    list<declaration> decls = dp.parse(global_decl);
+    const list<declaration> decls = dp.parse(global_decl);
     cout << "\nSIZE: " << decls.size() << "\n";
         
     for (declaration d : decls)
@@ -102,7 +89,7 @@ void uppaal_tree_parser::init_clocks(const xml_document* doc)
         if(d.get_type() == clock_type)
         {
             timers_map_.insert_or_assign(d.get_name(),clock_id);
-            timer_list_.push_back(new clock_timer_t(clock_id++, d.get_value()));
+            timer_list_.push_back(new clock_variable(clock_id++, d.get_value()));
         }
             
         global_vars_map_.insert_or_assign(d.get_name(), d.get_value());
@@ -122,7 +109,7 @@ void uppaal_tree_parser::init_clocks(const xml_document* doc)
             if(d.get_type() == clock_type)
             {
                 timers_map_.insert_or_assign(d.get_name(),clock_id);
-                timer_list_.push_back(new clock_timer_t(clock_id++, d.get_value()));
+                timer_list_.push_back(new clock_variable(clock_id++, d.get_value()));
             }
             
             vars_map_.insert_or_assign(d.get_name(), d.get_value());
@@ -148,7 +135,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
 {
     string path = file_path;
     xml_document doc;
-
+    update_parser up;
     map<int, list<edge_t*>> node_edge_map;
     
     // load the XML file
@@ -173,6 +160,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             node_edge_map.insert_or_assign(node_id, list<edge_t*>());
             
             list<constraint_t*> invariants;
+            expression* expo_rate = nullptr;
             
             if (string_name == "Goal")
                 is_goal = true;
@@ -181,6 +169,12 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             string expr_string = locs.child("label").child_value();
 
             list<string> expressions = split_expr(expr_string);
+            
+            if (kind == "exponentialrate")
+            {
+                expo_rate = up.parse(expr_string, &vars_map_, &global_vars_map_);
+            }
+            
             if (kind == "invariant")
             {
                 for(const auto& expr: expressions)
@@ -190,10 +184,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                     invariants.push_back(get_constraint(expr, get_timer_id(expr), get_expr_value_float(expr)));
                 }
             }
-            if (invariants.empty())
-                nodes_->push_back(new node_t(node_id, array_t<constraint_t*>(0), false, is_goal));
-            else
-                nodes_->push_back(new node_t(node_id, to_array(&invariants),false, is_goal));
+            nodes_->push_back(new node_t(node_id, to_array(&invariants),false, is_goal, expo_rate));
         }
 
         for (pugi::xml_node locs: templates.children("branchpoint"))

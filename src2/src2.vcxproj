@@ -386,23 +386,6 @@
       <SDLCheck>true</SDLCheck>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
-    <ClCompile Include="Cuda\Projekt\cuda_map.cu" />
-    <ClCompile Include="Cuda\Projekt\cuda_simulator.cu" />
-    <ClCompile Include="Cuda\Projekt\edge_d.h" />
-    <ClCompile Include="Cuda\Projekt\edge_d.cu" />
-    <ClCompile Include="Cuda\Projekt\guard_d.cu" />
-    <ClCompile Include="Cuda\Projekt\guard_d.h" />
-    <ClCompile Include="Cuda\Projekt\node_d.cu" />
-    <ClCompile Include="Cuda\Projekt\node_d.h" />
-    <ClCompile Include="Cuda\Projekt\stochastic_model.cu" />
-    <ClCompile Include="Cuda\Projekt\timer_d.h" />
-    <ClCompile Include="Cuda\Projekt\timer_d.cu" />
-    <ClCompile Include="Cuda\Projekt\update_d.h" />
-    <ClCompile Include="Cuda\Projekt\update_d.cu" />
-    <ClCompile Include="Cuda\Projekt\uneven_list.cu" />
-    <ClCompile Include="Cuda\Projekt\uneven_list.h" />
-    <ClCompile Include="Cuda\Projekt\main.cu" />
-    <ClCompile Include="Cuda\Projekt\main.h" />
     <ClCompile Include="Cuda\UPPAALTreeParser\arithmetic-expression-evaluator.cpp" />
     <ClCompile Include="Cuda\UPPAALTreeParser\declaration_parser.cpp" />
     <ClCompile Include="Cuda\UPPAALTreeParser\helper_methods.cpp" />
@@ -865,16 +848,6 @@
     <ClCompile Include="Cuda\Domain\stochastic_model_t.h" />
     <ClCompile Include="Cuda\Domain\clock_variable.h" />
     <ClCompile Include="Cuda\Domain\update_t.h" />
-    <ClInclude Include="Cuda\Domain\argparser.h" />
-    <ClInclude Include="Cuda\Domain\pretty_visitor.h" />
-    <ClInclude Include="Cuda\Domain\system_variable.h" />
-    <ClInclude Include="Cuda\Domain\UpdateExpressions\cuda_stack.h" />
-    <ClInclude Include="Cuda\Domain\UpdateExpressions\update_expression.h" />
-    <ClInclude Include="Cuda\Domain\visitor.h" />
-    <ClInclude Include="Cuda\Projekt\common.h" />
-    <ClInclude Include="Cuda\Projekt\cuda_map.h" />
-    <ClInclude Include="Cuda\Projekt\cuda_simulator.h" />
-    <ClInclude Include="Cuda\Projekt\stochastic_model.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\arithmetic-expression-evaluator.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\declaration.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\declaration_parser.h" />
@@ -911,10 +884,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Cuda\Domain\simulator_state.h" />
-    <Content Include="Cuda\UPPAALTreeParser\and_guy.xml" />
-    <Content Include="Cuda\UPPAALTreeParser\ff15.xml" />
-    <Content Include="Cuda\UPPAALTreeParser\lilleShit.xml" />
-    <Content Include="Cuda\UPPAALTreeParser\Lol.xml" />
     <ClInclude Include="Cuda\UPPAALTreeParser\parser_exception.h" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\and_guy.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\ff15.xml" />

@@ -11,7 +11,7 @@ update_expression_evaluator::update_expression_evaluator(map<string,int>* local_
 }
 
 // Parser entry point.
-update_expression* update_expression_evaluator::eval_exp(char *exp)
+expression* update_expression_evaluator::eval_exp(char *exp)
 {
     cout << "\n ::::3::::";
     cout.flush();
@@ -28,7 +28,7 @@ update_expression* update_expression_evaluator::eval_exp(char *exp)
         THROW_LINE("No Expression Present")
     }
     
-    update_expression* result = eval_exp1();
+    expression* result = eval_exp1();
     if (*token) // last token must be null
     {
         THROW_LINE("Syntax Error")
@@ -40,11 +40,11 @@ update_expression* update_expression_evaluator::eval_exp(char *exp)
     return result;
 }
 // Process an assignment.
-update_expression* update_expression_evaluator::eval_exp1()
+expression* update_expression_evaluator::eval_exp1()
 {
     int slot;
     char temp_token[80];
-    update_expression* result;
+    expression* result;
     if (tok_type == UPDATEVARIABLE) 
     {
         // save old token
@@ -73,56 +73,56 @@ update_expression* update_expression_evaluator::eval_exp1()
     return result;
 }
 // Add or subtract two terms.
- update_expression* update_expression_evaluator::eval_exp2()
+ expression* update_expression_evaluator::eval_exp2()
 {
     char op;
-    update_expression* result = eval_exp3();
+    expression* result = eval_exp3();
     cout << "\n ::::55::::"<<result->get_value();
     cout.flush();
     
     while ((op = *token) == '+' || op == '-')
     {
         get_token();
-        update_expression* temp = eval_exp3();
+        expression* temp = eval_exp3();
         switch (op) 
         {
         case '-':
-            result = update_expression::minus_expression(result, temp);
+            result = expression::minus_expression(result, temp);
         case '+':
-            result = update_expression::plus_expression(result, temp);
+            result = expression::plus_expression(result, temp);
         }
     }
 
     return  result;
 }
 // Multiply or divide two factors.
-update_expression* update_expression_evaluator::eval_exp3()
+expression* update_expression_evaluator::eval_exp3()
 {
     char op;
     double temp;
-    update_expression* result = eval_exp4();
+    expression* result = eval_exp4();
     cout << "\n ::::44::::"<<result->get_value();
     cout.flush();
     while ((op = *token) == '*' || op == '/')
     {
         get_token();
-        update_expression* temp = eval_exp4();
+        expression* temp = eval_exp4();
         switch (op) 
         {
         case '*':
-            result = update_expression::multiply_expression(result, temp);
+            result = expression::multiply_expression(result, temp);
         case '/':
-            result = update_expression::division_expression(result, temp);
+            result = expression::division_expression(result, temp);
         }
     }
 
     return result;
 }
 // Process an exponent.
-update_expression* update_expression_evaluator::eval_exp4()
+expression* update_expression_evaluator::eval_exp4()
 {
     double temp;
-    update_expression* result = eval_exp5();
+    expression* result = eval_exp5();
     cout << "\n ::::33::::"<<result->get_value();
     cout.flush();
     while (*token == '^')
@@ -134,7 +134,7 @@ update_expression* update_expression_evaluator::eval_exp4()
     return result;
 }
 // Evaluate a unary + or -.
-update_expression* update_expression_evaluator::eval_exp5()
+expression* update_expression_evaluator::eval_exp5()
 {
     char op;
     op = 0;
@@ -143,7 +143,7 @@ update_expression* update_expression_evaluator::eval_exp5()
         op = *token;
         get_token();
     }
-    update_expression* result = eval_exp6();
+    expression* result = eval_exp6();
     cout << "\n ::::22::::"<<result->get_value();
     cout.flush();
     return result;
@@ -154,7 +154,7 @@ update_expression* update_expression_evaluator::eval_exp5()
     }
 }
 // Process a function, a parenthesized expression, a value or a variable
-update_expression* update_expression_evaluator::eval_exp6()
+expression* update_expression_evaluator::eval_exp6()
 {
     bool isfunc = (tok_type == UPDATEFUNCTION);
     char temp_token[80];
@@ -224,12 +224,12 @@ update_expression* update_expression_evaluator::eval_exp6()
                     cout << "\n ::::101::::" << token;
                     cout.flush();
                     string var = token;
-                    update_expression* result;
+                    expression* result;
                     
                     if (local_vars_->count(var))
-                        result = update_expression::literal_expression(local_vars_->at(var));
+                        result = expression::literal_expression(local_vars_->at(var));
                     else if (global_vars_->count(var))
-                        result = update_expression::literal_expression(global_vars_->at(var));
+                        result = expression::literal_expression(global_vars_->at(var));
                     else
                     {
                         THROW_LINE("VAR NOT DECLARED")
@@ -243,7 +243,7 @@ update_expression* update_expression_evaluator::eval_exp6()
                 {
                     cout << "\n ::::10::::";
                     cout.flush();
-                    update_expression* result =  update_expression::literal_expression(atof(token));
+                    expression* result =  expression::literal_expression(atof(token));
                     //result = atof(token);
                     get_token();
                     cout << "\n ::::11::::"<<result->get_value();
@@ -291,14 +291,14 @@ void update_expression_evaluator::get_token()
         strcpy(errormsg, "Only first letter of variables is considered, NAAAAAT");
 }
 
-update_expression* update_expression_evaluator::parse_update_expr(string input, map<string, int>* local_vars, map<string, int>* global_vars)
+expression* update_expression_evaluator::parse_update_expr(string input, map<string, int>* local_vars, map<string, int>* global_vars)
 {
     cout << "\n ::::1::::" << input;
     update_expression_evaluator ob(local_vars, global_vars);
     cout << "\n ::::3::::" << input;
     cout << "\n ::::2::::" << input;
     cout.flush();
-    update_expression* ans = ob.eval_exp((char*)input.substr(0,input.length()).c_str());
+    expression* ans = ob.eval_exp((char*)input.substr(0,input.length()).c_str());
     cout << "\n13: " <<"\n";
     cout.flush();
     cout << "\n ::::88::::"<<ans->get_value();

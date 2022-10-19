@@ -6,15 +6,13 @@
   <component name="ChangeListManager">
     <list default="true" id="c81c9d2a-66d3-4b0c-b40b-c667cea459e8" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/XmlFiles/ff15.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/XmlFiles/ff15.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/XmlFiles/sample1.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/XmlFiles/sample1.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/helper_methods.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/helper_methods.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/update_expression_evaluator.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/update_expression_evaluator.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/update_expression_evaluator.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/update_expression_evaluator.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/update_parser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/update_parser.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/update_parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/update_parser.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/uppaal_tree_parser.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/uppaal_tree_parser.cu" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/uppaal_tree_parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/uppaal_tree_parser.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src2.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/src2.vcxproj" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -26,8 +24,6 @@
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/../../../../../../../Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/ucrt/ctype.h" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Cuda/Domain/UpdateExpressions/cuda_stack.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Cuda/Domain/common.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Cuda/Domain/constraint_t.cu" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Cuda/Domain/constraint_t.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Cuda/Domain/edge_t.cu" root0="FORCE_HIGHLIGHTING" />
@@ -36,8 +32,6 @@
     <setting file="file://$PROJECT_DIR$/Cuda/Domain/node_t.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Cuda/Domain/stochastic_model_t.cu" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Cuda/Domain/stochastic_model_t.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Cuda/test/dog.h" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Cuda/test/test_class.cu" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Main.cpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/UPAALParser/pugixml.cpp" root0="SKIP_HIGHLIGHTING" />
   </component>
@@ -130,7 +124,8 @@
       <workItem from="1665647630115" duration="4748000" />
       <workItem from="1665652746085" duration="28228000" />
       <workItem from="1666028792637" duration="928000" />
-      <workItem from="1666104886635" duration="2834000" />
+      <workItem from="1666104886635" duration="3441000" />
+      <workItem from="1666171507697" duration="2510000" />
     </task>
     <servers />
   </component>
