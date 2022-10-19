@@ -387,6 +387,9 @@
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
     <ClCompile Include="Cuda\Simulator\simulation_result.cu" />
+    <ClCompile Include="Cuda\UPPAALTreeParser\arithmetic-expression-evaluator.cpp" />
+    <ClCompile Include="Cuda\UPPAALTreeParser\declaration_parser.cpp" />
+    <ClCompile Include="Cuda\UPPAALTreeParser\helper_methods.cpp" />
     <ClCompile Include="Cuda\Simulator\simulator_tools.cu" />
     <ClCompile Include="Cuda\Simulator\stochastic_simulator.cu">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
@@ -535,6 +538,8 @@
       <SDLCheck>true</SDLCheck>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
+    <ClCompile Include="Cuda\UPPAALTreeParser\update_expression_evaluator.cpp" />
+    <ClCompile Include="Cuda\UPPAALTreeParser\update_parser.cpp" />
     <ClCompile Include="Cuda\UPPAALTreeParser\uppaal_tree_parser.cu">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -844,6 +849,10 @@
     <ClCompile Include="Cuda\Domain\stochastic_model_t.h" />
     <ClCompile Include="Cuda\Domain\clock_variable.h" />
     <ClCompile Include="Cuda\Domain\update_t.h" />
+    <ClInclude Include="Cuda\UPPAALTreeParser\arithmetic-expression-evaluator.h" />
+    <ClInclude Include="Cuda\UPPAALTreeParser\declaration.h" />
+    <ClInclude Include="Cuda\UPPAALTreeParser\declaration_parser.h" />
+    <ClInclude Include="Cuda\UPPAALTreeParser\helper_methods.h" />
     <ClInclude Include="Cuda\common\allocation_helper.h" />
     <ClInclude Include="Cuda\common\argparser.h" />
     <ClInclude Include="Cuda\common\array_t.h" />
@@ -858,6 +867,8 @@
     <ClInclude Include="Cuda\Simulator\thread_pool.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\pugiconfig.hpp" />
     <ClInclude Include="Cuda\UPPAALTreeParser\pugixml.hpp" />
+    <ClInclude Include="Cuda\UPPAALTreeParser\update_expression_evaluator.h" />
+    <ClInclude Include="Cuda\UPPAALTreeParser\update_parser.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\uppaal_tree_parser.h" />
     <ClInclude Include="Cuda\Visitors\domain_analysis_visitor.h" />
     <ClInclude Include="Cuda\Visitors\pretty_visitor.h" />
@@ -875,15 +886,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Cuda\Domain\simulator_state.h" />
-    <Content Include="Cuda\UPPAALTreeParser\and_guy.xml" />
-    <Content Include="Cuda\UPPAALTreeParser\ff15.xml" />
-    <Content Include="Cuda\UPPAALTreeParser\lilleShit.xml" />
-    <Content Include="Cuda\UPPAALTreeParser\Lol.xml" />
     <ClInclude Include="Cuda\UPPAALTreeParser\parser_exception.h" />
-    <Content Include="Cuda\UPPAALTreeParser\sample1.xml" />
-    <Content Include="Cuda\UPPAALTreeParser\test2.xml" />
-    <Content Include="Cuda\UPPAALTreeParser\test3.xml" />
-    <Content Include="Cuda\UPPAALTreeParser\testBasic.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\and_guy.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\ff15.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\lilleShit.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\Lol.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\sample1.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\test2.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\test3.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\testBasic.xml" />
     <Content Include="UPAALParser\and_guy.xml" />
     <Content Include="UPAALParser\Lol.xml" />
     <Content Include="UPAALParser\lilleShit.xml" />

@@ -4,8 +4,13 @@
 	<declaration>// Place global declarations here.</declaration>
 	<template>
 		<name x="5" y="5">Template</name>
-		<declaration>// Place local declarations here.
-			clock x,y;</declaration>
+		<declaration>// Place local declarations here. 
+clock x,y;
+clock z = 60 + 9
+const double a = 1*5+40/40-(40+2)*2
+double b = 1*5+40/40-(40+2)*2
+const int c = 1*5+40/40-(40+2)*2
+int d = 1*5+40/40-(40+2)*2</declaration>
 		<location id="id0" x="0" y="0">
 			<label kind="invariant" x="-10" y="17">x&lt;=10</label>
 		</location>
@@ -23,7 +28,7 @@
 		<transition>
 			<source ref="id0"/>
 			<target ref="id1"/>
-			<label kind="guard" x="-17" y="-85">y&lt;=10</label>
+			<label kind="guard" x="-17" y="-85">y&lt;=10+d</label>
 			<nail x="0" y="-51"/>
 		</transition>
 	</template>

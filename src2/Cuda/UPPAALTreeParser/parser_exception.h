@@ -1,4 +1,10 @@
-﻿class parser_exception : public std::runtime_error {
+﻿#include <sstream>
+
+#ifndef parser_exception_H
+#define parser_exception_H
+
+#define THROW_LINE(arg); throw parser_exception(arg, __FILE__, __LINE__);
+class parser_exception : public std::runtime_error {
     std::string msg;
 public:
     parser_exception(const std::string &arg, const char *file, int line) :
@@ -12,3 +18,6 @@ public:
         return msg.c_str();
     }
 };
+
+#endif
+

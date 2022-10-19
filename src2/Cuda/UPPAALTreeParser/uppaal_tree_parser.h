@@ -18,19 +18,30 @@
 #include <string>
 #include <vector>
 #include <sstream>
-#include "parser_exception.h"
+#include "helper_methods.h"
+#include "../Domain/edge_t.h"
+#include "declaration.h"
+#include "declaration_parser.h"
+#include "update_parser.h"
+
+#define GPU __device__
+#define CPU __host__
 
 using namespace std;
+using namespace pugi;
+using namespace helper;
 
 class uppaal_tree_parser
 {
 private:
     int init_node_id_{};
-    list<clock_variable*> timer_list_;
+    list<clock_variable*> timer_list_{};
     int timer_amount_ = 0;
-    map<string, int> timers_map_;
+    map<string, int> timers_map_{};
+    map<string, int> vars_map_{};
+    map<string, int> global_vars_map_{};
     list<node_t*>* nodes_ = new list<node_t*>();
-    list<int> branchpoint_nodes;
+    list<int> branchpoint_nodes{};
     int get_timer_id(const string& expr) const;
     node_t* get_node(int target_id) const;
     void init_clocks(const pugi::xml_document* doc);

@@ -1,14 +1,6 @@
-﻿#include "uppaal_tree_parser.h"
-//#include "../Domain/uneven_list.h"
+#include "uppaal_tree_parser.h"
 
 
-#define GPU __device__
-#define CPU __host__
-
-using namespace std;
-using namespace pugi;
-
-#define THROW_LINE(arg); throw parser_exception(arg, __FILE__, __LINE__);
 
 constraint_t* get_constraint(const string& expr, const int timer_id, const float value)
 {
@@ -40,55 +32,6 @@ constraint_t* get_constraint(const string& expr, const int timer_id_1, const int
     THROW_LINE("Operand in " + expr + " not found, sad..")
 }
 
-std::string replace_all(std::string str, const std::string& from, const std::string& to) {
-    size_t start_pos = 0;
-    while((start_pos = str.find(from, start_pos)) != std::string::npos) {
-        str.replace(start_pos, from.length(), to);
-        start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
-    }
-    return str;
-}
-
-bool in_array(const char &value, const std::vector<char> &array)
-{
-    return std::find(array.begin(), array.end(), value) != array.end();
-}
-
-int get_expr_value(const string& expr)
-{
-    const string expr_wo_ws = replace_all(expr, " ", "");
-    unsigned long long index = expr_wo_ws.length();
-    while (true)
-    {
-        if (index == 0)
-        {
-            return 0;
-        }
-        
-        if (!in_array(expr_wo_ws[--index], {'1','2','3','4','5','6','7','8','9','0'}))
-        {
-            return stoi(expr_wo_ws.substr(index+1));
-        }
-    }
-}
-
-float get_expr_value_float(const string& expr)
-{
-    const string expr_wo_ws = replace_all(expr, " ", "");
-    unsigned long long index = expr_wo_ws.length();
-    while (true)
-    {
-        if (index == 0)
-        {
-            return stof(expr_wo_ws);
-        }
-        
-        if (in_array(expr_wo_ws[--index], {'=',' ','<','>'}))
-        {
-            return stof(expr_wo_ws.substr(index+1));
-        }
-    }
-}
 
 template <typename T> T* list_to_arr(list<T> l)
 {
@@ -101,10 +44,6 @@ template <typename T> T* list_to_arr(list<T> l)
     return arr;
 }
 
-int xml_id_to_int(string id_string)
-{
-    return stoi(id_string.replace(0,2,""));
-}
 
 int uppaal_tree_parser::get_timer_id(const string& expr) const
 {
@@ -134,50 +73,46 @@ int uppaal_tree_parser::get_timer_id(const string& expr) const
     return timers_map_.at(sub);
 }
 
-list<string> split_expr(const string& expr)
-{
-    list<string> result;
-    std::stringstream test(expr);
-    std::string segment;
-    while(std::getline(test, segment, '&'))
-    {
-        string s = replace_all(segment, "&", "");
-        result.push_back(s);
-    }
-    return result;
-}
-
 void uppaal_tree_parser::init_clocks(const xml_document* doc)
 {
+    int clock_id = 0;
+    declaration_parser dp;
+    string global_decl = doc->child("nta").child("declaration").child_value();
+    cout << "\nGLOBAL GUYS: " << global_decl << " :NICE\n";
+    global_decl = replace_all(global_decl, " ", "");
+    const list<declaration> decls = dp.parse(global_decl);
+    cout << "\nSIZE: " << decls.size() << "\n";
+        
+    for (declaration d : decls)
+    {
+        //global declarations
+        if(d.get_type() == clock_type)
+        {
+            timers_map_.insert_or_assign(d.get_name(),clock_id);
+            timer_list_.push_back(new clock_variable(clock_id++, d.get_value()));
+        }
+            
+        global_vars_map_.insert_or_assign(d.get_name(), d.get_value());
+    }
+    
+    
     for (pugi::xml_node templates: doc->child("nta").children("template"))
     {
         string decl = templates.child("declaration").child_value();
-
-        const size_t clock_start = decl.find("clock");
-
-        const size_t clock_end = decl.find(';');
+        decl = replace_all(decl, " ", "");
+        list<declaration> declarations = dp.parse(decl);
+        cout << "\nSIZE: " << declarations.size() << "\n";
         
-        string clocks = decl.substr(clock_start+5,clock_end-1);
-        clocks = replace_all(clocks, string(" "), string(""));
-
-        std::stringstream clocks_stream(clocks);
-        std::string clock;
-        
-        int var_amount = 0;
-        while(std::getline(clocks_stream, clock, ','))
+        for (declaration d : declarations)
         {
-            string clock_without = clock;
-            if (clock.find(';') != std::string::npos)
-                clock_without = replace_all(clock, ";", "");
-            timers_map_.insert_or_assign(clock_without,var_amount++);
-        }
-        
-        timer_amount_ = var_amount;
-        cout << "INIT VAR AMOUNT SIZE: " << var_amount << "\n";
-        for (int i = 0; i < var_amount; i++)
-        {
-            cout << "INIT CLOCK WITH ID: " << i << "\n";
-            timer_list_.push_back(new clock_variable(i, 0));
+            //local declarations
+            if(d.get_type() == clock_type)
+            {
+                timers_map_.insert_or_assign(d.get_name(),clock_id);
+                timer_list_.push_back(new clock_variable(clock_id++, d.get_value()));
+            }
+            
+            vars_map_.insert_or_assign(d.get_name(), d.get_value());
         }
     }
 }
@@ -195,19 +130,12 @@ node_t* uppaal_tree_parser::get_node(const int target_id) const
     return nodes_->front();
 }
 
-template <typename T> void insert_into_list(list<list<T>>* t_list, int index, T item)
-{
-    auto l_front = t_list->begin();
-    std::advance(l_front, index);
-    l_front->emplace_back(item);
-}
-
 
 __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
 {
     string path = file_path;
     xml_document doc;
-
+    update_parser up;
     map<int, list<edge_t*>> node_edge_map;
     
     // load the XML file
@@ -232,6 +160,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             node_edge_map.insert_or_assign(node_id, list<edge_t*>());
             
             list<constraint_t*> invariants;
+            expression* expo_rate = nullptr;
             
             if (string_name == "Goal")
                 is_goal = true;
@@ -240,6 +169,12 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             string expr_string = locs.child("label").child_value();
 
             list<string> expressions = split_expr(expr_string);
+            
+            if (kind == "exponentialrate")
+            {
+                expo_rate = up.parse(expr_string, &vars_map_, &global_vars_map_);
+            }
+            
             if (kind == "invariant")
             {
                 for(const auto& expr: expressions)
@@ -249,10 +184,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                     invariants.push_back(get_constraint(expr, get_timer_id(expr), get_expr_value_float(expr)));
                 }
             }
-            if (invariants.empty())
-                nodes_->push_back(new node_t(node_id, array_t<constraint_t*>(0), false, is_goal));
-            else
-                nodes_->push_back(new node_t(node_id, to_array(&invariants),false, is_goal));
+            nodes_->push_back(new node_t(node_id, to_array(&invariants),false, is_goal, expo_rate));
         }
 
         for (pugi::xml_node locs: templates.children("branchpoint"))
@@ -283,9 +215,10 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                 string kind = labels.attribute("kind").as_string();
                 string expr_string = labels.child_value();
 
-                list<string> expressions = split_expr(expr_string);
+                
                 if(kind == "guard")
                 {
+                    list<string> expressions = split_expr(expr_string);
                     for(const auto& expr: expressions)
                     {
                         if (expr.empty())
@@ -295,11 +228,16 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                 }
                 else if (kind == "assignment")
                 {
+                    list<string> expressions = split_expr(expr_string, ',');
+                    cout << "\nASS0: " << expressions.size() << " " << expr_string <<"\n";
                     for(const auto& expr: expressions)
                     {
                         if (expr.empty())
                             continue;
-                        // updates.push_back(new update_t(update_id++, get_timer_id(expr), true, get_expr_value_float(expr)));
+                        cout << "\nASS: " << expr <<"\n";
+                        updates.push_back(new update_t(update_id++, get_timer_id(expr), true, update_parser::parse(expr, &vars_map_, &global_vars_map_)));
+                        cout << "\nIT OK: " << expr <<"\n";
+                        cout.flush();
                     }
                 }
                 else if (kind == "probability")
@@ -307,17 +245,19 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                     probability = get_expr_value_float(expr_string);
                 }
             }
-            
+            cout << "\nIT OK:2 "  <<"\n";
+            cout.flush();
             node_t* target_node = get_node(target_id);
-            // auto result_edge = new edge_t(edge_id++, probability, target_node, to_array(&guards));
-            // cout << "guard size: " << guards.size() << "\n";
-            //
+            auto result_edge = new edge_t(edge_id++, probability, target_node, to_array(&guards), to_array(&updates));
+            cout << "guard size: " << guards.size() << "\n";
+            
             // if (guards.empty())
             //     result_edge = new edge_t(edge_id, probability, target_node, array_t<constraint_t*>(0));
-            //
-            // result_edge->set_updates(&updates);
-            // node_edge_map.at(source_id).push_back(result_edge);
+            //result_edge->set_updates(&updates);
+            
+            node_edge_map.at(source_id).push_back(result_edge);
         }
+        vars_map_.clear();
     }
 
     for(node_t* node: *nodes_)
