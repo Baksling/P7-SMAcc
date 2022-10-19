@@ -895,6 +895,7 @@
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\sample1.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\test2.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\test3.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\test4.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\testBasic.xml" />
     <Content Include="UPAALParser\and_guy.xml" />
     <Content Include="UPAALParser\Lol.xml" />

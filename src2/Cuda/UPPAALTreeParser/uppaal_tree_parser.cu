@@ -65,17 +65,21 @@ int uppaal_tree_parser::get_timer_id(const string& expr) const
 
     const string sub = expr_wout_spaces.substr(0, index);
 
-    if ( timers_map_.count(sub) == 0)
+    if ( vars_map_.count(sub))
     {
-        THROW_LINE("sum tin wong")
+        return vars_map_.at(sub);
     }
     
-    return timers_map_.at(sub);
+    if (global_vars_map_.count(sub))
+    {
+        return global_vars_map_.at(sub);
+    }
+    
+    THROW_LINE("sum tin wong")
 }
 
 void uppaal_tree_parser::init_clocks(const xml_document* doc)
 {
-    int clock_id = 0;
     declaration_parser dp;
     string global_decl = doc->child("nta").child("declaration").child_value();
     cout << "\nGLOBAL GUYS: " << global_decl << " :NICE\n";
@@ -88,11 +92,14 @@ void uppaal_tree_parser::init_clocks(const xml_document* doc)
         //global declarations
         if(d.get_type() == clock_type)
         {
-            timers_map_.insert_or_assign(d.get_name(),clock_id);
-            timer_list_.push_back(new clock_variable(clock_id++, d.get_value()));
+            global_vars_map_.insert_or_assign(d.get_name(),clock_id_);
+            timer_list_.push_back(new clock_variable(clock_id_++, d.get_value()));
         }
-            
-        global_vars_map_.insert_or_assign(d.get_name(), d.get_value());
+        else
+        {
+            global_vars_map_.insert_or_assign(d.get_name(), var_id_);
+            var_list_.push_back(new clock_variable(var_id_++, d.get_value()));
+        }
     }
     
     
@@ -108,11 +115,14 @@ void uppaal_tree_parser::init_clocks(const xml_document* doc)
             //local declarations
             if(d.get_type() == clock_type)
             {
-                timers_map_.insert_or_assign(d.get_name(),clock_id);
-                timer_list_.push_back(new clock_variable(clock_id++, d.get_value()));
+                vars_map_.insert_or_assign(d.get_name(),clock_id_);
+                timer_list_.push_back(new clock_variable(clock_id_++, d.get_value()));
             }
-            
-            vars_map_.insert_or_assign(d.get_name(), d.get_value());
+            else
+            {
+                vars_map_.insert_or_assign(d.get_name(), var_id_);
+                var_list_.push_back(new clock_variable(var_id_++, d.get_value()));
+            }
         }
     }
 }
@@ -265,7 +275,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
         node->set_edges(&node_edge_map.at(node->get_id()));
     }
 
-    return stochastic_model_t(get_node(init_node_id_), to_array(&timer_list_), array_t<clock_variable*>(0));
+    return stochastic_model_t(get_node(init_node_id_), to_array(&timer_list_), to_array(&var_list_));
 }
 
 __host__ stochastic_model_t uppaal_tree_parser::parse(char* file_path)

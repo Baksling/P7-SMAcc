@@ -225,15 +225,16 @@ expression* update_expression_evaluator::eval_exp6()
                     cout.flush();
                     string var = token;
                     expression* result;
-                    
+
                     if (local_vars_->count(var))
-                        result = expression::literal_expression(local_vars_->at(var));
+                        result = expression::variable_expression(local_vars_->at(var));
                     else if (global_vars_->count(var))
-                        result = expression::literal_expression(global_vars_->at(var));
+                        result = expression::variable_expression(global_vars_->at(var));
                     else
                     {
                         THROW_LINE("VAR NOT DECLARED")
                     }
+                    
                     get_token();
                     return result;
                 }
