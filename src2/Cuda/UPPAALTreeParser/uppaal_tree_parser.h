@@ -36,7 +36,10 @@ class uppaal_tree_parser
 private:
     int init_node_id_{};
     list<clock_variable*> timer_list_{};
+    list<clock_variable*> var_list_{};
     int timer_amount_ = 0;
+    int var_id_ = 0;
+    int clock_id_ = 0;
     map<string, int> timers_map_{};
     map<string, int> vars_map_{};
     map<string, int> global_vars_map_{};
