@@ -6,7 +6,7 @@
 #include "../Cuda/Projekt/update_d.h"
 #include "../Cuda/Projekt/guard_d.h"
 #include "../Cuda/Projekt/uneven_list.h"
-#include "../Cuda/Projekt/timer_d.h"
+#include "../Cuda/Domain/timer_d.h"
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <map>

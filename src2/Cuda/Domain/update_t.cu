@@ -26,7 +26,8 @@ CPU GPU void update_t::apply_update(simulator_state* state) const
     else
     {
         //value is rounded correctly by adding 0.5. casting always rounds down.
-        state->variables.at(this->variable_id_)->set_time(static_cast<int>(value + 0.5));  // NOLINT(bugprone-incorrect-roundings)
+        state->variables.at(this->variable_id_)->set_time(value);  // NOLINT(bugprone-incorrect-roundings)
+        printf("--------Variable id: %d | value: %f\n", this->variable_id_ , state->variables.at(this->variable_id_)->get_time());
     }
 }
 
@@ -41,7 +42,7 @@ CPU GPU void update_t::apply_temp_update(simulator_state* state) const
     {
         //value is rounded correctly by adding 0.5. casting always rounds down.
         state->variables.at(this->variable_id_)
-            ->set_temp_time(static_cast<int>(value + 0.5));  // NOLINT(bugprone-incorrect-roundings)
+            ->set_temp_time(value);  // NOLINT(bugprone-incorrect-roundings)
     }
 }
 

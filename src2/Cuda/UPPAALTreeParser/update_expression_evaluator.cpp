@@ -13,15 +13,9 @@ update_expression_evaluator::update_expression_evaluator(map<string,int>* local_
 // Parser entry point.
 expression* update_expression_evaluator::eval_exp(char *exp)
 {
-    cout << "\n ::::3::::";
-    cout.flush();
     
     exp_ptr = exp;
-    cout << "\n ::::4::::";
-    cout.flush();
     get_token();
-    cout << "\n ::::5::::";
-    cout.flush();
     
     if (!*token) 
     {
@@ -33,10 +27,6 @@ expression* update_expression_evaluator::eval_exp(char *exp)
     {
         THROW_LINE("Syntax Error")
     }
-    cout << "\n ::::12::::";
-    cout.flush();
-    cout << "\n ::::77::::"<<result->get_value();
-    cout.flush();
     return result;
 }
 // Process an assignment.
@@ -68,8 +58,6 @@ expression* update_expression_evaluator::eval_exp1()
         }
     }
     result = eval_exp2();
-    cout << "\n ::::66::::"<<result->get_value();
-    cout.flush();
     return result;
 }
 // Add or subtract two terms.
@@ -77,8 +65,6 @@ expression* update_expression_evaluator::eval_exp1()
 {
     char op;
     expression* result = eval_exp3();
-    cout << "\n ::::55::::"<<result->get_value();
-    cout.flush();
     
     while ((op = *token) == '+' || op == '-')
     {
@@ -101,8 +87,6 @@ expression* update_expression_evaluator::eval_exp3()
     char op;
     double temp;
     expression* result = eval_exp4();
-    cout << "\n ::::44::::"<<result->get_value();
-    cout.flush();
     while ((op = *token) == '*' || op == '/')
     {
         get_token();
@@ -121,10 +105,7 @@ expression* update_expression_evaluator::eval_exp3()
 // Process an exponent.
 expression* update_expression_evaluator::eval_exp4()
 {
-    double temp;
     expression* result = eval_exp5();
-    cout << "\n ::::33::::"<<result->get_value();
-    cout.flush();
     while (*token == '^')
     {
         // get_token();
@@ -144,8 +125,6 @@ expression* update_expression_evaluator::eval_exp5()
         get_token();
     }
     expression* result = eval_exp6();
-    cout << "\n ::::22::::"<<result->get_value();
-    cout.flush();
     return result;
     if (op == '-')
     {
@@ -241,13 +220,9 @@ expression* update_expression_evaluator::eval_exp6()
                 
             case UPDATENUMBER:
                 {
-                    cout << "\n ::::10::::";
-                    cout.flush();
                     expression* result =  expression::literal_expression(atof(token));
                     //result = atof(token);
                     get_token();
-                    cout << "\n ::::11::::"<<result->get_value();
-                    cout.flush();
                     return result;
                 }
             default:
@@ -293,15 +268,7 @@ void update_expression_evaluator::get_token()
 
 expression* update_expression_evaluator::parse_update_expr(string input, map<string, int>* local_vars, map<string, int>* global_vars)
 {
-    cout << "\n ::::1::::" << input;
     update_expression_evaluator ob(local_vars, global_vars);
-    cout << "\n ::::3::::" << input;
-    cout << "\n ::::2::::" << input;
-    cout.flush();
     expression* ans = ob.eval_exp((char*)input.substr(0,input.length()).c_str());
-    cout << "\n13: " <<"\n";
-    cout.flush();
-    cout << "\n ::::88::::"<<ans->get_value();
-    cout.flush();
     return ans;
 }

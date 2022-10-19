@@ -56,6 +56,10 @@ int main(int argc, const char* argv[])
     
     std::cout << "Fuck you\n";
 
+    array_t<clock_variable*> variable_arr = array_t<clock_variable*>(2);
+    variable_arr.arr()[0] = new clock_variable(0, 10);
+    variable_arr.arr()[1] = new clock_variable(1, 5);
+    
     constraint_t* con0 = constraint_t::less_equal_v(0, 10.0f);
     constraint_t* con1 = constraint_t::less_equal_v(0, 10.0f);
     // constraint_t con1 = constraint_t::less_equal_v(1, 10.0f);dbq84
@@ -70,13 +74,13 @@ int main(int argc, const char* argv[])
     node_t node1 = node_t(1, con0_arr, false,false);
     node_t node2 = node_t(2, array_t<constraint_t*>(0),false,true);
 
-    expression* exp1 = expression::plus_expression(expression::literal_expression(3), expression::literal_expression(4));
-    expression* exp2 = expression::minus_expression(expression::literal_expression(6), expression::literal_expression(4));
+    expression* exp1 = expression::plus_expression(expression::variable_expression(0), expression::variable_expression(1));
+    expression* exp2 = expression::minus_expression(expression::variable_expression(1), expression::literal_expression(4));
 
     std::list<update_t*> update_lst;
 
-    update_t update1 = update_t(0, 0, true, exp1);
-    update_t update2 = update_t(0, 1, true, exp2);
+    update_t update1 = update_t(0, 0, false, exp1);
+    update_t update2 = update_t(1, 1, false, exp2);
 
     update_lst.push_back(&update1);
     update_lst.push_back(&update2);
@@ -105,8 +109,6 @@ int main(int argc, const char* argv[])
     node1_lst.push_back(edge1_0);
     node1.set_edges(&node1_lst);
 
-    array_t<clock_variable*> variable_arr = array_t<clock_variable*>(1);
-    variable_arr.arr()[0] = new clock_variable(0, 10);
 
 
     pretty_visitor p_visitor;

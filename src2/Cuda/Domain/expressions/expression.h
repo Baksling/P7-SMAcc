@@ -74,8 +74,7 @@ public:
 
     //HOST methods
     std::string type_to_string() const;
-    std::string to_string();
-    int get_value();
+    std::string to_string() const;
     void accept(visitor* v) const;
     unsigned int get_depth() const;
     void cuda_allocate(expression* cuda_p, const allocation_helper* helper) const;

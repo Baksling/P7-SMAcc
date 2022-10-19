@@ -187,7 +187,7 @@ std::string expression::type_to_string() const
     return result;
 }
 
-std::string expression::to_string()
+std::string expression::to_string() const
 {
     std::string left, right, con;
     if (this->condition_ != nullptr) con = this->condition_->type_to_string();
@@ -196,13 +196,13 @@ std::string expression::to_string()
     else left = "nullptr";
     if (this->right_ != nullptr) right = this->right_->type_to_string();
     else right = "nullptr";
+    if (this->type_ == expression_type::literal_e)
+    {
+        return "Type: " + this->type_to_string() + " | Value: " + std::to_string(this->value_) + " | Condition: " + con + " | Left: " + left + " | Right: " + right + "\n";
+    }
     
-    return "Type: " + this->type_to_string() + " | Value: " + std::to_string(this->value_) + " | Condition: " + con + " | Left: " + left + " | Right: " + right + "\n";
-}
-
-int expression::get_value()
-{
-    return this->value_;
+    return "Type: " + this->type_to_string() + " | Condition: " + con + " | Left: " + left + " | Right: " + right + "\n";
+    
 }
 
 GPU CPU bool expression::is_leaf() const
