@@ -3,14 +3,11 @@
 #include "helper_methods.h"
 
 // Parser constructor.
-update_expression_evaluator::update_expression_evaluator()
+update_expression_evaluator::update_expression_evaluator(map<string,int>* local_vars, map<string,int>* global_vars)
 {
     exp_ptr = NULL;
-}
-
-void update_expression_evaluator::set_var_list(map<string, int>* vars)
-{
-    this->vars_ = vars;
+    local_vars_ = local_vars;
+    global_vars_ = global_vars;
 }
 
 // Parser entry point.
@@ -227,9 +224,16 @@ update_expression* update_expression_evaluator::eval_exp6()
                     cout << "\n ::::101::::" << token;
                     cout.flush();
                     string var = token;
+                    update_expression* result;
                     
-                    update_expression* result =  update_expression::literal_expression(vars_->at(var));
-                    // update_expression* result = update_expression::variable_expression(vars_.at(token));
+                    if (local_vars_->count(var))
+                        result = update_expression::literal_expression(local_vars_->at(var));
+                    else if (global_vars_->count(var))
+                        result = update_expression::literal_expression(global_vars_->at(var));
+                    else
+                    {
+                        THROW_LINE("VAR NOT DECLARED")
+                    }
                     get_token();
                     return result;
                 }
@@ -284,15 +288,14 @@ void update_expression_evaluator::get_token()
     }
     *temp = '\0';
     if ((tok_type == UPDATEVARIABLE) && (token[1]))
-        strcpy(errormsg, "Only first letter of variables is considered");
+        strcpy(errormsg, "Only first letter of variables is considered, NAAAAAT");
 }
 
-update_expression* update_expression_evaluator::parse_update_expr(string input, map<string, int>* vars)
+update_expression* update_expression_evaluator::parse_update_expr(string input, map<string, int>* local_vars, map<string, int>* global_vars)
 {
     cout << "\n ::::1::::" << input;
-    update_expression_evaluator ob;
+    update_expression_evaluator ob(local_vars, global_vars);
     cout << "\n ::::3::::" << input;
-    ob.set_var_list(vars);
     cout << "\n ::::2::::" << input;
     cout.flush();
     update_expression* ans = ob.eval_exp((char*)input.substr(0,input.length()).c_str());

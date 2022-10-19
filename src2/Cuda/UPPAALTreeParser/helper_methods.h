@@ -149,6 +149,14 @@ namespace helper
 //     return timers_map_.at(sub);
 // }
 
+    template <typename T>
+    void insert_into_list(list<list<T>>* t_list, int index, T item)
+    {
+        auto l_front = t_list->begin();
+        std::advance(l_front, index);
+        l_front->emplace_back(item);
+    }
+
     inline list<std::string> split_expr(const string& expr)
     {
         list<string> result;

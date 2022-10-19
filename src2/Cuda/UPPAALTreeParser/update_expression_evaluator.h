@@ -28,7 +28,8 @@ class update_expression_evaluator {
     char token[256]; // holds current token
     char tok_type; // holds token's type
     double vars[UPDATE_NUMVARS]; // holds variable's values
-    map<string, int>* vars_;
+    map<string, int>* local_vars_;
+    map<string, int>* global_vars_;
     update_expression* eval_exp1();
     update_expression* eval_exp2();
     update_expression* eval_exp3();
@@ -38,9 +39,8 @@ class update_expression_evaluator {
     update_expression* eval_exp(char *exp);
     void get_token();
 public:
-    update_expression_evaluator();
-    void set_var_list(map<string, int>* vars);
-    static update_expression* parse_update_expr(string input, map<string, int>* vars);
+    update_expression_evaluator(map<string,int>* local_vars, map<string,int>* global_vars);
+    static update_expression* parse_update_expr(string input, map<string, int>* local_vars, map<string, int>* global_vars);
     
     char errormsg[64];
 };

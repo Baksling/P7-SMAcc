@@ -88,8 +88,26 @@ int uppaal_tree_parser::get_timer_id(const string& expr) const
 
 void uppaal_tree_parser::init_clocks(const xml_document* doc)
 {
+    int clock_id = 0;
     declaration_parser dp;
-    string global_decl = doc->child("declaration").child_value();
+    string global_decl = doc->child("nta").child("declaration").child_value();
+    cout << "\nGLOBAL GUYS: " << global_decl << " :NICE\n";
+    global_decl = replace_all(global_decl, " ", "");
+    list<declaration> decls = dp.parse(global_decl);
+    cout << "\nSIZE: " << decls.size() << "\n";
+        
+    for (declaration d : decls)
+    {
+        //global declarations
+        if(d.get_type() == clock_type)
+        {
+            timers_map_.insert_or_assign(d.get_name(),clock_id);
+            timer_list_.push_back(new clock_timer_t(clock_id++, d.get_value()));
+        }
+            
+        global_vars_map_.insert_or_assign(d.get_name(), d.get_value());
+    }
+    
     
     for (pugi::xml_node templates: doc->child("nta").children("template"))
     {
@@ -97,13 +115,17 @@ void uppaal_tree_parser::init_clocks(const xml_document* doc)
         decl = replace_all(decl, " ", "");
         list<declaration> declarations = dp.parse(decl);
         cout << "\nSIZE: " << declarations.size() << "\n";
-        int clock_id = 0;
+        
         for (declaration d : declarations)
         {
-            d.to_string();
-            timers_map_.insert_or_assign(d.get_name(),clock_id);
+            //local declarations
+            if(d.get_type() == clock_type)
+            {
+                timers_map_.insert_or_assign(d.get_name(),clock_id);
+                timer_list_.push_back(new clock_timer_t(clock_id++, d.get_value()));
+            }
+            
             vars_map_.insert_or_assign(d.get_name(), d.get_value());
-            timer_list_.push_back(new clock_timer_t(clock_id++, d.get_value()));
         }
     }
 }
@@ -119,13 +141,6 @@ node_t* uppaal_tree_parser::get_node(const int target_id) const
             return node;
     }
     return nodes_->front();
-}
-
-template <typename T> void insert_into_list(list<list<T>>* t_list, int index, T item)
-{
-    auto l_front = t_list->begin();
-    std::advance(l_front, index);
-    l_front->emplace_back(item);
 }
 
 
@@ -229,7 +244,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                         if (expr.empty())
                             continue;
                         cout << "\nASS: " << expr <<"\n";
-                        updates.push_back(new update_t(update_id++, get_timer_id(expr), true, update_parser::parse(expr, &vars_map_)));
+                        updates.push_back(new update_t(update_id++, get_timer_id(expr), true, update_parser::parse(expr, &vars_map_, &global_vars_map_)));
                         cout << "\nIT OK: " << expr <<"\n";
                         cout.flush();
                     }
@@ -251,6 +266,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             
             node_edge_map.at(source_id).push_back(result_edge);
         }
+        vars_map_.clear();
     }
 
     for(node_t* node: *nodes_)

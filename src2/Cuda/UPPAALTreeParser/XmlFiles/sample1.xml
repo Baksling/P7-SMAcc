@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
 <nta>
-	<declaration>// Place global declarations here.</declaration>
+	<declaration>// Place global declarations here.
+const int globalca = 1*5+40/40-(40+2)*2;</declaration>
 	<template>
 		<name x="5" y="5">Template</name>
 		<declaration>// Place local declarations here.
@@ -19,7 +20,7 @@ const int ca = 1*5+40/40-(40+2)*2;</declaration>
 			<source ref="id0"/>
 			<target ref="id2"/>
 			<label kind="guard" x="8" y="-34">x &lt;= 3</label>
-			<label kind="assignment" x="17" y="-17">x = 100 + ca</label>
+			<label kind="assignment" x="17" y="-17">x = 100 + globalca</label>
 		</transition>
 		<transition>
 			<source ref="id0"/>

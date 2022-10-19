@@ -11,5 +11,5 @@ class update_parser
 {
 private:
 public:
-    static update_expression* parse(string decl, map<string, int>* vars);
+    static update_expression* parse(string decl, map<string, int>* local_vars, map<string, int>* global_vars);
 };

@@ -30,6 +30,7 @@ private:
     int timer_amount_ = 0;
     map<string, int> timers_map_;
     map<string, int> vars_map_;
+    map<string, int> global_vars_map_;
     list<node_t*>* nodes_ = new list<node_t*>();
     list<int> branchpoint_nodes;
     int get_timer_id(const string& expr) const;

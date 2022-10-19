@@ -6,9 +6,15 @@
   <component name="ChangeListManager">
     <list default="true" id="c81c9d2a-66d3-4b0c-b40b-c667cea459e8" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.src2/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/XmlFiles/ff15.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/XmlFiles/ff15.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/XmlFiles/sample1.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/XmlFiles/sample1.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/helper_methods.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/helper_methods.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/update_expression_evaluator.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/update_expression_evaluator.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/update_expression_evaluator.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/update_expression_evaluator.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/update_parser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/update_parser.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/update_parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/update_parser.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/uppaal_tree_parser.cu" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/uppaal_tree_parser.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/uppaal_tree_parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cuda/UPPAALTreeParser/uppaal_tree_parser.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -124,6 +130,7 @@
       <workItem from="1665647630115" duration="4748000" />
       <workItem from="1665652746085" duration="28228000" />
       <workItem from="1666028792637" duration="928000" />
+      <workItem from="1666104886635" duration="2834000" />
     </task>
     <servers />
   </component>

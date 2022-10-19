@@ -28,7 +28,7 @@ int d = 1*5+40/40-(40+2)*2</declaration>
 		<transition>
 			<source ref="id0"/>
 			<target ref="id1"/>
-			<label kind="guard" x="-17" y="-85">y&lt;=10</label>
+			<label kind="guard" x="-17" y="-85">y&lt;=10+d</label>
 			<nail x="0" y="-51"/>
 		</transition>
 	</template>
