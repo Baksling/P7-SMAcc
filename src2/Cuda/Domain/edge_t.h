@@ -3,10 +3,15 @@
 #ifndef EDGE_T_H
 #define EDGE_T_H
 
-#include "common.h"
 #include <list>
+#include "../common/macro.h"
+#include "../common/array_t.h"
+#include "../common/allocation_helper.h"
+#include "constraint_t.h"
+#include "update_t.h"
+#include "simulator_state.h"
+#include "../Visitors/visitor.h"
 
-class node_t;
 
 class edge_t
 {
@@ -22,17 +27,18 @@ public:
 
     //SIMULATION METHODS
     GPU CPU node_t* get_dest() const;
-    CPU GPU bool evaluate_constraints(const lend_array<clock_timer_t>* timers, const lend_array<system_variable>* variables) const;
-    CPU GPU void execute_updates(const lend_array<clock_timer_t>* timers, const lend_array<system_variable>* variables) const;
+    CPU GPU bool evaluate_constraints(simulator_state* state) const;
+    CPU GPU void execute_updates(simulator_state* state
+    ) const;
     CPU GPU float get_weight() const;
 
 
     //HOST METHODS
-    void set_updates(std::list<update_t*>* updates);
-    int get_id() const;
     void accept(visitor* v) const;
+    void pretty_print() const;
     void cuda_allocate(edge_t** pointer, const allocation_helper* helper);
     void cuda_allocate_2(edge_t* cuda_p, const allocation_helper* helper);
+    int get_updates_size() const;
 };
 
 #endif

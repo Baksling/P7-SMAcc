@@ -1,20 +1,8 @@
-﻿#pragma once
+#ifndef ARRAY_T_H
+#define ARRAY_T_H
 
-#ifndef COMMON_H
-#define COMMON_H
-
-#include <cuda.h>
-#include <cuda_runtime.h>
+#include "macro.h"
 #include <list>
-#include <iostream>
-#include <unordered_map>
-
-#define GPU __device__
-#define CPU __host__
-#define GLOBAL __global__
-#define IS_GPU __CUDACC__
-
-
 
 template<typename T>
 struct array_t
@@ -68,51 +56,10 @@ public:
 };
 
 template<typename T>
-struct lend_array
-{
-private:
-    T* store_;
-    int size_;
-public:
-    GPU CPU explicit lend_array(array_t<T>* arr)
-    {
-        this->size_ = arr->size();
-        this->store_ = arr->arr();
-    }
-    GPU CPU explicit lend_array(T* store, int size)
-    {
-        this->size_ = size;
-        this->store_ = store;
-    }
-    GPU CPU T* at(int i) const
-    {
-        if(i < 0 || i >= this->size_)
-            return nullptr;
-        return &this->store_[i];
-    }
-
-    GPU CPU T get(int i) const
-    {
-        if(i < 0 || i >= this->size_)
-            return nullptr;
-        return this->store_[i];
-    }
-    
-    GPU CPU int size() const
-    {
-        return this->size_;
-    }
-};
-
-
-template<typename T>
 array_t<T> to_array(std::list<T>* list)
 {
     int size = static_cast<int>(list->size());
-
-    if (size == 0)
-        return array_t<T>(0);
-    
+    if(size == 0) return array_t<T>(0);
     T* arr = static_cast<T*>(malloc(sizeof(T)*size));
 
     int i = 0;
@@ -130,6 +77,7 @@ template<typename T>
 array_t<T> cuda_to_array(std::list<T>* list, std::list<void*>* free_list)
 {
     int size = static_cast<int>(list->size());
+    if(size == 0) return array_t<T>(0);
     T* cuda_arr = nullptr;
     T* local_arr = static_cast<T*>(malloc(sizeof(T)*size));
     cudaMalloc(&cuda_arr, sizeof(T) * size);
@@ -147,48 +95,5 @@ array_t<T> cuda_to_array(std::list<T>* list, std::list<void*>* free_list)
     free(local_arr);
     return info;
 }
-
-template<typename T>
-array_t<T> to_array_as_pointers(std::list<T*>* list)
-{
-    int size = static_cast<int>(list->size());
-    T* arr = static_cast<T*>(malloc(sizeof(T)*size));
-
-    int i = 0;
-    for(T* item : *list)
-    {
-        arr[i] = *item;
-        i++;
-    }
-
-    array_t<T> info = array_t<T>(arr, size);
-    return info;
-}
-
-class visitor;
-class edge_t;
-class node_t;
-class constraint_t;
-class clock_timer_t;
-class update_t;
-class stochastic_model_t;
-class system_variable;
-class update_expression;
-
-struct allocation_helper
-{
-    std::list<void*>* free_list;
-    std::unordered_map<node_t*, node_t*>* node_map;
-};
-
-#include "visitor.h"
-#include "constraint_t.h"
-#include "edge_t.h"
-#include "stochastic_model_t.h"
-#include "clock_timer_t.h"
-#include "node_t.h"
-#include "update_t.h"
-#include "system_variable.h"
-
 
 #endif

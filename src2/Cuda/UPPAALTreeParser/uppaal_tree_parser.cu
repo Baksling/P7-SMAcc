@@ -1,4 +1,4 @@
-﻿#include "uppaal_tree_parser.h"
+#include "uppaal_tree_parser.h"
 
 #include "declaration.h"
 #include "declaration_parser.h"
@@ -274,7 +274,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
         node->set_edges(&node_edge_map.at(node->get_id()));
     }
 
-    return stochastic_model_t(get_node(init_node_id_), to_array(&timer_list_), array_t<system_variable*>(0));
+    return stochastic_model_t(get_node(init_node_id_), to_array(&timer_list_), array_t<clock_variable*>(0));
 }
 
 __host__ stochastic_model_t uppaal_tree_parser::parse(char* file_path)

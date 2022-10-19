@@ -1,4 +1,5 @@
 ﻿#include "edge_t.h"
+#include "node_t.h"
 
 
 edge_t::edge_t(edge_t* source, node_t* dest, const array_t<constraint_t*> guard, const array_t<update_t*> updates)
@@ -29,37 +30,41 @@ CPU GPU node_t* edge_t::get_dest() const
     return this->dest_;
 }
 
-void edge_t::set_updates(std::list<update_t*>* updates)
+CPU GPU bool edge_t::evaluate_constraints(simulator_state* state) const
 {
-    this->updates_ = to_array(updates);
-}
-
-CPU GPU bool edge_t::evaluate_constraints(const lend_array<clock_timer_t>* timers, const lend_array<system_variable>* variables) const
-{
-    for (int i = 0; i < this->updates_.size(); ++i)
-    {
-        update_t* update = this->updates_.get(i);
-        clock_timer_t* clock = timers->at(update->get_timer_id());
-        clock->set_temp_time(update->evaluate_expression(timers, variables));
-    }
-    const bool valid_dest = this->dest_->evaluate_invariants(timers);
-
-    for (int i = 0; i < this->updates_.size(); ++i)
-    {
-        clock_timer_t* clock = timers->at(this->updates_.get(i)->get_timer_id());
-        if (clock != nullptr)
-            clock->reset_temp_time();
-    }
-    
-    if(!valid_dest) return false;
-
+    //Evaluate guards
     for (int i = 0; i < this->guards_.size(); ++i)
     {
-        if(!this->guards_.get(i)->evaluate(timers))
+        if(!this->guards_.get(i)->evaluate(&state->timers))
             return false;
     }
-    
-    return true;
+
+    //Evaluate destination node
+    //Only if guards pass
+    for (int i = 0; i < this->updates_.size(); ++i)
+    {
+        const update_t* update = this->updates_.get(i);
+        update->apply_temp_update(state);
+    }
+    //check destination node using temporary update values
+    const bool valid_dest = this->dest_->evaluate_invariants(state);
+
+    //reset updates
+    for (int i = 0; i < this->updates_.size(); ++i)
+    {
+        this->updates_.get(i)->reset_temp_update(state);
+    }
+
+    //reset updates first
+    return valid_dest;
+}
+
+CPU GPU void edge_t::execute_updates(simulator_state* state) const
+{
+    for (int i = 0; i < this->updates_.size(); ++i)
+    {
+        this->updates_.get(i)->apply_update(state);
+    }
 }
 
 void edge_t::accept(visitor* v) const
@@ -67,7 +72,6 @@ void edge_t::accept(visitor* v) const
     //visit edge guards
     for (int i = 0; i < this->guards_.size(); ++i)
     {
-        printf("        ");
         v->visit(this->guards_.get(i));
     }
 
@@ -75,16 +79,14 @@ void edge_t::accept(visitor* v) const
     for (int i = 0; i < this->updates_.size(); ++i)
     {
         update_t* temp = *updates_.at(i);
-        v->visit(*&*&*&*/*&*&*&*/&*&*&*&temp);
+        v->visit(temp);
     }
-
-    //dont visit destination. Handled by node itself.
 }
 
-
-int edge_t::get_id() const
+void edge_t::pretty_print() const
 {
-    return this->id_;
+    printf("Edge id: %3d | Weight: %4f | Dest node: %3d \n", this->id_, this->weight_,
+           this->dest_->get_id());
 }
 
 void edge_t::cuda_allocate(edge_t** pointer, const allocation_helper* helper)
@@ -103,12 +105,12 @@ void edge_t::cuda_allocate(edge_t** pointer, const allocation_helper* helper)
         this->dest_->cuda_allocate(&node_p, helper); //linear node
     }
 
-    std::list<constraint_t*> invariant_lst;
+    std::list<constraint_t*> guard_lst;
     for (int i = 0; i < this->guards_.size(); ++i)
     {
         constraint_t* invariant_p = nullptr;
         this->guards_.get(i)->cuda_allocate(&invariant_p, helper);
-        invariant_lst.push_back(invariant_p);
+        guard_lst.push_back(invariant_p);
     }
     
     std::list<update_t*> updates;
@@ -123,7 +125,7 @@ void edge_t::cuda_allocate(edge_t** pointer, const allocation_helper* helper)
     }
     
     const edge_t result(this, node_p,
-        cuda_to_array(&invariant_lst, helper->free_list), cuda_to_array(&updates, helper->free_list));
+        cuda_to_array(&guard_lst, helper->free_list), cuda_to_array(&updates, helper->free_list));
     cudaMemcpy(*pointer, &result, sizeof(edge_t), cudaMemcpyHostToDevice);
 }
 
@@ -133,13 +135,7 @@ void edge_t::cuda_allocate_2(edge_t* cuda_p, const allocation_helper* helper)
     return;
 }
 
-
-CPU GPU void edge_t::execute_updates(
-    const lend_array<clock_timer_t>* timers,
-    const lend_array<system_variable>* variables) const
+int edge_t::get_updates_size() const
 {
-    for (int i = 0; i < this->updates_.size(); ++i)
-    {
-        this->updates_.get(i)->apply_update(timers, variables);
-    }
+    return this->updates_.size();
 }

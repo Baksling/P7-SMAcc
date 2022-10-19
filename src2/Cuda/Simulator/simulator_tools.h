@@ -1,16 +1,10 @@
 ﻿#ifndef SIMULATOR_TOOLS_H
 #define SIMULATOR_TOOLS_H
 
-#include "../Domain/common.h"
-#include <iostream>
+#include "../common/macro.h"
 #include <map>
 #include "simulation_strategy.h"
-#include <cuda.h>
-#include <cuda_runtime.h>
-#include <curand.h>
-#define QUALIFIERS static __forceinline__ __host__ __device__
-#include <curand_kernel.h>
-#undef QUALIFIERS
+
 
 
 class bit_handler

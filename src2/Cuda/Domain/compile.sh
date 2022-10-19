@@ -1,2 +1,3 @@
 #!/bin/bash
-nvcc ../Simulator/*.cu ./*.cu ../UPPAALTreeParser/*.cu ../UPPAALTreeParser/*.cpp ./UpdateExpressions/*.cu -o ./a.out -rdc=true
+# nvcc script
+nvcc main.cu ./Simulator/*.cu ./UPPAALTreeParser/*.cu ./UPPAALTreeParser/*.cpp ./Domain/*.cu ./Visitors/*.cu ./Domain/expressions/*.cu -rdc=true -o ./a.out

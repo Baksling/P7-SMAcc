@@ -1,14 +1,16 @@
 ﻿
-#include "common.h"
 #include <iostream>
-#include "pretty_visitor.h"
-#include "../UPPAALTreeParser/uppaal_tree_parser.h"
+#include "Visitors/domain_analysis_visitor.h"
+#include "Visitors/pretty_visitor.h"
+#include "UPPAALTreeParser/uppaal_tree_parser.h"
+#include "Simulator/simulation_strategy.h"
+#include "Simulator/stochastic_simulator.h"
+#include "common/argparser.h"
 
-#include "../Simulator/simulation_strategy.h"
-#include "../Simulator/stochastic_simulator.h"
-#include "argparser.h"
+#include "Domain/edge_t.h"
 
 using namespace argparse;
+
 
 int main(int argc, const char* argv[])
 {
@@ -54,8 +56,8 @@ int main(int argc, const char* argv[])
     std::cout << "Fuck you\n";
 
     constraint_t* con0 = constraint_t::less_equal_v(0, 10.0f);
-    constraint_t* con1 = constraint_t::greater_equal_t(0, 10.0f);
-    // constraint_t con1 = constraint_t::less_equal_v(1, 10.0f);
+    constraint_t* con1 = constraint_t::less_equal_v(0, 10.0f);
+    // constraint_t con1 = constraint_t::less_equal_v(1, 10.0f);dbq84
     // constraint_t con2 = constraint_t::greater_equal_v(0, 0.0f);
 
     array_t<constraint_t*> con0_arr = array_t<constraint_t*>(1);
@@ -64,17 +66,17 @@ int main(int argc, const char* argv[])
     con0_arr.arr()[0] = con0;
     con1_arr.arr()[0] = con1;
     node_t node0 = node_t(0, con0_arr, false,false);
-    node_t node1     = node_t(1, con0_arr, false,false);
+    node_t node1 = node_t(1, con0_arr, false,false);
     node_t node2 = node_t(2, array_t<constraint_t*>(0),false,true);
 
-    update_expression* exp1 = update_expression::plus_expression(update_expression::literal_expression(3), update_expression::literal_expression(4));
-    update_expression* exp2 = update_expression::minus_expression(update_expression::literal_expression(6), update_expression::literal_expression(4));
+    expression* exp1 = expression::plus_expression(expression::literal_expression(3), expression::literal_expression(4));
+    expression* exp2 = expression::minus_expression(expression::literal_expression(6), expression::literal_expression(4));
 
     std::list<update_t*> update_lst;
 
     update_t update1 = update_t(0, 0, true, exp1);
     update_t update2 = update_t(0, 1, true, exp2);
-    
+
     update_lst.push_back(&update1);
     update_lst.push_back(&update2);
 
@@ -84,11 +86,11 @@ int main(int argc, const char* argv[])
     edge_t* edge0_2 = new edge_t(1, 1, &node2, array_t<constraint_t*>(0), update_arr);
     edge_t* edge1_0 = new edge_t(2, 1, &node0, array_t<constraint_t*>(0), update_arr);
 
-    clock_timer_t timer1 = clock_timer_t(0, 0.0);
-    clock_timer_t timer2 = clock_timer_t(1, 0.0);
+    clock_variable timer1 = clock_variable(0, 0.0);
+    clock_variable timer2 = clock_variable(1, 0.0);
 
 
-    std::list<clock_timer_t*> clock_lst;
+    std::list<clock_variable*> clock_lst;
     clock_lst.push_back(&timer1);
     clock_lst.push_back(&timer2);
     
@@ -102,10 +104,12 @@ int main(int argc, const char* argv[])
     node1_lst.push_back(edge1_0);
     node1.set_edges(&node1_lst);
 
-    array_t<system_variable*> variable_arr = array_t<system_variable*>(0);
+    array_t<clock_variable*> variable_arr = array_t<clock_variable*>(0);
 
 
-    pretty_visitor visitor;
+    pretty_visitor p_visitor;
+    domain_analysis_visitor d_visitor;
+    
     stochastic_model_t model(&node0, to_array(&clock_lst), variable_arr);
     if (parser.exists("m"))
     {
@@ -121,8 +125,10 @@ int main(int argc, const char* argv[])
 
         delete[] writeable;
     }
-    visitor.visit(&model);
-
+    p_visitor.visit(&model);
+    d_visitor.visit(&model);
+    auto [max_expression, max_updates] = d_visitor.get_results();
+    printf("Max exp: %d | Max updates: %d\n", max_expression, max_updates);
     if (mode == 2 || mode == 0)
     {
         cout << "GPU SIMULATIONS STARTED! \n";

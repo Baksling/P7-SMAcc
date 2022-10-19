@@ -1,10 +1,19 @@
 ﻿#include "stochastic_simulator.h"
+#include "thread_pool.h"
+#include <map>
+#include "device_launch_parameters.h"
+#include <chrono>
+#include "simulator_tools.h"
+#include "../Domain/edge_t.h"
+
 using namespace std::chrono;
 
 
-CPU GPU edge_t* find_valid_edge_heap(const lend_array<edge_t*>* edges,
-    const lend_array<clock_timer_t>* timer_arr, const lend_array<system_variable>* variables,
-    curandState* states, const unsigned int thread_id)
+
+CPU GPU edge_t* find_valid_edge_heap(
+    simulator_state* state,
+    const lend_array<edge_t*>* edges,
+    curandState* r_state)
 {
     // return nullptr;
     edge_t** valid_edges = static_cast<edge_t**>(malloc(sizeof(edge_t*) * edges->size()));  // NOLINT(bugprone-sizeof-expression)
@@ -15,7 +24,7 @@ CPU GPU edge_t* find_valid_edge_heap(const lend_array<edge_t*>* edges,
     {
         valid_edges[i] = nullptr; //clean malloc
         edge_t* edge = edges->get(i);
-        if(edge->evaluate_constraints(timer_arr, variables))
+        if(edge->evaluate_constraints(state))
             valid_edges[valid_count++] = edge;
     }
     
@@ -40,7 +49,7 @@ CPU GPU edge_t* find_valid_edge_heap(const lend_array<edge_t*>* edges,
 
     //curand_uniform return ]0.0f, 1.0f], but we require [0.0f, 1.0f[
     //conversion from float to int is floored, such that a array of 10 (index 0..9) will return valid index.
-    const float r_val = (1.0f - curand_uniform(&states[thread_id]))*weight_sum;
+    const float r_val = (1.0f - curand_uniform(r_state))*weight_sum;
     float r_acc = 0.0; 
 
     //pick the weighted random value.
@@ -62,9 +71,10 @@ CPU GPU edge_t* find_valid_edge_heap(const lend_array<edge_t*>* edges,
     return edge;
 }
 
-CPU GPU edge_t* find_valid_edge_fast(const lend_array<edge_t*>* edges,
-    const lend_array<clock_timer_t>* timers, const lend_array<system_variable>* variables,
-    curandState* states, const unsigned int thread_id)
+CPU GPU edge_t* find_valid_edge_fast(
+    simulator_state* state,
+    const lend_array<edge_t*>* edges,
+    curandState* r_state)
 {
     unsigned long long valid_edges_bitarray = 0UL;
     unsigned int valid_count = 0;
@@ -73,7 +83,7 @@ CPU GPU edge_t* find_valid_edge_fast(const lend_array<edge_t*>* edges,
     for (int i = 0; i < edges->size(); ++i)
     {
         edge_t* edge = edges->get(i);
-        if(edge->evaluate_constraints(timers,variables))
+        if(edge->evaluate_constraints(state))
         {
             bit_handler::set_bit(&valid_edges_bitarray, i);
             valid_edge = edge;
@@ -94,7 +104,7 @@ CPU GPU edge_t* find_valid_edge_fast(const lend_array<edge_t*>* edges,
 
     //curand_uniform return ]0.0f, 1.0f], but we require [0.0f, 1.0f[
     //conversion from float to int is floored, such that a array of 10 (index 0..9) will return valid index.
-    const float r_val = (1.0f - curand_uniform(&states[thread_id])) * weight_sum;
+    const float r_val = (1.0f - curand_uniform(r_state)) * weight_sum;
     float r_acc = 0.0; 
 
     //pick the weighted random value.
@@ -113,33 +123,31 @@ CPU GPU edge_t* find_valid_edge_fast(const lend_array<edge_t*>* edges,
     return valid_edge;
 }
 
-CPU GPU edge_t* choose_next_edge(const lend_array<edge_t*>* edges,
-    const lend_array<clock_timer_t>* timer_arr, const lend_array<system_variable>* variables,
-    curandState* states, const unsigned int thread_id)
+CPU GPU edge_t* choose_next_edge(simulator_state* state, const lend_array<edge_t*>* edges, curandState* r_state)
 {
     //if no possible edges, return null pointer
     if(edges->size() == 0) return nullptr;
     if(edges->size() == 1)
     {
         edge_t* edge = edges->get(0);
-        return edge->evaluate_constraints(timer_arr, variables)
+        return edge->evaluate_constraints(state)
                 ? edge
                 : nullptr;
     }
 
     if(static_cast<unsigned long long>(edges->size()) < sizeof(unsigned long long)*8)
-        return find_valid_edge_fast(edges, timer_arr, variables, states, thread_id);
+        return find_valid_edge_fast(state, edges, r_state);
     else
-        return find_valid_edge_heap(edges, timer_arr, variables, states, thread_id);
+        return find_valid_edge_heap(state, edges, r_state);
 }
 
-CPU GPU void progress_time(const lend_array<clock_timer_t>* timers, const node_t* node,
+CPU GPU void progress_time(simulator_state* state, const node_t* node,
     const double max_global_progress, curandState* r_state)
 {
     //Get random uniform value between ]0.0f, 0.1f] * difference gives a random uniform range of ]0, diff]
     double max_progression = 0.0; //only set when has_upper_bound == true
-    const bool has_upper_bound = node->max_time_progression(timers, &max_progression);
-    const double lambda = static_cast<double>(node->get_lambda());
+    const bool has_upper_bound = node->max_time_progression(&state->timers, &max_progression);
+    const double lambda = node->get_lambda(state);
     double time_progression;
     
     if(lambda <= 0 && has_upper_bound) //chose uniform distribution between 0 and upper bound
@@ -148,15 +156,8 @@ CPU GPU void progress_time(const lend_array<clock_timer_t>* timers, const node_t
     }
     else if(lambda > 0 && has_upper_bound) //choose exponential distribution between 0 and upper bound
     {
-        // time_progression = (max_progression
-        // - ( (1 - lambda*exp(-lambda* curand_uniform_double(r_state) * max_progression))
-        // * max_progression)) / lambda;
-        
-        // time_progression = (exp(-lambda*0) - exp(-lambda*curand_uniform_double(r_state) * max_progression))
-        //                 /  (exp(-lambda*0) - exp(-lambda*max_progression));
-        
-        time_progression = (1 - exp(-lambda*curand_uniform_double(r_state) * max_progression))
-                        /  (1 - exp(-lambda*max_progression));
+        time_progression = (max_progression) * (1 - (1 - exp(-lambda*curand_uniform_double(r_state) * max_progression))
+                        /  (1 - exp(-lambda*max_progression)));
     }
     else if(lambda > 0) //choose exponential distribution between 0 and infinity
     {
@@ -176,9 +177,9 @@ CPU GPU void progress_time(const lend_array<clock_timer_t>* timers, const node_t
     }
 
     //update all timers by adding time_progression to each
-    for(int i = 0; i < timers->size(); i++)
+    for(int i = 0; i < state->timers.size(); i++)
     {
-        timers->at(i)->add_time(time_progression);
+        state->timers.at(i)->add_time(time_progression);
     }
 }
 
@@ -188,17 +189,24 @@ CPU GPU void simulate_stochastic_model(
     const model_options* options,
     curandState* r_state,
     int* output,
-    const unsigned long idx,
-    const double max_global_progression
+    const unsigned long idx
 )
 {
     curand_init(options->seed, idx, idx, &r_state[idx]);
+    
+    array_t<clock_variable> internal_timers = model->create_internal_timers();
+    array_t<clock_variable> internal_variables = model->create_internal_variables();
 
-    array_t<clock_timer_t> internal_timers = model->create_internal_timers();
-    array_t<system_variable> internal_variables = model->create_internal_variables();
-    const lend_array<clock_timer_t> lend_internal_timers = lend_array<clock_timer_t>(&internal_timers);
-    const lend_array<system_variable> lend_internal_variables = lend_array<system_variable>(&internal_variables);
+    
+    simulator_state state = {
+        cuda_stack<double>(options->max_expression_depth),
+        cuda_stack<expression*>(options->max_expression_depth*2+1),
+        lend_array<clock_variable>(&internal_variables),
+        lend_array<clock_variable>(&internal_timers)
+    };
 
+    
+    
     for (unsigned int i = 0; i < options->simulation_amount; ++i)
     {
         if(idx == 0 && i % 100 == 0) printf("Progress: %d/%d\n", i, options->simulation_amount);
@@ -206,10 +214,11 @@ CPU GPU void simulate_stochastic_model(
         const unsigned int sim_id = i + options->simulation_amount * static_cast<unsigned int>(idx);
         
         output[sim_id] = HIT_MAX_STEPS;
-        model->reset_timers(&internal_timers);
+        model->reset_timers(&internal_timers, &internal_variables);
         node_t* current_node = model->get_start_node();
         unsigned int steps = 0;
         bool hit_max_steps;
+        
         while(true)
         {
             if(steps >= options->max_steps_pr_sim)
@@ -219,30 +228,32 @@ CPU GPU void simulate_stochastic_model(
             }
             steps++;
             //check current position is valid
-            if(!current_node->evaluate_invariants(&lend_internal_timers))
+            if(!current_node->evaluate_invariants(&state))
             {
                 hit_max_steps = true;
                 break;
             }
+            
             //Progress time
             if (!current_node->is_branch_point())
             {
-                progress_time(&lend_internal_timers, current_node, max_global_progression,  &r_state[idx]);
+                progress_time(&state, current_node, options->max_global_progression,  &r_state[idx]);
             }
+            
             const lend_array<edge_t*> outgoing_edges = current_node->get_edges();
             if(outgoing_edges.size() <= 0)
             {
                 hit_max_steps = false;
                 break;
             }
-            const edge_t* next_edge = choose_next_edge(&outgoing_edges,
-                &lend_internal_timers, &lend_internal_variables, r_state, idx);
+            
+            const edge_t* next_edge = choose_next_edge(&state, &outgoing_edges, &r_state[idx]);
             if(next_edge == nullptr)
             {
                 continue;
             }
             current_node = next_edge->get_dest();
-            next_edge->execute_updates(&lend_internal_timers, &lend_internal_variables);
+            next_edge->execute_updates(&state);
             if(current_node->is_goal_node())
             {
                 hit_max_steps = false;
@@ -272,12 +283,11 @@ __global__ void gpu_simulate(
     const stochastic_model_t* model,
     const model_options* options,
     curandState* r_state,
-    int* output,
-    double max_time_progression
-)
+    int* output
+    )
 {
     const unsigned long idx = threadIdx.x + blockDim.x * blockIdx.x;
-    simulate_stochastic_model(model, options, r_state, output, idx, max_time_progression);
+    simulate_stochastic_model(model, options, r_state, output, idx);
 }
 
 
@@ -301,7 +311,9 @@ void stochastic_simulator::simulate_cpu(stochastic_model_t* model, simulation_st
     const model_options options = {
         strategy->simulation_amounts,
         strategy->max_sim_steps,
-        static_cast<unsigned long>(time(nullptr))
+        static_cast<unsigned long>(time(nullptr)),
+        strategy->max_time_progression,
+        500
     };
 
     std::map<int, unsigned long> node_results;
@@ -311,9 +323,9 @@ void stochastic_simulator::simulate_cpu(stochastic_model_t* model, simulation_st
 
     for (int i = 0; i < strategy->degree_of_parallelism(); i++)
     {
-        pool.queue_job([model, options, state, sim_results, i, strategy]()
+        pool.queue_job([model, options, state, sim_results, i]()
         {
-            simulate_stochastic_model(model, &options, state, sim_results, i, strategy->max_time_progression);
+            simulate_stochastic_model(model, &options, state, sim_results, i);
         });
     }
     pool.start();
@@ -333,7 +345,7 @@ void stochastic_simulator::simulate_cpu(stochastic_model_t* model, simulation_st
     free(state);
 }
 
-void stochastic_simulator::simulate_gpu(stochastic_model_t* model, simulation_strategy* strategy)
+void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, simulation_strategy* strategy)
 {
      //setup start variables
     const unsigned long total_simulations = strategy->total_simulations();
@@ -362,7 +374,9 @@ void stochastic_simulator::simulate_gpu(stochastic_model_t* model, simulation_st
     const model_options options = {
         strategy->simulation_amounts,
         strategy->max_sim_steps,
-        static_cast<unsigned long>(time(nullptr))
+        static_cast<unsigned long>(time(nullptr)),
+        strategy->max_time_progression,
+        500
     };
     cudaMalloc(&options_d, sizeof(model_options));
     cudaMemcpy(options_d, &options, sizeof(model_options), cudaMemcpyHostToDevice);
@@ -378,7 +392,7 @@ void stochastic_simulator::simulate_gpu(stochastic_model_t* model, simulation_st
     for (int i = 0; i < strategy->sim_count; ++i)
     {
         //simulate on device
-        gpu_simulate<<<strategy->block_n, strategy->threads_n>>>(model_d, options_d, state, cuda_results, strategy->max_time_progression);
+        gpu_simulate<<<strategy->block_n, strategy->threads_n>>>(model_d, options_d, state, cuda_results);
 
         //wait for all processes to finish
         cudaDeviceSynchronize();

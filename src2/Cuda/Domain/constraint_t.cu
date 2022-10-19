@@ -15,18 +15,13 @@ constraint_t::constraint_t(const logical_operator_t type, const int timer_id1, c
     this->value_ = value;
 }
 
-logical_operator_t constraint_t::get_type() const
-{
-    return this->type_;
-}
-
-CPU GPU bool constraint_t::evaluate(const lend_array<clock_timer_t>* timers) const
+CPU GPU bool constraint_t::evaluate(const lend_array<clock_variable>* timers) const
 {
     const double v1 = timers->at(this->timer_id1_)->get_temp_time();
     const double v2 = this->timer_id2_ == NO_ID
                 ? static_cast<double>(this->value_)
                 : timers->at(this->timer_id2_)->get_temp_time();
-
+    
     switch(this->type_)
     {
         case logical_operator_t::less_equal_t: return v1 <= v2;
@@ -39,7 +34,7 @@ CPU GPU bool constraint_t::evaluate(const lend_array<clock_timer_t>* timers) con
     return false;
 }
 
-CPU GPU bool constraint_t::check_max_time_progression(const lend_array<clock_timer_t>* timer_arr, double* out_max_progression) const
+CPU GPU bool constraint_t::check_max_time_progression(const lend_array<clock_variable>* timer_arr, double* out_max_progression) const
 {
     if(this->timer_id2_ != NO_ID) return false;
     if(this->type_ == logical_operator_t::less_t || this->type_ == logical_operator_t::less_equal_t)
@@ -61,6 +56,12 @@ void constraint_t::accept(visitor* v)
     return;
 }
 
+void constraint_t::pretty_print() const
+{
+    printf("Constraint type: %s | Timer 1 id: %3d | Timer 2 id: %3d | value: %10f \n", constraint_t::logical_operator_to_string(this->type_).c_str(),
+           this->timer_id1_, this->timer_id2_, this->value_);
+}
+
 void constraint_t::cuda_allocate(constraint_t** pointer, const allocation_helper* helper) const
 {
     cudaMalloc(pointer, sizeof(constraint_t));
@@ -75,7 +76,7 @@ void constraint_t::cuda_allocate_2(constraint_t* cuda_pointer, const allocation_
     cudaMemcpy(cuda_pointer, &con, sizeof(constraint_t), cudaMemcpyHostToDevice);
 }
 
-std::string constraint_t::to_string(const logical_operator_t op)
+std::string constraint_t::logical_operator_to_string(const logical_operator_t op)
 {
     switch (op)
     {
@@ -95,23 +96,6 @@ std::string constraint_t::to_string(const logical_operator_t op)
         return "not a boolean operator";
     }
 }
-
-int constraint_t::get_timer1_id() const
-{
-    return this->timer_id1_;
-}
-
-int constraint_t::get_timer2_id() const
-{
-    return this->timer_id2_;
-}
-
-float constraint_t::get_value() const
-{
-    return this->value_;
-}
-
-
 
 //! LESS THAN OR EQUAL
 constraint_t* constraint_t::less_equal_v(const int timer_id, const float value)

@@ -1,6 +1,13 @@
 ﻿#pragma once
 
-#include "common.h"
+// #include "common.h"
+
+#include "../common/macro.h"
+#include "../common/lend_array.h"
+#include "../common/allocation_helper.h"
+#include "clock_variable.h"
+#include "../Visitors/visitor.h"
+
 
 #define NO_ID (-1)
 #define UNUSED_VALUE (-1.0f)
@@ -30,19 +37,16 @@ class constraint_t
 public:
 
     //SIMULATOR METHODS
-    CPU GPU bool evaluate(const lend_array<clock_timer_t>* timers) const;
-    CPU GPU bool check_max_time_progression(const lend_array<clock_timer_t>* timer_arr, double* out_max_progression) const;
+    CPU GPU bool evaluate(const lend_array<clock_variable>* timers) const;
+    CPU GPU bool check_max_time_progression(const lend_array<clock_variable>* timer_arr, double* out_max_progression) const;
     
 
     //HOST METHODS
-    logical_operator_t get_type() const;
-    int get_timer1_id() const;
-    int get_timer2_id() const;
-    float get_value() const;
     void accept(visitor* v);
+    void pretty_print() const;
     void cuda_allocate(constraint_t** pointer, const allocation_helper* helper) const;
     void cuda_allocate_2(constraint_t* cuda_pointer, const allocation_helper* helper) const;
-    CPU static std::string to_string(logical_operator_t op);
+    CPU static std::string logical_operator_to_string(logical_operator_t op);
 
 
     //FACTORY CONSTRUCTORS
