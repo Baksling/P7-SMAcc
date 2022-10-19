@@ -14,6 +14,7 @@ using namespace argparse;
 
 int main(int argc, const char* argv[])
 {
+    cudaFree(nullptr); //done to load cuda assembly, in case of dynamic linking 
     simulation_strategy strategy = {};
     
     ArgumentParser parser("supa_pc_strikes_argina.exe/cuda", "Argument parser example");
@@ -104,7 +105,8 @@ int main(int argc, const char* argv[])
     node1_lst.push_back(edge1_0);
     node1.set_edges(&node1_lst);
 
-    array_t<clock_variable*> variable_arr = array_t<clock_variable*>(0);
+    array_t<clock_variable*> variable_arr = array_t<clock_variable*>(1);
+    variable_arr.arr()[0] = new clock_variable(0, 10);
 
 
     pretty_visitor p_visitor;
@@ -127,7 +129,7 @@ int main(int argc, const char* argv[])
     }
     p_visitor.visit(&model);
     d_visitor.visit(&model);
-    auto [max_expression, max_updates] = d_visitor.get_results();
+    auto [max_expression, max_updates] = d_visitor.get_results();  // NOLINT(clang-diagnostic-c++17-extensions)
     printf("Max exp: %d | Max updates: %d\n", max_expression, max_updates);
     if (mode == 2 || mode == 0)
     {

@@ -66,11 +66,16 @@ simulation_result* result_handler::allocate_results(const simulation_strategy* s
     return results;
 }
 
-void result_handler::read_results(const simulation_result* simulation_results, const unsigned long total_simulations,
-    std::map<int, node_result>* results, const lend_array<variable_result>* avg_max_variable_value)
+void result_handler::read_results(
+    const simulation_result* simulation_results,
+    const unsigned long total_simulations,
+    std::map<int, node_result>* results,
+    const lend_array<variable_result>* avg_max_variable_value,
+    const bool cuda_results)
 {
     const unsigned long long variable_size = sizeof(double) * avg_max_variable_value->size();
-    double* local_variable_results = static_cast<double*>(malloc(variable_size));
+    double* local_variable_results = nullptr;
+    if(cuda_results) local_variable_results = static_cast<double*>(malloc(variable_size));
 
     results->insert( std::pair<int, node_result>(HIT_MAX_STEPS, node_result{ 0, 0.0 }) );
     
@@ -86,8 +91,11 @@ void result_handler::read_results(const simulation_result* simulation_results, c
             node_result r = {1, static_cast<double>(result.steps)};
             results->insert( std::pair<int, node_result>(result.id, r) );
         }
-        
-        cudaMemcpy(local_variable_results, result.variables_max_value, variable_size, cudaMemcpyDeviceToHost);
+
+        if(cuda_results) //copy from cuda
+            cudaMemcpy(local_variable_results, result.variables_max_value, variable_size, cudaMemcpyDeviceToHost);
+        else //set variable from local
+            local_variable_results = result.variables_max_value;
 
         for (int  j = 0; j < avg_max_variable_value->size(); ++j)
         {
@@ -109,11 +117,11 @@ void print_node(const int node_id, const unsigned int reached_count, const float
             << reach_percentage << ")%. avg step count: " << avg_steps << ".\n";
 }
 
-void result_handler::print_results(std::map<int, node_result>* result_map,
-    const lend_array<variable_result>* variable_results, const unsigned long result_size)
+void result_handler::print_results(const std::map<int, node_result>* result_map,
+                                   const lend_array<variable_result>* variable_results, const unsigned long result_size)
 {
     //Variables
-    std::cout << "\naverage maximum value of each variable: ";
+    std::cout << "\naverage maximum value of each variable: \n";
     for (int i = 0; i < variable_results->size(); ++i)
     {
         const variable_result* result = variable_results->at(i);
@@ -135,7 +143,6 @@ void result_handler::print_results(std::map<int, node_result>* result_map,
 
     std::cout << "No goal node was reached " << no_value.reach_count << " times. ("
             << percentage << ")%. avg step count: " << no_value.avg_steps << ".\n";
-    print_node(HIT_MAX_STEPS, no_value.reach_count, percentage, no_value.avg_steps);
 
     //Total sim
     std::cout << "\n";

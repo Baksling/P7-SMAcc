@@ -66,6 +66,8 @@ CPU GPU bool node_t::evaluate_invariants(const simulator_state* state) const
 void node_t::accept(visitor* v) const
 {
     //visit node constraints
+    v->visit(this->lambda_expression_);
+    
     for (int i = 0; i < this->invariants_.size(); ++i)
     {
         v->visit(this->invariants_.get(i));

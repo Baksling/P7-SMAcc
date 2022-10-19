@@ -294,7 +294,7 @@ __global__ void gpu_simulate(
 
 
 
-void stochastic_simulator::simulate_cpu(stochastic_model_t* model, simulation_strategy* strategy)
+void stochastic_simulator::simulate_cpu(const stochastic_model_t* model, const simulation_strategy* strategy)
 {
     //setup start variables
     const unsigned long total_simulations = strategy->total_simulations();
@@ -342,7 +342,7 @@ void stochastic_simulator::simulate_cpu(stochastic_model_t* model, simulation_st
 
     std::cout << "Simulation ran for: " << duration_cast<milliseconds>(steady_clock::now() - start).count() << "[ms] \n";
     std::cout << "Reading results...\n";
-    result_handler::read_results(sim_results, total_simulations, &node_results, &lend_variable_r);
+    result_handler::read_results(sim_results, total_simulations, &node_results, &lend_variable_r, false);
     result_handler::print_results(&node_results, &lend_variable_r, total_simulations);
 
     variable_r.free_array();
@@ -350,7 +350,7 @@ void stochastic_simulator::simulate_cpu(stochastic_model_t* model, simulation_st
     free(state);
 }
 
-void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, simulation_strategy* strategy)
+void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, const simulation_strategy* strategy)
 {
      //setup start variables
     const unsigned long total_simulations = strategy->total_simulations();
@@ -401,10 +401,8 @@ void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, simulat
         
         //wait for all processes to finish
         cudaDeviceSynchronize();
-        printf("I do the reee1");
         if(cudaPeekAtLastError() != cudaSuccess) break;
 
-        printf("I do the REEEEEEEEEEE");
         //count result unless last sim
         if(i < strategy->sim_count) 
         {
@@ -412,7 +410,7 @@ void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, simulat
             std::cout << "Reading results...\n";
             simulation_result* local_results = static_cast<simulation_result*>(malloc(sizeof(simulation_result)*total_simulations));
             cudaMemcpy(local_results, sim_results, sizeof(simulation_result)*total_simulations, cudaMemcpyDeviceToHost);
-            result_handler::read_results(local_results, total_simulations, &node_results, &lend_variable_r);
+            result_handler::read_results(local_results, total_simulations, &node_results, &lend_variable_r, true);
             free(local_results);
         }
     }
