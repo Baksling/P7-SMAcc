@@ -832,16 +832,6 @@
       <SDLCheck>true</SDLCheck>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
-    <ClCompile Include="Edge.cpp" />
-    <ClCompile Include="Guard.cpp" />
-    <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Node.cpp" />
-    <ClCompile Include="Simulator.cpp" />
-    <ClCompile Include="Timer.cpp" />
-    <ClCompile Include="UniformDistribution.cpp" />
-    <ClCompile Include="UPAALParser\pugixml.cpp" />
-    <ClCompile Include="UPAALParser\UPAALXMLParser.cu" />
-    <ClCompile Include="Update.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Cuda\Domain\edge_t.h" />
@@ -873,16 +863,6 @@
     <ClInclude Include="Cuda\Visitors\domain_analysis_visitor.h" />
     <ClInclude Include="Cuda\Visitors\pretty_visitor.h" />
     <ClInclude Include="Cuda\Visitors\visitor.h" />
-    <ClInclude Include="Edge.h" />
-    <ClInclude Include="Guard.h" />
-    <ClInclude Include="Node.h" />
-    <ClInclude Include="Simulator.h" />
-    <ClInclude Include="Timer.h" />
-    <ClInclude Include="UniformDistribution.h" />
-    <ClInclude Include="UPAALParser\pugiconfig.hpp" />
-    <ClInclude Include="UPAALParser\pugixml.hpp" />
-    <ClInclude Include="UPAALParser\UPAALXMLParser.h" />
-    <ClInclude Include="Update.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Cuda\Domain\simulator_state.h" />
@@ -897,13 +877,6 @@
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\test3.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\test4.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\testBasic.xml" />
-    <Content Include="UPAALParser\and_guy.xml" />
-    <Content Include="UPAALParser\Lol.xml" />
-    <Content Include="UPAALParser\lilleShit.xml" />
-    <Content Include="UPAALParser\sample1.xml" />
-    <Content Include="UPAALParser\test2.xml" />
-    <Content Include="UPAALParser\test3.xml" />
-    <Content Include="UPAALParser\testBasic.xml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
