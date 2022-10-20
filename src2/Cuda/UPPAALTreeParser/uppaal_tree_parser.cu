@@ -1,19 +1,19 @@
-#include "uppaal_tree_parser.h"
+﻿#include "uppaal_tree_parser.h"
 
 
 
 constraint_t* get_constraint(const string& expr, const int timer_id, const float value)
 {
     if(expr.find("<=") != std::string::npos)
-        return constraint_t::less_equal_v(timer_id, value);
+        return constraint_t::less_equal_v(timer_id, expression::literal_expression(value));
     if(expr.find(">=") != std::string::npos)
-        return constraint_t::greater_equal_v(timer_id, value);
+        return constraint_t::greater_equal_v(timer_id,expression::literal_expression(value));
     if(expr.find("==") != std::string::npos)
-        return constraint_t::equal_v(timer_id, value);
+        return constraint_t::equal_v(timer_id,expression::literal_expression(value));
     if(expr.find('<') != std::string::npos)
-        return constraint_t::less_v(timer_id, value);
+        return constraint_t::less_v(timer_id,expression::literal_expression(value));
     if(expr.find('>') != std::string::npos)
-        return constraint_t::greater_v(timer_id, value);
+        return constraint_t::greater_v(timer_id,expression::literal_expression(value));
     THROW_LINE("Operand in " + expr + " not found, sad..");
 }
 
@@ -258,7 +258,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             cout << "\nIT OK:2 "  <<"\n";
             cout.flush();
             node_t* target_node = get_node(target_id);
-            auto result_edge = new edge_t(edge_id++, probability, target_node, to_array(&guards), to_array(&updates));
+            auto result_edge = new edge_t(edge_id++, expression::literal_expression(probability), target_node, to_array(&guards), to_array(&updates));
             cout << "guard size: " << guards.size() << "\n";
             
             // if (guards.empty())

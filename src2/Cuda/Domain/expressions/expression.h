@@ -54,6 +54,7 @@ private:
     expression* right_;
     double value_;
     unsigned int variable_id_;
+    
     //unsigned int operate(expression_type type, unsigned int left, unsigned int right);
     explicit  expression(expression_type type,
         double value = 0,
@@ -77,6 +78,7 @@ public:
     std::string to_string() const;
     void accept(visitor* v) const;
     unsigned int get_depth() const;
+    bool contains_clock_expression() const;
     void cuda_allocate(expression* cuda_p, const allocation_helper* helper) const;
 
     //FACTORY CONSTRUCTORS

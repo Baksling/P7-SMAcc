@@ -1,6 +1,6 @@
 ﻿#include "pretty_visitor.h"
 
-#include "../Domain/constraint_t.h"
+#include "../Domain/expressions/constraint_t.h"
 #include "../Domain/edge_t.h"
 #include "../Domain/node_t.h"
 #include "../Domain/stochastic_model_t.h"

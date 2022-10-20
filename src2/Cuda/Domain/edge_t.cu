@@ -2,27 +2,18 @@
 #include "node_t.h"
 
 
-edge_t::edge_t(edge_t* source, node_t* dest, const array_t<constraint_t*> guard, const array_t<update_t*> updates)
-{
-    this->id_ = source->id_;
-    this->dest_ = dest;
-    this->weight_ = source->weight_;
-    this->updates_ = updates;
-    this->guards_ = guard;
-}
-
-edge_t::edge_t(const int id, const float weight, node_t* dest, const array_t<constraint_t*> guard, array_t<update_t*> updates)
+edge_t::edge_t(const int id, expression* weight_expression, node_t* dest, const array_t<constraint_t*> guard, array_t<update_t*> updates)
 {
     this->id_ = id;
     this->dest_ = dest;
-    this->weight_ = weight;
+    this->weight_expression_ = weight_expression;
     this->updates_ = updates;
     this->guards_ = guard;
 }
 
-CPU GPU float edge_t::get_weight() const
+CPU GPU double edge_t::get_weight(simulator_state* state) const
 {
-    return this->weight_;
+    return state->evaluate_expression(this->weight_expression_);
 }
 
 CPU GPU node_t* edge_t::get_dest() const
@@ -35,7 +26,7 @@ CPU GPU bool edge_t::evaluate_constraints(simulator_state* state) const
     //Evaluate guards
     for (int i = 0; i < this->guards_.size(); ++i)
     {
-        if(!this->guards_.get(i)->evaluate(&state->timers))
+        if(!this->guards_.get(i)->evaluate(state))
             return false;
     }
 
@@ -85,11 +76,12 @@ void edge_t::accept(visitor* v) const
 
 void edge_t::pretty_print() const
 {
-    printf("Edge id: %3d | Weight: %4f | Dest node: %3d \n", this->id_, this->weight_,
-           this->dest_->get_id());
+    //TODO FIX THIS!
+    // printf("Edge id: %3d | Weight: %4f | Dest node: %3d \n", this->id_, this->weight_,
+    //        this->dest_->get_id());
 }
 
-void edge_t::cuda_allocate(edge_t** pointer, const allocation_helper* helper)
+void edge_t::cuda_allocate(edge_t** pointer, const allocation_helper* helper) const
 {
     cudaMalloc(pointer, sizeof(edge_t));
     helper->free_list->push_back(*pointer);
@@ -123,8 +115,14 @@ void edge_t::cuda_allocate(edge_t** pointer, const allocation_helper* helper)
         this->updates_.get(i)->cuda_allocate(update_p, helper);
         updates.push_back(update_p);
     }
+
+    expression* weight_p = nullptr;
+    cudaMalloc(&weight_p, sizeof(expression));
+    helper->free_list->push_back(weight_p);
+    this->weight_expression_->cuda_allocate(weight_p, helper);
     
-    const edge_t result(this, node_p,
+    
+    const edge_t result(this->id_, weight_p, node_p,
         cuda_to_array(&guard_lst, helper->free_list), cuda_to_array(&updates, helper->free_list));
     cudaMemcpy(*pointer, &result, sizeof(edge_t), cudaMemcpyHostToDevice);
 }

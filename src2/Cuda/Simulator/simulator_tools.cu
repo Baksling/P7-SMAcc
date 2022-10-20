@@ -125,7 +125,7 @@ void result_handler::print_results(const std::map<int, node_result>* result_map,
     for (int i = 0; i < variable_results->size(); ++i)
     {
         const variable_result* result = variable_results->at(i);
-        std::cout << "Variable " << result->variable_id << " = " << result->avg_max_value;
+        std::cout << "Variable " << result->variable_id << " = " << result->avg_max_value << "\n";
     }
 
     //Nodes

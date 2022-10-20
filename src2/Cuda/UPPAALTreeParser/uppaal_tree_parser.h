@@ -8,7 +8,7 @@
 #include "../Domain/clock_variable.h"
 #include "../Domain/update_t.h"
 #include "../Domain/node_t.h"
-#include "../Domain/constraint_t.h"
+#include "../Domain/expressions/constraint_t.h"
 #include "../Domain/stochastic_model_t.h"
 #include <map>
 #include <cuda.h>
