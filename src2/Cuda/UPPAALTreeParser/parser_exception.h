@@ -4,6 +4,9 @@
 #define parser_exception_H
 
 #define THROW_LINE(arg); throw parser_exception(arg, __FILE__, __LINE__);
+
+using namespace std;
+
 class parser_exception : public std::runtime_error {
     std::string msg;
 public:

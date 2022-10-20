@@ -106,14 +106,21 @@ CPU GPU bool constraint_t::check_max_time_progression(simulator_state* state, do
 
 void constraint_t::accept(visitor* v)
 {
-    return; //TODO FIX THIS! IT MIGHT HAVE EXPRESSIONS!.
-    //Be vary of union type!
+    if (!this->left_.is_clock) v->visit(this->left_.expr);
+    if (!this->right_.is_clock) v->visit(this->right_.expr);
 }
 
 void constraint_t::pretty_print() const
-{ //TODO FIX THIS!
-    // printf("Constraint type: %s | Timer 1 id: %3d | Timer 2 id: %3d | value: %10f \n", constraint_t::logical_operator_to_string(this->type_).c_str(),
-    //        this->left_, this->right_, this->value_);
+{
+    std::string left, right;
+    
+    if (this->left_.is_clock) left = " | Timer 1 id: " + std::to_string(this->left_.clock_id);
+    else left = " | Left expression type: " + this->left_.expr->type_to_string();
+    if (this->right_.is_clock) right = " | Timer 2 id: " + std::to_string(this->right_.clock_id);
+    else right = " | Right expression type: " + this->right_.expr->type_to_string();
+    
+    printf("Constraint type: %s %s %s\n", constraint_t::logical_operator_to_string(this->type_).c_str(),
+    left.c_str(), right.c_str());
 }
 
 void constraint_t::cuda_allocate(constraint_t** pointer, const allocation_helper* helper) const

@@ -39,14 +39,14 @@ expression* update_expression_evaluator::eval_exp1()
         char temp_token[80];
         // save old token
         char *t_ptr = exp_ptr_;
-        strcpy_s(temp_token, token_);
+        strcpy(temp_token, token_);
         // compute the index of the variable
         slot = *token_ - 'A';
         get_token();
         if (*token_ != '=') 
         {
             exp_ptr_ = t_ptr; // return current token
-            strcpy_s(token_, temp_token); // restore old token
+            strcpy(token_, temp_token); // restore old token
             tok_type_ = UPDATEVARIABLE;
         }
         else {
@@ -138,7 +138,7 @@ expression* update_expression_evaluator::eval_exp6()
     if (is_func)
     {
         char temp_token[80];
-        strcpy_s(temp_token, token_);
+        strcpy(temp_token, token_);
         get_token();
     } 
     if (*token_ == '(') 

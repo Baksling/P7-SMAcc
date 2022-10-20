@@ -8,6 +8,8 @@
 
 #include "declaration.h"
 
+using namespace std;
+
 class declaration_parser
 {
 private:
