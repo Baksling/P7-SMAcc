@@ -4,28 +4,22 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-#include "parser_exception.h"
-
-
-
-using namespace std;
 
 namespace helper
 {
-
-    inline string take_after(string s, char while_char)
+    inline string take_after(const string& s, const char while_char)
     {
         return s.substr(s.find(while_char)+1);
     }
 
-    inline string take_while(string s, char while_char)
+    inline string take_while(const string& s, const char while_char)
     {
         return s.substr(0,s.find(while_char));
     }
 
-    inline string remove_while(string s, char while_char)
+    inline string remove_while(const string& s, const char while_char)
     {
-        for (int i = 0; i<s.length(); i++)
+        for (size_t i = 0; i < s.length(); i++)
         {
             if (s[i] != while_char)
                 return s.substr(i);
@@ -86,7 +80,7 @@ namespace helper
 
     inline string get_expr_value_string(const string& expr)
     {
-        const string expr_wo_ws = replace_all(expr, " ", "");
+        string expr_wo_ws = replace_all(expr, " ", "");
         unsigned long long index = expr_wo_ws.length();
         while (true)
         {
@@ -102,52 +96,10 @@ namespace helper
         }
     }
 
-
-
-// template <typename T>
-// static T* list_to_arr(list<T> l)
-// {
-//     T* arr = static_cast<T*>(malloc(sizeof(T) * l.size()));
-//     int k = 0;
-//     for (T const &i: l) {
-//         arr[k++] = i;
-//     }
-//     
-//     return arr;
-// }
-
     inline int xml_id_to_int(string id_string)
     {
         return stoi(id_string.replace(0,2,""));
     }
-
-// int uppaal_tree_parser::get_timer_id(const string& expr) const
-// {
-//     const string expr_wout_spaces = replace_all(expr, string(" "), string(""));
-//     int index = 0;
-//
-//     while (true)
-//     {
-//         if (static_cast<int>(expr.size()) == index)
-//         {
-//             THROW_LINE("sum tin wong")
-//         }
-//         
-//         if (in_array(expr_wout_spaces[++index], {'<','>','='}))
-//         {
-//             break;
-//         }
-//     }
-//
-//     const string sub = expr_wout_spaces.substr(0, index);
-//
-//     if ( timers_map_.count(sub) == 0)
-//     {
-//         THROW_LINE("sum tin wong")
-//     }
-//     
-//     return timers_map_.at(sub);
-// }
 
     template <typename T>
     void insert_into_list(list<list<T>>* t_list, int index, T item)

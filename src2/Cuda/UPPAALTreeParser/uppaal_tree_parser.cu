@@ -145,7 +145,6 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
 {
     string path = file_path;
     xml_document doc;
-    update_parser up;
     map<int, list<edge_t*>> node_edge_map;
     
     // load the XML file
@@ -182,7 +181,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             
             if (kind == "exponentialrate")
             {
-                expo_rate = up.parse(expr_string, &vars_map_, &global_vars_map_);
+                expo_rate = update_parser::parse(expr_string, &vars_map_, &global_vars_map_);
             }
             
             if (kind == "invariant")
