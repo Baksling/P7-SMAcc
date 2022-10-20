@@ -60,6 +60,12 @@ namespace helper
         }
     }
 
+    inline bool does_not_contain(const string& input, const string& does_not_contain )
+    {
+        const bool not_contained = input.find_first_not_of(does_not_contain) != std::string::npos;
+        return not_contained;
+    }
+
     inline float get_expr_value_float(const string& expr)
     {
         const string expr_wo_ws = replace_all(expr, " ", "");

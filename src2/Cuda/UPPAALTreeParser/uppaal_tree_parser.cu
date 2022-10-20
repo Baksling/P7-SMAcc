@@ -1,19 +1,39 @@
 ﻿#include "uppaal_tree_parser.h"
 
 
+#define ALPHA "abcdefghijklmnopqrstuvwxyz"
 
-constraint_t* get_constraint(const string& expr, const int timer_id, const float value)
+string get_constraint_op(const string& expr)
 {
     if(expr.find("<=") != std::string::npos)
-        return constraint_t::less_equal_v(timer_id, expression::literal_expression(value));
+        return "<=";
     if(expr.find(">=") != std::string::npos)
-        return constraint_t::greater_equal_v(timer_id,expression::literal_expression(value));
+        return ">=";
     if(expr.find("==") != std::string::npos)
-        return constraint_t::equal_v(timer_id,expression::literal_expression(value));
+        return "==";
+    if(expr.find('!=') != std::string::npos)
+        return "!=";
     if(expr.find('<') != std::string::npos)
-        return constraint_t::less_v(timer_id,expression::literal_expression(value));
+        return "<";
     if(expr.find('>') != std::string::npos)
-        return constraint_t::greater_v(timer_id,expression::literal_expression(value));
+        return ">";
+    THROW_LINE("Operand in " + expr + " not found, sad..");
+}
+
+constraint_t* get_constraint(const string& expr, const int timer_id, expression* value)
+{
+    if(expr.find("<=") != std::string::npos)
+        return constraint_t::less_equal_v(timer_id, value);
+    if(expr.find(">=") != std::string::npos)
+        return constraint_t::greater_equal_v(timer_id,value);
+    if(expr.find("==") != std::string::npos)
+        return constraint_t::equal_v(timer_id,value);
+    if(expr.find('!=') != std::string::npos)
+        return constraint_t::not_equal_v(timer_id,value);
+    if(expr.find('<') != std::string::npos)
+        return constraint_t::less_v(timer_id,value);
+    if(expr.find('>') != std::string::npos)
+        return constraint_t::greater_v(timer_id,value);
     THROW_LINE("Operand in " + expr + " not found, sad..");
 }
 
@@ -190,7 +210,18 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                 {
                     if (expr.empty())
                         continue;
-                    invariants.push_back(get_constraint(expr, get_timer_id(expr), get_expr_value_float(expr)));
+                    string right_side = take_after(expr, get_constraint_op(expr));
+                    
+                    if (!does_not_contain(right_side, ALPHA))
+                    {
+                        invariants.push_back(get_constraint(expr, get_timer_id(expr), update_parser::parse(right_side, vars_map_, global_vars_map_)));
+                    }
+                    else if (!does_not_contain(right_side, "+-*/%"))
+                    {
+                        invariants.push_back(get_constraint(expr, get_timer_id(expr), declaration_parser::parse(right_side, vars_map_, global_vars_map_)));
+                    }
+                    else
+                        invariants.push_back(get_constraint(expr, get_timer_id(expr), expression::literal_expression(right_side)));
                 }
             }
             nodes_->push_back(new node_t(node_id, to_array(&invariants),false, is_goal, expo_rate));
@@ -232,7 +263,19 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                     {
                         if (expr.empty())
                             continue;
-                        guards.push_back(get_constraint(expr,get_timer_id(expr), get_expr_value_float(expr)));
+
+                        string right_side = take_after(expr, get_constraint_op(expr));
+                    
+                        if (!does_not_contain(right_side, ALPHA))
+                        {
+                            guards.push_back(get_constraint(expr, get_timer_id(expr), update_parser::parse(right_side, vars_map_, global_vars_map_)));
+                        }
+                        else if (!does_not_contain(right_side, "+-*/%"))
+                        {
+                            guards.push_back(get_constraint(expr, get_timer_id(expr), declaration_parser::parse(right_side, vars_map_, global_vars_map_)));
+                        }
+                        else
+                            guards.push_back(get_constraint(expr, get_timer_id(expr), expression::literal_expression(right_side)));
                     }
                 }
                 else if (kind == "assignment")
