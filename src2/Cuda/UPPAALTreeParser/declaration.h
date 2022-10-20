@@ -3,6 +3,8 @@
 #include <map>
 #include <string>
 
+using namespace std;
+
 #define THROW_LINE(arg); throw parser_exception(arg, __FILE__, __LINE__);
 
 enum declaration_types {clock_type, double_type, int_type};

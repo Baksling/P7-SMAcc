@@ -4,6 +4,9 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include "parser_exception.h"
+
+using namespace std;
 
 namespace helper
 {
