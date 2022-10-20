@@ -22,7 +22,7 @@ void expression::evaluate(simulator_state* state) const
         state->value_stack.push(this->value_);
         break;
     case clock_variable_e:
-        state->value_stack.push(static_cast<int>(state->timers.at(static_cast<int>(this->variable_id_))->get_time()));
+        state->value_stack.push(state->timers.at(static_cast<int>(this->variable_id_))->get_time());
         break;
     case system_variable_e:
         state->value_stack.push(state->variables.at(static_cast<int>(this->variable_id_))->get_time());
@@ -243,6 +243,17 @@ unsigned expression::get_depth() const
 
     const unsigned temp = (left > right ? left : right);
     return (conditional > temp ? conditional : temp) + 1;
+}
+
+bool expression::contains_clock_expression() const
+{
+    if(this->type_ == clock_variable_e) return true;
+    
+    const bool con = this->condition_ != nullptr && this->condition_->contains_clock_expression();
+    const bool left = this->left_ != nullptr && this->left_->contains_clock_expression();
+    const bool right = this->right_ != nullptr && this->right_->contains_clock_expression();
+
+    return con || left || right;
 }
 
 void expression::cuda_allocate(expression* cuda_p, const allocation_helper* helper) const

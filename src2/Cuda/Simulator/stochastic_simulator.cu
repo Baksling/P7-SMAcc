@@ -41,22 +41,22 @@ CPU GPU edge_t* find_valid_edge_heap(
     }
 
     //summed weight
-    float weight_sum = 0.0f;
+    double weight_sum = 0.0f;
     for(int i = 0; i < valid_count; i++)
     {
-        weight_sum += valid_edges[i]->get_weight();
+        weight_sum += valid_edges[i]->get_weight(state);
     }
 
     //curand_uniform return ]0.0f, 1.0f], but we require [0.0f, 1.0f[
     //conversion from float to int is floored, such that a array of 10 (index 0..9) will return valid index.
-    const float r_val = (1.0f - curand_uniform(r_state))*weight_sum;
-    float r_acc = 0.0; 
+    const double r_val = (1.0f - curand_uniform_double(r_state))*weight_sum;
+    double r_acc = 0.0; 
 
     //pick the weighted random value.
     for (int i = 0; i < valid_count; ++i)
     {
         edge_t* temp = valid_edges[i];
-        r_acc += temp->get_weight();
+        r_acc += temp->get_weight(state);
         if(r_val < r_acc)
         {
             free(valid_edges);
@@ -99,13 +99,13 @@ CPU GPU edge_t* find_valid_edge_fast(
     for(int i = 0; i  < edges->size(); i++)
     {
         if(bit_handler::bit_is_set(&valid_edges_bitarray, i))
-            weight_sum += edges->get(i)->get_weight();
+            weight_sum += edges->get(i)->get_weight(state);
     }
 
     //curand_uniform return ]0.0f, 1.0f], but we require [0.0f, 1.0f[
     //conversion from float to int is floored, such that a array of 10 (index 0..9) will return valid index.
-    const float r_val = (1.0f - curand_uniform(r_state)) * weight_sum;
-    float r_acc = 0.0; 
+    const double r_val = (1.0f - curand_uniform(r_state)) * weight_sum;
+    double r_acc = 0.0; 
 
     //pick the weighted random value.
     valid_edge = nullptr; //reset valid edge !IMPORTANT
@@ -114,7 +114,7 @@ CPU GPU edge_t* find_valid_edge_fast(
         if(!bit_handler::bit_is_set(&valid_edges_bitarray, i)) continue;
 
         valid_edge = edges->get(i);
-        r_acc += valid_edge->get_weight();
+        r_acc += valid_edge->get_weight(state);
         if(r_val < r_acc)
         {
             return valid_edge;
@@ -145,9 +145,8 @@ CPU GPU void progress_time(simulator_state* state, const node_t* node, curandSta
 {
     //Get random uniform value between ]0.0f, 0.1f] * difference gives a random uniform range of ]0, diff]
     double max_progression = 0.0; //only set when has_upper_bound == true
-    const bool has_upper_bound = node->max_time_progression(&state->timers, &max_progression);
+    const bool has_upper_bound = node->max_time_progression(state, &max_progression);
     double time_progression;
-
 
     if(has_upper_bound)
     {
@@ -392,8 +391,6 @@ void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, const s
     
     const steady_clock::time_point start = steady_clock::now();
 
-    
-    
     for (int i = 0; i < strategy->sim_count; ++i)
     {
         //simulate on device

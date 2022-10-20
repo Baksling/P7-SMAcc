@@ -60,8 +60,8 @@ int main(int argc, const char* argv[])
     variable_arr.arr()[0] = new clock_variable(0, 10);
     variable_arr.arr()[1] = new clock_variable(1, 5);
     
-    constraint_t* con0 = constraint_t::less_equal_v(0, 10.0f);
-    constraint_t* con1 = constraint_t::less_equal_v(0, 10.0f);
+    constraint_t* con0 = constraint_t::less_equal_v(0, expression::literal_expression(10) );
+    constraint_t* con1 = constraint_t::less_equal_v(0, expression::literal_expression(5) );
     // constraint_t con1 = constraint_t::less_equal_v(1, 10.0f);dbq84
     // constraint_t con2 = constraint_t::greater_equal_v(0, 0.0f);
 
@@ -87,9 +87,9 @@ int main(int argc, const char* argv[])
 
     array_t<update_t*> update_arr = to_array(&update_lst);
     
-    edge_t* edge0_1 = new edge_t(0, 1, &node1, con1_arr, update_arr);
-    edge_t* edge0_2 = new edge_t(1, 1, &node2, array_t<constraint_t*>(0), update_arr);
-    edge_t* edge1_0 = new edge_t(2, 1, &node0, array_t<constraint_t*>(0), update_arr);
+    edge_t* edge0_1 = new edge_t(0, expression::literal_expression(1), &node1, con1_arr, update_arr);
+    edge_t* edge0_2 = new edge_t(1, expression::literal_expression(1), &node2, array_t<constraint_t*>(0), update_arr);
+    edge_t* edge1_0 = new edge_t(2, expression::literal_expression(1), &node0, array_t<constraint_t*>(0), update_arr);
 
     clock_variable timer1 = clock_variable(0, 0.0);
     clock_variable timer2 = clock_variable(1, 0.0);

@@ -1,7 +1,7 @@
 ﻿#include "node_t.h"
 #include "edge_t.h"
 
-node_t::node_t(node_t* source, const array_t<constraint_t*> invariant, const array_t<edge_t*> edges, expression* lambda)
+node_t::node_t(const node_t* source, const array_t<constraint_t*> invariant, const array_t<edge_t*> edges, expression* lambda)
 {
     this->id_ = source->id_;
     this->is_branch_point_ = source->is_branch_point_;
@@ -52,11 +52,11 @@ CPU GPU bool node_t::is_goal_node() const
     return this->is_goal_;
 }
 
-CPU GPU bool node_t::evaluate_invariants(const simulator_state* state) const
+CPU GPU bool node_t::evaluate_invariants(simulator_state* state) const
 {
     for (int i = 0; i < this->invariants_.size(); ++i)
     {
-        if(!this->invariants_.get(i)->evaluate(&state->timers))
+        if(!this->invariants_.get(i)->evaluate(state))
             return false;
     }
 
@@ -127,38 +127,12 @@ void node_t::cuda_allocate(node_t** pointer, const allocation_helper* helper)
 }
 
 
-void node_t::cuda_allocate_2(node_t* cuda_p, const allocation_helper* helper) const
-{
-    edge_t* edges = nullptr; 
-    cudaMalloc(&edges,sizeof(edge_t)*this->edges_.size());
-    helper->free_list->push_back(edges);
-
-    for (int i = 0; i < this->edges_.size(); ++i)
-    {
-        this->edges_.get(i)->cuda_allocate_2(&edges[i], helper);
-    }
-
-    constraint_t* invariants = nullptr; 
-    cudaMalloc(&invariants,sizeof(constraint_t)*this->invariants_.size());
-    helper->free_list->push_back(cuda_p);
-    for (int i = 0; i < this->invariants_.size(); ++i)
-    {
-        this->invariants_.get(i)->cuda_allocate_2(&invariants[i], helper);
-    }
-    
-    // const node_t result(this,
-    //     array_t<constraint_t>(invariants, this->invariants_.size()),
-    //     array_t<edge_t>(edges, this->edges_.size()));
-    
-    // cudaMemcpy(cuda_p, &result, sizeof(node_t), cudaMemcpyHostToDevice);
-}
-
 CPU GPU bool node_t::is_branch_point() const
 {
     return this->is_branch_point_;
 }
 
-CPU GPU bool node_t::max_time_progression(const lend_array<clock_variable>* timers, double* out_max_progression) const
+CPU GPU bool node_t::max_time_progression(simulator_state* state, double* out_max_progression) const
 {
     if(this->invariants_.size() <= 0) return false;
 
@@ -167,8 +141,7 @@ CPU GPU bool node_t::max_time_progression(const lend_array<clock_variable>* time
     for (int i = 0; i < this->invariants_.size(); ++i)
     {
         double local_max = 0.0;
-        
-        if(this->invariants_.get(i)->check_max_time_progression(timers, &local_max))
+        if(this->invariants_.get(i)->check_max_time_progression(state, &local_max))
         {
             if(node_max < 0) node_max = local_max;
             node_max = node_max < local_max ? node_max : local_max;
