@@ -148,5 +148,4 @@ void result_handler::print_results(const std::map<int, node_result>* result_map,
     std::cout << "\n";
     std::cout << "Nr of simulations: " << result_size << "\n";
     std::cout << "\n";
-
 }

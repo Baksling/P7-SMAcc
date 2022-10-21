@@ -72,13 +72,14 @@ void edge_t::accept(visitor* v) const
         update_t* temp = *updates_.at(i);
         v->visit(temp);
     }
+
+    v->visit(this->weight_expression_);
 }
 
 void edge_t::pretty_print() const
 {
     //TODO FIX THIS!
-    // printf("Edge id: %3d | Weight: %4f | Dest node: %3d \n", this->id_, this->weight_,
-    //        this->dest_->get_id());
+    printf("Edge id: %3d | Weight type: %s | Dest node: %3d \n", this->id_, this->weight_expression_->type_to_string().c_str(), this->dest_->get_id());
 }
 
 void edge_t::cuda_allocate(edge_t** pointer, const allocation_helper* helper) const

@@ -64,7 +64,7 @@ int main(int argc, const char* argv[])
     clock_variable timer2 = clock_variable(1, 0.0);
     
     constraint_t* con0 = constraint_t::less_equal_v(0, expression::literal_expression(10) );
-    constraint_t* con1 = constraint_t::less_equal_v(0, expression::literal_expression(5) );
+    constraint_t* con1 = constraint_t::greater_equal_v(0, expression::literal_expression(5) );
     constraint_t* con2 = constraint_t::less_equal_t(0, 1);
     // constraint_t con1 = constraint_t::less_equal_v(1, 10.0f);dbq84
     // constraint_t con2 = constraint_t::greater_equal_v(0, 0.0f);
@@ -76,7 +76,7 @@ int main(int argc, const char* argv[])
     con0_arr.arr()[0] = con0;
     con1_arr.arr()[0] = con1;
     con2_aar.arr()[0] = con2;
-    node_t node0 = node_t(0, con0_arr, false,false);
+    node_t node0 = node_t(0, con1_arr, false,false);
     node_t node1 = node_t(1, con2_aar, false,false);
     node_t node2 = node_t(2, array_t<constraint_t*>(0),false,true);
 
