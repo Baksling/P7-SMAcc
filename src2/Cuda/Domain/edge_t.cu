@@ -16,6 +16,11 @@ CPU GPU double edge_t::get_weight(simulator_state* state) const
     return state->evaluate_expression(this->weight_expression_);
 }
 
+int edge_t::get_id() const
+{
+    return this->id_;
+}
+
 CPU GPU node_t* edge_t::get_dest() const
 {
     return this->dest_;
@@ -93,8 +98,11 @@ void edge_t::cuda_allocate(edge_t** pointer, const allocation_helper* helper) co
         node_p = (*helper->node_map)[this->dest_];
     }
     else
-    {
-        this->dest_->cuda_allocate(&node_p, helper); //linear node
+    {   //allocate node if its not already allocated
+        cudaMalloc(&node_p, sizeof(node_t));
+        helper->free_list->push_back(node_p);
+        this->dest_->cuda_allocate(node_p, helper); //linear node
+        //The node's cuda_allocate method is responsible for adding it to the circular reference resolver
     }
 
     std::list<constraint_t*> guard_lst;

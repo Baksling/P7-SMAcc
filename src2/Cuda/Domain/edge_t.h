@@ -29,7 +29,7 @@ public:
     CPU GPU bool evaluate_constraints(simulator_state* state) const;
     CPU GPU void execute_updates(simulator_state* state) const;
     CPU GPU double get_weight(simulator_state* state) const;
-
+    CPU GPU int get_id() const;
 
     //HOST METHODS
     void accept(visitor* v) const;

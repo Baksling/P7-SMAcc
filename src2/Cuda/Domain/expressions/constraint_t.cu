@@ -1,21 +1,6 @@
 ﻿#include "constraint_t.h"
 
 
-// constraint_value build_value(expression* expr)
-// {
-//     variable_union un{};
-//     un.expr = expr;
-//     return constraint_value{false, un };
-// }
-//
-// constraint_value build_timer(const int timer_id)
-// {
-//     variable_union un{};
-//     un.clock_id = timer_id;
-//     return constraint_value{true, un };
-// }
-
-
 void throw_on_timer_expression(const constraint_value left, const constraint_value right)
 {
     const bool left_clock_expr = !left.is_clock && left.expr->contains_clock_expression();
@@ -35,7 +20,7 @@ GPU CPU double get_constraint_value(const constraint_value* con, simulator_state
 {
     if(con->is_clock)
     {
-        return state->timers.at(con->clock_id)->get_temp_time();
+        return state->get_timers().at(con->clock_id)->get_temp_time();
     }
     return state->evaluate_expression(con->expr);
 }
@@ -80,24 +65,22 @@ CPU GPU bool constraint_t::check_max_time_progression(simulator_state* state, do
     if(this->left_.is_clock &&
         (this->type_ == logical_operator_t::less_t || this->type_ == logical_operator_t::less_equal_t))
     {
-        const double time = state->timers.at(this->left_.clock_id)->get_time();
+        const double time = state->get_timers().at(this->left_.clock_id)->get_time();
         const double value = state->evaluate_expression(this->right_.expr);
 
         const double diff = value - time;
-        if(diff > 0)
-            (*out_max_progression) = diff;
+        (*out_max_progression) = diff; //TODO rethink this. What to do if a diff is negative.
         return true;
     }
     
     if(this->right_.is_clock &&
         (this->type_ == logical_operator_t::greater_t || this->type_ == logical_operator_t::greater_equal_t))
     {
-        const double time = state->timers.at(this->right_.clock_id)->get_time();
+        const double time = state->get_timers().at(this->right_.clock_id)->get_time();
         const double value = state->evaluate_expression(this->left_.expr);
 
         const double diff = value - time;
-        if(diff > 0.0)
-            (*out_max_progression) = diff;
+        (*out_max_progression) = diff; //TODO rethink this. What to do if a diff is negative.
         return true;
     }
     
@@ -149,9 +132,8 @@ void constraint_t::cuda_allocate(constraint_t** pointer, const allocation_helper
         right = constraint_value::from_expression(right_expr);
     }
     else right = constraint_value::from_timer(this->right_.clock_id);
-    
-    constraint_t con = constraint_t(this->type_, left, right, false);
-    
+
+    const constraint_t con = constraint_t(this->type_, left, right, false);
     cudaMemcpy(*pointer, &con, sizeof(constraint_t), cudaMemcpyHostToDevice);
 }
 

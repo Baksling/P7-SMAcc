@@ -11,7 +11,7 @@ private:
     T* store_;
     int size_;
 public:
-    GPU CPU explicit lend_array(array_t<T>* arr)
+    GPU CPU explicit lend_array(const array_t<T>* arr)
     {
         this->size_ = arr->size();
         this->store_ = arr->arr();

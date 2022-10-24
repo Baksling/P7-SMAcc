@@ -297,7 +297,15 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
         node->set_edges(&node_edge_map.at(node->get_id()));
     }
 
-    return stochastic_model_t(get_node(init_node_id_), to_array(&timer_list_), to_array(&var_list_));
+
+    //TODO i broke plz fix :)
+    //The stochastic model now expects an array of objects, rather than a array of object pointers.
+    //This helps cut down on the number of times pointers need to be followed in the simulation.
+    //Only reason it was like that before, was because we didnt know how to make the cuda-allocation code without it :)
+    // - Bak ඞ
+    array_t<node_t> temp_node_arr = array_t<node_t>(0);
+    array_t<clock_variable> temp_clock_variable_arr = array_t<clock_variable>(0);
+    return stochastic_model_t(temp_node_arr, temp_clock_variable_arr, temp_clock_variable_arr);
 }
 
 __host__ stochastic_model_t uppaal_tree_parser::parse(char* file_path)
