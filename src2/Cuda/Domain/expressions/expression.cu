@@ -131,10 +131,10 @@ std::string expression::type_to_string() const
         result = "literal";
         break;
     case clock_variable_e:
-        result = "clock variable";
+        result = "clock variable id: " + std::to_string(this->variable_id_);
         break;
     case system_variable_e:
-        result = "system variable";
+        result = "system variable id: " + std::to_string(this->variable_id_);
         break;
     case plus_e:
         result = "+";
@@ -189,19 +189,19 @@ std::string expression::type_to_string() const
 
 std::string expression::to_string() const
 {
-    std::string left, right, con;
-    if (this->condition_ != nullptr) con = this->condition_->type_to_string();
-    else con = "nullptr";
-    if (this->left_ != nullptr) left = this->left_->type_to_string();
-    else left = "nullptr";
-    if (this->right_ != nullptr) right = this->right_->type_to_string();
-    else right = "nullptr";
-
+    std::string left, right;
+    std::string temp = " ";
+    if (this->left_ != nullptr) left = this->left_->to_string();
+    else temp = "";
+    if (this->right_ != nullptr) right = this->right_->to_string();
+    else temp = "";
+    
     if (this->type_ == expression_type::literal_e)
     {
+        //printf("Left: %s | Right: %s | con: %s | \n", left.c_str(), right.c_str(), con.c_str());
         return "(" + std::to_string(this->value_) + ")";
     }
-    return "(" + this->left_->to_string() + " " + this->type_to_string() + " " + this->right_->to_string() + ")\n";   
+    return "(" + left + temp + this->type_to_string() + temp + right + ")";   
     // if (this->type_ == expression_type::literal_e)
     // {
     //     return "Type: " + this->type_to_string() + " | Value: " + std::to_string(this->value_) + " | Condition: " + con + " | Left: " + left + " | Right: " + right + "\n";
@@ -235,9 +235,10 @@ GPU CPU expression* expression::get_right(const cuda_stack<double>* value_stack)
 
 void expression::accept(visitor* v) const
 {
-    if (this->condition_ != nullptr) v->visit(this->condition_);
-    if (this->left_ != nullptr) v->visit(this->left_);
-    if (this->right_ != nullptr) v->visit(this->right_);
+    return;
+    // if (this->condition_ != nullptr) v->visit(this->condition_);
+    // if (this->left_ != nullptr) v->visit(this->left_);
+    // if (this->right_ != nullptr) v->visit(this->right_);
 }
 
 unsigned expression::get_depth() const

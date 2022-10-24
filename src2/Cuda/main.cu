@@ -8,6 +8,7 @@
 #include "common/argparser.h"
 
 #include "Domain/edge_t.h"
+#include "Simulator/result_writer.h"
 
 using namespace argparse;
 
@@ -28,6 +29,7 @@ int main(int argc, const char* argv[])
     parser.add_argument("-p", "--maxtime", "Maximum number to progress in time (default=100)", false );
     parser.add_argument("-d", "--device", "What simulation to run (GPU (0) / CPU (1) / BOTH (2))", false);
     parser.add_argument("-u", "--cputhread", "The number of threads to use on the CPU", false);
+    parser.add_argument("-o", "--output", "The path to output result file", false);
     parser.enable_help();
     auto err = parser.parse(argc, argv);
     
@@ -42,16 +44,18 @@ int main(int argc, const char* argv[])
     }
 
     int mode = 0; // 0 = GPU, 1 = CPU, 2 = BOTH
+    string o_path = "";
 
 
     if (parser.exists("b")) strategy.block_n = parser.get<int>("b");
     if (parser.exists("t")) strategy.threads_n = parser.get<int>("t");
-    if (parser.exists("a")) strategy.simulation_amounts = parser.get<unsigned int>("a");
-    if (parser.exists("c")) strategy.sim_count = parser.get<int>("c");
+    if (parser.exists("a")) strategy.simulations_per_thread = parser.get<unsigned int>("a");
+    if (parser.exists("c")) strategy.simulation_runs = parser.get<int>("c");
     if (parser.exists("s")) strategy.max_sim_steps = parser.get<unsigned int>("s");
     if (parser.exists("p")) strategy.max_time_progression = parser.get<double>("p");
     if (parser.exists("u")) strategy.cpu_threads_n = parser.get<unsigned int>("u");
     if (parser.exists("d")) mode = parser.get<int>("d");
+    if (parser.exists("o")) o_path = parser.get<string>("o");
     
     
     std::cout << "Fuck you\n";
@@ -64,7 +68,7 @@ int main(int argc, const char* argv[])
     clock_variable timer2 = clock_variable(1, 0.0);
     
     constraint_t* con0 = constraint_t::less_equal_v(0, expression::literal_expression(10) );
-    constraint_t* con1 = constraint_t::greater_equal_v(0, expression::literal_expression(5) );
+    constraint_t* con1 = constraint_t::greater_equal_v(0, expression::literal_expression(5));
     constraint_t* con2 = constraint_t::less_equal_t(0, 1);
     // constraint_t con1 = constraint_t::less_equal_v(1, 10.0f);dbq84
     // constraint_t con2 = constraint_t::greater_equal_v(0, 0.0f);
@@ -117,6 +121,8 @@ int main(int argc, const char* argv[])
 
     pretty_visitor p_visitor;
     domain_analysis_visitor d_visitor;
+    string temp = "result";
+    result_writer r_writer = result_writer(&o_path, &temp, strategy, false, true);
     
     stochastic_model_t model(&node0, to_array(&clock_lst), variable_arr);
     if (parser.exists("m"))
@@ -140,7 +146,7 @@ int main(int argc, const char* argv[])
     if (mode == 2 || mode == 0)
     {
         cout << "GPU SIMULATIONS STARTED! \n";
-        stochastic_simulator::simulate_gpu(&model, &strategy);
+        stochastic_simulator::simulate_gpu(&model, &strategy, &r_writer);
         cout << "GPU SIMULATION DONE! \n";
     }
     if (mode > 0)

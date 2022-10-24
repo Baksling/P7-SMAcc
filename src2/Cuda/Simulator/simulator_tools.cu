@@ -77,25 +77,25 @@ void result_handler::read_results(
     double* local_variable_results = nullptr;
     if(cuda_results) local_variable_results = static_cast<double*>(malloc(variable_size));
 
-    results->insert( std::pair<int, node_result>(HIT_MAX_STEPS, node_result{ 0, 0.0 }) );
+    results->insert( std::pair<int, node_result>(HIT_MAX_STEPS, node_result{ 0, 0.0 }));
     
     for (unsigned long i = 0; i < total_simulations; ++i)
     {
-        const simulation_result result = simulation_results[i];
-        if(results->count(result.id) == 1)
+        const simulation_result local_result = simulation_results[i];
+        if(results->count(local_result.id) == 1)
         {
-            results->at(result.id).update_count(result.steps);
+            results->at(local_result.id).update_count(local_result.steps);
         }
         else
         {
-            node_result r = {1, static_cast<double>(result.steps)};
-            results->insert( std::pair<int, node_result>(result.id, r) );
+            node_result r = {1, static_cast<double>(local_result.steps)};
+            results->insert( std::pair<int, node_result>(local_result.id, r) );
         }
 
         if(cuda_results) //copy from cuda
-            cudaMemcpy(local_variable_results, result.variables_max_value, variable_size, cudaMemcpyDeviceToHost);
+            cudaMemcpy(local_variable_results, local_result.variables_max_value, variable_size, cudaMemcpyDeviceToHost);
         else //set variable from local
-            local_variable_results = result.variables_max_value;
+            local_variable_results = local_result.variables_max_value;
 
         for (int  j = 0; j < avg_max_variable_value->size(); ++j)
         {

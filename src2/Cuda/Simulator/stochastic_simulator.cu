@@ -3,6 +3,8 @@
 #include <map>
 #include "device_launch_parameters.h"
 #include <chrono>
+
+#include "result_writer.h"
 #include "simulator_tools.h"
 #include "../Domain/edge_t.h"
 
@@ -313,7 +315,7 @@ void stochastic_simulator::simulate_cpu(const stochastic_model_t* model, const s
 
     //setup simulation options
     const model_options options = {
-        strategy->simulation_amounts,
+        strategy->simulations_per_thread,
         strategy->max_sim_steps,
         static_cast<unsigned long>(time(nullptr)),
         strategy->max_time_progression,
@@ -349,7 +351,7 @@ void stochastic_simulator::simulate_cpu(const stochastic_model_t* model, const s
     free(state);
 }
 
-void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, const simulation_strategy* strategy)
+void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, const simulation_strategy* strategy, const result_writer* r_writer)
 {
      //setup start variables
     const unsigned long total_simulations = strategy->total_simulations();
@@ -374,7 +376,7 @@ void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, const s
     //implement here
     model_options* options_d = nullptr;
     const model_options options = {
-        strategy->simulation_amounts,
+        strategy->simulations_per_thread,
         strategy->max_sim_steps,
         static_cast<unsigned long>(time(nullptr)),
         strategy->max_time_progression,
@@ -391,7 +393,7 @@ void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, const s
     
     const steady_clock::time_point start = steady_clock::now();
 
-    for (int i = 0; i < strategy->sim_count; ++i)
+    for (int i = 0; i < strategy->simulation_runs; ++i)
     {
         //simulate on device
         gpu_simulate<<<strategy->block_n, strategy->threads_n>>>(model_d, options_d, state, sim_results);
@@ -401,7 +403,7 @@ void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, const s
         if(cudaPeekAtLastError() != cudaSuccess) break;
 
         //count result unless last sim
-        if(i < strategy->sim_count) 
+        if(i < strategy->simulation_runs) 
         {
             std::cout << "Simulation ran for: " << duration_cast<milliseconds>(steady_clock::now() - start).count() << "[ms] \n";
             std::cout << "Reading results...\n";
@@ -412,7 +414,7 @@ void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, const s
         }
     }
 
-    if(strategy->sim_count > 1)
+    if(strategy->simulation_runs > 1)
     {
         std::cout << "Total Simulation time: " << duration_cast<milliseconds>(steady_clock::now() - start).count() << "[ms] \n";
     }
@@ -420,7 +422,7 @@ void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, const s
     const cudaError status = cudaPeekAtLastError();
     if(cudaPeekAtLastError() == cudaSuccess)
     {
-        result_handler::print_results(&node_results, &lend_variable_r, total_simulations * strategy->sim_count);
+        result_handler::print_results(&node_results, &lend_variable_r, total_simulations * strategy->simulation_runs);
     }
     else
     {

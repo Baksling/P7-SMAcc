@@ -386,6 +386,7 @@
       <SDLCheck>true</SDLCheck>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
+    <ClCompile Include="Cuda\Simulator\result_writer.cu" />
     <ClCompile Include="Cuda\Simulator\simulation_result.cu" />
     <ClCompile Include="Cuda\UPPAALTreeParser\arithmetic-expression-evaluator.cpp" />
     <ClCompile Include="Cuda\UPPAALTreeParser\declaration_parser.cpp" />
@@ -838,6 +839,7 @@
     <ClCompile Include="Cuda\Domain\stochastic_model_t.h" />
     <ClCompile Include="Cuda\Domain\clock_variable.h" />
     <ClCompile Include="Cuda\Domain\update_t.h" />
+    <ClInclude Include="Cuda\Simulator\result_writer.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\arithmetic-expression-evaluator.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\declaration.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\declaration_parser.h" />

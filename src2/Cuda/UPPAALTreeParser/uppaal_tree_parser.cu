@@ -210,18 +210,18 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                 {
                     if (expr.empty())
                         continue;
-                    string right_side = take_after(expr, get_constraint_op(expr));
+                    string right_side = ""; //take_after(expr, get_constraint_op(expr));
                     
-                    if (!does_not_contain(right_side, ALPHA))
-                    {
-                        invariants.push_back(get_constraint(expr, get_timer_id(expr), update_parser::parse(right_side, vars_map_, global_vars_map_)));
-                    }
-                    else if (!does_not_contain(right_side, "+-*/%"))
-                    {
-                        invariants.push_back(get_constraint(expr, get_timer_id(expr), declaration_parser::parse(right_side, vars_map_, global_vars_map_)));
-                    }
-                    else
-                        invariants.push_back(get_constraint(expr, get_timer_id(expr), expression::literal_expression(right_side)));
+                    // if (!does_not_contain(right_side, ALPHA))
+                    // {
+                    //     invariants.push_back(get_constraint(expr, get_timer_id(expr), update_parser::parse(right_side, vars_map_, global_vars_map_)));
+                    // }
+                    // else if (!does_not_contain(right_side, "+-*/%"))
+                    // {
+                    //     invariants.push_back(get_constraint(expr, get_timer_id(expr), declaration_parser::parse(right_side, vars_map_, global_vars_map_)));
+                    // }
+                    // else
+                    //     invariants.push_back(get_constraint(expr, get_timer_id(expr), expression::literal_expression(right_side)));
                 }
             }
             nodes_->push_back(new node_t(node_id, to_array(&invariants),false, is_goal, expo_rate));
@@ -264,18 +264,18 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                         if (expr.empty())
                             continue;
 
-                        string right_side = take_after(expr, get_constraint_op(expr));
+                        string right_side =""; //take_after(expr, get_constraint_op(expr));
                     
-                        if (!does_not_contain(right_side, ALPHA))
-                        {
-                            guards.push_back(get_constraint(expr, get_timer_id(expr), update_parser::parse(right_side, vars_map_, global_vars_map_)));
-                        }
-                        else if (!does_not_contain(right_side, "+-*/%"))
-                        {
-                            guards.push_back(get_constraint(expr, get_timer_id(expr), declaration_parser::parse(right_side, vars_map_, global_vars_map_)));
-                        }
-                        else
-                            guards.push_back(get_constraint(expr, get_timer_id(expr), expression::literal_expression(right_side)));
+                    //     if (!does_not_contain(right_side, ALPHA))
+                    //     {
+                    //         guards.push_back(get_constraint(expr, get_timer_id(expr), update_parser::parse(right_side, vars_map_, global_vars_map_)));
+                    //     }
+                    //     else if (!does_not_contain(right_side, "+-*/%"))
+                    //     {
+                    //         guards.push_back(get_constraint(expr, get_timer_id(expr), declaration_parser::parse(right_side, vars_map_, global_vars_map_)));
+                    //     }
+                    //     else
+                    //         guards.push_back(get_constraint(expr, get_timer_id(expr), expression::literal_expression(right_side)));
                     }
                 }
                 else if (kind == "assignment")

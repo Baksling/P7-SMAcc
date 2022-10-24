@@ -17,22 +17,22 @@ struct model_options
 
 struct simulation_strategy
 {
-    int block_n = 1;
-    int threads_n = 1;
-    unsigned int simulation_amounts = 1;
+    unsigned int block_n = 1;
+    unsigned int threads_n = 1;
+    unsigned int simulations_per_thread = 1;
     unsigned int cpu_threads_n = 1;
-    int sim_count = 1;
+    unsigned int simulation_runs = 1;
     unsigned int max_sim_steps = 100;
     double max_time_progression = 10.0;
 
-    int degree_of_parallelism() const
+    unsigned int degree_of_parallelism() const
     {
         return block_n*threads_n;
     }
     
     unsigned long total_simulations() const
     {
-        return block_n*threads_n*simulation_amounts;
+        return block_n*threads_n*simulations_per_thread;
     }
 };
 
