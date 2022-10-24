@@ -1,4 +1,4 @@
-﻿
+
 #include <iostream>
 #include "Visitors/domain_analysis_visitor.h"
 #include "Visitors/pretty_visitor.h"
@@ -60,9 +60,9 @@ int main(int argc, const char* argv[])
     
     std::cout << "Fuck you\n";
 
-    array_t<clock_variable*> variable_arr = array_t<clock_variable*>(2);
-    variable_arr.arr()[0] = new clock_variable(0, 10);
-    variable_arr.arr()[1] = new clock_variable(1, 5);
+    array_t<clock_variable> variable_arr = array_t<clock_variable>(2);
+    variable_arr.arr()[0] = clock_variable(0, 10);
+    variable_arr.arr()[1] = clock_variable(1, 5);
     
     clock_variable timer1 = clock_variable(0, 0.0);
     clock_variable timer2 = clock_variable(1, 0.0);
@@ -75,8 +75,6 @@ int main(int argc, const char* argv[])
 
     array_t<constraint_t*> con0_arr = array_t<constraint_t*>(1);
     array_t<constraint_t*> con1_arr = array_t<constraint_t*>(1);
-    array_t<constraint_t*> con2_aar = array_t<constraint_t*>(1);
-
     con0_arr.arr()[0] = con0;
     con1_arr.arr()[0] = con1;
     con2_aar.arr()[0] = con2;
@@ -97,15 +95,13 @@ int main(int argc, const char* argv[])
 
     array_t<update_t*> update_arr = to_array(&update_lst);
     
-    edge_t* edge0_1 = new edge_t(0, expression::literal_expression(1), &node1, con1_arr, update_arr);
+    edge_t* edge0_1 = new edge_t(0, expression::literal_expression(1), &node1, array_t<constraint_t*>(0), update_arr);
     edge_t* edge0_2 = new edge_t(1, expression::literal_expression(1), &node2, array_t<constraint_t*>(0), update_arr);
     edge_t* edge1_0 = new edge_t(2, expression::literal_expression(1), &node0, array_t<constraint_t*>(0), update_arr);
 
-
-
-    std::list<clock_variable*> clock_lst;
-    clock_lst.push_back(&timer1);
-    clock_lst.push_back(&timer2);
+    array_t<clock_variable> timer_arr = array_t<clock_variable>(2);
+    timer_arr.arr()[0] = clock_variable(0, 0.0);
+    timer_arr.arr()[1] = clock_variable(1, 0.0);
     
     std::list<edge_t*> node0_lst;
     std::list<edge_t*> node1_lst;
@@ -116,33 +112,34 @@ int main(int argc, const char* argv[])
 
     node1_lst.push_back(edge1_0);
     node1.set_edges(&node1_lst);
-
-
+    
+    array_t<node_t> start_nodes = array_t<node_t>(1);
+    start_nodes.arr()[0] = node0;
 
     pretty_visitor p_visitor;
     domain_analysis_visitor d_visitor;
     string temp = "result";
     result_writer r_writer = result_writer(&o_path, &temp, strategy, false, true);
     
-    stochastic_model_t model(&node0, to_array(&clock_lst), variable_arr);
+    stochastic_model_t model(start_nodes, timer_arr, variable_arr);
     if (parser.exists("m"))
     {
-        printf("USING PARSER\n");
+        printf("USING PARSER\n"); //wtf is this. Simas, plz fix (and by fix, i mean handle inside parser)
         uppaal_tree_parser tree_parser;
         string temp = parser.get<string>("m");
         char* writeable = new char[temp.size() + 1];
         std::copy(temp.begin(), temp.end(), writeable);
         writeable[temp.size()] = '\0';
         
-        printf("Fuck thi");
+        printf("Fuck this");
         model = tree_parser.parse(writeable);
 
         delete[] writeable;
     }
     p_visitor.visit(&model);
     d_visitor.visit(&model);
-    auto [max_expression, max_updates] = d_visitor.get_results();  // NOLINT(clang-diagnostic-c++17-extensions)
-    printf("Max exp: %d | Max updates: %d\n", max_expression, max_updates);
+    printf("Max exp: %d | Max updates: %d\n", d_visitor.get_max_expression_depth(), d_visitor.get_max_update_width());
+
     if (mode == 2 || mode == 0)
     {
         cout << "GPU SIMULATIONS STARTED! \n";

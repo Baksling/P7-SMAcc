@@ -21,13 +21,12 @@ CPU GPU void update_t::apply_update(simulator_state* state) const
     const double value = state->evaluate_expression(this->expression_);
     if(this->is_clock_update_)
     {
-        state->timers.at(this->variable_id_)->set_time(value);
+        state->get_timers().at(this->variable_id_)->set_time(value);
     }
     else
     {
         //value is rounded correctly by adding 0.5. casting always rounds down.
-        state->variables.at(this->variable_id_)->set_time(value);  // NOLINT(bugprone-incorrect-roundings)
-        //printf("--------Variable id: %d | value: %f\n", this->variable_id_ , state->variables.at(this->variable_id_)->get_time());
+        state->get_variables().at(this->variable_id_)->set_time(value);  // NOLINT(bugprone-incorrect-roundings)
     }
 }
 
@@ -36,12 +35,12 @@ CPU GPU void update_t::apply_temp_update(simulator_state* state) const
     const double value = state->evaluate_expression(this->expression_);
     if(this->is_clock_update_)
     {
-        state->timers.at(this->variable_id_)->set_temp_time(value);
+        state->get_timers().at(this->variable_id_)->set_temp_time(value);
     }
     else
     {
         //value is rounded correctly by adding 0.5. casting always rounds down.
-        state->variables.at(this->variable_id_)
+        state->get_variables().at(this->variable_id_)
             ->set_temp_time(value);  // NOLINT(bugprone-incorrect-roundings)
     }
 }
@@ -50,12 +49,12 @@ void update_t::reset_temp_update(const simulator_state* state) const
 {
     if(this->is_clock_update_)
     {
-        state->timers.at(this->variable_id_)->reset_temp_time();
+        state->get_timers().at(this->variable_id_)->reset_temp_time();
     }
     else
     {
         //value is rounded correctly by adding 0.5. casting always rounds down.
-        state->variables.at(this->variable_id_)->reset_temp_time();  // NOLINT(bugprone-incorrect-roundings)
+        state->get_variables().at(this->variable_id_)->reset_temp_time();  // NOLINT(bugprone-incorrect-roundings)
     }
 }
 

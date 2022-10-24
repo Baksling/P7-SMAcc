@@ -309,9 +309,9 @@
     </ClCompile>
     <ClCompile Include="Cuda\Domain\node_t.cu" />
     <ClCompile Include="Cuda\Domain\simulator_state.cu" />
-    <ClCompile Include="Cuda\Domain\stochastic_model_t.cu" />
     <ClCompile Include="Cuda\Domain\clock_variable.cu" />
     <ClCompile Include="Cuda\Domain\expressions\expression.cu" />
+    <ClCompile Include="Cuda\Domain\stochastic_model_t.cu" />
     <ClCompile Include="Cuda\Domain\update_t.cu" />
     <ClCompile Include="Cuda\main.cu">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
@@ -388,10 +388,12 @@
     </ClCompile>
     <ClCompile Include="Cuda\Simulator\result_writer.cu" />
     <ClCompile Include="Cuda\Simulator\simulation_result.cu" />
+    <ClCompile Include="Cuda\Simulator\stochastic_engine.cu" />
+    <ClCompile Include="Cuda\Simulator\stochastic_simulator.cu" />
     <ClCompile Include="Cuda\UPPAALTreeParser\arithmetic-expression-evaluator.cpp" />
     <ClCompile Include="Cuda\UPPAALTreeParser\declaration_parser.cpp" />
     <ClCompile Include="Cuda\Simulator\simulator_tools.cu" />
-    <ClCompile Include="Cuda\Simulator\stochastic_simulator.cu">
+    <ClCompile Include="Cuda\Simulator\OLD_stochastic_simulator.cu">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <Optimization>Disabled</Optimization>
@@ -836,10 +838,12 @@
   <ItemGroup>
     <ClCompile Include="Cuda\Domain\edge_t.h" />
     <ClCompile Include="Cuda\Domain\node_t.h" />
-    <ClCompile Include="Cuda\Domain\stochastic_model_t.h" />
     <ClCompile Include="Cuda\Domain\clock_variable.h" />
     <ClCompile Include="Cuda\Domain\update_t.h" />
     <ClInclude Include="Cuda\Simulator\result_writer.h" />
+    <ClInclude Include="Cuda\Domain\stochastic_model_t.h" />
+    <ClInclude Include="Cuda\Simulator\stochastic_engine.h" />
+    <ClInclude Include="Cuda\Simulator\stochastic_simulator.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\arithmetic-expression-evaluator.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\declaration.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\declaration_parser.h" />
@@ -854,7 +858,7 @@
     <ClInclude Include="Cuda\Simulator\simulation_result.h" />
     <ClInclude Include="Cuda\Simulator\simulation_strategy.h" />
     <ClInclude Include="Cuda\Simulator\simulator_tools.h" />
-    <ClInclude Include="Cuda\Simulator\stochastic_simulator.h" />
+    <ClInclude Include="Cuda\Simulator\OLD_stochastic_simulator.h" />
     <ClInclude Include="Cuda\Simulator\thread_pool.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\pugiconfig.hpp" />
     <ClInclude Include="Cuda\UPPAALTreeParser\pugixml.hpp" />

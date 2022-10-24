@@ -43,7 +43,7 @@ public:
     void set_edges(std::list<edge_t*>* list);
     void accept(visitor* v) const;
     void pretty_print() const;
-    void cuda_allocate(node_t** pointer, const allocation_helper* helper);
+    void cuda_allocate(node_t* pointer, const allocation_helper* helper);
 };
 
 #endif

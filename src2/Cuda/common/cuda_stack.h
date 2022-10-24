@@ -55,7 +55,7 @@ CPU GPU T cuda_stack<T>::peak() const
 {
     if(this->stack_pointer_ == 0)
     {
-        printf("cant get top element of empty stack");
+        printf("cant get top element of empty stack\n");
     }
     return store_[stack_pointer_ - 1];
 }
@@ -65,7 +65,7 @@ CPU GPU T* cuda_stack<T>::peak_at() const
 {
     if(this->stack_pointer_ == 0)
     {
-        printf("cant get top element of empty stack");
+        printf("cant get top element of empty stack\n");
     }
     return &store_[stack_pointer_ - 1];
 }
@@ -75,7 +75,7 @@ CPU GPU T cuda_stack<T>::pop()
 {
     if(stack_pointer_ == 0)
     {
-        printf("cant pop empty stack");
+        printf("cant pop empty stack\n");
     }
     return store_[--stack_pointer_];
 }
@@ -91,7 +91,7 @@ CPU GPU void cuda_stack<T>::push(T value)
 {
     if(this->stack_pointer_ >= this->size_)
     {
-        printf("Stack is full");
+        printf("Stack is full\n");
         return;
     }
     store_[stack_pointer_++] = value;
