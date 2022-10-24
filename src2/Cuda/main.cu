@@ -87,6 +87,9 @@ int main(int argc, const char* argv[])
 
     expression* exp1 = expression::plus_expression(expression::variable_expression(0), expression::variable_expression(1));
     expression* exp2 = expression::minus_expression(expression::variable_expression(1), expression::literal_expression(4));
+    expression* exp3 = expression::equal_expression(expression::plus_expression(
+        expression::variable_expression(0), expression::variable_expression(1)),
+        expression::literal_expression(2));
 
     std::list<update_t*> update_lst;
 

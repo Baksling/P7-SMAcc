@@ -60,7 +60,7 @@ void update_t::reset_temp_update(const simulator_state* state) const
 
 void update_t::accept(visitor* v) const
 {
-    return;
+    v->visit(this->expression_);
 }
 
 void update_t::pretty_print() const

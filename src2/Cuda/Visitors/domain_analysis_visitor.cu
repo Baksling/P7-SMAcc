@@ -8,7 +8,8 @@
 
 void domain_analysis_visitor::visit(constraint_t* constraint)
 {
-    return;
+    if (constraint == nullptr) return;
+    constraint->accept(this);
 }
 
 void domain_analysis_visitor::visit(edge_t* edge)
@@ -24,7 +25,7 @@ void domain_analysis_visitor::visit(node_t* node)
     checker.insert(node);
     
     const lend_array<edge_t*> arr = node->get_edges();
-    int acc = 0;
+    unsigned int acc = 0;
     for (int i = 0; i < arr.size(); ++i)
     {
         acc += arr.get(i)->get_updates_size();
@@ -48,15 +49,16 @@ void domain_analysis_visitor::visit(clock_variable* timer)
 void domain_analysis_visitor::visit(update_t* update)
 {
     if (update == nullptr) return;
-    const unsigned int temp = update->get_expression_depth();
-    if(temp > max_expression_) max_expression_ = temp;
     update->accept(this);
 }
 
 
 void domain_analysis_visitor::visit(expression* expression)
 {
-    return;
+    if (expression == nullptr) return;
+    const unsigned int temp = expression->get_depth();
+    if(temp > max_expression_) max_expression_ = temp;
+    expression->accept(this);
 }
 
 unsigned domain_analysis_visitor::get_max_expression_depth() const
