@@ -3,20 +3,20 @@
 
 #define ALPHA "abcdefghijklmnopqrstuvwxyz"
 
-string get_constraint_op(const string& expr)
+char get_constraint_op(const string& expr)
 {
     if(expr.find("<=") != std::string::npos)
-        return "<=";
+        return '=';
     if(expr.find(">=") != std::string::npos)
-        return ">=";
+        return '=';
     if(expr.find("==") != std::string::npos)
-        return "==";
-    if(expr.find('!=') != std::string::npos)
-        return "!=";
+        return '=';
+    if(expr.find("!=") != std::string::npos)
+        return '=';
     if(expr.find('<') != std::string::npos)
-        return "<";
+        return '<';
     if(expr.find('>') != std::string::npos)
-        return ">";
+        return '>';
     THROW_LINE("Operand in " + expr + " not found, sad..");
 }
 
@@ -28,7 +28,7 @@ constraint_t* get_constraint(const string& expr, const int timer_id, expression*
         return constraint_t::greater_equal_v(timer_id,value);
     if(expr.find("==") != std::string::npos)
         return constraint_t::equal_v(timer_id,value);
-    if(expr.find('!=') != std::string::npos)
+    if(expr.find("!=") != std::string::npos)
         return constraint_t::not_equal_v(timer_id,value);
     if(expr.find('<') != std::string::npos)
         return constraint_t::less_v(timer_id,value);
@@ -98,13 +98,26 @@ int uppaal_tree_parser::get_timer_id(const string& expr) const
     THROW_LINE("sum tin wong")
 }
 
+template <typename T>
+void uppaal_tree_parser::get_guys(const list<string>& expressions, list<T> t)
+{
+    for(const auto& expr: expressions)
+    {
+        if (expr.empty())
+            continue;
+
+        const string right_side = take_after(expr, get_constraint_op(expr));
+        t.push_back(get_constraint(expr, get_timer_id(expr), update_parser::parse(right_side, &vars_map_, &global_vars_map_)));
+    }
+}
+
+
 void uppaal_tree_parser::init_clocks(const xml_document* doc)
 {
-    declaration_parser dp;
     string global_decl = doc->child("nta").child("declaration").child_value();
     cout << "\nGLOBAL GUYS: " << global_decl << " :NICE\n";
     global_decl = replace_all(global_decl, " ", "");
-    const list<declaration> decls = dp.parse(global_decl);
+    const list<declaration> decls = dp_.parse(global_decl);
     cout << "\nSIZE: " << decls.size() << "\n";
         
     for (declaration d : decls)
@@ -127,7 +140,7 @@ void uppaal_tree_parser::init_clocks(const xml_document* doc)
     {
         string decl = templates.child("declaration").child_value();
         decl = replace_all(decl, " ", "");
-        list<declaration> declarations = dp.parse(decl);
+        list<declaration> declarations = dp_.parse(decl);
         cout << "\nSIZE: " << declarations.size() << "\n";
         
         for (declaration d : declarations)
@@ -166,6 +179,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
     string path = file_path;
     xml_document doc;
     map<int, list<edge_t*>> node_edge_map;
+    declaration_parser dp;
     
     // load the XML file
     if (!doc.load_file(file_path))
@@ -206,23 +220,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             
             if (kind == "invariant")
             {
-                for(const auto& expr: expressions)
-                {
-                    if (expr.empty())
-                        continue;
-                    string right_side = take_after(expr, get_constraint_op(expr));
-                    
-                    if (!does_not_contain(right_side, ALPHA))
-                    {
-                        invariants.push_back(get_constraint(expr, get_timer_id(expr), update_parser::parse(right_side, vars_map_, global_vars_map_)));
-                    }
-                    else if (!does_not_contain(right_side, "+-*/%"))
-                    {
-                        invariants.push_back(get_constraint(expr, get_timer_id(expr), declaration_parser::parse(right_side, vars_map_, global_vars_map_)));
-                    }
-                    else
-                        invariants.push_back(get_constraint(expr, get_timer_id(expr), expression::literal_expression(right_side)));
-                }
+                get_guys(expressions, invariants);
             }
             nodes_->push_back(new node_t(node_id, to_array(&invariants),false, is_goal, expo_rate));
         }
@@ -248,7 +246,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             
             list<constraint_t*> guards;
             list<update_t*> updates;
-            float probability = 1.0f;
+            expression* probability = nullptr;
             
             for (pugi::xml_node labels: trans.children("label"))
             {
@@ -259,24 +257,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                 if(kind == "guard")
                 {
                     list<string> expressions = split_expr(expr_string);
-                    for(const auto& expr: expressions)
-                    {
-                        if (expr.empty())
-                            continue;
-
-                        string right_side = take_after(expr, get_constraint_op(expr));
-                    
-                        if (!does_not_contain(right_side, ALPHA))
-                        {
-                            guards.push_back(get_constraint(expr, get_timer_id(expr), update_parser::parse(right_side, vars_map_, global_vars_map_)));
-                        }
-                        else if (!does_not_contain(right_side, "+-*/%"))
-                        {
-                            guards.push_back(get_constraint(expr, get_timer_id(expr), declaration_parser::parse(right_side, vars_map_, global_vars_map_)));
-                        }
-                        else
-                            guards.push_back(get_constraint(expr, get_timer_id(expr), expression::literal_expression(right_side)));
-                    }
+                    get_guys(expressions, guards);
                 }
                 else if (kind == "assignment")
                 {
@@ -286,21 +267,20 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                     {
                         if (expr.empty())
                             continue;
-                        cout << "\nASS: " << expr <<"\n";
+
                         updates.push_back(new update_t(update_id++, get_timer_id(expr), true, update_parser::parse(expr, &vars_map_, &global_vars_map_)));
-                        cout << "\nIT OK: " << expr <<"\n";
-                        cout.flush();
                     }
                 }
                 else if (kind == "probability")
                 {
-                    probability = get_expr_value_float(expr_string);
+                    probability = update_parser::parse(expr_string, &vars_map_, &global_vars_map_);
                 }
             }
-            cout << "\nIT OK:2 "  <<"\n";
-            cout.flush();
+
+            if (probability == nullptr) probability = expression::literal_expression(1.0);
+            
             node_t* target_node = get_node(target_id);
-            auto result_edge = new edge_t(edge_id++, expression::literal_expression(probability), target_node, to_array(&guards), to_array(&updates));
+            auto result_edge = new edge_t(edge_id++, probability, target_node, to_array(&guards), to_array(&updates));
             cout << "guard size: " << guards.size() << "\n";
             
             // if (guards.empty())

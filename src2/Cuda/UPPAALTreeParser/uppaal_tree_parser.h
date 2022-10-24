@@ -40,7 +40,9 @@ private:
     int timer_amount_ = 0;
     int var_id_ = 0;
     int clock_id_ = 0;
-    map<string, int> timers_map_{};
+    declaration_parser dp_;
+    template <typename T> void get_guys(const list<string>& expressions, list<T> t);
+    const map<string, int> timers_map_{};
     map<string, int> vars_map_{};
     map<string, int> global_vars_map_{};
     list<node_t*>* nodes_ = new list<node_t*>();
