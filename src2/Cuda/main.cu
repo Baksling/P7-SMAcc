@@ -117,7 +117,6 @@ int main(int argc, const char* argv[])
     stochastic_model_t model(start_nodes, timer_arr, variable_arr);
     if (parser.exists("m"))
     {
-        printf("USING PARSER\n"); //wtf is this. Simas, plz fix (and by fix, i mean handle inside parser)
         uppaal_tree_parser tree_parser;
         string temp = parser.get<string>("m");
         char* writeable = new char[temp.size() + 1];

@@ -163,14 +163,14 @@ void uppaal_tree_parser::init_clocks(const xml_document* doc)
 uppaal_tree_parser::uppaal_tree_parser()
 = default;
 
-node_t* uppaal_tree_parser::get_node(const int target_id) const
+node_t* uppaal_tree_parser::get_node(const int target_id, const list<node_t*>* arr) const
 {
-    for(node_t* node: *nodes_)
+    for(node_t* node: *arr)
     {
         if(node->get_id() == target_id)
             return node;
     }
-    return nodes_->front();
+    return arr->front();
 }
 
 
@@ -279,7 +279,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
 
             if (probability == nullptr) probability = expression::literal_expression(1.0);
             
-            node_t* target_node = get_node(target_id);
+            node_t* target_node = get_node(target_id, nodes_);
             auto result_edge = new edge_t(edge_id++, probability, target_node, to_array(&guards), to_array(&updates));
             cout << "guard size: " << guards.size() << "\n";
             
@@ -294,24 +294,33 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
 
     for(node_t* node: *nodes_)
     {
+        cout << "\n" << node->get_id() <<" HELLLLO!";
         node->set_edges(&node_edge_map.at(node->get_id()));
     }
 
-
+    for(node_t* node: *nodes_)
+    {
+        if (node->is_goal_node())
+            goal_nodes_->push_back(node);
+    }
+    
     //TODO i broke plz fix :)
     //The stochastic model now expects an array of objects, rather than a array of object pointers.
     //This helps cut down on the number of times pointers need to be followed in the simulation.
     //Only reason it was like that before, was because we didnt know how to make the cuda-allocation code without it :)
     // - Bak ඞ
-    array_t<node_t> temp_node_arr = array_t<node_t>(0);
+    array_t<node_t> start_nodes = array_t<node_t>(1);
+    start_nodes.arr()[0] = *goal_nodes_->back();
     array_t<clock_variable> temp_clock_variable_arr = array_t<clock_variable>(0);
-    return stochastic_model_t(temp_node_arr, temp_clock_variable_arr, temp_clock_variable_arr);
+    
+    return stochastic_model_t(start_nodes, temp_clock_variable_arr, temp_clock_variable_arr);
 }
 
 __host__ stochastic_model_t uppaal_tree_parser::parse(char* file_path)
 {
     try
     {
+        printf("USING PARSER\n");
         return parse_xml(file_path);
     }
     catch (const std::runtime_error &ex)

@@ -46,9 +46,10 @@ private:
     map<string, int> vars_map_{};
     map<string, int> global_vars_map_{};
     list<node_t*>* nodes_ = new list<node_t*>();
+    list<node_t*>* goal_nodes_ = new list<node_t*>();
     list<int> branchpoint_nodes{};
     int get_timer_id(const string& expr) const;
-    node_t* get_node(int target_id) const;
+    node_t* get_node(const int target_id, const list<node_t*>* arr) const;
     void init_clocks(const pugi::xml_document* doc);
     stochastic_model_t parse_xml(char* file_path);
 public:

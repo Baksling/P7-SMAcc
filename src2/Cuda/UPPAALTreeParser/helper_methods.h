@@ -28,7 +28,7 @@ namespace helper
                 return s.substr(i);
         }
 
-        THROW_LINE("how")
+        THROW_LINE("how: " + s + " \n WITH THE WHILE_CHAR: " + while_char)
     }
     
     inline string replace_all(std::string str, const std::string& from, const std::string& to) {
