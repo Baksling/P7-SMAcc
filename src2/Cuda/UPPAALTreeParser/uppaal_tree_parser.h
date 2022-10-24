@@ -35,19 +35,20 @@ class uppaal_tree_parser
 {
 private:
     int init_node_id_{};
-    list<clock_variable*> timer_list_{};
-    list<clock_variable*> var_list_{};
+    list<clock_variable>* timer_list_ = new list<clock_variable>();
+    list<clock_variable>* var_list_ = new list<clock_variable>();
     int timer_amount_ = 0;
     int var_id_ = 0;
     int clock_id_ = 0;
     declaration_parser dp_;
-    template <typename T> void get_guys(const list<string>& expressions, list<T> t);
+    template <typename T> void get_guys(const list<string>& expressions, list<T>* t);
     const map<string, int> timers_map_{};
     map<string, int> vars_map_{};
     map<string, int> global_vars_map_{};
     list<node_t*>* nodes_ = new list<node_t*>();
     list<node_t*>* goal_nodes_ = new list<node_t*>();
     list<int> branchpoint_nodes{};
+    list<int> start_nodes_{};
     int get_timer_id(const string& expr) const;
     node_t* get_node(const int target_id, const list<node_t*>* arr) const;
     void init_clocks(const pugi::xml_document* doc);

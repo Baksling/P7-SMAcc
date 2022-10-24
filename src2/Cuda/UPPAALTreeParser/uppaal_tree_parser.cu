@@ -99,7 +99,7 @@ int uppaal_tree_parser::get_timer_id(const string& expr) const
 }
 
 template <typename T>
-void uppaal_tree_parser::get_guys(const list<string>& expressions, list<T> t)
+void uppaal_tree_parser::get_guys(const list<string>& expressions, list<T>* t)
 {
     for(const auto& expr: expressions)
     {
@@ -107,7 +107,7 @@ void uppaal_tree_parser::get_guys(const list<string>& expressions, list<T> t)
             continue;
 
         const string right_side = take_after(expr, get_constraint_op(expr));
-        t.push_back(get_constraint(expr, get_timer_id(expr), update_parser::parse(right_side, &vars_map_, &global_vars_map_)));
+        t->push_back(get_constraint(expr, get_timer_id(expr), update_parser::parse(right_side, &vars_map_, &global_vars_map_)));
     }
 }
 
@@ -126,12 +126,12 @@ void uppaal_tree_parser::init_clocks(const xml_document* doc)
         if(d.get_type() == clock_type)
         {
             global_vars_map_.insert_or_assign(d.get_name(),clock_id_);
-            timer_list_.push_back(new clock_variable(clock_id_++, d.get_value()));
+            timer_list_->push_back(clock_variable(clock_id_++, d.get_value()));
         }
         else
         {
             global_vars_map_.insert_or_assign(d.get_name(), var_id_);
-            var_list_.push_back(new clock_variable(var_id_++, d.get_value()));
+            var_list_->push_back(clock_variable(var_id_++, d.get_value()));
         }
     }
     
@@ -149,12 +149,12 @@ void uppaal_tree_parser::init_clocks(const xml_document* doc)
             if(d.get_type() == clock_type)
             {
                 vars_map_.insert_or_assign(d.get_name(),clock_id_);
-                timer_list_.push_back(new clock_variable(clock_id_++, d.get_value()));
+                timer_list_->push_back(clock_variable(clock_id_++, d.get_value()));
             }
             else
             {
                 vars_map_.insert_or_assign(d.get_name(), var_id_);
-                var_list_.push_back(new clock_variable(var_id_++, d.get_value()));
+                var_list_->push_back(clock_variable(var_id_++, d.get_value()));
             }
         }
     }
@@ -194,6 +194,8 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
     
     for (pugi::xml_node templates: doc.child("nta").children("template"))
     {
+        string init_node = templates.child("init").attribute("ref").as_string();
+        init_node_id_ = xml_id_to_int(init_node);
         for (pugi::xml_node locs: templates.children("location"))
         {
             string string_id = locs.attribute("id").as_string();
@@ -220,9 +222,12 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             
             if (kind == "invariant")
             {
-                get_guys(expressions, invariants);
+                get_guys(expressions, &invariants);
             }
+            if (init_node_id_ == node_id)
+                start_nodes_.push_back(nodes_->size());
             nodes_->push_back(new node_t(node_id, to_array(&invariants),false, is_goal, expo_rate));
+            
         }
 
         for (pugi::xml_node locs: templates.children("branchpoint"))
@@ -233,8 +238,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             nodes_->push_back(new node_t(node_id,array_t<constraint_t*>(0), true));
         }
 
-        string init_node = templates.child("init").attribute("ref").as_string();
-        init_node_id_ = xml_id_to_int(init_node);
+        
         
         for (pugi::xml_node trans: templates.children("transition"))
         {
@@ -257,7 +261,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                 if(kind == "guard")
                 {
                     list<string> expressions = split_expr(expr_string);
-                    get_guys(expressions, guards);
+                    get_guys(expressions, &guards);
                 }
                 else if (kind == "assignment")
                 {
@@ -297,23 +301,25 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
         cout << "\n" << node->get_id() <<" HELLLLO!";
         node->set_edges(&node_edge_map.at(node->get_id()));
     }
-
-    for(node_t* node: *nodes_)
-    {
-        if (node->is_goal_node())
-            goal_nodes_->push_back(node);
-    }
     
     //TODO i broke plz fix :)
     //The stochastic model now expects an array of objects, rather than a array of object pointers.
     //This helps cut down on the number of times pointers need to be followed in the simulation.
     //Only reason it was like that before, was because we didnt know how to make the cuda-allocation code without it :)
     // - Bak ඞ
-    array_t<node_t> start_nodes = array_t<node_t>(1);
-    start_nodes.arr()[0] = *goal_nodes_->back();
-    array_t<clock_variable> temp_clock_variable_arr = array_t<clock_variable>(0);
+    array_t<node_t> start_nodes = array_t<node_t>(start_nodes_.size());
+
     
-    return stochastic_model_t(start_nodes, temp_clock_variable_arr, temp_clock_variable_arr);
+
+    int number_of_start_nodes = 0;
+    for (int i : start_nodes_)
+    {
+        auto n_front = nodes_->begin();
+        std::advance(n_front, i);
+        start_nodes.arr()[number_of_start_nodes++] = **n_front;
+    }
+
+    return stochastic_model_t(start_nodes, to_array(timer_list_), to_array(var_list_));
 }
 
 __host__ stochastic_model_t uppaal_tree_parser::parse(char* file_path)
