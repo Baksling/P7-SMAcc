@@ -14,7 +14,6 @@
 #include "../Domain/expressions/expression.h"
 #include "parser_exception.h"
 
-
 #define PI 3.14159265358979323846 
 
 class expression;
@@ -23,10 +22,9 @@ using namespace std;
 enum update_types { UPDATEDELIMITER = 1, UPDATEVARIABLE, UPDATENUMBER, UPDATEFUNCTION };
 const int UPDATE_NUMVARS = 26;
 class update_expression_evaluator {
-    char *exp_ptr; // points to the expression
-    char token[256]; // holds current token
-    char tok_type; // holds token's type
-    double vars[UPDATE_NUMVARS]; // holds variable's values
+    char *exp_ptr_; // points to the expression
+    char token_[256]; // holds current token
+    char tok_type_; // holds token's type
     map<string, int>* local_vars_;
     map<string, int>* global_vars_;
     expression* eval_exp1();
@@ -39,7 +37,7 @@ class update_expression_evaluator {
     void get_token();
 public:
     update_expression_evaluator(map<string,int>* local_vars, map<string,int>* global_vars);
-    static expression* parse_update_expr(string input, map<string, int>* local_vars, map<string, int>* global_vars);
+    static expression* parse_update_expr(const string& input, map<string, int>* local_vars, map<string, int>* global_vars);
     
     char errormsg[64];
 };

@@ -8,6 +8,8 @@
 
 #include "declaration.h"
 
+using namespace std;
+
 class declaration_parser
 {
 private:
@@ -17,5 +19,5 @@ private:
     // declaration number_parser(const string& line);
     string val_;
 public:
-    std::list<declaration> parse(std::string declaration);
+    std::list<declaration> parse(const std::string& decl);
 };

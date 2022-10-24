@@ -1,22 +1,20 @@
 ﻿#pragma once
 #include <iostream>
-#include <list>
 #include <map>
 #include <string>
-#include <type_traits>
-#include "parser_exception.h"
+
+using namespace std;
+
 #define THROW_LINE(arg); throw parser_exception(arg, __FILE__, __LINE__);
 
 enum declaration_types {clock_type, double_type, int_type};
-
-using namespace std;
 
 class declaration
 {
 private:
     declaration_types type_;
     string var_name_;
-    float value_;
+    double value_;
     int id_;
 
     std::map<declaration_types, std::string> print_map_;
@@ -31,7 +29,7 @@ public:
     {
         this->type_ = type;
         this->var_name_ = var_name;
-        this->value_ = stof(val);
+        this->value_ = stod(val);
         this->id_ = id;
     }
     
@@ -45,7 +43,7 @@ public:
         return this->var_name_;
     }
 
-    float get_value() const
+    double get_value() const
     {
         return this->value_;
     }

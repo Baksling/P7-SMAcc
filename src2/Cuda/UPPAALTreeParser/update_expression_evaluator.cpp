@@ -5,7 +5,7 @@
 // Parser constructor.
 update_expression_evaluator::update_expression_evaluator(map<string,int>* local_vars, map<string,int>* global_vars)
 {
-    exp_ptr = NULL;
+    exp_ptr_ = nullptr;
     local_vars_ = local_vars;
     global_vars_ = global_vars;
 }
@@ -14,16 +14,16 @@ update_expression_evaluator::update_expression_evaluator(map<string,int>* local_
 expression* update_expression_evaluator::eval_exp(char *exp)
 {
     
-    exp_ptr = exp;
+    exp_ptr_ = exp;
     get_token();
     
-    if (!*token) 
+    if (!*token_) 
     {
         THROW_LINE("No Expression Present")
     }
     
     expression* result = eval_exp1();
-    if (*token) // last token must be null
+    if (*token_) // last token must be null
     {
         THROW_LINE("Syntax Error")
     }
@@ -33,21 +33,21 @@ expression* update_expression_evaluator::eval_exp(char *exp)
 expression* update_expression_evaluator::eval_exp1()
 {
     int slot;
-    char temp_token[80];
     expression* result;
-    if (tok_type == UPDATEVARIABLE) 
+    if (tok_type_ == UPDATEVARIABLE) 
     {
+        char temp_token[80];
         // save old token
-        char *t_ptr = exp_ptr;
-        strcpy(temp_token, token);
+        char *t_ptr = exp_ptr_;
+        strcpy(temp_token, token_);
         // compute the index of the variable
-        slot = *token - 'A';
+        slot = *token_ - 'A';
         get_token();
-        if (*token != '=') 
+        if (*token_ != '=') 
         {
-            exp_ptr = t_ptr; // return current token
-            strcpy(token, temp_token); // restore old token
-            tok_type = UPDATEVARIABLE;
+            exp_ptr_ = t_ptr; // return current token
+            strcpy(token_, temp_token); // restore old token
+            tok_type_ = UPDATEVARIABLE;
         }
         else {
             get_token(); // get next part of exp
@@ -66,7 +66,7 @@ expression* update_expression_evaluator::eval_exp1()
     char op;
     expression* result = eval_exp3();
     
-    while ((op = *token) == '+' || op == '-')
+    while ((op = *token_) == '+' || op == '-')
     {
         get_token();
         expression* temp = eval_exp3();
@@ -87,7 +87,7 @@ expression* update_expression_evaluator::eval_exp3()
     char op;
     double temp;
     expression* result = eval_exp4();
-    while ((op = *token) == '*' || op == '/')
+    while ((op = *token_) == '*' || op == '/')
     {
         get_token();
         expression* temp = eval_exp4();
@@ -95,7 +95,7 @@ expression* update_expression_evaluator::eval_exp3()
         {
         case '*':
             result = expression::multiply_expression(result, temp);
-        case '/':
+        case '/':  // NOLINT(clang-diagnostic-implicit-fallthrough)
             result = expression::division_expression(result, temp);
         }
     }
@@ -106,7 +106,7 @@ expression* update_expression_evaluator::eval_exp3()
 expression* update_expression_evaluator::eval_exp4()
 {
     expression* result = eval_exp5();
-    while (*token == '^')
+    while (*token_ == '^')
     {
         // get_token();
         eval_exp5();
@@ -117,11 +117,10 @@ expression* update_expression_evaluator::eval_exp4()
 // Evaluate a unary + or -.
 expression* update_expression_evaluator::eval_exp5()
 {
-    char op;
-    op = 0;
-    if ((tok_type == UPDATEDELIMITER) && *token == '+' || *token == '-')
+    char op = 0;
+    if ((tok_type_ == UPDATEDELIMITER) && *token_ == '+' || *token_ == '-')
     {
-        op = *token;
+        op = *token_;
         get_token();
     }
     expression* result = eval_exp6();
@@ -135,20 +134,20 @@ expression* update_expression_evaluator::eval_exp5()
 // Process a function, a parenthesized expression, a value or a variable
 expression* update_expression_evaluator::eval_exp6()
 {
-    bool isfunc = (tok_type == UPDATEFUNCTION);
-    char temp_token[80];
-    if (isfunc)
+    const bool is_func = (tok_type_ == UPDATEFUNCTION);
+    if (is_func)
     {
-        strcpy(temp_token, token);
+        char temp_token[80];
+        strcpy(temp_token, token_);
         get_token();
     } 
-    if (*token == '(') 
+    if (*token_ == '(') 
     {
         get_token();
         return eval_exp2();
-        if (*token != ')')
+        if (*token_ != ')')
             strcpy(errormsg, "Unbalanced Parentheses");
-        if (isfunc)
+        if (is_func)
         {
             // TODO Parse Funcs?
             // if (!strcmp(temp_token, "SIN"))
@@ -195,14 +194,11 @@ expression* update_expression_evaluator::eval_exp6()
         get_token();
     }
     else
-        switch (tok_type)
+        switch (tok_type_)
         {
             case UPDATEVARIABLE:
                 {
-                    cout << "\nTEST" << token - 'A';
-                    cout << "\n ::::101::::" << token;
-                    cout.flush();
-                    string var = token;
+                    const string var = token_;
                     expression* result;
 
                     if (local_vars_->count(var))
@@ -221,8 +217,7 @@ expression* update_expression_evaluator::eval_exp6()
                 
             case UPDATENUMBER:
                 {
-                    expression* result =  expression::literal_expression(atof(token));
-                    //result = atof(token);
+                    expression* result =  expression::literal_expression(stod(token_));
                     get_token();
                     return result;
                 }
@@ -235,41 +230,38 @@ expression* update_expression_evaluator::eval_exp6()
 // Obtain the next token.
 void update_expression_evaluator::get_token()
 {
-    char *temp;
-    tok_type = 0;
-    temp = token;
+    tok_type_ = 0;
+    char* temp = token_;
     *temp = '\0';
-    if (!*exp_ptr)  // at end of expression
+    if (!*exp_ptr_)  // at end of expression
         return;
-    while (isspace(*exp_ptr))  // skip over white space
-        ++exp_ptr; 
-    if (strchr("+-*/%^=()", *exp_ptr)) 
+    while (isspace(*exp_ptr_))  // skip over white space
+        ++exp_ptr_; 
+    if (strchr("+-*/%^=()", *exp_ptr_)) 
     {
-        tok_type = UPDATEDELIMITER;
-        *temp++ = *exp_ptr++;  // advance to next char
+        tok_type_ = UPDATEDELIMITER;
+        *temp++ = *exp_ptr_++;  // advance to next char
     }
-    else if (isalpha(*exp_ptr)) 
+    else if (isalpha(*exp_ptr_)) 
     {
-        while (!strchr(" +-/*%^=()\t\r", *exp_ptr) && (*exp_ptr))
-            *temp++ = *exp_ptr++;
-        while (isspace(*exp_ptr))  // skip over white space
-            ++exp_ptr;
-        tok_type = (*exp_ptr == '(') ? UPDATEFUNCTION : UPDATEVARIABLE;
+        while (!strchr(" +-/*%^=()\t\r", *exp_ptr_) && (*exp_ptr_))
+            *temp++ = *exp_ptr_++;
+        while (isspace(*exp_ptr_))  // skip over white space
+            ++exp_ptr_;
+        tok_type_ = (*exp_ptr_ == '(') ? UPDATEFUNCTION : UPDATEVARIABLE;
     }
-    else if (isdigit(*exp_ptr) || *exp_ptr == '.')
+    else if (isdigit(*exp_ptr_) || *exp_ptr_ == '.')
     {
-        while (!strchr(" +-/*%^=()\t\r", *exp_ptr) && (*exp_ptr))
-            *temp++ = toupper(*exp_ptr++);
-        tok_type = UPDATENUMBER;
+        while (!strchr(" +-/*%^=()\t\r", *exp_ptr_) && (*exp_ptr_))
+            *temp++ = toupper(*exp_ptr_++);
+        tok_type_ = UPDATENUMBER;
     }
     *temp = '\0';
-    if ((tok_type == UPDATEVARIABLE) && (token[1]))
-        strcpy(errormsg, "Only first letter of variables is considered, NAAAAAT");
 }
 
-expression* update_expression_evaluator::parse_update_expr(string input, map<string, int>* local_vars, map<string, int>* global_vars)
+expression* update_expression_evaluator::parse_update_expr(const string& input, map<string, int>* local_vars, map<string, int>* global_vars)
 {
     update_expression_evaluator ob(local_vars, global_vars);
-    expression* ans = ob.eval_exp((char*)input.substr(0,input.length()).c_str());
+    expression* ans = ob.eval_exp(const_cast<char*>(input.substr(0, input.length()).c_str()));
     return ans;
 }

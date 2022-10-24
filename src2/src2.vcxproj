@@ -391,7 +391,6 @@
     <ClCompile Include="Cuda\Simulator\stochastic_simulator.cu" />
     <ClCompile Include="Cuda\UPPAALTreeParser\arithmetic-expression-evaluator.cpp" />
     <ClCompile Include="Cuda\UPPAALTreeParser\declaration_parser.cpp" />
-    <ClCompile Include="Cuda\UPPAALTreeParser\helper_methods.cpp" />
     <ClCompile Include="Cuda\Simulator\simulator_tools.cu" />
     <ClCompile Include="Cuda\Simulator\OLD_stochastic_simulator.cu">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>

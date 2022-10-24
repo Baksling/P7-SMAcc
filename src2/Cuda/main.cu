@@ -60,6 +60,9 @@ int main(int argc, const char* argv[])
     variable_arr.arr()[0] = clock_variable(0, 10);
     variable_arr.arr()[1] = clock_variable(1, 5);
     
+    clock_variable timer1 = clock_variable(0, 0.0);
+    clock_variable timer2 = clock_variable(1, 0.0);
+    
     constraint_t* con0 = constraint_t::less_equal_v(0, expression::literal_expression(10) );
     constraint_t* con1 = constraint_t::less_equal_v(0, expression::literal_expression(10) );
     // constraint_t con1 = constraint_t::less_equal_v(1, 10.0f);dbq84
