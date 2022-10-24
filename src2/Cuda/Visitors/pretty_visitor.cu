@@ -11,6 +11,8 @@ void pretty_visitor::indentation() const
     {
         printf("    ");
     }
+
+    //printf("-----scope: %d\n", this->scope_);
 }
 
 void pretty_visitor::visit(constraint_t* constraint)
@@ -50,6 +52,7 @@ void pretty_visitor::visit(node_t* node)
         return;
     }
     checker_.insert(node);
+    this->scope_ = 0;
     indentation();
     node->pretty_print();
     scope_++;
@@ -98,8 +101,8 @@ void pretty_visitor::visit(expression* expression)
     {
         return;
     }
-    indentation();
-    std::cout << expression->to_string();
+    //indentation();
+    //std::cout << expression->to_string();
     scope_++;
     expression->accept(this);
     scope_--;

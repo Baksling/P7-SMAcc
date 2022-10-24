@@ -84,20 +84,26 @@ public:
 
     //FACTORY CONSTRUCTORS
     static constraint_t* less_equal_v(const int timer_id, expression* value_expr);
+    static constraint_t* less_equal_e(expression* value_expr1, expression* value_expr2);
     static constraint_t* less_equal_t(int timer_id, int timer_id2);
     
     static constraint_t* greater_equal_v(const int timer_id, expression* value_expr);
+    static constraint_t* greater_equal_e(expression* value_expr1, expression* value_expr2);
     static constraint_t* greater_equal_t(int timer_id, int timer_id2);
     
     static constraint_t* less_v(const int timer_id, expression* value_expr);
+    static constraint_t* less_e(expression* value_expr1, expression* value_expr2);
     static constraint_t* less_t(int timer_id, int timer_id2);
     
     static constraint_t* greater_v(const int timer_id, expression* value_expr);
+    static constraint_t* greater_e(expression* value_expr1, expression* value_expr2);
     static constraint_t* greater_t(int timer_id, int timer_id2);
     
     static constraint_t* equal_v(const int timer_id, expression* value_expr);
+    static constraint_t* equal_e(expression* value_expr1, expression* value_expr2);
     static constraint_t* equal_t(int timer_id, int timer_id2);
 
     static constraint_t* not_equal_v(const int timer_id, expression* value_expr);
+    static constraint_t* not_equal_e(expression* value_expr1, expression* value_expr2);
     static constraint_t* not_equal_t(int timer_id, int timer_id2);
 };

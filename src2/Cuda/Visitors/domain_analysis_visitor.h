@@ -10,8 +10,8 @@ class domain_analysis_visitor : public visitor
 {
 private:
     std::set<node_t*> checker = {};
-    int max_expression_ = 0;
-    int max_update_per_node_ = 0;
+    unsigned int max_expression_ = 0;
+    unsigned int max_update_per_node_ = 0;
     
 public:
     void visit(constraint_t* constraint) override;

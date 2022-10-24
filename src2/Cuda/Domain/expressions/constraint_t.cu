@@ -97,13 +97,13 @@ void constraint_t::pretty_print() const
 {
     std::string left, right;
     
-    if (this->left_.is_clock) left = " | Timer 1 id: " + std::to_string(this->left_.clock_id);
-    else left = " | Left expression type: " + this->left_.expr->type_to_string();
-    if (this->right_.is_clock) right = " | Timer 2 id: " + std::to_string(this->right_.clock_id);
-    else right = " | Right expression type: " + this->right_.expr->type_to_string();
+    if (this->left_.is_clock) left = "(Clock " + std::to_string(this->left_.clock_id);
+    else left = "(" + this->left_.expr->to_string();
+    if (this->right_.is_clock) right = "Clock " + std::to_string(this->right_.clock_id) + ")";
+    else right = this->right_.expr->to_string() + ")";
     
-    printf("Constraint type: %s %s %s\n", constraint_t::logical_operator_to_string(this->type_).c_str(),
-    left.c_str(), right.c_str());
+    printf("%s %s %s\n", left.c_str(), constraint_t::logical_operator_to_string(this->type_).c_str(),
+    right.c_str());
 }
 
 void constraint_t::cuda_allocate(constraint_t** pointer, const allocation_helper* helper) const
@@ -168,6 +168,11 @@ constraint_t* constraint_t::less_equal_v(const int timer_id, expression* value_e
     return new constraint_t{logical_operator_t::less_equal_t, constraint_value::from_timer(timer_id), constraint_value::from_expression(value_expr)};
 }
 
+constraint_t* constraint_t::less_equal_e(expression* value_expr1, expression* value_expr2)
+{
+    return new constraint_t{logical_operator_t::less_equal_t, constraint_value::from_expression(value_expr1), constraint_value::from_expression(value_expr2)};
+}
+
 constraint_t* constraint_t::less_equal_t(const int timer_id, const int timer_id2)
 {
     return new constraint_t{logical_operator_t::less_equal_t, constraint_value::from_timer(timer_id), constraint_value::from_timer(timer_id2)};
@@ -176,54 +181,80 @@ constraint_t* constraint_t::less_equal_t(const int timer_id, const int timer_id2
 //! GREATER THAN OR EQUAL
 constraint_t* constraint_t::greater_equal_v(const int timer_id, expression* value_expr)
 {
-    return new constraint_t{logical_operator_t::less_equal_t, constraint_value::from_timer(timer_id), constraint_value::from_expression(value_expr)};
+    return new constraint_t{logical_operator_t::greater_equal_t, constraint_value::from_timer(timer_id), constraint_value::from_expression(value_expr)};
+}
+
+
+constraint_t* constraint_t::greater_equal_e(expression* value_expr1, expression* value_expr2)
+{
+    return new constraint_t{logical_operator_t::greater_equal_t, constraint_value::from_expression(value_expr1), constraint_value::from_expression(value_expr2)};
 }
 
 constraint_t* constraint_t::greater_equal_t(const int timer_id, const int timer_id2)
 {
-    return new constraint_t{logical_operator_t::less_equal_t, constraint_value::from_timer(timer_id), constraint_value::from_timer(timer_id2)};
+    return new constraint_t{logical_operator_t::greater_equal_t, constraint_value::from_timer(timer_id), constraint_value::from_timer(timer_id2)};
 }
 
 //! LESS THAN
 constraint_t* constraint_t::less_v(const int timer_id, expression* value_expr)
 {
-    return new constraint_t{logical_operator_t::less_equal_t, constraint_value::from_timer(timer_id), constraint_value::from_expression(value_expr)};
+    return new constraint_t{logical_operator_t::less_t, constraint_value::from_timer(timer_id), constraint_value::from_expression(value_expr)};
+}
+
+constraint_t* constraint_t::less_e(expression* value_expr1, expression* value_expr2)
+{
+    return new constraint_t{logical_operator_t::less_t, constraint_value::from_expression(value_expr1), constraint_value::from_expression(value_expr2)};
 }
 
 constraint_t* constraint_t::less_t(const int timer_id, const int timer_id2)
 {
-    return new constraint_t{logical_operator_t::less_equal_t, constraint_value::from_timer(timer_id), constraint_value::from_timer(timer_id2)};
+    return new constraint_t{logical_operator_t::less_t, constraint_value::from_timer(timer_id), constraint_value::from_timer(timer_id2)};
 }
 
 //! GREATER THAN
 constraint_t* constraint_t::greater_v(const int timer_id, expression* value_expr)
 {
-    return new constraint_t{logical_operator_t::less_equal_t, constraint_value::from_timer(timer_id), constraint_value::from_expression(value_expr)};
+    return new constraint_t{logical_operator_t::greater_t, constraint_value::from_timer(timer_id), constraint_value::from_expression(value_expr)};
+}
+
+constraint_t* constraint_t::greater_e(expression* value_expr1, expression* value_expr2)
+{
+    return new constraint_t{logical_operator_t::greater_t, constraint_value::from_expression(value_expr1), constraint_value::from_expression(value_expr2)};
 }
 
 constraint_t* constraint_t::greater_t(const int timer_id, const int timer_id2)
 {
-    return new constraint_t{logical_operator_t::less_equal_t, constraint_value::from_timer(timer_id), constraint_value::from_timer(timer_id2)};
+    return new constraint_t{logical_operator_t::greater_t, constraint_value::from_timer(timer_id), constraint_value::from_timer(timer_id2)};
 }
 
 //! equal
 constraint_t* constraint_t::equal_v(const int timer_id, expression* value_expr)
 {
-    return new constraint_t{logical_operator_t::less_equal_t, constraint_value::from_timer(timer_id), constraint_value::from_expression(value_expr)};
+    return new constraint_t{logical_operator_t::equal_t, constraint_value::from_timer(timer_id), constraint_value::from_expression(value_expr)};
+}
+
+constraint_t* constraint_t::equal_e(expression* value_expr1, expression* value_expr2)
+{
+    return new constraint_t{logical_operator_t::equal_t, constraint_value::from_expression(value_expr1), constraint_value::from_expression(value_expr2)};
 }
 
 constraint_t* constraint_t::equal_t(const int timer_id, const int timer_id2)
 {
-    return new constraint_t{logical_operator_t::less_equal_t, constraint_value::from_timer(timer_id), constraint_value::from_timer(timer_id2)};
+    return new constraint_t{logical_operator_t::equal_t, constraint_value::from_timer(timer_id), constraint_value::from_timer(timer_id2)};
 }
 
 //! NOT EQUAL
 constraint_t* constraint_t::not_equal_v(const int timer_id, expression* value_expr)
 {
-    return new constraint_t{logical_operator_t::less_equal_t, constraint_value::from_timer(timer_id), constraint_value::from_expression(value_expr)};
+    return new constraint_t{logical_operator_t::not_equal_t, constraint_value::from_timer(timer_id), constraint_value::from_expression(value_expr)};
+}
+
+constraint_t* constraint_t::not_equal_e(expression* value_expr1, expression* value_expr2)
+{
+    return new constraint_t{logical_operator_t::not_equal_t, constraint_value::from_expression(value_expr1), constraint_value::from_expression(value_expr2)};
 }
 
 constraint_t* constraint_t::not_equal_t(const int timer_id, const int timer_id2)
 {
-    return new constraint_t{logical_operator_t::less_equal_t, constraint_value::from_timer(timer_id), constraint_value::from_timer(timer_id2)};
+    return new constraint_t{logical_operator_t::not_equal_t, constraint_value::from_timer(timer_id), constraint_value::from_timer(timer_id2)};
 }

@@ -386,6 +386,7 @@
       <SDLCheck>true</SDLCheck>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
+    <ClCompile Include="Cuda\Simulator\result_writer.cu" />
     <ClCompile Include="Cuda\Simulator\simulation_result.cu" />
     <ClCompile Include="Cuda\Simulator\stochastic_engine.cu" />
     <ClCompile Include="Cuda\Simulator\stochastic_simulator.cu" />
@@ -839,6 +840,7 @@
     <ClCompile Include="Cuda\Domain\node_t.h" />
     <ClCompile Include="Cuda\Domain\clock_variable.h" />
     <ClCompile Include="Cuda\Domain\update_t.h" />
+    <ClInclude Include="Cuda\Simulator\result_writer.h" />
     <ClInclude Include="Cuda\Domain\stochastic_model_t.h" />
     <ClInclude Include="Cuda\Simulator\stochastic_engine.h" />
     <ClInclude Include="Cuda\Simulator\stochastic_simulator.h" />

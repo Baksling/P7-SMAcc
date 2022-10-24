@@ -65,7 +65,16 @@ void update_t::accept(visitor* v) const
 
 void update_t::pretty_print() const
 {
-    printf("Update id: %3d | Timer id: %3d\n", this->id_, this->variable_id_);
+    std::string temp, temp2;
+    if (is_clock_update_) temp = "Clock " + std::to_string(this->variable_id_) + " = ";
+    else temp = "Variable " + std::to_string(this->variable_id_) + " = ";
+
+    temp2 = this->expression_->to_string();
+    
+    printf("%s %s\n", temp.c_str(), temp2.c_str());
+    
+    //std::cout << expression_->to_string();
+    //printf("Update id: %3d | Timer id: %3d\n", this->id_, this->variable_id_);
 }
 
 void update_t::cuda_allocate(update_t* cuda, const allocation_helper* helper) const
