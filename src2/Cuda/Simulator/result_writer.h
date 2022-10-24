@@ -17,7 +17,6 @@ private:
     simulation_strategy strategy_;
     bool write_to_file_;
     bool write_to_console_;
-    unsigned file_count_ = 0;
 
     static void analyse_results(const simulation_result* simulation_results,
                                 unsigned long total_simulations,
@@ -33,5 +32,5 @@ public:
         bool write_to_console = false, bool write_to_file = false);
     
     void write_results(const simulation_result* sim_result, const unsigned result_size, const unsigned variable_count,
-        std::chrono::steady_clock::duration sim_duration) const;
+                       std::chrono::steady_clock::duration sim_duration, unsigned i) const;
 };

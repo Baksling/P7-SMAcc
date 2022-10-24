@@ -15,7 +15,7 @@ private:
     
 public:
     static void simulate_gpu(const stochastic_model_t* model, const simulation_strategy* strategy, const result_writer* r_writer);
-    static void simulate_cpu(const stochastic_model_t* model, const simulation_strategy* strategy);
+    static void simulate_cpu(const stochastic_model_t* model, const simulation_strategy* strategy, const result_writer* r_writer);
 };
 
 #endif

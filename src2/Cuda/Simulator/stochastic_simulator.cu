@@ -19,7 +19,7 @@ model_options stochastic_simulator::build_options(const stochastic_model_t* mode
     //analyser.visit(model);
     
     return model_options{
-        strategy->simulation_amounts,
+        strategy->simulations_per_thread,
         strategy->max_sim_steps,
         static_cast<unsigned long>(time(nullptr)),
         100,
@@ -61,7 +61,7 @@ void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, const s
     std::cout << "Started running!\n";
     const steady_clock::time_point global_start = steady_clock::now();
     
-    for (unsigned i = 0; i < strategy->sim_count; ++i)
+    for (unsigned i = 0; i < strategy->simulation_runs; ++i)
     {
         //start time local
         const steady_clock::time_point local_start = steady_clock::now();
@@ -80,6 +80,7 @@ void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, const s
         simulation_result* local_results = static_cast<simulation_result*>(malloc(sizeof(simulation_result)*total_simulations));
         cudaMemcpy(local_results, sim_results, sizeof(simulation_result)*total_simulations, cudaMemcpyDeviceToHost);
         simulator_tools::read_results(local_results, total_simulations, &result_map, &lend_variable_r, true);
+        r_writer->write_results(local_results, total_simulations, variable_count, steady_clock::now() - local_start, i);
         free(local_results);
     }
 
@@ -97,7 +98,7 @@ void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, const s
     }
 }
 
-void stochastic_simulator::simulate_cpu(const stochastic_model_t* model, const simulation_strategy* strategy)
+void stochastic_simulator::simulate_cpu(const stochastic_model_t* model, const simulation_strategy* strategy, const result_writer* r_writer)
 {
     //setup start variables
     const unsigned long total_simulations = strategy->total_simulations();
@@ -117,7 +118,7 @@ void stochastic_simulator::simulate_cpu(const stochastic_model_t* model, const s
     std::cout << "Started running!\n";
     const steady_clock::time_point global_start = steady_clock::now();
 
-    for (unsigned i = 0; i < strategy->sim_count; ++i)
+    for (unsigned i = 0; i < strategy->simulation_runs; ++i)
     {
         const steady_clock::time_point local_start = steady_clock::now();
         const bool success = stochastic_engine::run_cpu(model, &options, sim_results, strategy);

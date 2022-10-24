@@ -75,11 +75,14 @@ int main(int argc, const char* argv[])
 
     array_t<constraint_t*> con0_arr = array_t<constraint_t*>(1);
     array_t<constraint_t*> con1_arr = array_t<constraint_t*>(1);
+    array_t<constraint_t*> con2_arr = array_t<constraint_t*>(1);
+    
     con0_arr.arr()[0] = con0;
     con1_arr.arr()[0] = con1;
-    con2_aar.arr()[0] = con2;
+    con2_arr.arr()[0] = con2;
+    
     node_t node0 = node_t(0, con1_arr, false,false);
-    node_t node1 = node_t(1, con2_aar, false,false);
+    node_t node1 = node_t(1, con2_arr, false,false);
     node_t node2 = node_t(2, array_t<constraint_t*>(0),false,true);
 
     expression* exp1 = expression::plus_expression(expression::variable_expression(0), expression::variable_expression(1));
@@ -149,7 +152,7 @@ int main(int argc, const char* argv[])
     if (mode > 0)
     {
         cout << "CPU SIMULATION STARTED! \n";
-        stochastic_simulator::simulate_cpu(&model, &strategy);
+        stochastic_simulator::simulate_cpu(&model, &strategy, &r_writer);
         cout << "CPU SIMULATION DONE! \n";
     }
     
