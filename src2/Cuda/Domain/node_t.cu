@@ -11,12 +11,13 @@ node_t::node_t(const node_t* source, const array_t<constraint_t*> invariant, con
     this->lambda_expression_ = lambda;
 }
 
+
 node_t::node_t(const int id, const array_t<constraint_t*> invariants,
     const bool is_branch_point, const bool is_goal, expression* lambda)
 {
     if(lambda == nullptr)
     {
-        lambda = expression::literal_expression(0);
+        lambda = expression::literal_expression(1);
     }
     
     this->id_ = id;
@@ -34,7 +35,10 @@ GPU CPU int node_t::get_id() const
 
 GPU CPU double node_t::get_lambda(simulator_state* state) const
 {
-    return state->evaluate_expression(this->lambda_expression_);
+    if(this->lambda_expression_ != nullptr)
+        return state->evaluate_expression(this->lambda_expression_);
+
+    return 0.0; //illegal lambda value.
 }
 
 void node_t::set_edges(std::list<edge_t*>* list)
@@ -66,7 +70,8 @@ CPU GPU bool node_t::evaluate_invariants(simulator_state* state) const
 void node_t::accept(visitor* v) const
 {
     //visit node constraints
-    v->visit(this->lambda_expression_);
+    if(this->lambda_expression_ != nullptr)
+        v->visit(this->lambda_expression_);
     
     for (int i = 0; i < this->invariants_.size(); ++i)
     {
@@ -92,12 +97,14 @@ void node_t::pretty_print() const
            this->is_goal_);
 }
 
-void node_t::cuda_allocate(node_t** pointer, const allocation_helper* helper)
+void node_t::cuda_allocate(node_t* pointer, const allocation_helper* helper)
 {
     if(helper->node_map->count(this) == 1) return;
-    cudaMalloc(pointer, sizeof(node_t));
-    helper->free_list->push_back(*pointer);
-    helper->node_map->insert(std::pair<node_t*, node_t*>(this, *pointer) );
+    // cudaMalloc(pointer, sizeof(node_t));
+    // helper->free_list->push_back(*pointer);
+
+    //add current node to circular reference resolver
+    helper->node_map->insert(std::pair<node_t*, node_t*>(this, pointer) );
     
     std::list<edge_t*> edge_lst;
     for (int i = 0; i < this->edges_.size(); ++i)
@@ -116,14 +123,17 @@ void node_t::cuda_allocate(node_t** pointer, const allocation_helper* helper)
     }
 
     expression* expr = nullptr;
-    cudaMalloc(&expr, sizeof(expression));
-    helper->free_list->push_back(expr);
-    this->lambda_expression_->cuda_allocate(expr, helper);
-    
+    if(this->lambda_expression_ != nullptr)
+    {
+        cudaMalloc(&expr, sizeof(expression));
+        helper->free_list->push_back(expr);
+        this->lambda_expression_->cuda_allocate(expr, helper);
+    }
+
     const node_t result(this,
         cuda_to_array(&invariant_lst, helper->free_list),
         cuda_to_array(&edge_lst, helper->free_list), expr);
-    cudaMemcpy(*pointer, &result, sizeof(node_t), cudaMemcpyHostToDevice);
+    cudaMemcpy(pointer, &result, sizeof(node_t), cudaMemcpyHostToDevice);
 }
 
 
@@ -136,19 +146,17 @@ CPU GPU bool node_t::max_time_progression(simulator_state* state, double* out_ma
 {
     if(this->invariants_.size() <= 0) return false;
 
-    bool changes = false;
     double node_max = -1.0;
     for (int i = 0; i < this->invariants_.size(); ++i)
     {
-        double local_max = 0.0;
+        double local_max = -1.0;
         if(this->invariants_.get(i)->check_max_time_progression(state, &local_max))
         {
             if(node_max < 0) node_max = local_max;
-            node_max = node_max < local_max ? node_max : local_max;
-            changes = true;
+            else node_max = node_max < local_max ? node_max : local_max;
         }
     }
 
     (*out_max_progression) = node_max;
-    return changes; 
+    return node_max >= 0; //initial value is negative. Not allowed to set negative value
 }

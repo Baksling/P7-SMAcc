@@ -59,8 +59,12 @@ void domain_analysis_visitor::visit(expression* expression)
     return;
 }
 
-std::tuple<int, int> domain_analysis_visitor::get_results()
+unsigned domain_analysis_visitor::get_max_expression_depth() const
 {
-    return {max_expression_, max_update_per_node_};
+    return this->max_expression_;
 }
 
+unsigned domain_analysis_visitor::get_max_update_width() const
+{
+    return this->max_update_per_node_;
+}

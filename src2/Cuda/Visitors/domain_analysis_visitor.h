@@ -21,7 +21,8 @@ public:
     void visit(clock_variable* timer) override;
     void visit(update_t* update) override;
     void visit(expression* expression) override;
-    std::tuple<int, int> get_results();
+    unsigned get_max_expression_depth() const;
+    unsigned get_max_update_width() const;
 };
 
 #endif
