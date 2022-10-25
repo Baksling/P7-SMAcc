@@ -68,7 +68,7 @@ CPU GPU void simulate_stochastic_model(
 
         state.write_result(output);
     }
-
+    
     state.free_internals();
 }
 
@@ -102,6 +102,7 @@ bool stochastic_engine::run_gpu(
         
     //wait for all processes to finish
     cudaDeviceSynchronize();
+    
     const cudaError success = cudaPeekAtLastError();
     if(success != cudaSuccess) printf("\nAn error of code '%d' occured in cuda :( \n", success);
     cudaFree(random_states);

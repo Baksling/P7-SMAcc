@@ -156,12 +156,24 @@ CPU GPU void simulator_state::write_result(simulation_result* output_array) cons
 {
     simulation_result* output = &output_array[this->sim_id_];
 
-    output->id = this->models_.arr()[0].current_node->get_id(); //TODO fix this... again. Id output should be for each model.
+    output->total_time_progress = this->global_timer_.get_time();
     output->steps = this->steps_;
+
+    for (int i = 0; i < this->models_.size(); ++i)
+    {
+        output->end_node_id_arr[i] = this->models_.at(i)->reached_goal
+            ? this->models_.at(i)->current_node->get_id()
+            : HIT_MAX_STEPS;
+    }
+
+    // for (int i = 0; i < this->models_.size(); ++i)
+    // {
+    //     printf("result: %d\n", output->end_node_id_arr[i]);
+    // }
 
     for (int i = 0; i < this->variables_.size(); ++i)
     {
-        output->variables_max_value[i] = this->variables_.at(i)->get_max_value();
+        output->variables_max_value_arr[i] = this->variables_.at(i)->get_max_value();
     }
 }
 
