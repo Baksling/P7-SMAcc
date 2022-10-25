@@ -51,7 +51,7 @@ CPU GPU void simulator_state::progress_timers(const double time)
     }
 
     //progress global timer.
-    this->global_timer_.add_time(time);
+    this->global_time_ += time;
 }
 
 simulator_state::simulator_state(
@@ -60,7 +60,7 @@ simulator_state::simulator_state(
 {
     this->sim_id_ = static_cast<unsigned>(-1);
     this->steps_ = 0;
-    this->global_timer_ = clock_variable(GLOBAL_TIMER_ID, 0.0);
+    this->global_time_ = 0.0;
     // this->models_ = models;
     // this->timers_ = timers;
     // this->variables_ = variables;
@@ -72,11 +72,17 @@ CPU GPU model_state* simulator_state::progress_sim(const model_options* options,
 {
     //progress number of steps
     this->steps_++;
-    
-    //determine if sim is done
-    if(this->steps_ > options->max_steps_pr_sim ) return nullptr;
 
+    //determine if sim is done
+    if((options->use_max_steps      && this->steps_ > options->max_steps_pr_sim)
+        || (!options->use_max_steps && this->global_time_ >= options->max_global_progression) )
+        return nullptr;
+
+    
     double min_progress_time = 99999999; //TODO find hardware function for this limit
+    if(!options->use_max_steps)
+        min_progress_time = options->max_global_progression - this->global_time_;
+    
     model_state* winning_model = nullptr;
     for (int i = 0; i < this->models_.size(); ++i)
     {
@@ -107,6 +113,7 @@ CPU GPU model_state* simulator_state::progress_sim(const model_options* options,
         }
     }
 
+    this->progress_timers(min_progress_time);
     return winning_model;
 }
 
@@ -156,7 +163,7 @@ CPU GPU void simulator_state::write_result(simulation_result* output_array) cons
 {
     simulation_result* output = &output_array[this->sim_id_];
 
-    output->total_time_progress = this->global_timer_.get_time();
+    output->total_time_progress = this->global_time_;
     output->steps = this->steps_;
 
     for (int i = 0; i < this->models_.size(); ++i)
@@ -238,13 +245,12 @@ CPU GPU lend_array<clock_variable> simulator_state::get_variables() const
     return lend_array<clock_variable>(&this->variables_);
 }
 
-CPU GPU void simulator_state::reset(const unsigned int sim_id,
-                            const stochastic_model_t* model)
+CPU GPU void simulator_state::reset(const unsigned int sim_id, const stochastic_model_t* model)
 {
     //set sim_id to new sim and reset steps
     this->sim_id_ = sim_id;
     this->steps_ = 0;
-    this->global_timer_.set_time(0);
+    this->global_time_ = 0.0;
 
     //reset clear
     this->expression_stack.clear();
@@ -270,14 +276,14 @@ CPU GPU void simulator_state::reset(const unsigned int sim_id,
     //reset timers
     for (int i = 0; i < this->timers_.size(); ++i)
     {
-        const double start_time = this->timers_.at(i)->get_time();
+        const double start_time = model->timers_.at(i)->get_time();
         this->timers_.at(i)->set_time(start_time);
     }
 
     //reset variables
     for (int i = 0; i < this->variables_.size(); ++i)
     {
-        const double start_time = this->variables_.at(i)->get_time();
+        const double start_time = model->variables_.at(i)->get_time();
         this->variables_.at(i)->set_time(start_time);
     }
 }

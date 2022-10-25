@@ -122,7 +122,7 @@ bool stochastic_engine::run_cpu(
     thread_pool pool(strategy->cpu_threads_n);
 
     //add all jobs
-    for (int i = 0; i < strategy->degree_of_parallelism(); i++)
+    for (unsigned i = 0; i < strategy->degree_of_parallelism(); i++)
     {
         pool.queue_job([model, options, random_states, output, i]()
         {

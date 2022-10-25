@@ -15,18 +15,18 @@ void result_writer::analyse_results(const simulation_result* simulation_results,
     
     for (unsigned long i = 0; i < total_simulations; ++i)
     {
-        const simulation_result local_result = simulation_results[i];
-        if(results->count(local_result.id) == 1)
-        {
-            results->at(local_result.id).update_count(local_result.steps);
-        }
-        else
-        {
-            node_result r = {1, static_cast<double>(local_result.steps)};
-            results->insert( std::pair<int, node_result>(local_result.id, r) );
-        }
-
-        cudaMemcpy(local_variable_results, local_result.variables_max_value, sizeof(double) * avg_max_variable_value->size(), cudaMemcpyDeviceToHost);
+        // const simulation_result local_result = simulation_results[i];
+        // if(results->count(local_result.id) == 1)
+        // {
+        //     results->at(local_result.id).update_count(local_result.steps);
+        // }
+        // else
+        // {
+        //     node_result r = {1, static_cast<double>(local_result.steps)};
+        //     results->insert( std::pair<int, node_result>(local_result.id, r) );
+        // }
+        //
+        // cudaMemcpy(local_variable_results, local_result.variables_max_value, sizeof(double) * avg_max_variable_value->size(), cudaMemcpyDeviceToHost);
 
         for (int  j = 0; j < avg_max_variable_value->size(); ++j)
         {

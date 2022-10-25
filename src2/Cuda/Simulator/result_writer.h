@@ -31,6 +31,9 @@ public:
     explicit result_writer(const std::string* path, const std::string* base_filename, simulation_strategy strategy,
         bool write_to_console = false, bool write_to_file = false);
     
-    void write_results(const simulation_result* sim_result, const unsigned result_size, const unsigned variable_count,
-                       std::chrono::steady_clock::duration sim_duration, unsigned i) const;
+    void write_results(const simulation_result* sim_result,
+                    const unsigned result_size,
+                    const unsigned variable_count,
+                    std::chrono::steady_clock::duration sim_duration,
+                    unsigned i) const;
 };

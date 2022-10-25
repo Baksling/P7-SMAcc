@@ -31,8 +31,8 @@ private:
     array_t<model_state> models_{0};
     array_t<clock_variable> variables_{nullptr, 0};
     array_t<clock_variable> timers_{nullptr, 0};
-    
-    clock_variable global_timer_{0,0};
+
+    double global_time_ = 0.0;
     unsigned int steps_ = 0;
 
     CPU GPU void progress_timers(const double time);
