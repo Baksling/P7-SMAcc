@@ -23,7 +23,9 @@ public:
     
     //Host methods
     unsigned int get_variable_count() const;
+    unsigned int get_models_count() const;
+    
     void cuda_allocate(stochastic_model_t* device, const allocation_helper* helper) const;
     void accept(visitor* v) const;
-void pretty_print() const;
+    void pretty_print() const;
 };

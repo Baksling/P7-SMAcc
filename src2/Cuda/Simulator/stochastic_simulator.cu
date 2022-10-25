@@ -35,6 +35,8 @@ void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, const s
 
     //setup results array
     const unsigned int variable_count = model->get_variable_count();
+    const unsigned int model_count = model->get_models_count();
+    
     std::list<void*> free_list;
     std::unordered_map<node_t*, node_t*> node_map;
     const allocation_helper allocator = { &free_list, &node_map };
@@ -43,7 +45,7 @@ void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, const s
     std::map<int, node_result> result_map;
     array_t<variable_result> variable_r = simulator_tools::allocate_variable_results(variable_count);
     const lend_array<variable_result> lend_variable_r = lend_array<variable_result>(&variable_r);
-    simulation_result* sim_results = simulator_tools::allocate_results(strategy, variable_count, &free_list, true);
+    simulation_result* sim_results = simulator_tools::allocate_results(strategy, variable_count, model_count, &free_list, true);
 
     //Allocate model on cuda
     stochastic_model_t* model_d = nullptr;
@@ -79,7 +81,7 @@ void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, const s
         std::cout << "Reading results...\n";
         simulation_result* local_results = static_cast<simulation_result*>(malloc(sizeof(simulation_result)*total_simulations));
         cudaMemcpy(local_results, sim_results, sizeof(simulation_result)*total_simulations, cudaMemcpyDeviceToHost);
-        simulator_tools::read_results(local_results, total_simulations, &result_map, &lend_variable_r, true);
+        simulator_tools::read_results(local_results, total_simulations, model_count, &result_map, &lend_variable_r, true);
         r_writer->write_results(local_results, total_simulations, variable_count, steady_clock::now() - local_start, i);
         free(local_results);
     }
@@ -105,13 +107,14 @@ void stochastic_simulator::simulate_cpu(const stochastic_model_t* model, const s
 
     //setup results array
     const unsigned int variable_count = model->get_variable_count();
+    const unsigned int model_count = model->get_models_count();
 
     //TODO slim this down, this is handled by the result writer
     std::list<void*> free_list;
     std::map<int, node_result> result_map;
     array_t<variable_result> variable_r = simulator_tools::allocate_variable_results(variable_count);
     const lend_array<variable_result> lend_variable_r = lend_array<variable_result>(&variable_r);
-    simulation_result* sim_results = simulator_tools::allocate_results(strategy, variable_count, &free_list, false);
+    simulation_result* sim_results = simulator_tools::allocate_results(strategy, variable_count, model_count, &free_list, false);
 
     const model_options options = build_options(model, strategy);
 
@@ -130,10 +133,12 @@ void stochastic_simulator::simulate_cpu(const stochastic_model_t* model, const s
 
         std::cout << "Simulation ran for: " << duration_cast<milliseconds>(steady_clock::now() - local_start).count() << "[ms] \n";
         std::cout << "Reading results...\n";
-        simulator_tools::read_results(sim_results, total_simulations, &result_map, &lend_variable_r, true);
+        simulator_tools::read_results(sim_results, total_simulations, model_count, &result_map, &lend_variable_r, false);
     }
 
     std::cout << "Simulation and result analysis took a total of: " << duration_cast<milliseconds>(steady_clock::now() - global_start).count() << "[ms] \n";
+
+    simulator_tools::print_results(&result_map, &lend_variable_r, total_simulations);
 
 
     free(sim_results);

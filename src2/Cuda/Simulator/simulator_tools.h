@@ -22,13 +22,14 @@ public:
     static simulation_result* allocate_results(
         const simulation_strategy* strategy,
         const unsigned variable_count,
-        std::list<void*>* free_list, const bool cuda_allocate);
+        const unsigned models_count, std::list<void*>* free_list, const bool cuda_allocate);
     
     static void read_results(
         const simulation_result* simulation_results,
         const unsigned long total_simulations,
-        std::map<int, node_result>* results,
-        const lend_array<variable_result>* avg_max_variable_value, bool cuda_results);
+        const unsigned model_count,
+        std::map<int, node_result>* results, const lend_array<variable_result>* avg_max_variable_value, const bool
+        cuda_results);
     
     static void print_results(
         const std::map<int, node_result>* result_map,
