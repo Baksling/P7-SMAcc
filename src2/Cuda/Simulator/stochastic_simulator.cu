@@ -82,7 +82,7 @@ void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, const s
         simulation_result* local_results = static_cast<simulation_result*>(malloc(sizeof(simulation_result)*total_simulations));
         cudaMemcpy(local_results, sim_results, sizeof(simulation_result)*total_simulations, cudaMemcpyDeviceToHost);
         simulator_tools::read_results(local_results, total_simulations, model_count, &result_map, &lend_variable_r, true);
-        r_writer->write_results(local_results, total_simulations, variable_count, steady_clock::now() - local_start, i);
+        r_writer->write_results(local_results, total_simulations, variable_count, steady_clock::now() - local_start, true);
         free(local_results);
     }
 

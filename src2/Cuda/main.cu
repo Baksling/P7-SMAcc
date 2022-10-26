@@ -29,7 +29,8 @@ int main(int argc, const char* argv[])
     parser.add_argument("-p", "--maxtime", "Maximum number to progress in time (default=100)", false );
     parser.add_argument("-d", "--device", "What simulation to run (GPU (0) / CPU (1) / BOTH (2))", false);
     parser.add_argument("-u", "--cputhread", "The number of threads to use on the CPU", false);
-    parser.add_argument("-o", "--output", "The path to output result file", false);
+    parser.add_argument("-o", "--output", "The path to the output file (with extension)", false);
+    parser.add_argument("-w", "--write", "Write to file (0) / console (1) / both (2)", false);
     parser.enable_help();
     auto err = parser.parse(argc, argv);
     
@@ -46,6 +47,8 @@ int main(int argc, const char* argv[])
     int mode = 0; // 0 = GPU, 1 = CPU, 2 = BOTH
     string o_path = "";
 
+    int write_mode = -1; // 0 = file, 1 = console, 2 = both
+
 
     if (parser.exists("b")) strategy.block_n = parser.get<int>("b");
     if (parser.exists("t")) strategy.threads_n = parser.get<int>("t");
@@ -56,7 +59,7 @@ int main(int argc, const char* argv[])
     if (parser.exists("u")) strategy.cpu_threads_n = parser.get<unsigned int>("u");
     if (parser.exists("d")) mode = parser.get<int>("d");
     if (parser.exists("o")) o_path = parser.get<string>("o");
-    
+    if (parser.exists("w")) write_mode = parser.get<int>("w");
     
     std::cout << "Fuck you\n";
 
@@ -124,8 +127,10 @@ int main(int argc, const char* argv[])
 
     pretty_visitor p_visitor;
     domain_analysis_visitor d_visitor;
-    string temp = "result";
-    result_writer r_writer = result_writer(&o_path, &temp, strategy, false, true);
+
+    cout << write_mode % 2 << "HELELELELLELELELELLLLLLLOOOOOOOOOOOOO";
+    
+    result_writer r_writer = result_writer(&o_path ,strategy, write_mode > 0, write_mode % 2 == 0);
     
     stochastic_model_t model(start_nodes, timer_arr, variable_arr);
     if (parser.exists("m"))
