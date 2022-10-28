@@ -1,9 +1,6 @@
 ﻿#include "simulator_state.h"
-
 #include "node_t.h"
-#include "../Simulator/simulation_strategy.h"
-#include "expressions/expression.h"
-
+#include "channel_medium.h"
 
 
 CPU GPU double simulator_state::determine_progression(const node_t* node, curandState* r_state)
@@ -56,7 +53,8 @@ CPU GPU void simulator_state::progress_timers(const double time)
 
 simulator_state::simulator_state(
     const cuda_stack<expression*>& expression_stack,
-    const cuda_stack<double>& value_stack)
+    const cuda_stack<double>& value_stack,
+    channel_medium* medium)
 {
     this->sim_id_ = static_cast<unsigned>(-1);
     this->steps_ = 0;
@@ -66,6 +64,7 @@ simulator_state::simulator_state(
     // this->variables_ = variables;
     this->expression_stack = expression_stack;
     this->value_stack = value_stack;
+    this->medium = medium;
 }
 
 CPU GPU model_state* simulator_state::progress_sim(const model_options* options, curandState* r_state)
@@ -112,7 +111,7 @@ CPU GPU model_state* simulator_state::progress_sim(const model_options* options,
             winning_model = current;
         }
     }
-
+    
     this->progress_timers(min_progress_time);
     return winning_model;
 }
@@ -194,15 +193,18 @@ CPU GPU void simulator_state::free_internals()
 }
 
 CPU GPU simulator_state simulator_state::from_multi_model(
-    const unsigned int expression_max_depth,
-    const stochastic_model_t* multi_model)
+    const stochastic_model_t* multi_model,
+    const model_options* options)
 {
     //TODO! Optimize this function by only calling malloc once!
+    channel_medium* medium = static_cast<channel_medium*>(malloc(sizeof(channel_medium)));
+    *medium = channel_medium(5, 5);
     
     //init state itself
     simulator_state state = {
-        cuda_stack<expression*>(expression_max_depth*2+1), //needs to fit all each node twice (for left and right evaluation)
-        cuda_stack<double>(expression_max_depth)
+        cuda_stack<expression*>(options->max_expression_depth*2+1), //needs to fit all each node twice (for left and right evaluation)
+        cuda_stack<double>(options->max_expression_depth),
+        medium
     };
 
     //init models
@@ -255,7 +257,7 @@ CPU GPU void simulator_state::reset(const unsigned int sim_id, const stochastic_
     //reset clear
     this->expression_stack.clear();
     this->value_stack.clear();
-
+    
     //validate that timers match in size
     if(this->timers_.size() != model->timers_.size()
         || this->variables_.size() != model->variables_.size() )
@@ -286,4 +288,9 @@ CPU GPU void simulator_state::reset(const unsigned int sim_id, const stochastic_
         const double start_time = model->variables_.at(i)->get_time();
         this->variables_.at(i)->set_time(start_time);
     }
+
+    //reset channels
+    const lend_array<model_state> lend_states = lend_array<model_state>(&this->models_); 
+    this->medium->clear();
+    this->medium->init(&lend_states);
 }

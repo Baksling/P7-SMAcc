@@ -1,43 +1,56 @@
 ﻿#include "stochastic_engine.h"
 #include "stochastic_simulator.h"
 #include "thread_pool.h"
-#include <map>
 #include "device_launch_parameters.h"
 #include <chrono>
 #include "simulator_tools.h"
 #include "../Domain/edge_t.h"
 #include "../Domain/stochastic_model_t.h"
+#include "../Domain/channel_medium.h"
 
 using namespace std::chrono;
 
 
-CPU GPU void run_simulator(simulator_state state, curandState* r_state, const model_options* options)
+CPU GPU void run_simulator(simulator_state* state, curandState* r_state, const model_options* options)
 {
     while (true)
     {
-        model_state* current_model = state.progress_sim(options, r_state);
+        model_state* current_model = state->progress_sim(options, r_state);
 
         if(current_model == nullptr || current_model->reached_goal == true)
         {
             break;
         }
 
+        //remove from medium, such that current node cant match with itself,
+        //also prevents current_model from listening on multiple nodes.
+        state->medium->remove(current_model->current_node);
+        
         do //repeat as long as current node is branch node
         {
+            printf("Hello world!\n");
+            break;
             lend_array<edge_t*> outgoing_edges =  current_model->current_node->get_edges();
             if(outgoing_edges.size() == 0) break;
 
-            const edge_t* edge = simulator_tools::choose_next_edge(&state, &outgoing_edges, r_state);
-            if(edge == nullptr)
+            // const edge_t* edge = simulator_tools::choose_next_edge(&state, &outgoing_edges, r_state);
+            const next_edge edge_n = simulator_tools::choose_next_edge_channel(state, &outgoing_edges, r_state);
+            if(!edge_n.is_valid())
             {
                 break;
             }
+            
+            current_model->current_node = edge_n.next->get_dest();
+            edge_n.next->execute_updates(state);
 
-            current_model->current_node = edge->get_dest();
-            edge->execute_updates(&state);
+            if(edge_n.listener == nullptr)
+                edge_n.listener->broadcast(state);
         }
         while (current_model->current_node->is_branch_point());
 
+        //Add current node to channel medium.
+        state->medium->add(current_model);
+        
         if(current_model->current_node->is_goal_node())
         {
             current_model->reached_goal = true;
@@ -56,15 +69,16 @@ CPU GPU void simulate_stochastic_model(
     curandState* r_state = &random_states[idx];
     curand_init(options->seed, idx, idx, r_state);
     
-    simulator_state state = simulator_state::from_multi_model(options->max_expression_depth, model);
-
+    simulator_state state = simulator_state::from_multi_model(model, options);
+    
+    
     for (unsigned i = 0; i < options->simulation_amount; ++i)
     {
         const unsigned int sim_id = i + options->simulation_amount * static_cast<unsigned int>(idx);
         state.reset(sim_id, model);
 
         //run simulation
-        run_simulator(state, r_state, options);
+        run_simulator(&state, r_state, options);
 
         state.write_result(output);
     }

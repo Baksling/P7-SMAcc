@@ -1,4 +1,5 @@
 ﻿#include "constraint_t.h"
+#include "../simulator_state.h"
 
 
 void throw_on_timer_expression(const constraint_value left, const constraint_value right)

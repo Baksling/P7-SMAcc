@@ -2,13 +2,26 @@
 #include "node_t.h"
 
 
-edge_t::edge_t(const int id, expression* weight_expression, node_t* dest, const array_t<constraint_t*> guard, array_t<update_t*> updates)
+bool edge_t::has_channel() const
+{
+    return this->channel_.channel_id != NO_CHANNEL;
+}
+
+edge_t::edge_t(
+    const int id,
+    expression* weight_expression,
+    node_t* dest,
+    const array_t<constraint_t*> guard,
+    const array_t<update_t*> updates,
+    const edge_channel channel
+    )
 {
     this->id_ = id;
     this->dest_ = dest;
     this->weight_expression_ = weight_expression;
     this->updates_ = updates;
     this->guards_ = guard;
+    this->channel_ = channel;
 }
 
 CPU GPU double edge_t::get_weight(simulator_state* state) const
@@ -16,12 +29,20 @@ CPU GPU double edge_t::get_weight(simulator_state* state) const
     return state->evaluate_expression(this->weight_expression_);
 }
 
+CPU GPU unsigned edge_t::get_channel() const
+{
+    return this->channel_.is_listener
+            ? this->channel_.channel_id
+            : NO_CHANNEL;
+}
+
 int edge_t::get_id() const
 {
     return this->id_;
 }
 
-CPU GPU node_t* edge_t::get_dest() const
+
+node_t* edge_t::get_dest() const
 {
     return this->dest_;
 }
@@ -136,11 +157,6 @@ void edge_t::cuda_allocate(edge_t** pointer, const allocation_helper* helper) co
     cudaMemcpy(*pointer, &result, sizeof(edge_t), cudaMemcpyHostToDevice);
 }
 
-
-void edge_t::cuda_allocate_2(edge_t* cuda_p, const allocation_helper* helper)
-{
-    return;
-}
 
 int edge_t::get_updates_size() const
 {

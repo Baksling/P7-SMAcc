@@ -9,11 +9,11 @@
 
 #include "expressions/expression.h"
 #include "expressions/constraint_t.h"
-#include "simulator_state.h"
 
 #include "../Visitors/visitor.h"
 
 
+class simulator_state;
 class edge_t;
 
 class node_t final

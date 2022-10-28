@@ -296,6 +296,81 @@ CPU GPU edge_t* find_valid_edge_fast(
 }
 
 
+struct next_edge_weighted
+{
+    edge_t* next;
+    channel_listener* listener;
+    double weight;
+};
+
+
+
+CPU GPU next_edge simulator_tools::choose_next_edge_channel(
+    simulator_state* state,
+    const lend_array<edge_t*>* edges,
+    curandState* r_state)
+{
+    if(edges->size() == 0) return next_edge{nullptr, nullptr};
+    //TODO add this to state object
+    cuda_stack<next_edge_weighted> edge_stack = cuda_stack<next_edge_weighted>(sizeof(unsigned long long)*8);
+    edge_stack.clear();
+    
+    edge_t* edge;
+    channel_listener* listener;
+    double weight_sum = 0.0;
+    
+    for (int i = 0; i < edges->size(); ++i)
+    {
+        edge = edges->get(i);
+        listener = nullptr; //reset to sync with 'edge' variable.
+        if(!edge->evaluate_constraints(state)) continue;
+
+        const unsigned channel = edge->get_channel();
+        if(channel != NO_CHANNEL)
+        {
+            //if nullptr is returned, that means no valid states are available.
+            listener = state->medium->pick_random_valid_listener(channel, state, r_state);
+            if(listener == nullptr) continue; //edge might be valid, but no valid listener. Dont pick this one
+        }
+
+        const double weight = edges->get(i)->get_weight(state);
+        weight_sum += weight; //accumulate sum of valid edges weight
+        edge_stack.push(next_edge_weighted{ edge, listener, weight });
+    }
+
+    if(edge_stack.count() == 0) return next_edge{nullptr, nullptr};
+    if(edge_stack.count() == 1) //if only one valid
+    {
+        edge = edge_stack.peak_at()->next;
+        listener = edge_stack.peak_at()->listener;
+        return next_edge{edge, listener};
+    }
+
+    //curand_uniform return ]0.0f, 1.0f], but we require [0.0f, 1.0f[
+    //conversion from float to int is floored, such that a array of 10 (index 0..9) will return valid index.
+    const double r_val = (1.0 - curand_uniform_double(r_state)) * weight_sum;
+    double r_acc = 0.0;
+    
+    //pick the weighted random value.
+    edge = nullptr; //reset valid edge !IMPORTANT
+    listener = nullptr;
+
+    //pick random element of stack
+    while (edge_stack.count() > 0)
+    {
+        const next_edge_weighted edge_n = edge_stack.pop();
+        edge = edge_n.next;
+        listener = edge_n.listener;
+        r_acc += edge_n.weight;
+
+        if(r_val < r_acc) break;
+    }
+
+    edge_stack.clear();
+    return next_edge{edge, listener };
+}
+
+
 CPU GPU edge_t* simulator_tools::choose_next_edge(simulator_state* state, const lend_array<edge_t*>* edges, curandState* r_state)
 {
     //if no possible edges, return null pointer
