@@ -69,16 +69,15 @@ simulator_state::simulator_state(
 
 CPU GPU model_state* simulator_state::progress_sim(const model_options* options, curandState* r_state)
 {
-    //progress number of steps
-    this->steps_++;
-
     //determine if sim is done
-    if((options->use_max_steps      && this->steps_ > options->max_steps_pr_sim)
+    if((options->use_max_steps      && this->steps_       >= options->max_steps_pr_sim)
         || (!options->use_max_steps && this->global_time_ >= options->max_global_progression) )
         return nullptr;
 
+    //progress number of steps
+    this->steps_++;
     
-    double min_progress_time = 99999999; //TODO find hardware function for this limit
+    double min_progress_time = MAX_DOUBLE;
     if(!options->use_max_steps)
         min_progress_time = options->max_global_progression - this->global_time_;
     
@@ -197,14 +196,12 @@ CPU GPU simulator_state simulator_state::from_multi_model(
     const model_options* options)
 {
     //TODO! Optimize this function by only calling malloc once!
-    channel_medium* medium = static_cast<channel_medium*>(malloc(sizeof(channel_medium)));
-    *medium = channel_medium(multi_model->get_channel_count(), 5);
-    
+
     //init state itself
     simulator_state state = {
         cuda_stack<expression*>(options->max_expression_depth*2+1), //needs to fit all each node twice (for left and right evaluation)
         cuda_stack<double>(options->max_expression_depth),
-        medium
+        new channel_medium(multi_model->get_channel_count(), 5)
     };
 
     //init models
