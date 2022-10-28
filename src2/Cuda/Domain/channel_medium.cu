@@ -1,7 +1,7 @@
 ﻿#include "channel_medium.h"
 #include "simulator_state.h"
 
-CPU GPU void channel_listener::broadcast(simulator_state* sim_state) const
+CPU GPU void channel_listener::synchronize(simulator_state* sim_state) const
 {
     sim_state->medium->remove(this->state->current_node);
 
@@ -86,10 +86,9 @@ CPU GPU void channel_medium::add(model_state* state) const
     for (int i = 0; i < edges.size(); ++i)
     {
         edge_t* edge = edges.get(i);
-        const unsigned channel_id = edge->get_channel();
-        if(channel_id == NO_CHANNEL) continue;
+        if(!edge->is_listener()) continue; //only add listeners
 
-        this->store_[channel_id].add(state, edge);
+        this->store_[edge->get_channel()].add(state, edge);
     }
 }
 
@@ -106,28 +105,38 @@ CPU GPU void channel_medium::remove(node_t* node) const
     }
 }
 
-CPU GPU bool channel_medium::listener_exists(const unsigned channel_id) const
+void channel_medium::broadcast_channel(const edge_t* edge, simulator_state* state) const
 {
-    return this->store_[channel_id].count > 0;
-}
-
-CPU GPU channel_listener* channel_medium::find_listener(const unsigned channel_id) const
-{
-    if (!this->listener_exists(channel_id)) return nullptr;
+    const unsigned channel_id = edge->get_channel();
+    if(channel_id == NO_CHANNEL) return;
+    
     const channel_stack* stack = &this->store_[channel_id];
-    return &stack->listeners[stack->count - 1 ]; //returns end node
+
+    for (int i = static_cast<int>(stack->count) - 1; i >= 0; --i)
+    {
+        //synchronize might remove more than one edge from stack. This check ensures we dont go over the edge.
+        if(i >= static_cast<int>(stack->count)) continue;
+        
+        const channel_listener* listener = &stack->listeners[i];
+        
+        if(!listener->edge->evaluate_constraints(state)) continue;
+        
+        listener->synchronize(state);
+    }
 }
 
 
 CPU GPU channel_listener* channel_medium::pick_random_valid_listener(const unsigned channel_id, simulator_state* state, curandState* r_state) const
 {
-    if(!listener_exists(channel_id)) return nullptr;
+    if(this->store_[channel_id].count == 0) return nullptr;
+    
     const channel_stack* stack = &this->store_[channel_id];
     const unsigned start_index = curand(r_state) % stack->count;
 
     for (unsigned i = 0; i < stack->count; ++i)
     {
         channel_listener* listener = &stack->listeners[(start_index + i) % stack->count];
+        if(listener->state->reached_goal) continue; //if goal is reached, dont pick
         if(listener->edge->evaluate_constraints(state))
             return listener;
     }
@@ -142,6 +151,3 @@ CPU GPU void channel_medium::clear() const
         this->store_[i].count = 0;
     }
 }
-
-
-

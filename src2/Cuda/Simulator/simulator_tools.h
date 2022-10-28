@@ -47,7 +47,12 @@ public:
         const lend_array<variable_result>* variable_results,
         const unsigned long total_simulations);
 
-    CPU GPU static next_edge choose_next_edge_channel(
+    CPU GPU static edge_t* choose_next_edge_bit(
+        simulator_state* state,
+        const lend_array<edge_t*>* edges,
+        curandState* r_state);
+    
+    static next_edge choose_next_edge_channel(
         simulator_state* state,
         const lend_array<edge_t*>* edges,
         curandState* r_state);

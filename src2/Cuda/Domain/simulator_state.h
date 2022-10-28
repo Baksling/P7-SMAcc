@@ -11,6 +11,7 @@
 #include "../Simulator/simulation_strategy.h"
 
 
+
 struct model_state
 {
     node_t* current_node;

@@ -30,8 +30,6 @@ private:
     node_t* dest_;
     array_t<constraint_t*> guards_{0};
     array_t<update_t*> updates_{0};
-
-    CPU GPU bool has_channel() const;
 public:
     explicit edge_t(int id,
                     expression* weight_expression,
@@ -46,6 +44,7 @@ public:
     CPU GPU void execute_updates(simulator_state* state) const;
     CPU GPU double get_weight(simulator_state* state) const;
     CPU GPU unsigned get_channel() const; //may return NO_CHANNEl for no channels
+    CPU GPU bool is_listener() const;
     CPU GPU int get_id() const;
 
     //HOST METHODS

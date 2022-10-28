@@ -1,11 +1,20 @@
 ﻿#include "stochastic_model_t.h"
 
-stochastic_model_t::stochastic_model_t(const array_t<node_t> models, const array_t<clock_variable> timers,
-                                       const array_t<clock_variable> variables)
+stochastic_model_t::stochastic_model_t(
+    const array_t<node_t> models,
+    const array_t<clock_variable> timers,
+    const array_t<clock_variable> variables,
+    const unsigned channel_count)
 {
     this->models_ = models;
     this->timers_ = timers;
     this->variables_ = variables;
+    this->channel_count_ = channel_count;
+}
+
+CPU GPU unsigned stochastic_model_t::get_channel_count() const
+{
+    return this->channel_count_;
 }
 
 unsigned stochastic_model_t::get_variable_count() const
@@ -50,7 +59,7 @@ void stochastic_model_t::cuda_allocate(stochastic_model_t* device, const allocat
         this->variables_.at(i)->cuda_allocate(&variable_store[i], helper);
     }
     
-    const stochastic_model_t result = stochastic_model_t(node_d, clock_arr, variable_arr);
+    const stochastic_model_t result = stochastic_model_t(node_d, clock_arr, variable_arr, this->channel_count_);
     cudaMemcpy(device, &result, sizeof(stochastic_model_t), cudaMemcpyHostToDevice);
 }
 

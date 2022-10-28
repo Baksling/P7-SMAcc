@@ -198,7 +198,7 @@ CPU GPU simulator_state simulator_state::from_multi_model(
 {
     //TODO! Optimize this function by only calling malloc once!
     channel_medium* medium = static_cast<channel_medium*>(malloc(sizeof(channel_medium)));
-    *medium = channel_medium(5, 5);
+    *medium = channel_medium(multi_model->get_channel_count(), 5);
     
     //init state itself
     simulator_state state = {

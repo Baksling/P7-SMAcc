@@ -32,17 +32,15 @@ CPU GPU void run_simulator(simulator_state* state, curandState* r_state, const m
             if(outgoing_edges.size() == 0) break;
 
             // const edge_t* edge = simulator_tools::choose_next_edge(&state, &outgoing_edges, r_state);
-            const next_edge edge_n = simulator_tools::choose_next_edge_channel(state, &outgoing_edges, r_state);
-            if(!edge_n.is_valid())
+            const edge_t* edge = simulator_tools::choose_next_edge_bit(state, &outgoing_edges, r_state);
+            if(edge == nullptr)
             {
                 break;
             }
             
-            current_model->current_node = edge_n.next->get_dest();
-            edge_n.next->execute_updates(state);
-            
-            if(edge_n.listener != nullptr)
-                edge_n.listener->broadcast(state);
+            current_model->current_node = edge->get_dest();
+            edge->execute_updates(state);
+            state->medium->broadcast_channel(edge, state);
         }
         while (current_model->current_node->is_branch_point());
 

@@ -113,7 +113,7 @@ int main(int argc, const char* argv[])
     string temp = "result";
     result_writer r_writer = result_writer(&o_path, &temp, strategy, false, true);
     
-    stochastic_model_t model(start_nodes, timer_arr, variable_arr);
+    stochastic_model_t model(start_nodes, timer_arr, variable_arr, 5);
     if (parser.exists("m"))
     {
         uppaal_tree_parser tree_parser;
