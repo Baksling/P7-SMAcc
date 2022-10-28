@@ -11,6 +11,7 @@
 #include "../Simulator/simulation_strategy.h"
 
 
+#define MAX_DOUBLE (1.7976931348623158e+308)
 
 struct model_state
 {
