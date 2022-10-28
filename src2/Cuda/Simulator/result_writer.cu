@@ -61,23 +61,31 @@ std::string result_writer::print_node(const int node_id, const unsigned reached_
 }
 
 void result_writer::write_to_file(const simulation_result* sim_result, std::map<int, node_result>* results,
-    unsigned long total_simulations, array_t<variable_result> var_result, unsigned variable_count) const
+    unsigned long total_simulations, const array_t<variable_result>* var_result, unsigned variable_count, bool from_cuda) const
 {
+    const cudaMemcpyKind kind = from_cuda ? cudaMemcpyDeviceToHost : cudaMemcpyHostToHost;
+    const unsigned long long node_size = sizeof(int) * this->model_count_;
+    double* local_variable_results = static_cast<double*>(malloc(sizeof(double) * var_result->size()));
+    int* local_node_results = static_cast<int*>(malloc(node_size));
+    
     std::ofstream file_node, file_variable, summary;
-    summary.open(this->file_path_ + ".summary.txt");
+    summary.open(this->file_path_ + "/summary.txt");
     
     summary << "\naverage maximum value of each variable: \n";
     
-    for (int j = 0; j < var_result.size(); ++j)
+    for (int j = 0; j < var_result->size(); ++j)
     {
-        const variable_result* result = var_result.at(j);
+
+        const variable_result* result = var_result->at(j);
         summary << "variable " << result->variable_id << " = " << result->avg_max_value << "\n";
     }
+
     
     summary << "\n\ngoal: \n";
 
     for (const std::pair<const int, node_result>& it : *results)
     {
+
         if(it.first == HIT_MAX_STEPS) continue;
         const float percentage = calc_percentage(it.second.reach_count, total_simulations);
         summary << print_node(it.first, it.second.reach_count, percentage, it.second.avg_steps);
@@ -94,36 +102,52 @@ void result_writer::write_to_file(const simulation_result* sim_result, std::map<
     summary.flush();
     summary.close();
 
-    file_node.open(this->file_path_ + "_node_data.tsv", std::ios::app);
-    file_variable.open(this->file_path_ + "_variable_data.tsv", std::ios::app);
 
-    file_node << "Simulation" << "\t" << "Model" << "\t" << "Node" << "\n";
-    file_variable << "Simulation" << "\t" << "Variable" << "\t" << "Value" << "\n";
     
-    for (unsigned i = 0; i < total_simulations; ++i)
-    {
-        for (unsigned j = 0; j < this->model_count_; ++j)
-        {
-            file_node << i << "\t" << j << "\t" << sim_result->end_node_id_arr[j] << "\n";
-        }
+     file_node.open(this->file_path_ + "/node_data.csv");
+     file_variable.open(this->file_path_ + "/variable_data.csv");
+    
+     file_node << "Simulation" << "," << "Model" << "," << "Node" << "\n";
+     file_variable << "Simulation" << "," << "Variable" << "," << "Value" << "\n";
+    
+    
+     for (unsigned i = 0; i < total_simulations; ++i)
+     {
 
-        for (unsigned k = 0; k < variable_count; ++k)
-        {
-            file_variable << i << "\t" << k << "\t" << sim_result->variables_max_value_arr[k]<< "\n";
-        }
+         const simulation_result local_result = sim_result[i];
         
-        file_node.flush();
-        file_variable.flush();
-
-        file_node.close();
-        file_variable.close();
+         cudaMemcpy(local_node_results, local_result.end_node_id_arr, node_size, kind);
+         cudaMemcpy(local_variable_results, local_result.variables_max_value_arr, sizeof(double) * var_result->size(), kind);
+         
+         // for (unsigned j = 0; j < this->model_count_; ++j)
+         // {
+         //     const node_result res = results->at(local_node_results[j]);
+         //
+         //     file_node << i << "," << j << "," << res.reach_count;
+         //     
+         // } TODO i cannot get this to work as is, cant loop through all nodes per model to check if they are reached in given simulation
+    
+         for (unsigned k = 0; k < variable_count; ++k)
+         {
+    
+             file_variable << i << "," << k << "," << local_variable_results[k] << "\n";
+         }
+    
+         
+         file_node.flush();
+         file_variable.flush();
+    
+    
+         
+         file_node.close();
+         file_variable.close();
     }
 }
 
 void result_writer::write_to_console(std::map<int, node_result>* results, unsigned long total_simulations,
     array_t<variable_result> var_result) const
 {
-    
+    std::cout << this->file_path_;
     printf("\naverage maximum value of each variable: \n");
     
     for (int j = 0; j < var_result.size(); ++j)
@@ -162,7 +186,7 @@ result_writer::result_writer(const std::string* path,const simulation_strategy s
 
 void result_writer::write_results(const simulation_result* sim_result, const unsigned result_size,
     const unsigned variable_count, steady_clock::duration sim_duration, bool from_cuda) const
-{       
+{
     std::map<int, node_result> result_map;
     const array_t<variable_result> var_result = array_t<variable_result>(static_cast<int>(variable_count));
 
@@ -170,9 +194,11 @@ void result_writer::write_results(const simulation_result* sim_result, const uns
     {
         var_result.arr()[k] = variable_result{k,0,0};
     }
+
     
     analyse_results(sim_result, strategy_.total_simulations(), &result_map, &var_result, from_cuda);
-    
-    if (this->write_to_file_) write_to_file(sim_result, &result_map, strategy_.total_simulations(), var_result, variable_count);
+
+    if (this->write_to_file_) write_to_file(sim_result, &result_map, strategy_.total_simulations(), &var_result, variable_count, from_cuda);
+
     if (this->write_to_console_) write_to_console(&result_map, strategy_.total_simulations(), var_result);
 }

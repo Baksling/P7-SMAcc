@@ -28,7 +28,7 @@ private:
     static std::string print_node(int node_id, unsigned int reached_count, float reach_percentage, double avg_steps);
 
     void write_to_file(const simulation_result* sim_result, std::map<int, node_result>* results,
-                       unsigned long total_simulations, array_t<variable_result> var_result, unsigned variable_count) const;
+                       unsigned long total_simulations, const array_t<variable_result>* var_result, unsigned variable_count, bool from_cuda) const;
 
     void write_to_console(std::map<int, node_result>* results,
         unsigned long total_simulations, array_t<variable_result> var_result) const;

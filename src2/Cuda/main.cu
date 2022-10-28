@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include <filesystem>
 #include "Visitors/domain_analysis_visitor.h"
 #include "Visitors/pretty_visitor.h"
 #include "UPPAALTreeParser/uppaal_tree_parser.h"
@@ -45,7 +46,7 @@ int main(int argc, const char* argv[])
     }
 
     int mode = 0; // 0 = GPU, 1 = CPU, 2 = BOTH
-    string o_path = "";
+    string o_path = std::filesystem::current_path();
 
     int write_mode = -1; // 0 = file, 1 = console, 2 = both
 
@@ -58,7 +59,7 @@ int main(int argc, const char* argv[])
     if (parser.exists("p")) strategy.max_time_progression = parser.get<double>("p");
     if (parser.exists("u")) strategy.cpu_threads_n = parser.get<unsigned int>("u");
     if (parser.exists("d")) mode = parser.get<int>("d");
-    if (parser.exists("o")) o_path = parser.get<string>("o");
+    if (parser.exists("o")) o_path = o_path + parser.get<string>("o");
     if (parser.exists("w")) write_mode = parser.get<int>("w");
     
     std::cout << "Fuck you\n";
@@ -129,8 +130,11 @@ int main(int argc, const char* argv[])
     domain_analysis_visitor d_visitor;
 
     cout << write_mode % 2 << "HELELELELLELELELELLLLLLLOOOOOOOOOOOOO";
+    // 0 = file, 1 = console, 2 = both
+
+    cout << start_nodes.size() << "habahbababahbahba \n";
     
-    result_writer r_writer = result_writer(&o_path ,strategy, write_mode > 0, write_mode % 2 == 0);
+    result_writer r_writer = result_writer(&o_path ,strategy, start_nodes.size(), write_mode > 0, write_mode % 2 == 0);
     
     stochastic_model_t model(start_nodes, timer_arr, variable_arr);
     if (parser.exists("m"))
