@@ -356,7 +356,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
         start_nodes.arr()[number_of_start_nodes++] = **n_front;
     }
 
-    return stochastic_model_t(start_nodes, to_array(timer_list_), to_array(var_list_));
+    return stochastic_model_t(start_nodes, to_array(timer_list_), to_array(var_list_), 1);
 }
 
 __host__ stochastic_model_t uppaal_tree_parser::parse(char* file_path)

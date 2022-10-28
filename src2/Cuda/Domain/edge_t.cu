@@ -1,12 +1,6 @@
 ﻿#include "edge_t.h"
 #include "node_t.h"
 
-
-bool edge_t::has_channel() const
-{
-    return this->channel_.channel_id != NO_CHANNEL;
-}
-
 edge_t::edge_t(
     const int id,
     expression* weight_expression,
@@ -34,6 +28,11 @@ CPU GPU unsigned edge_t::get_channel() const
     return this->channel_.is_listener
             ? this->channel_.channel_id
             : NO_CHANNEL;
+}
+
+bool edge_t::is_listener() const
+{
+    return this->channel_.is_listener && this->channel_.channel_id != NO_CHANNEL;
 }
 
 int edge_t::get_id() const

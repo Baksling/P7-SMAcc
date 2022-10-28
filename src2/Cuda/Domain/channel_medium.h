@@ -14,7 +14,7 @@ struct channel_listener
 {
     model_state* state;
     edge_t* edge;
-    CPU GPU void broadcast(simulator_state* sim_state) const; //Assumes the edge is valid
+    CPU GPU void synchronize(simulator_state* sim_state) const; //Assumes the edge is valid
 };
 
 struct channel_stack
@@ -39,8 +39,7 @@ public:
     CPU GPU void init(const lend_array<model_state>* states) const;
     CPU GPU void add(model_state* state) const;
     CPU GPU void remove(node_t* node) const; //remove all entries under given channel, which contain this node
-    CPU GPU bool listener_exists(unsigned channel_id) const;
-    CPU GPU channel_listener* find_listener(unsigned channel_id) const;
+    CPU GPU void broadcast_channel(const edge_t* edge, simulator_state* state) const;
     CPU GPU channel_listener* pick_random_valid_listener(
                     unsigned channel_id,
                     simulator_state* state,
