@@ -802,9 +802,12 @@
     <ClInclude Include="Cuda\UPPAALTreeParser\parser_exception.h" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\and_guy.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\bigusdickuslmao.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\ChanSyn2.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\ChanSyntax.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\ff15.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\ff20.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\gamble.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\gamble2.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\lilleShit.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\Lol.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\sample1.xml" />

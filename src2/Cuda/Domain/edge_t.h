@@ -12,7 +12,7 @@
 #include "simulator_state.h"
 #include "../Visitors/visitor.h"
 
-#define NO_CHANNEL (static_cast<unsigned>(-1U))
+#define NO_CHANNEL (0xffffffff)
 
 struct edge_channel
 {

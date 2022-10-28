@@ -259,7 +259,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             list<constraint_t*> guards;
             list<update_t*> updates;
             expression* probability = nullptr;
-            edge_channel* ec = new edge_channel();
+            edge_channel* ec = nullptr;
             
             for (pugi::xml_node labels: trans.children("label"))
             {
@@ -286,6 +286,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                 }
                 else if (kind == "synchronisation")
                 {
+                    ec = new edge_channel();
                     if (!does_not_contain(expr_string, "!"))
                     {
                         ec->is_listener = false;
@@ -321,7 +322,16 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             if (probability == nullptr) probability = expression::literal_expression(1.0);
             
             node_t* target_node = get_node(target_id, nodes_);
-            auto result_edge = new edge_t(edge_id++, probability, target_node, to_array(&guards), to_array(&updates), *ec);
+            edge_t* result_edge = nullptr;
+            if (ec == nullptr)
+            {
+               result_edge = new edge_t(edge_id++, probability, target_node, to_array(&guards), to_array(&updates));
+            }
+            else
+            {
+                result_edge = new edge_t(edge_id++, probability, target_node, to_array(&guards), to_array(&updates), *ec);
+            }
+
             cout << "guard size: " << guards.size() << "\n";
             
             // if (guards.empty())
@@ -356,7 +366,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
         start_nodes.arr()[number_of_start_nodes++] = **n_front;
     }
 
-    return stochastic_model_t(start_nodes, to_array(timer_list_), to_array(var_list_), chan_id_+1);
+    return stochastic_model_t(start_nodes, to_array(timer_list_), to_array(var_list_), chan_id_);
 }
 
 __host__ stochastic_model_t uppaal_tree_parser::parse(char* file_path)

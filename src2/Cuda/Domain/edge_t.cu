@@ -25,9 +25,7 @@ CPU GPU double edge_t::get_weight(simulator_state* state) const
 
 CPU GPU unsigned edge_t::get_channel() const
 {
-    return this->channel_.is_listener
-            ? this->channel_.channel_id
-            : NO_CHANNEL;
+    return this->channel_.channel_id;
 }
 
 bool edge_t::is_listener() const
@@ -85,6 +83,9 @@ CPU GPU void edge_t::execute_updates(simulator_state* state) const
 
 void edge_t::accept(visitor* v) const
 {
+    //visit weight
+    v->visit(this->weight_expression_);
+    
     //visit edge guards
     for (int i = 0; i < this->guards_.size(); ++i)
     {
@@ -101,10 +102,11 @@ void edge_t::accept(visitor* v) const
     v->visit(this->weight_expression_);
 }
 
-void edge_t::pretty_print() const
+void edge_t:: pretty_print() const
 {
     //TODO FIX THIS!
-    printf("Edge id: %3d | Weight type: %s | Dest node: %3d \n", this->id_, this->weight_expression_->type_to_string().c_str(), this->dest_->get_id());
+    printf("Edge id: %3d | Weight expression: %s | Dest node: %3d | Channel Id: %3d \n",
+        this->id_, this->weight_expression_->to_string().c_str(), this->dest_->get_id(), this->get_channel() == NO_CHANNEL ? -1 : this->get_channel());
 }
 
 void edge_t::cuda_allocate(edge_t** pointer, const allocation_helper* helper) const
