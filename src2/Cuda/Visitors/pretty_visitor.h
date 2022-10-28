@@ -3,17 +3,20 @@
 #ifndef PRETTY_VISITOR_H
 #define PRETTY_VISITOR_H
 
-#include <set>
+#include <unordered_set>
 #include "visitor.h"
 
 
 class pretty_visitor final : public visitor
 {
 private:
-    std::set<node_t*> checker_ = {};
+    std::unordered_set<int> checker_ = {};
+    int* check_ = nullptr;
     int scope_ = 0;
     void indentation() const;
 public:
+    explicit pretty_visitor();
+    
     virtual void visit(constraint_t* constraint) override;
 
     virtual void visit(edge_t* edge) override;
