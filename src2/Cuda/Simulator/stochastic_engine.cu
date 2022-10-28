@@ -28,8 +28,6 @@ CPU GPU void run_simulator(simulator_state* state, curandState* r_state, const m
         
         do //repeat as long as current node is branch node
         {
-            printf("Hello world!\n");
-            break;
             lend_array<edge_t*> outgoing_edges =  current_model->current_node->get_edges();
             if(outgoing_edges.size() == 0) break;
 
@@ -42,8 +40,8 @@ CPU GPU void run_simulator(simulator_state* state, curandState* r_state, const m
             
             current_model->current_node = edge_n.next->get_dest();
             edge_n.next->execute_updates(state);
-
-            if(edge_n.listener == nullptr)
+            
+            if(edge_n.listener != nullptr)
                 edge_n.listener->broadcast(state);
         }
         while (current_model->current_node->is_branch_point());

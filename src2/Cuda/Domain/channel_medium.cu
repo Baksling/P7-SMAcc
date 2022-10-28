@@ -4,7 +4,7 @@
 CPU GPU void channel_listener::broadcast(simulator_state* sim_state) const
 {
     sim_state->medium->remove(this->state->current_node);
-    
+
     node_t* dest = edge->get_dest();
 
     //update state
@@ -96,7 +96,7 @@ CPU GPU void channel_medium::add(model_state* state) const
 CPU GPU void channel_medium::remove(node_t* node) const
 {
     const lend_array<edge_t*> edges = node->get_edges();
-        
+
     for (int i = 0; i < edges.size(); ++i)
     {
         const unsigned channel_id = edges.get(i)->get_channel();
