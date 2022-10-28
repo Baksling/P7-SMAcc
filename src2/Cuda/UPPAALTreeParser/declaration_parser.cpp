@@ -64,7 +64,12 @@ list<declaration> declaration_parser::parse(const string& decl)
 
     for (const auto& line : lines)
     {
+        if (line.empty())
+            continue;
+        
         string line_trimmed = remove_while(line, ' ');
+        //Remove tabs
+        line_trimmed = remove_while(line, '\v');
         
         if (line_trimmed.substr(0,2) == "//")
             continue;
