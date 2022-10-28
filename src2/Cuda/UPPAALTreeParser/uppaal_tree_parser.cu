@@ -128,6 +128,10 @@ void uppaal_tree_parser::init_clocks(const xml_document* doc)
             global_vars_map_.insert_or_assign(d.get_name(),clock_id_);
             timer_list_->push_back(clock_variable(clock_id_++, d.get_value()));
         }
+        else if(d.get_type() == chan_type)
+        {
+            global_vars_map_.insert_or_assign(d.get_name(), chan_id_++);
+        }
         else
         {
             global_vars_map_.insert_or_assign(d.get_name(), var_id_);
@@ -150,6 +154,10 @@ void uppaal_tree_parser::init_clocks(const xml_document* doc)
             {
                 vars_map_.insert_or_assign(d.get_name(),clock_id_);
                 timer_list_->push_back(clock_variable(clock_id_++, d.get_value()));
+            }
+            else if(d.get_type() == chan_type)
+            {
+                vars_map_.insert_or_assign(d.get_name(), chan_id_++);
             }
             else
             {
@@ -251,6 +259,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             list<constraint_t*> guards;
             list<update_t*> updates;
             expression* probability = nullptr;
+            edge_channel* ec = new edge_channel();
             
             for (pugi::xml_node labels: trans.children("label"))
             {
@@ -275,6 +284,34 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                         updates.push_back(new update_t(update_id++, get_timer_id(expr), true, update_parser::parse(expr, &vars_map_, &global_vars_map_)));
                     }
                 }
+                else if (kind == "synchronisation")
+                {
+                    if (!does_not_contain(expr_string, "!"))
+                    {
+                        ec->is_listener = false;
+                    }
+                    else
+                    {
+                        ec->is_listener = true;
+                    }
+                    string sync_keyword = replace_all(expr_string, "!", "");
+                    sync_keyword = replace_all(sync_keyword, "?", "");
+                    sync_keyword = replace_all(sync_keyword, " ", "");
+                    
+                    if (vars_map_.count(sync_keyword))
+                    {
+                        ec->channel_id = vars_map_.at(sync_keyword);
+                    }
+                    else if (global_vars_map_.count(sync_keyword))
+                    {
+                        ec->channel_id = global_vars_map_.at(sync_keyword);
+                    }
+                    else
+                    {
+                        THROW_LINE(sync_keyword + " NOT IN LOCAL, NOR GLOBAL MAP, comeon dude..");
+                    }
+                    
+                }
                 else if (kind == "probability")
                 {
                     probability = update_parser::parse(expr_string, &vars_map_, &global_vars_map_);
@@ -284,7 +321,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             if (probability == nullptr) probability = expression::literal_expression(1.0);
             
             node_t* target_node = get_node(target_id, nodes_);
-            auto result_edge = new edge_t(edge_id++, probability, target_node, to_array(&guards), to_array(&updates));
+            auto result_edge = new edge_t(edge_id++, probability, target_node, to_array(&guards), to_array(&updates), *ec);
             cout << "guard size: " << guards.size() << "\n";
             
             // if (guards.empty())

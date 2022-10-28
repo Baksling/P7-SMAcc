@@ -876,6 +876,7 @@
     <ClInclude Include="Cuda\UPPAALTreeParser\parser_exception.h" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\and_guy.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\bigusdickuslmao.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\ChanSyntax.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\ff15.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\ff20.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\lilleShit.xml" />

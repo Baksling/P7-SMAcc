@@ -40,6 +40,7 @@ private:
     int timer_amount_ = 0;
     int var_id_ = 0;
     int clock_id_ = 0;
+    int chan_id_ = 0;
     declaration_parser dp_;
     template <typename T> void get_guys(const list<string>& expressions, list<T>* t);
     const map<string, int> timers_map_{};
@@ -49,6 +50,7 @@ private:
     list<node_t*>* goal_nodes_ = new list<node_t*>();
     list<int> branchpoint_nodes{};
     list<int> start_nodes_{};
+    list<int> sync_chan_ids_{};
     int get_timer_id(const string& expr) const;
     node_t* get_node(const int target_id, const list<node_t*>* arr) const;
     void init_clocks(const pugi::xml_document* doc);
