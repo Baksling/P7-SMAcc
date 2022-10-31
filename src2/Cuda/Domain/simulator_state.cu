@@ -89,8 +89,23 @@ CPU GPU model_state* simulator_state::progress_sim(const model_options* options,
         //if goal is reached, dont bother
         if(current->reached_goal) continue;
 
+
+        lend_array<edge_t*> edges = current->current_node->get_edges();
         //if edge has no outgoing edges, then dont bother
-        if(current->current_node->get_edges().size() == 0) continue;
+        if(edges.size() == 0) continue;
+
+        //If all channels that are left is listeners, then dont bother
+        bool all_listeners = true;
+        for (int j = 0; j < edges.size(); ++j)
+        {
+            if (!edges.get(j)->is_listener())
+            {
+                all_listeners = false;
+                break;
+            }
+        }
+
+        if (all_listeners) continue;
         
         //if it is not in a valid state, then it is disabled 
         if(!current->current_node->evaluate_invariants(this)) continue;
@@ -110,6 +125,7 @@ CPU GPU model_state* simulator_state::progress_sim(const model_options* options,
             winning_model = current;
         }
     }
+    // printf(" I WON! Node: %d \n", winning_model->current_node->get_id());
     
     this->progress_timers(min_progress_time);
     return winning_model;

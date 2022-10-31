@@ -109,13 +109,15 @@ void channel_medium::broadcast_channel(const edge_t* edge, simulator_state* stat
 {
     const unsigned channel_id = edge->get_channel();
     if(channel_id == NO_CHANNEL) return;
-    
     const channel_stack* stack = &this->store_[channel_id];
 
     for (int i = static_cast<int>(stack->count) - 1; i >= 0; --i)
     {
         //synchronize might remove more than one edge from stack. This check ensures we dont go over the edge.
-        if(i >= static_cast<int>(stack->count)) continue;
+        if(i >= static_cast<int>(stack->count))
+        {
+            continue;
+        }
         
         const channel_listener* listener = &stack->listeners[i];
         

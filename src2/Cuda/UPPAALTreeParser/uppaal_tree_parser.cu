@@ -287,6 +287,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                 else if (kind == "synchronisation")
                 {
                     ec = new edge_channel();
+                    // printf("\n !=!=!==!=!=!== %s \n | %d", expr_string.c_str(), !does_not_contain(expr_string, "!"));
                     if (!does_not_contain(expr_string, "!"))
                     {
                         ec->is_listener = false;

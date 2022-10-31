@@ -65,8 +65,25 @@ namespace helper
 
     inline bool does_not_contain(const string& input, const string& does_not_contain )
     {
-        const bool not_contained = input.find_first_not_of(does_not_contain) != std::string::npos;
-        return not_contained;
+        // const bool not_contained = input.find_first_not_of(does_not_contain) != std::string::npos;
+
+        //I BRUTE FORCE IT!
+        
+        for (int i = 0; i < static_cast<int>(input.length()); ++i)
+        {
+            for (int j = 0; j < static_cast<int>(does_not_contain.length()); ++j)
+            {
+                if (i + j >= static_cast<int>(input.length())) continue;
+                
+                if (input.c_str()[i + j] != does_not_contain.c_str()[j]) break;
+
+                if (j == static_cast<int>(does_not_contain.length()) - 1) return false;
+            }
+        }
+
+        return true;
+        
+        // return not_contained;
     }
 
     inline float get_expr_value_float(const string& expr)

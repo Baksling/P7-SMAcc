@@ -105,8 +105,9 @@ void edge_t::accept(visitor* v) const
 void edge_t:: pretty_print() const
 {
     //TODO FIX THIS!
-    printf("Edge id: %3d | Weight expression: %s | Dest node: %3d | Channel Id: %3d \n",
-        this->id_, this->weight_expression_->to_string().c_str(), this->dest_->get_id(), this->get_channel() == NO_CHANNEL ? -1 : this->get_channel());
+    printf("Edge id: %3d | Weight expression: %s | Dest node: %3d | Channel Id: %3d | Is Listener: %d\n",
+        this->id_, this->weight_expression_->to_string().c_str(), this->dest_->get_id(), this->get_channel() == NO_CHANNEL ? -1 : this->get_channel(),
+        this->channel_.is_listener);
 }
 
 void edge_t::cuda_allocate(edge_t** pointer, const allocation_helper* helper) const
@@ -154,7 +155,7 @@ void edge_t::cuda_allocate(edge_t** pointer, const allocation_helper* helper) co
     
     
     const edge_t result(this->id_, weight_p, node_p,
-        cuda_to_array(&guard_lst, helper->free_list), cuda_to_array(&updates, helper->free_list));
+        cuda_to_array(&guard_lst, helper->free_list), cuda_to_array(&updates, helper->free_list), this->channel_);
     cudaMemcpy(*pointer, &result, sizeof(edge_t), cudaMemcpyHostToDevice);
 }
 
