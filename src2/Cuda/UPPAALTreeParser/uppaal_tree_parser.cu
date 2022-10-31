@@ -126,6 +126,7 @@ void uppaal_tree_parser::init_clocks(const xml_document* doc)
         if(d.get_type() == clock_type)
         {
             global_vars_map_.insert_or_assign(d.get_name(),clock_id_);
+            timers_map_.insert_or_assign(d.get_name(), clock_id_);
             timer_list_->push_back(clock_variable(clock_id_++, d.get_value()));
         }
         else if(d.get_type() == chan_type)
@@ -153,6 +154,7 @@ void uppaal_tree_parser::init_clocks(const xml_document* doc)
             if(d.get_type() == clock_type)
             {
                 vars_map_.insert_or_assign(d.get_name(),clock_id_);
+                timers_map_.insert_or_assign(d.get_name(), clock_id_);
                 timer_list_->push_back(clock_variable(clock_id_++, d.get_value()));
             }
             else if(d.get_type() == chan_type)
@@ -280,8 +282,18 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                     {
                         if (expr.empty())
                             continue;
+                        
+                        expression* e = update_parser::parse(expr, &vars_map_, &global_vars_map_);
+                        string keyword = take_while(expr, '=');
+                        bool is_clock = false;
 
-                        updates.push_back(new update_t(update_id++, get_timer_id(expr), true, update_parser::parse(expr, &vars_map_, &global_vars_map_)));
+                        if(timers_map_.count(keyword) > 0)
+                        {
+                            is_clock = true;
+                        }
+
+                        
+                        updates.push_back(new update_t(update_id++, get_timer_id(expr), is_clock, e));
                     }
                 }
                 else if (kind == "synchronisation")
