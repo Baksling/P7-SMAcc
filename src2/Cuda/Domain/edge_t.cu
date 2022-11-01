@@ -1,14 +1,21 @@
 ﻿#include "edge_t.h"
 #include "node_t.h"
 
-
-edge_t::edge_t(const int id, expression* weight_expression, node_t* dest, const array_t<constraint_t*> guard, array_t<update_t*> updates)
+edge_t::edge_t(
+    const int id,
+    expression* weight_expression,
+    node_t* dest,
+    const array_t<constraint_t*> guard,
+    const array_t<update_t*> updates,
+    const edge_channel channel
+    )
 {
     this->id_ = id;
     this->dest_ = dest;
     this->weight_expression_ = weight_expression;
     this->updates_ = updates;
     this->guards_ = guard;
+    this->channel_ = channel;
 }
 
 CPU GPU double edge_t::get_weight(simulator_state* state) const
@@ -16,12 +23,23 @@ CPU GPU double edge_t::get_weight(simulator_state* state) const
     return state->evaluate_expression(this->weight_expression_);
 }
 
+CPU GPU unsigned edge_t::get_channel() const
+{
+    return this->channel_.channel_id;
+}
+
+bool edge_t::is_listener() const
+{
+    return this->channel_.is_listener && this->channel_.channel_id != NO_CHANNEL;
+}
+
 int edge_t::get_id() const
 {
     return this->id_;
 }
 
-CPU GPU node_t* edge_t::get_dest() const
+
+node_t* edge_t::get_dest() const
 {
     return this->dest_;
 }
@@ -65,6 +83,9 @@ CPU GPU void edge_t::execute_updates(simulator_state* state) const
 
 void edge_t::accept(visitor* v) const
 {
+    //visit weight
+    v->visit(this->weight_expression_);
+    
     //visit edge guards
     for (int i = 0; i < this->guards_.size(); ++i)
     {
@@ -81,10 +102,12 @@ void edge_t::accept(visitor* v) const
     v->visit(this->weight_expression_);
 }
 
-void edge_t::pretty_print() const
+void edge_t:: pretty_print() const
 {
     //TODO FIX THIS!
-    printf("Edge id: %3d | Weight type: %s | Dest node: %3d \n", this->id_, this->weight_expression_->type_to_string().c_str(), this->dest_->get_id());
+    printf("Edge id: %3d | Weight expression: %s | Dest node: %3d | Channel Id: %3d | Is Listener: %d\n",
+        this->id_, this->weight_expression_->to_string().c_str(), this->dest_->get_id(), this->get_channel() == NO_CHANNEL ? -1 : this->get_channel(),
+        this->channel_.is_listener);
 }
 
 void edge_t::cuda_allocate(edge_t** pointer, const allocation_helper* helper) const
@@ -132,15 +155,10 @@ void edge_t::cuda_allocate(edge_t** pointer, const allocation_helper* helper) co
     
     
     const edge_t result(this->id_, weight_p, node_p,
-        cuda_to_array(&guard_lst, helper->free_list), cuda_to_array(&updates, helper->free_list));
+        cuda_to_array(&guard_lst, helper->free_list), cuda_to_array(&updates, helper->free_list), this->channel_);
     cudaMemcpy(*pointer, &result, sizeof(edge_t), cudaMemcpyHostToDevice);
 }
 
-
-void edge_t::cuda_allocate_2(edge_t* cuda_p, const allocation_helper* helper)
-{
-    return;
-}
 
 int edge_t::get_updates_size() const
 {

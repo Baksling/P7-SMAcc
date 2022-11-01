@@ -8,7 +8,18 @@
 #include "simulation_strategy.h"
 #include "../common/allocation_helper.h"
 #include "../Domain/edge_t.h"
+#include "../Domain/channel_medium.h"
 
+
+struct next_edge
+{
+    edge_t* next;
+    channel_listener* listener; //Might be nullptr if no listener. (or 'next' doesnt broadcast)
+    GPU CPU bool is_valid() const
+    {
+        return next != nullptr;
+    }
+};
 
 class simulator_tools
 {
@@ -36,6 +47,16 @@ public:
         const lend_array<variable_result>* variable_results,
         const unsigned long total_simulations);
 
+    CPU GPU static edge_t* choose_next_edge_bit(
+        simulator_state* state,
+        const lend_array<edge_t*>* edges,
+        curandState* r_state);
+    
+    static next_edge choose_next_edge_channel(
+        simulator_state* state,
+        const lend_array<edge_t*>* edges,
+        curandState* r_state);
+    
     CPU GPU static  edge_t* choose_next_edge(
         simulator_state* state,
         const lend_array<edge_t*>* edges,

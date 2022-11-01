@@ -1,5 +1,6 @@
 ﻿#include "node_t.h"
 #include "edge_t.h"
+#include "simulator_state.h"
 
 node_t::node_t(const node_t* source, const array_t<constraint_t*> invariant, const array_t<edge_t*> edges, expression* lambda)
 {

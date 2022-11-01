@@ -30,8 +30,9 @@ int main(int argc, const char* argv[])
     parser.add_argument("-p", "--maxtime", "Maximum number to progress in time (default=100)", false );
     parser.add_argument("-d", "--device", "What simulation to run (GPU (0) / CPU (1) / BOTH (2))", false);
     parser.add_argument("-u", "--cputhread", "The number of threads to use on the CPU", false);
-    parser.add_argument("-o", "--output", "The path to the output file (with extension)", false);
     parser.add_argument("-w", "--write", "Write to file (0) / console (1) / both (2)", false);
+    parser.add_argument("-o", "--output", "The path to output result file", false);
+    parser.add_argument("-y", "--max", "Use max steps or time for limit simulation. (max steps (0) / max time (1) )", false);
     parser.enable_help();
     auto err = parser.parse(argc, argv);
     
@@ -61,6 +62,8 @@ int main(int argc, const char* argv[])
     if (parser.exists("d")) mode = parser.get<int>("d");
     if (parser.exists("o")) o_path = o_path + parser.get<string>("o");
     if (parser.exists("w")) write_mode = parser.get<int>("w");
+    if (parser.exists("y")) strategy.use_max_steps = parser.get<int>("y") == 0;
+    
     
     std::cout << "Fuck you\n";
 
@@ -68,44 +71,28 @@ int main(int argc, const char* argv[])
     variable_arr.arr()[0] = clock_variable(0, 10);
     variable_arr.arr()[1] = clock_variable(1, 5);
     
-    clock_variable timer1 = clock_variable(0, 0.0);
-    clock_variable timer2 = clock_variable(1, 0.0);
-    
-    constraint_t* con0 = constraint_t::less_equal_v(0, expression::literal_expression(10) );
-    constraint_t* con1 = constraint_t::greater_equal_v(0, expression::literal_expression(5));
-    constraint_t* con2 = constraint_t::less_equal_t(0, 1);
-    // constraint_t con1 = constraint_t::less_equal_v(1, 10.0f);dbq84
-    // constraint_t con2 = constraint_t::greater_equal_v(0, 0.0f);
-
     array_t<constraint_t*> con0_arr = array_t<constraint_t*>(1);
-    array_t<constraint_t*> con1_arr = array_t<constraint_t*>(1);
-    array_t<constraint_t*> con2_arr = array_t<constraint_t*>(1);
+    con0_arr.arr()[0] = constraint_t::less_equal_v(0, expression::literal_expression(10) );
+
     
-    con0_arr.arr()[0] = con0;
-    con1_arr.arr()[0] = con1;
-    con2_arr.arr()[0] = con2;
-    
-    node_t node0 = node_t(0, con1_arr, false,false);
-    node_t node1 = node_t(1, con2_arr, false,false);
-    node_t node2 = node_t(2, array_t<constraint_t*>(0),false,true);
+    node_t node0 = node_t(0, con0_arr, false,false);
+    node_t node1 = node_t(1, con0_arr, false,false);
+    node_t node2 = node_t(2, con0_arr,false,true);
 
     expression* exp1 = expression::plus_expression(expression::variable_expression(0), expression::variable_expression(1));
     expression* exp2 = expression::minus_expression(expression::variable_expression(1), expression::literal_expression(4));
-    expression* exp3 = expression::equal_expression(expression::plus_expression(
-        expression::variable_expression(0), expression::variable_expression(1)),
-        expression::literal_expression(2));
 
     std::list<update_t*> update_lst;
 
-    update_t update1 = update_t(0, 0, false, exp1);
-    update_t update2 = update_t(1, 1, false, exp2);
-
-    update_lst.push_back(&update1);
-    update_lst.push_back(&update2);
+    // update_t update1 = update_t(0, 0, false, exp1);
+    // update_t update2 = update_t(1, 1, false, exp2);
+    //
+    // update_lst.push_back(&update1);
+    // update_lst.push_back(&update2);
 
     array_t<update_t*> update_arr = to_array(&update_lst);
     
-    edge_t* edge0_1 = new edge_t(0, expression::literal_expression(1), &node1, array_t<constraint_t*>(0), update_arr);
+    edge_t* edge0_1 = new edge_t(0, expression::literal_expression(1), &node1, con0_arr, update_arr);
     edge_t* edge0_2 = new edge_t(1, expression::literal_expression(1), &node2, array_t<constraint_t*>(0), update_arr);
     edge_t* edge1_0 = new edge_t(2, expression::literal_expression(1), &node0, array_t<constraint_t*>(0), update_arr);
 
@@ -136,12 +123,12 @@ int main(int argc, const char* argv[])
     
     result_writer r_writer = result_writer(&o_path ,strategy, start_nodes.size(), write_mode > 0, write_mode % 2 == 0);
     
-    stochastic_model_t model(start_nodes, timer_arr, variable_arr);
+    stochastic_model_t model(start_nodes, timer_arr, variable_arr, 5);
     if (parser.exists("m"))
     {
         uppaal_tree_parser tree_parser;
-        string temp = parser.get<string>("m");
-        char* writeable = new char[temp.size() + 1];
+        string temp = parser.get<string>("m"); 
+        char* writeable = new char[temp.size() + 1]; //TODO Move this fuckery inside parser
         std::copy(temp.begin(), temp.end(), writeable);
         writeable[temp.size()] = '\0';
         

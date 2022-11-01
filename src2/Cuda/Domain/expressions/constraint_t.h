@@ -6,13 +6,13 @@
 #include "../../common/allocation_helper.h"
 #include "../../Visitors/visitor.h"
 #include "../expressions/expression.h"
-#include "../simulator_state.h"
 
 #define NO_ID (-1)
 #define UNUSED_VALUE (-1.0f)
 #define UNUSED_VALUE (-1.0f)
 #define BIG_DOUBLE (9999999.99)
 
+class simulator_state;
 
 enum logical_operator_t
 {

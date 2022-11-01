@@ -12,34 +12,49 @@ declaration number_parser(const string& line, declaration_types type)
     return declaration{type, take_while(line_wo_ws, '='), to_string(eval_expr(nums)), 1};
 }
 
-list<declaration> declaration_parser::parse_clocks(const string& line)
+list<declaration> declaration_parser::parse_keyword(const string& line, declaration_types type)
 {
-    list<declaration> result;
-    const size_t clock_start = line.find("clock");
-    const size_t clock_end = line.find(';');
-        
-    string clocks = line.substr(clock_start+5,clock_end-1);
-    clocks = replace_all(clocks, string(" "), string(""));
-
-    std::stringstream clocks_stream(clocks);
-    std::string clock;
-    
-    while(std::getline(clocks_stream, clock, ','))
+    string keyword;
+    if (type == clock_type)
     {
-        string clock_without = clock;
-        if (clock.find(';') != std::string::npos)
-            clock_without = replace_all(clock, ";", "");
+        keyword = "clock";
+    }
+    else if (type == chan_type)
+    {
+        keyword = "broadcastchan";
+    }
+    
+    list<declaration> result;
+    const size_t keyword_start = line.find(keyword);
+    const size_t keyword_end = line.find(';');
+        
+    string keyword_vals = line.substr(keyword_start+keyword.length(),keyword_end-1);
+    keyword_vals = replace_all(keyword_vals, string(" "), string(""));
 
-        if (clock_without.find('=') != std::string::npos)
+    std::stringstream keyword_vals_stream(keyword_vals);
+    std::string keyword_val;
+    
+    while(std::getline(keyword_vals_stream, keyword_val, ','))
+    {
+        string keyword_val_without = keyword_val;
+        if (keyword_val.find(';') != std::string::npos)
+            keyword_val_without = replace_all(keyword_val, ";", "");
+
+        if (keyword_val_without.find('=') != std::string::npos)
         {
-            const string nums = take_after(clock_without, '=');
-            result.emplace_back(clock_type, take_while(clock_without, '='), to_string(eval_expr(nums)),global_clock_id_counter_++);
+            const string nums = take_after(keyword_val_without, '=');
+            result.emplace_back(type, take_while(keyword_val_without, '='), to_string(eval_expr(nums)), type == clock_type ? global_clock_id_counter_++ : global_chan_id_counter_++);
         }
         else
-            result.emplace_back(clock_type, clock_without, "0",global_clock_id_counter_++);
+            result.emplace_back(type, keyword_val_without, "0", type == clock_type ? global_clock_id_counter_++ : global_chan_id_counter_++);
     }
 
     return result;
+}
+
+bool is_this_keyword(string expr, string keyword)
+{
+    return expr.substr(0, keyword.length()) == keyword;
 }
 
 list<declaration> declaration_parser::parse(const string& decl)
@@ -49,29 +64,48 @@ list<declaration> declaration_parser::parse(const string& decl)
 
     for (const auto& line : lines)
     {
-        string line_trimmed = remove_while(line, ' ');
-        if (line_trimmed.substr(0,2) == "//")
+        if (line.empty())
             continue;
         
-        if (line_trimmed.substr(0, 5) == "clock")
+        string line_trimmed = remove_while(line, ' ');
+        //Remove tabs
+        line_trimmed = remove_while(line, '\v');
+        
+        if (line_trimmed.substr(0,2) == "//")
+            continue;
+
+        cout << "\n!! LETS GOOO1:" << line_trimmed<<":";
+        cout.flush();
+        
+        if (is_this_keyword(line_trimmed,"clock"))
         {
-            list<declaration> cloc_decls = parse_clocks(line_trimmed);
+            list<declaration> cloc_decls = parse_keyword(line_trimmed, clock_type);
             result.insert(result.end(), cloc_decls.begin(), cloc_decls.end());
         }
         
-        else if (line_trimmed.substr(0, 5) == "const")
-        {
+        else if (is_this_keyword(line_trimmed,"const"))
+        {   
             string const_string = remove_while(line_trimmed.substr(5), ' ');
-            if (const_string.substr(0, 6) == "double")
+            if (is_this_keyword(const_string,"double"))
                 result.emplace_back(number_parser(const_string.substr(6), double_type));
-            if (const_string.substr(0, 3) == "int")
+            if (is_this_keyword(const_string,"int"))
                 result.emplace_back(number_parser(const_string.substr(3), int_type));
         }
 
-        else if (line_trimmed.substr(0, 6) == "double")
+        else if (is_this_keyword(line_trimmed, "broadcastchan"))
+        {
+            cout << "\n!! LETS GOOO:" << line_trimmed<<":";
+            cout.flush();
+            list<declaration> chan_decls = parse_keyword(line_trimmed, chan_type);
+            cout << "\n CHANSIZE:"<< chan_decls.size();
+            cout << "\n FRONT - BACK:" << chan_decls.front().get_name() << ":" << chan_decls.back().get_name();
+            result.insert(result.end(), chan_decls.begin(), chan_decls.end());
+        }
+
+        else if (is_this_keyword(line_trimmed, "double"))
             result.emplace_back(number_parser(line_trimmed.substr(6), double_type));
         
-        else if (line_trimmed.substr(0, 3) == "int")
+        else if (is_this_keyword(line_trimmed, "int"))
             result.emplace_back(number_parser(line_trimmed.substr(3), int_type));
         //result.emplace_back(clock_type,line_trimmed,"3.0", 0);
     }

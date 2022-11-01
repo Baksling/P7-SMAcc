@@ -14,7 +14,8 @@ class declaration_parser
 {
 private:
     int global_clock_id_counter_ = 0;
-    list<declaration> parse_clocks(const string& line);
+    int global_chan_id_counter_ = 0;
+    list<declaration> parse_keyword(const string& line, declaration_types type);
     // string parse_equation(string eq_string);
     // declaration number_parser(const string& line);
     string val_;
