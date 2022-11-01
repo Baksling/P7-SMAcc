@@ -292,14 +292,14 @@ CPU GPU void simulator_state::reset(const unsigned int sim_id, const stochastic_
     for (int i = 0; i < this->timers_.size(); ++i)
     {
         const double start_time = model->timers_.at(i)->get_time();
-        this->timers_.at(i)->set_time(start_time);
+        this->timers_.at(i)->reset_value(start_time);
     }
 
     //reset variables
     for (int i = 0; i < this->variables_.size(); ++i)
     {
         const double start_time = model->variables_.at(i)->get_time();
-        this->variables_.at(i)->set_time(start_time);
+        this->variables_.at(i)->reset_value(start_time);
     }
 
     //reset channels

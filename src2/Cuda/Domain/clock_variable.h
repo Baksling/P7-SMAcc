@@ -24,6 +24,7 @@ public:
     CPU GPU void reset_temp_time();
     CPU GPU void set_time(double new_value);
     CPU GPU void add_time(double progression);
+    GPU CPU void reset_value(double start_value);
     CPU GPU clock_variable duplicate() const;
     CPU GPU double get_max_value() const;
     
