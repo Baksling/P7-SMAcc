@@ -79,7 +79,6 @@ void result_writer::write_to_file(const simulation_result* sim_result, std::map<
         const variable_result* result = var_result->at(j);
         summary << "variable " << result->variable_id << " = " << result->avg_max_value << "\n";
     }
-
     
     summary << "\n\ngoal: \n";
 
@@ -101,8 +100,6 @@ void result_writer::write_to_file(const simulation_result* sim_result, std::map<
 
     summary.flush();
     summary.close();
-
-
     
      file_node.open(this->file_path_ + "/node_data.csv");
      file_variable.open(this->file_path_ + "/variable_data.csv");
@@ -119,29 +116,25 @@ void result_writer::write_to_file(const simulation_result* sim_result, std::map<
          cudaMemcpy(local_node_results, local_result.end_node_id_arr, node_size, kind);
          cudaMemcpy(local_variable_results, local_result.variables_max_value_arr, sizeof(double) * var_result->size(), kind);
          
-         // for (unsigned j = 0; j < this->model_count_; ++j)
-         // {
-         //     const node_result res = results->at(local_node_results[j]);
-         //
-         //     file_node << i << "," << j << "," << res.reach_count;
-         //     
-         // } TODO i cannot get this to work as is, cant loop through all nodes per model to check if they are reached in given simulation
+         for (unsigned j = 0; j < this->model_count_; ++j)
+         {
+             file_node << i << "," << j << "," << local_node_results[j] << "\n";
+         }
     
          for (unsigned k = 0; k < variable_count; ++k)
          {
-    
              file_variable << i << "," << k << "," << local_variable_results[k] << "\n";
          }
-    
-         
-         file_node.flush();
-         file_variable.flush();
-    
-    
-         
-         file_node.close();
-         file_variable.close();
     }
+
+    free(local_node_results);
+    free(local_variable_results);
+    
+    file_node.flush();
+    file_variable.flush();
+     
+    file_node.close();
+    file_variable.close();
 }
 
 void result_writer::write_to_console(std::map<int, node_result>* results, unsigned long total_simulations,
