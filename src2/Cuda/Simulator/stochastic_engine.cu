@@ -17,15 +17,11 @@ CPU GPU void run_simulator(simulator_state* state, curandState* r_state, const m
     {
         model_state* current_model = state->progress_sim(options, r_state);
 
-        if(current_model == nullptr || current_model->reached_goal == true)
+        if(current_model == nullptr || current_model->reached_goal)
         {
             break;
         }
 
-        //remove from medium, such that current node cant match with itself,
-        //also prevents current_model from listening on multiple nodes.
-        state->medium->remove(current_model->current_node);
-        
         do //repeat as long as current node is branch node
         {
             lend_array<edge_t*> outgoing_edges =  current_model->current_node->get_edges();
@@ -40,12 +36,9 @@ CPU GPU void run_simulator(simulator_state* state, curandState* r_state, const m
             
             current_model->current_node = edge->get_dest();
             edge->execute_updates(state);
-            state->medium->broadcast_channel(edge, state);
+            state->broadcast_channel(current_model, edge->get_channel(), r_state);
         }
         while (current_model->current_node->is_branch_point());
-
-        //Add current node to channel medium.
-        state->medium->add(current_model);
         
         if(current_model->current_node->is_goal_node())
         {

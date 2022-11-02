@@ -13,8 +13,8 @@ CPU GPU double simulator_state::determine_progression(const node_t* node, curand
     {
         if(local_max_progress < 0)
         {
-            printf("Local max progression of '%lf' is less than 0\n", local_max_progress);
-            time_progression = 0.0;
+            printf("Local max progression of '%lf' is less than 0. PANIC!\n", local_max_progress);
+            time_progression = NO_PROGRESS;
         }
         else
         {
@@ -26,8 +26,8 @@ CPU GPU double simulator_state::determine_progression(const node_t* node, curand
         const double lambda = node->get_lambda(this);
         if(lambda <= 0)
         {
-            printf("Lambda value %lf is negative or zero! PANIC!\n", lambda);
-            time_progression = 0.0;
+            //Defined behavior. If lambda <= 0, then just treat as disabled node.
+            time_progression = NO_PROGRESS;
         }
         else
         {
@@ -53,8 +53,7 @@ CPU GPU void simulator_state::progress_timers(const double time)
 
 simulator_state::simulator_state(
     const cuda_stack<expression*>& expression_stack,
-    const cuda_stack<double>& value_stack,
-    channel_medium* medium)
+    const cuda_stack<double>& value_stack)
 {
     this->sim_id_ = static_cast<unsigned>(-1);
     this->steps_ = 0;
@@ -64,7 +63,7 @@ simulator_state::simulator_state(
     // this->variables_ = variables;
     this->expression_stack = expression_stack;
     this->value_stack = value_stack;
-    this->medium = medium;
+    // this->medium = medium;
 }
 
 CPU GPU model_state* simulator_state::progress_sim(const model_options* options, curandState* r_state)
@@ -89,23 +88,11 @@ CPU GPU model_state* simulator_state::progress_sim(const model_options* options,
         //if goal is reached, dont bother
         if(current->reached_goal) continue;
 
-
-        lend_array<edge_t*> edges = current->current_node->get_edges();
-        //if edge has no outgoing edges, then dont bother
-        if(edges.size() == 0) continue;
-
+        
         //If all channels that are left is listeners, then dont bother
-        bool all_listeners = true;
-        for (int j = 0; j < edges.size(); ++j)
-        {
-            if (!edges.get(j)->is_listener())
-            {
-                all_listeners = false;
-                break;
-            }
-        }
+        //This also ensures that current_node has edges
+        if(!current->current_node->is_progressible()) continue;
 
-        if (all_listeners) continue;
         
         //if it is not in a valid state, then it is disabled 
         if(!current->current_node->evaluate_invariants(this)) continue;
@@ -113,10 +100,8 @@ CPU GPU model_state* simulator_state::progress_sim(const model_options* options,
         //determine current models progress
         const double local_progress = this->determine_progression(current->current_node, r_state);
 
-        if(local_progress < 0)
-        {
-            printf("local progress of '%lf' found to be less then 0", local_progress);
-        }
+        //If negative progression, skip. Represents NO_PROGRESS
+        if(local_progress < 0) continue;
 
         //Set current as winner, if it is the earliest active model.
         if(local_progress < min_progress_time)
@@ -135,7 +120,7 @@ CPU GPU double simulator_state::evaluate_expression(expression* expr)
 {
     this->value_stack.clear();
     this->expression_stack.clear();
-    
+
     expression* current = expr;
     while (true)
     {
@@ -216,8 +201,7 @@ CPU GPU simulator_state simulator_state::from_multi_model(
     //init state itself
     simulator_state state = {
         cuda_stack<expression*>(options->max_expression_depth*2+1), //needs to fit all each node twice (for left and right evaluation)
-        cuda_stack<double>(options->max_expression_depth),
-        new channel_medium(multi_model->get_channel_count(), 5)
+        cuda_stack<double>(options->max_expression_depth)
     };
 
     //init models
@@ -258,6 +242,38 @@ CPU GPU lend_array<clock_variable> simulator_state::get_timers() const
 CPU GPU lend_array<clock_variable> simulator_state::get_variables() const
 {
     return lend_array<clock_variable>(&this->variables_);
+}
+
+void simulator_state::broadcast_channel(const model_state* current_state, const unsigned channel_id, curandState* r_state)
+{
+    if(channel_id == NO_CHANNEL) return;
+    
+    for (int i = 0; i < this->models_.size(); ++i)
+    {
+        model_state* state = this->models_.at(i);
+        if(current_state == state) continue; //skip current node
+        if(state->reached_goal) continue; //skip if goal node
+        if(!state->current_node->evaluate_invariants(this)) continue; //skip if node disabled
+
+        lend_array<edge_t*> edges = state->current_node->get_edges();
+        
+        //pick random start index in order to simulate random listener, when multiple listeners on same channel present
+        const unsigned size = static_cast<unsigned>(edges.size());
+        const unsigned start_index = curand(r_state) % size;
+        
+        for (unsigned j = 0; j < size; ++j)
+        {
+            const edge_t* edge = edges.get( static_cast<int>((start_index + i) % size)  );
+            if(!edge->is_listener()) continue; //skip if not listener
+            if(edge->get_channel() != channel_id) continue; //skip if current channel
+            if(!edge->evaluate_constraints(this)) continue; //skip if not valid
+
+            state->current_node = edge->get_dest();
+            edge->execute_updates(this);
+            break;
+        }
+    }
+    
 }
 
 CPU GPU void simulator_state::reset(const unsigned int sim_id, const stochastic_model_t* model)
@@ -303,7 +319,7 @@ CPU GPU void simulator_state::reset(const unsigned int sim_id, const stochastic_
     }
 
     //reset channels
-    const lend_array<model_state> lend_states = lend_array<model_state>(&this->models_); 
-    this->medium->clear();
-    this->medium->init(&lend_states);
+    // const lend_array<model_state> lend_states = lend_array<model_state>(&this->models_); 
+    // this->medium->clear();
+    // this->medium->init(&lend_states);
 }

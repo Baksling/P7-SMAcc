@@ -3,7 +3,7 @@
 
 CPU GPU void channel_listener::synchronize(simulator_state* sim_state) const
 {
-    sim_state->medium->remove(this->state->current_node);
+    // sim_state->medium->remove(this->state->current_node);
 
     node_t* dest = edge->get_dest();
 
@@ -13,7 +13,7 @@ CPU GPU void channel_listener::synchronize(simulator_state* sim_state) const
     
     this->edge->execute_updates(sim_state);
     
-    sim_state->medium->add(this->state);
+    // sim_state->medium->add(this->state);
 }
 
 CPU GPU void channel_stack::add(model_state* state, edge_t* edge)

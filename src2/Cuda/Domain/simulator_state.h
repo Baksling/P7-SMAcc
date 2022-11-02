@@ -12,6 +12,7 @@
 
 
 #define MAX_DOUBLE (1.7976931348623158e+308)
+#define NO_PROGRESS (-1.0)
 
 struct model_state
 {
@@ -41,17 +42,16 @@ private:
     
     CPU GPU simulator_state(
         const cuda_stack<expression*>& expression_stack,
-        const cuda_stack<double>& value_stack,
-        channel_medium* medium);
+        const cuda_stack<double>& value_stack);
     
 public:
     cuda_stack<double> value_stack{0};
     cuda_stack<expression*> expression_stack{0};
-    channel_medium* medium;
 
     CPU GPU lend_array<clock_variable> get_timers() const;
     CPU GPU lend_array<clock_variable> get_variables() const;
-    
+
+    CPU GPU void broadcast_channel(const model_state* current_state, const unsigned channel_id, curandState* r_state);
     CPU GPU void reset(unsigned sim_id, const stochastic_model_t* model);
     CPU GPU model_state* progress_sim(const model_options* options, curandState* r_state);
     CPU GPU double evaluate_expression(expression* expr);
