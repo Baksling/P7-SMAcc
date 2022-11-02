@@ -2,23 +2,18 @@
 #define SIMULATOR_STATE
 
 #include "../common/macro.h"
+#include "../Simulator/simulation_strategy.h"
 #include "expressions/expression.h"
 #include "../common/lend_array.h"
 #include "clock_variable.h"
 #include "stochastic_model_t.h"
 #include "../common/cuda_stack.h"
 #include "../Simulator/simulation_result.h"
-#include "../Simulator/simulation_strategy.h"
 
 
 #define MAX_DOUBLE (1.7976931348623158e+308)
 #define NO_PROGRESS (-1.0)
 
-struct model_state
-{
-    node_t* current_node;
-    bool reached_goal;
-};
 
 //Prototype
 class channel_medium;
@@ -30,6 +25,7 @@ private:
     GPU CPU double determine_progression(const node_t* node, curandState* r_state);
 
     unsigned int sim_id_ = 0;
+    void* cache_pointer_;
     
     array_t<model_state> models_{0};
     array_t<clock_variable> variables_{nullptr, 0};
@@ -41,6 +37,7 @@ private:
     CPU GPU void progress_timers(const double time);
     
     CPU GPU simulator_state(
+        void* cache_pointer,
         const cuda_stack<expression*>& expression_stack,
         const cuda_stack<double>& value_stack);
     

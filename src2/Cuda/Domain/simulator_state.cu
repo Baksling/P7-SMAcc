@@ -52,6 +52,7 @@ CPU GPU void simulator_state::progress_timers(const double time)
 }
 
 simulator_state::simulator_state(
+    void* cache_pointer,
     const cuda_stack<expression*>& expression_stack,
     const cuda_stack<double>& value_stack)
 {
@@ -63,6 +64,7 @@ simulator_state::simulator_state(
     // this->variables_ = variables;
     this->expression_stack = expression_stack;
     this->value_stack = value_stack;
+    this->cache_pointer_ = cache_pointer;
     // this->medium = medium;
 }
 
@@ -167,6 +169,7 @@ CPU GPU void simulator_state::write_result(simulation_result* output_array) cons
 
     for (int i = 0; i < this->models_.size(); ++i)
     {
+        // output->end_node_id_arr[i] = this->models_.at(i)->current_node->get_id();
         output->end_node_id_arr[i] = this->models_.at(i)->reached_goal
             ? this->models_.at(i)->current_node->get_id()
             : HIT_MAX_STEPS;
@@ -185,11 +188,12 @@ CPU GPU void simulator_state::write_result(simulation_result* output_array) cons
 
 CPU GPU void simulator_state::free_internals()
 {
-    this->expression_stack.free_internal();
-    this->value_stack.free_internal();
-    this->timers_.free_array();
-    this->variables_.free_array();
-    this->models_.free_array();
+    free(this->cache_pointer_);
+    // this->expression_stack.free_internal();
+    // this->value_stack.free_internal();
+    // this->timers_.free_array();
+    // this->variables_.free_array();
+    // this->models_.free_array();
 }
 
 CPU GPU simulator_state simulator_state::from_multi_model(
@@ -197,15 +201,42 @@ CPU GPU simulator_state simulator_state::from_multi_model(
     const model_options* options)
 {
     //TODO! Optimize this function by only calling malloc once!
+    const unsigned long long int thread_memory_size = options->get_cache_size();
+    void* original_store = malloc(thread_memory_size);
+    void* store = original_store;
+
+    expression** expression_store = static_cast<expression**>(store);
+    store = static_cast<void*>(&static_cast<expression**>(store)[options->get_expression_size()]);
+
+    double* value_store = static_cast<double*>(store);
+    store = static_cast<void*>(&static_cast<double*>(store)[options->max_expression_depth]);
+
+    model_state* state_store = static_cast<model_state*>(store);
+    store = static_cast<void*>(&static_cast<model_state*>(store)[options->model_count]);
+    
+    clock_variable* variable_store = static_cast<clock_variable*>(store);
+    store = static_cast<void*>(&static_cast<clock_variable*>(store)[options->variable_count]);
+
+    clock_variable* clock_store = static_cast<clock_variable*>(store);
+    store = static_cast<void*>(&static_cast<clock_variable*>(store)[options->timer_count]);
+
+    
+    if((reinterpret_cast<unsigned long long>(original_store) + thread_memory_size) - reinterpret_cast<unsigned long long>(store) > 8)
+            printf("Thread cache size not equivalent to utilized size %llu of %llu (diff %llu)",
+                reinterpret_cast<unsigned long long>(store),
+                (reinterpret_cast<unsigned long long>(original_store) + thread_memory_size),
+                (reinterpret_cast<unsigned long long>(original_store) + thread_memory_size) - reinterpret_cast<unsigned long long>(store));
+    
 
     //init state itself
-    simulator_state state = {
-        cuda_stack<expression*>(options->max_expression_depth*2+1), //needs to fit all each node twice (for left and right evaluation)
-        cuda_stack<double>(options->max_expression_depth)
+    simulator_state state = simulator_state{
+        original_store,
+        cuda_stack<expression*>(expression_store, options->get_expression_size()), //needs to fit all each node twice (for left and right evaluation)
+        cuda_stack<double>(value_store, options->max_expression_depth)
     };
 
     //init models
-    model_state* state_store = static_cast<model_state*>(malloc(sizeof(model_state)*multi_model->models_.size()));
+    // model_state* state_store = static_cast<model_state*>(malloc(sizeof(model_state)*multi_model->models_.size()));
     state.models_ = array_t<model_state>(state_store, multi_model->models_.size());
     for (int i = 0; i < multi_model->models_.size(); ++i)
     {
@@ -216,7 +247,7 @@ CPU GPU simulator_state simulator_state::from_multi_model(
     }
 
     //init clocks
-    clock_variable* clock_store = static_cast<clock_variable*>(malloc(sizeof(clock_variable)*multi_model->timers_.size()));
+    // clock_variable* clock_store = static_cast<clock_variable*>(malloc(sizeof(clock_variable)*multi_model->timers_.size()));
     state.timers_ = array_t<clock_variable>(clock_store, multi_model->timers_.size());
     for (int i = 0; i < multi_model->timers_.size(); ++i)
     {
@@ -224,7 +255,7 @@ CPU GPU simulator_state simulator_state::from_multi_model(
     }
 
     //init variables
-    clock_variable* variable_store = static_cast<clock_variable*>(malloc(sizeof(clock_variable)*multi_model->variables_.size()));
+    // clock_variable* variable_store = static_cast<clock_variable*>(malloc(sizeof(clock_variable)*multi_model->variables_.size()));
     state.variables_ = array_t<clock_variable>(variable_store, multi_model->variables_.size());
     for (int i = 0; i < multi_model->variables_.size(); ++i)
     {
@@ -251,10 +282,10 @@ void simulator_state::broadcast_channel(const model_state* current_state, const 
     for (int i = 0; i < this->models_.size(); ++i)
     {
         model_state* state = this->models_.at(i);
-        if(current_state == state) continue; //skip current node
+        if(current_state == state) continue; //skip current state
         if(state->reached_goal) continue; //skip if goal node
         if(!state->current_node->evaluate_invariants(this)) continue; //skip if node disabled
-
+        
         lend_array<edge_t*> edges = state->current_node->get_edges();
         
         //pick random start index in order to simulate random listener, when multiple listeners on same channel present
@@ -263,12 +294,16 @@ void simulator_state::broadcast_channel(const model_state* current_state, const 
         
         for (unsigned j = 0; j < size; ++j)
         {
-            const edge_t* edge = edges.get( static_cast<int>((start_index + i) % size)  );
+            const edge_t* edge = edges.get(static_cast<int>((start_index + j) % size)  );
             if(!edge->is_listener()) continue; //skip if not listener
-            if(edge->get_channel() != channel_id) continue; //skip if current channel
+            if(edge->get_channel() != channel_id) continue; //skip if not current channel
             if(!edge->evaluate_constraints(this)) continue; //skip if not valid
-
-            state->current_node = edge->get_dest();
+            
+            node_t* dest = edge->get_dest();
+            
+            state->current_node = dest;
+            state->reached_goal = dest->is_goal_node();
+            
             edge->execute_updates(this);
             break;
         }

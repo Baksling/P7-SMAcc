@@ -22,11 +22,14 @@ model_options stochastic_simulator::build_options(const stochastic_model_t* mode
         strategy->simulations_per_thread,
         static_cast<unsigned long>(time(nullptr)),
         // analyser.get_max_expression_depth()
-        500,
-        
         strategy->use_max_steps,
         strategy->max_sim_steps,
-        strategy->max_time_progression
+        strategy->max_time_progression,
+
+        500,
+        model->get_models_count(),
+        model->get_variable_count(),
+        model->get_timer_count()
     };
 }
 

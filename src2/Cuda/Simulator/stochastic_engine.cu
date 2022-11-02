@@ -27,7 +27,6 @@ CPU GPU void run_simulator(simulator_state* state, curandState* r_state, const m
             lend_array<edge_t*> outgoing_edges =  current_model->current_node->get_edges();
             if(outgoing_edges.size() == 0) break;
 
-            // const edge_t* edge = simulator_tools::choose_next_edge(&state, &outgoing_edges, r_state);
             const edge_t* edge = simulator_tools::choose_next_edge_bit(state, &outgoing_edges, r_state);
             if(edge == nullptr)
             {
