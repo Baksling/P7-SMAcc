@@ -109,7 +109,7 @@ void edge_t:: pretty_print() const
         this->id_,
         this->weight_expression_->to_string().c_str(),
         this->dest_->get_id(),
-        (this->get_channel() == NO_CHANNEL ? "n/a" : std::to_string(this->get_channel())).c_str(),
+        (this->get_channel() == NO_CHANNEL ? "N/A" : std::to_string(this->get_channel())).c_str(),
         this->is_listener() ? "True" : "False");
 }
 

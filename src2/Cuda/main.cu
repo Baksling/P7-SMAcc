@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include <filesystem>
 #include "Visitors/domain_analysis_visitor.h"
 #include "Visitors/pretty_visitor.h"
 #include "UPPAALTreeParser/uppaal_tree_parser.h"
@@ -29,6 +30,7 @@ int main(int argc, const char* argv[])
     parser.add_argument("-p", "--maxtime", "Maximum number to progress in time (default=100)", false );
     parser.add_argument("-d", "--device", "What simulation to run (GPU (0) / CPU (1) / BOTH (2))", false);
     parser.add_argument("-u", "--cputhread", "The number of threads to use on the CPU", false);
+    parser.add_argument("-w", "--write", "Write to file (0) / console (1) / both (2)", false);
     parser.add_argument("-o", "--output", "The path to output result file", false);
     parser.add_argument("-y", "--max", "Use max steps or time for limit simulation. (max steps (0) / max time (1) )", false);
     parser.enable_help();
@@ -45,7 +47,9 @@ int main(int argc, const char* argv[])
     }
 
     int mode = 0; // 0 = GPU, 1 = CPU, 2 = BOTH
-    string o_path = "";
+    string o_path = std::filesystem::current_path();
+
+    int write_mode = -1; // 0 = file, 1 = console, 2 = both
 
 
     if (parser.exists("b")) strategy.block_n = parser.get<int>("b");
@@ -56,7 +60,8 @@ int main(int argc, const char* argv[])
     if (parser.exists("p")) strategy.max_time_progression = parser.get<double>("p");
     if (parser.exists("u")) strategy.cpu_threads_n = parser.get<unsigned int>("u");
     if (parser.exists("d")) mode = parser.get<int>("d");
-    if (parser.exists("o")) o_path = parser.get<string>("o");
+    if (parser.exists("o")) o_path = o_path + parser.get<string>("o");
+    if (parser.exists("w")) write_mode = parser.get<int>("w");
     if (parser.exists("y")) strategy.use_max_steps = parser.get<int>("y") == 0;
     
     
@@ -110,8 +115,13 @@ int main(int argc, const char* argv[])
 
     pretty_visitor p_visitor;
     domain_analysis_visitor d_visitor;
-    string temp = "result";
-    result_writer r_writer = result_writer(&o_path, &temp, strategy, false, true);
+
+    cout << write_mode % 2 << "HELELELELLELELELELLLLLLLOOOOOOOOOOOOO";
+    // 0 = file, 1 = console, 2 = both
+
+    cout << start_nodes.size() << "habahbababahbahba \n";
+    
+    result_writer r_writer = result_writer(&o_path ,strategy, start_nodes.size(), write_mode > 0, write_mode % 2 == 0);
     
     stochastic_model_t model(start_nodes, timer_arr, variable_arr, 5);
     if (parser.exists("m"))
