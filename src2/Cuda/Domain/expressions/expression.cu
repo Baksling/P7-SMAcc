@@ -22,10 +22,10 @@ void expression::evaluate(simulator_state* state) const
         state->value_stack.push(this->value_);
         break;
     case clock_variable_e:
-        state->value_stack.push(state->get_timers().at(static_cast<int>(this->variable_id_))->get_time());
+        state->value_stack.push(state->get_timers().at(static_cast<int>(this->variable_id_))->get_temp_time());
         break;
     case system_variable_e:
-        state->value_stack.push(state->get_variables().at(static_cast<int>(this->variable_id_))->get_time());
+        state->value_stack.push(state->get_variables().at(static_cast<int>(this->variable_id_))->get_temp_time());
         break;
     case plus_e:
         if(state->value_stack.count() < 2) printf("stack not big enough to evaluate plus expression\n");

@@ -53,7 +53,7 @@ public:
     CPU GPU model_state* progress_sim(const model_options* options, curandState* r_state);
     CPU GPU double evaluate_expression(expression* expr);
 
-    CPU GPU void write_result(simulation_result* output_array) const;
+    CPU GPU void write_result(const simulation_result_container* output_array) const;
     CPU GPU void free_internals();
 
     //CONSTRUCTOR_METHOD

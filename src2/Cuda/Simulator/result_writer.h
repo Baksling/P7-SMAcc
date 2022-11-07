@@ -27,17 +27,17 @@ private:
 
     static std::string print_node(int node_id, unsigned int reached_count, float reach_percentage, double avg_steps);
 
-    void write_to_file(const simulation_result* sim_result, std::map<int, node_result>* results,
+    void write_to_file(const simulation_result* sim_result, std::unordered_map<int, node_result>* results,
                        unsigned long total_simulations, const array_t<variable_result>* var_result, unsigned variable_count, bool from_cuda, std
                        ::chrono::steady_clock::duration sim_duration) const;
 
-    void write_to_console(std::map<int, node_result>* results,
-        unsigned long total_simulations, array_t<variable_result> var_result) const;
+    void write_to_console(const std::unordered_map<int, node_result>* results,
+                          const unsigned long total_simulations, const array_t<variable_result> var_result) const;
 
 public:
     explicit result_writer(const std::string* path, simulation_strategy strategy, unsigned model_count,
         bool write_to_console = false, bool write_to_file = false);
     
-    void write_results(const simulation_result* sim_result, const unsigned result_size, const unsigned variable_count,
+    void write_results(const simulation_result_container* sim_result, const unsigned result_size, const unsigned variable_count,
                        std::chrono::steady_clock::duration sim_duration, bool from_cuda) const;
 };

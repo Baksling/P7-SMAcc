@@ -47,11 +47,19 @@ void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, const s
     const allocation_helper allocator = { &free_list, &node_map };
 
     //TODO slim this down, this is handled by the result writer
-    std::map<int, node_result> result_map;
-    array_t<variable_result> variable_r = simulator_tools::allocate_variable_results(variable_count);
-    const lend_array<variable_result> lend_variable_r = lend_array<variable_result>(&variable_r);
-    simulation_result* sim_results = simulator_tools::allocate_results(strategy, variable_count, model_count, &free_list, true);
+    // std::map<int, node_result> result_map;
+    // array_t<variable_result> variable_r = simulator_tools::allocate_variable_results(variable_count);
+    // const lend_array<variable_result> lend_variable_r = lend_array<variable_result>(&variable_r);
+    // simulation_result* sim_results = simulator_tools::allocate_results(strategy, variable_count, model_count, &free_list, true);
 
+     const simulation_result_container results = simulation_result_container(
+        total_simulations,
+        model_count,
+        variable_count,
+        true);
+    simulation_result_container* d_result = results.cuda_allocate(&allocator);
+    
+    
     //Allocate model on cuda
     stochastic_model_t* model_d = nullptr;
     cudaMalloc(&model_d, sizeof(stochastic_model_t));
@@ -74,21 +82,19 @@ void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, const s
         const steady_clock::time_point local_start = steady_clock::now();
         
         //simulate on device
-        const bool success = stochastic_engine::run_gpu(model_d, options_d, sim_results, strategy);
+        const bool success = stochastic_engine::run_gpu(model_d, options_d, d_result, strategy);
         if(!success)
         {
-            printf("An unsuccessful GPU simulation has occured. Stopping simulation.");
+            printf("An unsuccessful GPU simulation has occured. Stopping simulation.\n");
             break;
         }
     
         //count result unless last sim
         std::cout << "Simulation ran for: " << duration_cast<milliseconds>(steady_clock::now() - local_start).count() << "[ms] \n";
         std::cout << "Reading results...\n";
-        simulation_result* local_results = static_cast<simulation_result*>(malloc(sizeof(simulation_result)*total_simulations));
-        cudaMemcpy(local_results, sim_results, sizeof(simulation_result)*total_simulations, cudaMemcpyDeviceToHost);
+        
         //simulator_tools::read_results(local_results, total_simulations, model_count, &result_map, &lend_variable_r, true);
-        r_writer->write_results(local_results, total_simulations, variable_count, steady_clock::now() - local_start, true);
-        free(local_results);
+        r_writer->write_results(&results, total_simulations, variable_count, steady_clock::now() - local_start, true);
     }
 
     std::cout << "Simulation and result analysis took a total of: " << duration_cast<milliseconds>(steady_clock::now() - global_start).count() << "[ms] \n";
@@ -96,16 +102,18 @@ void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, const s
     //simulator_tools::print_results(&result_map, &lend_variable_r, total_simulations);
     
     //free local variabels
-    variable_r.free_array();
-    cudaFree(sim_results);
     cudaFree(options_d);
+    results.free_internals();
     for (void* it : free_list)
     {
         cudaFree(it);
     }
 }
 
-void stochastic_simulator::simulate_cpu(const stochastic_model_t* model, const simulation_strategy* strategy, const result_writer* r_writer)
+void stochastic_simulator::simulate_cpu(
+    const stochastic_model_t* model,
+    const simulation_strategy* strategy,
+    const result_writer* r_writer)
 {
     //setup start variables
     const unsigned long total_simulations = strategy->total_simulations();
@@ -115,41 +123,36 @@ void stochastic_simulator::simulate_cpu(const stochastic_model_t* model, const s
     const unsigned int model_count = model->get_models_count();
 
     //TODO slim this down, this is handled by the result writer
-    std::list<void*> free_list;
-    std::map<int, node_result> result_map;
-    array_t<variable_result> variable_r = simulator_tools::allocate_variable_results(variable_count);
-    const lend_array<variable_result> lend_variable_r = lend_array<variable_result>(&variable_r);
-    simulation_result* sim_results = simulator_tools::allocate_results(strategy, variable_count, model_count, &free_list, false);
-
+    simulation_result_container results = simulation_result_container(
+        total_simulations,
+        model_count,
+        variable_count,
+        false);
+    
     const model_options options = build_options(model, strategy);
-
+    
     std::cout << "Started running!\n";
     const steady_clock::time_point global_start = steady_clock::now();
-
+    
     for (unsigned i = 0; i < strategy->simulation_runs; ++i)
     {
         const steady_clock::time_point local_start = steady_clock::now();
-        const bool success = stochastic_engine::run_cpu(model, &options, sim_results, strategy);
+        const bool success = stochastic_engine::run_cpu(model, &options, &results, strategy);
         if(!success)
         {
             printf("An unsuccessful CPU simulation has occured. Stopping simulation.");
             break;
         }
-
+    
         std::cout << "Simulation ran for: " << duration_cast<milliseconds>(steady_clock::now() - local_start).count() << "[ms] \n";
         std::cout << "Reading results...\n";
-        simulator_tools::read_results(sim_results, total_simulations, model_count, &result_map, &lend_variable_r, false);
+        r_writer->write_results(&results, total_simulations, variable_count, steady_clock::now() - local_start, false);
     }
-
+    
     std::cout << "Simulation and result analysis took a total of: " << duration_cast<milliseconds>(steady_clock::now() - global_start).count() << "[ms] \n";
-
-    simulator_tools::print_results(&result_map, &lend_variable_r, total_simulations);
-
-
-    free(sim_results);
-    variable_r.free_array();
-    for (void* it : free_list)
-    {
-        free(it);
-    }
+    
+    // for (void* it : free_list)
+    // {
+    //     free(it);
+    // }
 }
