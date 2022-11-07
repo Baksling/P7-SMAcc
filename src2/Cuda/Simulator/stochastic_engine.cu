@@ -51,13 +51,14 @@ CPU GPU void simulate_stochastic_model(
     const model_options* options,
     curandState* random_states,
     const simulation_result_container* output,
-    const unsigned long idx
+    const unsigned long idx,
+    void* memory_heap
 )
 {
     curandState* r_state = &random_states[idx];
     curand_init(options->seed, idx, idx, r_state);
     
-    simulator_state state = simulator_state::from_multi_model(model, options);
+    simulator_state state = simulator_state::from_multi_model(model, options, memory_heap);
     
     
     for (unsigned i = 0; i < options->simulation_amount; ++i)
@@ -78,29 +79,38 @@ __global__ void gpu_simulate(
     const stochastic_model_t* model,
     const model_options* options,
     curandState* r_state,
-    const simulation_result_container* output
+    const simulation_result_container* output,
+    void* total_memory_heap
     )
 {
     const unsigned long idx = threadIdx.x + blockDim.x * blockIdx.x;
-    simulate_stochastic_model(model, options, r_state, output, idx);
+    const unsigned long long int thread_memory_size = options->get_cache_size();
+    const unsigned long long int offset = (idx * thread_memory_size) / sizeof(char);
+    simulate_stochastic_model(model, options, r_state, output, idx, static_cast<void*>(&static_cast<char*>(total_memory_heap)[offset]));
 }
 
 bool stochastic_engine::run_gpu(
     const stochastic_model_t* model,
     const model_options* options,
     const simulation_result_container* output,
-    const simulation_strategy* strategy)
+    const simulation_strategy* strategy,
+    void* total_memory_heap)
 {
     curandState* random_states = nullptr;
     cudaMalloc(&random_states, sizeof(curandState)*strategy->block_n*strategy->threads_n);
+
+    // const unsigned long long int thread_memory_size = options->get_cache_size();
+    // void* original_store = malloc(thread_memory_size);
+    
     
     if(cudaSuccess != cudaDeviceSetLimit(cudaLimitMallocHeapSize, 8589934592))
     {
         printf("Could not allocate heap space on cuda device\n");
         return false;
     }
+    
     //simulate on device
-    gpu_simulate<<<strategy->block_n, strategy->threads_n>>>(model, options, random_states, output);
+    gpu_simulate<<<strategy->block_n, strategy->threads_n>>>(model, options, random_states, output, total_memory_heap);
         
     //wait for all processes to finish
     cudaDeviceSynchronize();
@@ -109,6 +119,8 @@ bool stochastic_engine::run_gpu(
     if(success != cudaSuccess) printf("\nAn error of code '%d' occured in cuda :( \n", success);
     cudaFree(random_states);
 
+    cudaFree(total_memory_heap);
+
     return success == cudaSuccess;
 }
 
@@ -116,19 +128,22 @@ bool stochastic_engine::run_cpu(
     const stochastic_model_t* model,
     const model_options* options,
     simulation_result_container* output,
-    const simulation_strategy* strategy)
+    const simulation_strategy* strategy,
+    void* total_memory_heap)
 {
     curandState* random_states = static_cast<curandState*>(malloc(sizeof(curandState)*strategy->degree_of_parallelism()));
-    
+
+    const unsigned long long int thread_memory_size = options->get_cache_size();
     //init thread pool
     thread_pool pool(strategy->cpu_threads_n);
 
     //add all jobs
     for (unsigned i = 0; i < strategy->degree_of_parallelism(); i++)
     {
-        pool.queue_job([model, options, random_states, output, i]()
+        unsigned long long int offset = (i * thread_memory_size) / sizeof(char);
+        pool.queue_job([model, options, random_states, output, i, total_memory_heap, offset]()
         {
-            simulate_stochastic_model(model, options, random_states, output, i);
+            simulate_stochastic_model(model, options, random_states, output, i, static_cast<void*>(&static_cast<char*>(total_memory_heap)[offset]));
         });
     }
     //Start processing jobs in pool.
