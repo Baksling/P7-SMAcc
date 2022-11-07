@@ -140,7 +140,8 @@ int main(int argc, const char* argv[])
     p_visitor.visit(&model);
     d_visitor.visit(&model);
     printf("Max exp: %d | Max updates: %d\n", d_visitor.get_max_expression_depth(), d_visitor.get_max_update_width());
-
+    
+    
     if (mode == 2 || mode == 0)
     {
         cout << "GPU SIMULATIONS STARTED! \n";

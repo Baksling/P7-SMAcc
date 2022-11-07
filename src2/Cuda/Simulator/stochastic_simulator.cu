@@ -64,6 +64,13 @@ void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, const s
     cudaMalloc(&options_d, sizeof(model_options));
     cudaMemcpy(options_d, &options, sizeof(model_options), cudaMemcpyHostToDevice);
 
+    const unsigned long long int thread_memory_size = options.get_cache_size();
+    void* total_memory_heap;
+    cudaMalloc(&total_memory_heap, thread_memory_size * strategy->degree_of_parallelism());
+    free_list.push_back(total_memory_heap);
+    
+    printf("Allocating: %llu bits\n", thread_memory_size * strategy->degree_of_parallelism());
+
     //run simulations
     std::cout << "Started running!\n";
     const steady_clock::time_point global_start = steady_clock::now();
@@ -74,7 +81,7 @@ void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, const s
         const steady_clock::time_point local_start = steady_clock::now();
         
         //simulate on device
-        const bool success = stochastic_engine::run_gpu(model_d, options_d, sim_results, strategy);
+        const bool success = stochastic_engine::run_gpu(model_d, options_d, sim_results, strategy, total_memory_heap);
         if(!success)
         {
             printf("An unsuccessful GPU simulation has occured. Stopping simulation.");
@@ -123,13 +130,16 @@ void stochastic_simulator::simulate_cpu(const stochastic_model_t* model, const s
 
     const model_options options = build_options(model, strategy);
 
+    const unsigned long long int thread_memory_size = options.get_cache_size();
+    void* total_memory_heap = malloc(thread_memory_size * strategy->degree_of_parallelism());
+
     std::cout << "Started running!\n";
     const steady_clock::time_point global_start = steady_clock::now();
 
     for (unsigned i = 0; i < strategy->simulation_runs; ++i)
     {
         const steady_clock::time_point local_start = steady_clock::now();
-        const bool success = stochastic_engine::run_cpu(model, &options, sim_results, strategy);
+        const bool success = stochastic_engine::run_cpu(model, &options, sim_results, strategy, total_memory_heap);
         if(!success)
         {
             printf("An unsuccessful CPU simulation has occured. Stopping simulation.");

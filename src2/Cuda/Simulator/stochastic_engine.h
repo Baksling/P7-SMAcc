@@ -11,9 +11,11 @@ private:
 public:
     static bool run_gpu(const stochastic_model_t* model,
                         const model_options* options,
-                        simulation_result* output, const simulation_strategy* strategy);
+                        simulation_result* output, const simulation_strategy* strategy,
+                        void* total_memory_heap);
 
     static bool run_cpu(const stochastic_model_t* model,
                         const model_options* options,
-                        simulation_result* output, const simulation_strategy* strategy);
+                        simulation_result* output, const simulation_strategy* strategy,
+                        void* total_memory_heap);
 };
