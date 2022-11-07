@@ -33,8 +33,32 @@ struct simulation_result
 {
     unsigned int steps;
     double total_time_progress;
-    int* end_node_id_arr;
-    double* variables_max_value_arr;
+};
+
+struct sim_pointers
+{
+private:
+    bool owns_pointers_;
+public:
+    explicit sim_pointers(const bool owns_pointers, simulation_result* results, int* nodes, double* variables)
+    {
+        this->owns_pointers_ = owns_pointers;
+        this->local_results = results;
+        this->nodes = nodes;
+        this->variables = variables;
+    }
+    
+    simulation_result* local_results = nullptr;
+    int* nodes = nullptr;
+    double* variables = nullptr;
+
+    void free_internals() const
+    {
+        if(!owns_pointers_) return;
+        free(this->local_results);
+        free(this->nodes);
+        free(this->variables);
+    }
 };
 
 
@@ -64,7 +88,7 @@ public:
 
     void free_internals() const;
 
-    void analyse(std::unordered_map<int, node_result>* node_results, const array_t<variable_result>* var_results) const;
+    sim_pointers analyse(std::unordered_map<int, node_result>* node_results, const array_t<variable_result>* var_results) const;
 
     simulation_result_container* cuda_allocate(const allocation_helper* helper) const; 
     
