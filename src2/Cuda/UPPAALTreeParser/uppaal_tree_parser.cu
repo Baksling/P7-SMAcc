@@ -115,10 +115,10 @@ void uppaal_tree_parser::get_guys(const list<string>& expressions, list<T>* t)
 void uppaal_tree_parser::init_clocks(const xml_document* doc)
 {
     string global_decl = doc->child("nta").child("declaration").child_value();
-    cout << "\nGLOBAL GUYS: " << global_decl << " :NICE\n";
+    //cout << "\nGLOBAL GUYS: " << global_decl << " :NICE\n";
     global_decl = replace_all(global_decl, " ", "");
     const list<declaration> decls = dp_.parse(global_decl);
-    cout << "\nSIZE: " << decls.size() << "\n";
+    //cout << "\nSIZE: " << decls.size() << "\n";
         
     for (declaration d : decls)
     {
@@ -146,7 +146,7 @@ void uppaal_tree_parser::init_clocks(const xml_document* doc)
         string decl = templates.child("declaration").child_value();
         decl = replace_all(decl, " ", "");
         list<declaration> declarations = dp_.parse(decl);
-        cout << "\nSIZE: " << declarations.size() << "\n";
+        //cout << "\nSIZE: " << declarations.size() << "\n";
         
         for (declaration d : declarations)
         {
@@ -277,7 +277,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                 else if (kind == "assignment")
                 {
                     list<string> expressions = split_expr(expr_string, ',');
-                    cout << "\nASS0: " << expressions.size() << " " << expr_string <<"\n";
+                    //cout << "\nASS0: " << expressions.size() << " " << expr_string <<"\n";
                     for(const auto& expr: expressions)
                     {
                         if (expr.empty())
@@ -345,7 +345,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                 result_edge = new edge_t(edge_id++, probability, target_node, to_array(&guards), to_array(&updates), *ec);
             }
 
-            cout << "guard size: " << guards.size() << "\n";
+            //cout << "guard size: " << guards.size() << "\n";
             
             // if (guards.empty())
             //     result_edge = new edge_t(edge_id, probability, target_node, array_t<constraint_t*>(0));
@@ -358,7 +358,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
 
     for(node_t* node: *nodes_)
     {
-        cout << "\n" << node->get_id() <<" HELLLLO!";
+        //cout << "\n" << node->get_id() <<" HELLLLO!";
         node->set_edges(&node_edge_map.at(node->get_id()));
     }
     
@@ -386,7 +386,6 @@ __host__ stochastic_model_t uppaal_tree_parser::parse(char* file_path)
 {
     try
     {
-        printf("USING PARSER\n");
         return parse_xml(file_path);
     }
     catch (const std::runtime_error &ex)
