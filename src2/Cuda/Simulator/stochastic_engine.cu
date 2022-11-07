@@ -79,7 +79,7 @@ __global__ void gpu_simulate(
     const stochastic_model_t* model,
     const model_options* options,
     curandState* r_state,
-    const simulation_result_container* output
+    const simulation_result_container* output,
     void* total_memory_heap
     )
 {
@@ -140,7 +140,7 @@ bool stochastic_engine::run_cpu(
     //add all jobs
     for (unsigned i = 0; i < strategy->degree_of_parallelism(); i++)
     {
-        unsigned long long int offset = i * thread_memory_size;
+        unsigned long long int offset = (i * thread_memory_size) / sizeof(char);
         pool.queue_job([model, options, random_states, output, i, total_memory_heap, offset]()
         {
             simulate_stochastic_model(model, options, random_states, output, i, static_cast<void*>(&static_cast<char*>(total_memory_heap)[offset]));
