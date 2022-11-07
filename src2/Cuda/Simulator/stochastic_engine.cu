@@ -50,7 +50,7 @@ CPU GPU void simulate_stochastic_model(
     const stochastic_model_t* model,
     const model_options* options,
     curandState* random_states,
-    simulation_result* output,
+    const simulation_result_container* output,
     const unsigned long idx,
     void* memory_heap
 )
@@ -79,7 +79,7 @@ __global__ void gpu_simulate(
     const stochastic_model_t* model,
     const model_options* options,
     curandState* r_state,
-    simulation_result* output,
+    const simulation_result_container* output
     void* total_memory_heap
     )
 {
@@ -92,7 +92,7 @@ __global__ void gpu_simulate(
 bool stochastic_engine::run_gpu(
     const stochastic_model_t* model,
     const model_options* options,
-    simulation_result* output,
+    const simulation_result_container* output,
     const simulation_strategy* strategy,
     void* total_memory_heap)
 {
@@ -127,7 +127,7 @@ bool stochastic_engine::run_gpu(
 bool stochastic_engine::run_cpu(
     const stochastic_model_t* model,
     const model_options* options,
-    simulation_result* output,
+    simulation_result_container* output,
     const simulation_strategy* strategy,
     void* total_memory_heap)
 {
