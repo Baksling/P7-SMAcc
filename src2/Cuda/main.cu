@@ -119,7 +119,6 @@ int main(int argc, const char* argv[])
     domain_analysis_visitor d_visitor;
     // 0 = file, 1 = console, 2 = both
     
-    result_writer r_writer = result_writer(&o_path ,strategy, start_nodes.size(), write_mode > 0, write_mode % 2 == 0);
     
     stochastic_model_t model(start_nodes, timer_arr, variable_arr, 5);
     if (parser.exists("m"))
@@ -135,6 +134,7 @@ int main(int argc, const char* argv[])
 
         delete[] writeable;
     }
+    result_writer r_writer = result_writer(&o_path ,strategy, model.get_models_count(), model.get_variable_count(), write_mode > 0, write_mode % 2 == 0);
     p_visitor.visit(&model);
     d_visitor.visit(&model);
     printf("Max exp: %d | Max updates: %d\n", d_visitor.get_max_expression_depth(), d_visitor.get_max_update_width());

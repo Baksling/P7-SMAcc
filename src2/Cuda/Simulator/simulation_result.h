@@ -43,19 +43,19 @@ public:
     explicit sim_pointers(const bool owns_pointers, simulation_result* results, int* nodes, double* variables)
     {
         this->owns_pointers_ = owns_pointers;
-        this->local_results = results;
+        this->meta_results = results;
         this->nodes = nodes;
         this->variables = variables;
     }
     
-    simulation_result* local_results = nullptr;
+    simulation_result* meta_results = nullptr;
     int* nodes = nullptr;
     double* variables = nullptr;
 
     void free_internals() const
     {
         if(!owns_pointers_) return;
-        free(this->local_results);
+        free(this->meta_results);
         free(this->nodes);
         free(this->variables);
     }

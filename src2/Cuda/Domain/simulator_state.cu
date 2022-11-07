@@ -129,10 +129,10 @@ CPU GPU double simulator_state::evaluate_expression(expression* expr)
         while(current != nullptr)
         {
             this->expression_stack.push(current);
-            this->expression_stack.push(current);
+            //this->expression_stack.push(current);
 
-            // if(!current->is_leaf()) //only push twice if it has children
-            //      this->expression_stack_->push(current);
+            if(!current->is_leaf()) //only push twice if it has children
+                 this->expression_stack.push(current);
             current = current->get_left();
         }
         if(this->expression_stack.is_empty())

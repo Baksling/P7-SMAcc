@@ -60,15 +60,13 @@ std::string result_writer::print_node(const int node_id, const unsigned reached_
             + std::to_string(reach_percentage) + ")%. avg step count: " + std::to_string(avg_steps) + ".\n"; 
 }
 
-void result_writer::write_to_file(const simulation_result* sim_result, std::map<int, node_result>* results,
-    unsigned long total_simulations, const array_t<variable_result>* var_result, unsigned variable_count,
-    bool from_cuda, steady_clock::duration sim_duration) const
-{    
-    const cudaMemcpyKind kind = from_cuda ? cudaMemcpyDeviceToHost : cudaMemcpyHostToHost;
-    const unsigned long long node_size = sizeof(int) * this->model_count_;
-    double* local_variable_results = static_cast<double*>(malloc(sizeof(double) * var_result->size()));
-    int* local_node_results = static_cast<int*>(malloc(node_size));
-    
+void result_writer::write_to_file(
+    sim_pointers* results,
+    std::unordered_map<int, node_result>* node_results,
+    const array_t<variable_result>* var_result,
+    unsigned long total_simulations,
+    steady_clock::duration sim_duration) const
+{        
     std::ofstream file_node, file_variable, summary;
     std::string path_to_write = this->file_path_ + "_summary.txt";
     summary.open(path_to_write);
@@ -77,22 +75,21 @@ void result_writer::write_to_file(const simulation_result* sim_result, std::map<
     
     for (int j = 0; j < var_result->size(); ++j)
     {
-
         const variable_result* result = var_result->at(j);
         summary << "variable " << result->variable_id << " = " << result->avg_max_value << "\n";
     }
     
     summary << "\n\ngoal: \n";
-
-    for (const std::pair<const int, node_result>& it : *results)
+    
+    for (const std::pair<const int, node_result>& it : *node_results)
     {
-
         if(it.first == HIT_MAX_STEPS) continue;
         const float percentage = calc_percentage(it.second.reach_count, total_simulations);
         summary << print_node(it.first, it.second.reach_count, percentage, it.second.avg_steps);
     }
-
-    const node_result no_value = results->at(HIT_MAX_STEPS);
+    
+    const node_result no_value = node_results->at(HIT_MAX_STEPS);
+    
     const float percentage = calc_percentage(no_value.reach_count, total_simulations);
 
     summary << "No goal node was reached " << no_value.reach_count << " times. ("
@@ -116,24 +113,25 @@ void result_writer::write_to_file(const simulation_result* sim_result, std::map<
      for (unsigned i = 0; i < total_simulations; ++i)
      {
 
-         const simulation_result local_result = sim_result[i];
+         
+         const simulation_result local_result = results->meta_results[i];
         
          // cudaMemcpy(local_node_results, local_result.end_node_id_arr, node_size, kind);
          // cudaMemcpy(local_variable_results, local_result.variables_max_value_arr, sizeof(double) * var_result->size(), kind);
          //
          for (unsigned j = 0; j < this->model_count_; ++j)
          {
-             file_node << i << "," << j << "," << local_node_results[j] << "\n";
+             file_node << i << "," << j << "," << results->nodes[this->model_count_ * i + j] << "\n";
          }
     
-         for (unsigned k = 0; k < variable_count; ++k)
+         for (unsigned k = 0; k < this->variable_count_; ++k)
          {
-             file_variable << i << "," << k << "," << local_variable_results[k] << "\n";
+             file_variable << i << "," << k << "," << results->variables[this->variable_count_ * i + k] << "\n";
          }
     }
 
-    free(local_node_results);
-    free(local_variable_results);
+    // free(local_node_results);
+    // free(local_variable_results);
     
     file_node.flush();
     file_variable.flush();
@@ -174,25 +172,24 @@ void result_writer::write_to_console(
     std::cout << "\nNr of simulations: " << total_simulations << "\n\n";
 }
 
-result_writer::result_writer(const std::string* path,const simulation_strategy strategy, unsigned model_count,
-                             const bool write_to_console, const bool write_to_file)
+result_writer::result_writer(const std::string* path,const simulation_strategy strategy, const unsigned model_count,
+                             const unsigned variable_count, const bool write_to_console, const bool write_to_file)
 {
     this->file_path_ = *path;
     this->strategy_ = strategy;
     this->write_to_console_ = write_to_console;
     this->write_to_file_ = write_to_file;
     this->model_count_ = model_count;
+    this->variable_count_ = variable_count;
+    
 }
 
 void result_writer::write_results(
     const simulation_result_container* sim_result,
-    const unsigned result_size,
-    const unsigned variable_count,
-    steady_clock::duration sim_duration,
-    const bool from_cuda) const
+    steady_clock::duration sim_duration) const
 {
     std::unordered_map<int, node_result> result_map;
-    const array_t<variable_result> var_result = array_t<variable_result>(static_cast<int>(variable_count));
+    const array_t<variable_result> var_result = array_t<variable_result>(static_cast<int>(this->variable_count_));
 
     
     for (unsigned int k = 0; k < static_cast<unsigned int>(var_result.size()); ++k)
@@ -202,7 +199,8 @@ void result_writer::write_results(
 
     sim_pointers pointers = sim_result->analyse(&result_map, &var_result);
     
-    if (this->write_to_file_) write_to_file(sim_result->get_sim_results(0), &result_map, strategy_.total_simulations(), &var_result, variable_count, from_cuda, sim_duration);
+    if (this->write_to_file_) write_to_file(&pointers, &result_map, &var_result,
+                                            strategy_.total_simulations(), sim_duration);
 
     if (this->write_to_console_) write_to_console(&result_map, strategy_.total_simulations(), var_result);
 

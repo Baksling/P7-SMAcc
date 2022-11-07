@@ -1,5 +1,6 @@
 ﻿#include "simulation_result.h"
 #include "thread_pool.h"
+#include "simulation_strategy.h"
 
 void simulation_result_container::load_results(simulation_result** out_r, int** out_n, double** out_v) const
 {
@@ -79,6 +80,9 @@ sim_pointers simulation_result_container::analyse(
     int* local_nodes = nullptr;
     double* local_variables = nullptr;
     this->load_results(&local_results, &local_nodes, &local_variables);
+
+    node_results->clear();
+    node_results->insert(std::pair<int, node_result>(HIT_MAX_STEPS, node_result{ 0, 0 }));
     
     for (unsigned  i = 0; i < this->results_count_; ++i)
     {
@@ -86,6 +90,7 @@ sim_pointers simulation_result_container::analyse(
 
         for (unsigned j = 0; j < this->models_count_; ++j)
         {
+            
             const int p = local_nodes[i * this->models_count_ + j];
             if(node_results->count(p) == 1)
             {

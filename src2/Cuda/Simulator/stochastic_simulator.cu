@@ -101,7 +101,7 @@ void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, const s
         std::cout << "Reading results...\n";
         
         //simulator_tools::read_results(local_results, total_simulations, model_count, &result_map, &lend_variable_r, true);
-        r_writer->write_results(&results, total_simulations, variable_count, steady_clock::now() - local_start, true);
+        r_writer->write_results(&results, steady_clock::now() - local_start);
     }
 
     std::cout << "Simulation and result analysis took a total of: " << duration_cast<milliseconds>(steady_clock::now() - global_start).count() << "[ms] \n";
@@ -156,7 +156,7 @@ void stochastic_simulator::simulate_cpu(
     
         std::cout << "Simulation ran for: " << duration_cast<milliseconds>(steady_clock::now() - local_start).count() << "[ms] \n";
         std::cout << "Reading results...\n";
-        r_writer->write_results(&results, total_simulations, variable_count, steady_clock::now() - local_start, false);
+        r_writer->write_results(&results, steady_clock::now() - local_start);
     }
     
     std::cout << "Simulation and result analysis took a total of: " << duration_cast<milliseconds>(steady_clock::now() - global_start).count() << "[ms] \n";
