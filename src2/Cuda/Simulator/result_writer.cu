@@ -6,47 +6,47 @@
 
 using namespace std::chrono;
 
-void result_writer::analyse_results(const simulation_result* simulation_results, const unsigned long total_simulations,
-    std::map<int, node_result>* results, const array_t<variable_result>* avg_max_variable_value, bool from_cuda) const
-{
-    const unsigned long long node_size = sizeof(int) * this->model_count_;
-
-    const cudaMemcpyKind kind = from_cuda ? cudaMemcpyDeviceToHost : cudaMemcpyHostToHost;
-    
-    double* local_variable_results = static_cast<double*>(malloc(sizeof(double) * avg_max_variable_value->size()));
-    int* local_node_results = static_cast<int*>(malloc(node_size));
-    
-    results->insert( std::pair<int, node_result>(HIT_MAX_STEPS, node_result{ 0, 0.0 }));
-    
-    for (unsigned long i = 0; i < total_simulations; ++i)
-    {
-        const simulation_result local_result = simulation_results[i];
-        
-        cudaMemcpy(local_node_results, local_result.end_node_id_arr, node_size, kind);
-        
-        for (unsigned int j = 0; j < this->model_count_ ; ++j)
-        {
-            if(results->count(local_node_results[j]) == 1)
-            {
-                results->at(local_node_results[j]).update_count(local_result.steps);
-            }
-            else
-            {
-                node_result r = {1, static_cast<double>(local_result.steps)};
-                results->insert( std::pair<int, node_result>(local_node_results[j], r) );
-            }
-        }
-        
-        cudaMemcpy(local_variable_results, local_result.variables_max_value_arr, sizeof(double) * avg_max_variable_value->size(), kind);
-
-        for (int  j = 0; j < avg_max_variable_value->size(); ++j)
-        {
-            avg_max_variable_value->at(j)->update_count(local_variable_results[j]);
-        }
-    }
-    free(local_variable_results);
-    free(local_node_results);
-}
+// void result_writer::analyse_results(const simulation_result* simulation_results, const unsigned long total_simulations,
+//     std::map<int, node_result>* results, const array_t<variable_result>* avg_max_variable_value, bool from_cuda) const
+// {
+//     const unsigned long long node_size = sizeof(int) * this->model_count_;
+//
+//     const cudaMemcpyKind kind = from_cuda ? cudaMemcpyDeviceToHost : cudaMemcpyHostToHost;
+//     
+//     double* local_variable_results = static_cast<double*>(malloc(sizeof(double) * avg_max_variable_value->size()));
+//     int* local_node_results = static_cast<int*>(malloc(node_size));
+//     
+//     results->insert( std::pair<int, node_result>(HIT_MAX_STEPS, node_result{ 0, 0.0 }));
+//     
+//     for (unsigned long i = 0; i < total_simulations; ++i)
+//     {
+//         const simulation_result local_result = simulation_results[i];
+//         
+//         cudaMemcpy(local_node_results, local_result.end_node_id_arr, node_size, kind);
+//         
+//         for (unsigned int j = 0; j < this->model_count_ ; ++j)
+//         {
+//             if(results->count(local_node_results[j]) == 1)
+//             {
+//                 results->at(local_node_results[j]).update_count(local_result.steps);
+//             }
+//             else
+//             {
+//                 node_result r = {1, static_cast<double>(local_result.steps)};
+//                 results->insert( std::pair<int, node_result>(local_node_results[j], r) );
+//             }
+//         }
+//         
+//         cudaMemcpy(local_variable_results, local_result.variables_max_value_arr, sizeof(double) * avg_max_variable_value->size(), kind);
+//
+//         for (int  j = 0; j < avg_max_variable_value->size(); ++j)
+//         {
+//             avg_max_variable_value->at(j)->update_count(local_variable_results[j]);
+//         }
+//     }
+//     free(local_variable_results);
+//     free(local_node_results);
+// }
 
 float result_writer::calc_percentage(const unsigned long counter, const unsigned long divisor)
 {
@@ -113,9 +113,9 @@ void result_writer::write_to_file(const simulation_result* sim_result, std::unor
 
          const simulation_result local_result = sim_result[i];
         
-         cudaMemcpy(local_node_results, local_result.end_node_id_arr, node_size, kind);
-         cudaMemcpy(local_variable_results, local_result.variables_max_value_arr, sizeof(double) * var_result->size(), kind);
-         
+         // cudaMemcpy(local_node_results, local_result.end_node_id_arr, node_size, kind);
+         // cudaMemcpy(local_variable_results, local_result.variables_max_value_arr, sizeof(double) * var_result->size(), kind);
+         //
          for (unsigned j = 0; j < this->model_count_; ++j)
          {
              file_node << i << "," << j << "," << local_node_results[j] << "\n";
@@ -195,9 +195,11 @@ void result_writer::write_results(
         var_result.arr()[k] = variable_result{k,0,0};
     }
 
-    sim_result->analyse(&result_map, &var_result);
+    sim_pointers pointers = sim_result->analyse(&result_map, &var_result);
     
     if (this->write_to_file_) write_to_file(sim_result->get_sim_results(0), &result_map, strategy_.total_simulations(), &var_result, variable_count, from_cuda);
 
     if (this->write_to_console_) write_to_console(&result_map, strategy_.total_simulations(), var_result);
+
+    pointers.free_internals();
 }

@@ -70,7 +70,7 @@ void simulation_result_container::free_internals() const
 }
 
 
-void simulation_result_container::analyse(
+sim_pointers simulation_result_container::analyse(
     std::unordered_map<int, node_result>* node_results,
     const array_t<variable_result>* var_results
     ) const
@@ -105,12 +105,7 @@ void simulation_result_container::analyse(
         }
     }
 
-    if(this->is_cuda_results_)
-    {
-        free(local_results);
-        free(local_variables);
-        free(local_nodes);
-    }
+    return sim_pointers{ this->is_cuda_results_, local_results, local_nodes, local_variables };
 }
 
 simulation_result_container* simulation_result_container::cuda_allocate(const allocation_helper* helper) const
