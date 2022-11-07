@@ -61,15 +61,17 @@ std::string result_writer::print_node(const int node_id, const unsigned reached_
 }
 
 void result_writer::write_to_file(const simulation_result* sim_result, std::map<int, node_result>* results,
-    unsigned long total_simulations, const array_t<variable_result>* var_result, unsigned variable_count, bool from_cuda) const
-{
+    unsigned long total_simulations, const array_t<variable_result>* var_result, unsigned variable_count,
+    bool from_cuda, steady_clock::duration sim_duration) const
+{    
     const cudaMemcpyKind kind = from_cuda ? cudaMemcpyDeviceToHost : cudaMemcpyHostToHost;
     const unsigned long long node_size = sizeof(int) * this->model_count_;
     double* local_variable_results = static_cast<double*>(malloc(sizeof(double) * var_result->size()));
     int* local_node_results = static_cast<int*>(malloc(node_size));
     
     std::ofstream file_node, file_variable, summary;
-    summary.open(this->file_path_ + "/summary.txt");
+    std::string path_to_write = this->file_path_ + "_summary.txt";
+    summary.open(path_to_write);
     
     summary << "\naverage maximum value of each variable: \n";
     
@@ -98,11 +100,14 @@ void result_writer::write_to_file(const simulation_result* sim_result, std::map<
 
     summary << "\nNr of simulations: " << total_simulations << "\n\n";
 
+    duration<double> sim_duration_ = duration_cast<duration<double>>(sim_duration);
+    summary << "Simulation ran for: " << duration_cast<milliseconds>(sim_duration_).count() << "[ms]" << "\n";
+
     summary.flush();
     summary.close();
     
-     file_node.open(this->file_path_ + "/node_data.csv");
-     file_variable.open(this->file_path_ + "/variable_data.csv");
+     file_node.open(this->file_path_ + "_node_data.csv");
+     file_variable.open(this->file_path_ + "_variable_data.csv");
     
      file_node << "Simulation" << "," << "Model" << "," << "Node" << "\n";
      file_variable << "Simulation" << "," << "Variable" << "," << "Value" << "\n";
@@ -191,7 +196,7 @@ void result_writer::write_results(const simulation_result* sim_result, const uns
     
     analyse_results(sim_result, strategy_.total_simulations(), &result_map, &var_result, from_cuda);
 
-    if (this->write_to_file_) write_to_file(sim_result, &result_map, strategy_.total_simulations(), &var_result, variable_count, from_cuda);
+    if (this->write_to_file_) write_to_file(sim_result, &result_map, strategy_.total_simulations(), &var_result, variable_count, from_cuda, sim_duration);
 
     if (this->write_to_console_) write_to_console(&result_map, strategy_.total_simulations(), var_result);
 }
