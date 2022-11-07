@@ -194,7 +194,7 @@ CPU GPU void simulator_state::write_result(const simulation_result_container* ou
 
 CPU GPU void simulator_state::free_internals()
 {
-    free(this->cache_pointer_);
+    // free(this->cache_pointer_);
     // this->expression_stack.free_internal();
     // this->value_stack.free_internal();
     // this->timers_.free_array();
@@ -204,12 +204,13 @@ CPU GPU void simulator_state::free_internals()
 
 CPU GPU simulator_state simulator_state::from_multi_model(
     const stochastic_model_t* multi_model,
-    const model_options* options)
+    const model_options* options,
+    void* memory_heap)
 {
     //TODO! Optimize this function by only calling malloc once!
     const unsigned long long int thread_memory_size = options->get_cache_size();
-    void* original_store = malloc(thread_memory_size);
-    void* store = original_store;
+    // void* original_store = malloc(thread_memory_size); // TODO MOVE THIS FUCKER TO CPU!
+    void* store = memory_heap;
 
     expression** expression_store = static_cast<expression**>(store);
     store = static_cast<void*>(&static_cast<expression**>(store)[options->get_expression_size()]);
@@ -219,24 +220,22 @@ CPU GPU simulator_state simulator_state::from_multi_model(
 
     model_state* state_store = static_cast<model_state*>(store);
     store = static_cast<void*>(&static_cast<model_state*>(store)[options->model_count]);
-    
+
     clock_variable* variable_store = static_cast<clock_variable*>(store);
     store = static_cast<void*>(&static_cast<clock_variable*>(store)[options->variable_count]);
 
     clock_variable* clock_store = static_cast<clock_variable*>(store);
     store = static_cast<void*>(&static_cast<clock_variable*>(store)[options->timer_count]);
 
-    
-    if((reinterpret_cast<unsigned long long>(original_store) + thread_memory_size) - reinterpret_cast<unsigned long long>(store) > 8)
+    if((reinterpret_cast<unsigned long long>(memory_heap) + thread_memory_size) - reinterpret_cast<unsigned long long>(store) > 8)
             printf("Thread cache size not equivalent to utilized size %llu of %llu (diff %llu)",
                 reinterpret_cast<unsigned long long>(store),
-                (reinterpret_cast<unsigned long long>(original_store) + thread_memory_size),
-                (reinterpret_cast<unsigned long long>(original_store) + thread_memory_size) - reinterpret_cast<unsigned long long>(store));
-    
+                (reinterpret_cast<unsigned long long>(memory_heap) + thread_memory_size),
+                (reinterpret_cast<unsigned long long>(memory_heap) + thread_memory_size) - reinterpret_cast<unsigned long long>(store));
 
     //init state itself
     simulator_state state = simulator_state{
-        original_store,
+        memory_heap,
         cuda_stack<expression*>(expression_store, options->get_expression_size()), //needs to fit all each node twice (for left and right evaluation)
         cuda_stack<double>(value_store, options->max_expression_depth)
     };
