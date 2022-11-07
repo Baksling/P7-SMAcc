@@ -60,7 +60,7 @@ std::string result_writer::print_node(const int node_id, const unsigned reached_
             + std::to_string(reach_percentage) + ")%. avg step count: " + std::to_string(avg_steps) + ".\n"; 
 }
 
-void result_writer::write_to_file(const simulation_result* sim_result, std::map<int, node_result>* results,
+void result_writer::write_to_file(const simulation_result* sim_result, std::unordered_map<int, node_result>* results,
     unsigned long total_simulations, const array_t<variable_result>* var_result, unsigned variable_count, bool from_cuda) const
 {
     const cudaMemcpyKind kind = from_cuda ? cudaMemcpyDeviceToHost : cudaMemcpyHostToHost;
@@ -137,8 +137,10 @@ void result_writer::write_to_file(const simulation_result* sim_result, std::map<
     file_variable.close();
 }
 
-void result_writer::write_to_console(std::map<int, node_result>* results, unsigned long total_simulations,
-    array_t<variable_result> var_result) const
+void result_writer::write_to_console(
+    const std::unordered_map<int, node_result>* results,
+    const unsigned long total_simulations,
+    const array_t<variable_result> var_result) const
 {
     std::cout << this->file_path_;
     printf("\naverage maximum value of each variable: \n");
@@ -177,21 +179,25 @@ result_writer::result_writer(const std::string* path,const simulation_strategy s
     this->model_count_ = model_count;
 }
 
-void result_writer::write_results(const simulation_result* sim_result, const unsigned result_size,
-    const unsigned variable_count, steady_clock::duration sim_duration, bool from_cuda) const
+void result_writer::write_results(
+    const simulation_result_container* sim_result,
+    const unsigned result_size,
+    const unsigned variable_count,
+    steady_clock::duration sim_duration,
+    const bool from_cuda) const
 {
-    std::map<int, node_result> result_map;
+    std::unordered_map<int, node_result> result_map;
     const array_t<variable_result> var_result = array_t<variable_result>(static_cast<int>(variable_count));
 
+    
     for (unsigned int k = 0; k < static_cast<unsigned int>(var_result.size()); ++k)
     {
         var_result.arr()[k] = variable_result{k,0,0};
     }
 
+    sim_result->analyse(&result_map, &var_result);
     
-    analyse_results(sim_result, strategy_.total_simulations(), &result_map, &var_result, from_cuda);
-
-    if (this->write_to_file_) write_to_file(sim_result, &result_map, strategy_.total_simulations(), &var_result, variable_count, from_cuda);
+    if (this->write_to_file_) write_to_file(sim_result->get_sim_results(0), &result_map, strategy_.total_simulations(), &var_result, variable_count, from_cuda);
 
     if (this->write_to_console_) write_to_console(&result_map, strategy_.total_simulations(), var_result);
 }

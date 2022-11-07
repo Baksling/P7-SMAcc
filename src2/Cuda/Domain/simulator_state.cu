@@ -160,29 +160,35 @@ CPU GPU double simulator_state::evaluate_expression(expression* expr)
     return this->value_stack.pop();
 }
 
-CPU GPU void simulator_state::write_result(simulation_result* output_array) const
+CPU GPU void simulator_state::write_result(const simulation_result_container* output_array) const
 {
-    simulation_result* output = &output_array[this->sim_id_];
+    simulation_result* output = output_array->get_sim_results(this->sim_id_);
 
     output->total_time_progress = this->global_time_;
     output->steps = this->steps_;
 
-    for (int i = 0; i < this->models_.size(); ++i)
+    const lend_array<int> node_results = output_array->get_nodes(this->sim_id_);
+    const lend_array<double> var_results = output_array->get_variables(this->sim_id_);
+
+    if(node_results.size() != this->models_.size() || var_results.size() != this->variables_.size())
     {
-        // output->end_node_id_arr[i] = this->models_.at(i)->current_node->get_id();
-        output->end_node_id_arr[i] = this->models_.at(i)->reached_goal
+        printf("Expected number of models or variables does not match actual amount of models/variables!\n");
+        return;
+    }
+
+    for (int i = 0; i < node_results.size(); ++i)
+    {
+        int* p = node_results.at(i);
+        (*p) = this->models_.at(i)->reached_goal
             ? this->models_.at(i)->current_node->get_id()
             : HIT_MAX_STEPS;
     }
 
-    // for (int i = 0; i < this->models_.size(); ++i)
-    // {
-    //     printf("result: %d\n", output->end_node_id_arr[i]);
-    // }
-
-    for (int i = 0; i < this->variables_.size(); ++i)
+    for (int i = 0; i < var_results.size(); ++i)
     {
-        output->variables_max_value_arr[i] = this->variables_.at(i)->get_max_value();
+        double* p = var_results.at(i);
+        // continue;
+        *p = this->variables_.at(i)->get_max_value();
     }
 }
 
