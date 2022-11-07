@@ -145,7 +145,7 @@ void stochastic_simulator::simulate_cpu(
     const unsigned long long int thread_memory_size = options.get_cache_size();
     void* total_memory_heap = malloc(thread_memory_size * strategy->degree_of_parallelism());
 
-    std::cout << "Started running!\n";
+    if (verbose) std::cout << "Started running!\n";
     const steady_clock::time_point global_start = steady_clock::now();
     
     for (unsigned i = 0; i < strategy->simulation_runs; ++i)
