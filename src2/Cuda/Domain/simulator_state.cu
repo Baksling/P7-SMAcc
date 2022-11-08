@@ -156,6 +156,7 @@ CPU GPU double simulator_state::evaluate_expression(expression* expr)
         printf("Expression evaluation ended in no values! PANIC!\n");
         return 0;
     }
+    
     return this->value_stack.pop();
 }
 

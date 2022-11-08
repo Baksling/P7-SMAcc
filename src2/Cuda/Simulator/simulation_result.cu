@@ -81,8 +81,10 @@ sim_pointers simulation_result_container::analyse(
     double* local_variables = nullptr;
     this->load_results(&local_results, &local_nodes, &local_variables);
 
-    node_results->clear();
-    node_results->insert(std::pair<int, node_result>(HIT_MAX_STEPS, node_result{ 0, 0 }));
+    if (node_results->count(HIT_MAX_STEPS) == 0)
+    {
+        node_results->insert(std::pair<int, node_result>(HIT_MAX_STEPS, node_result{ 0, 0 }));
+    }
     
     for (unsigned  i = 0; i < this->results_count_; ++i)
     {

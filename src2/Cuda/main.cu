@@ -32,7 +32,7 @@ int main(int argc, const char* argv[])
     parser.add_argument("-p", "--maxtime", "Maximum number to progress in time (default=100)", false );
     parser.add_argument("-d", "--device", "What simulation to run (GPU (0) / CPU (1) / BOTH (2))", false);
     parser.add_argument("-u", "--cputhread", "The number of threads to use on the CPU", false);
-    parser.add_argument("-w", "--write", "Write to file (0) / console (1) / both (2) / Lite (3)", false);
+    parser.add_argument("-w", "--write", "Write to file (\n / No output (0) \n / Console Summary (1) \n / File summary (2) \n / Console and File summary (3) \n / Console summary and File data (4) \n / File summary and File data (5) \n / Console summary, File summary, and File data (6) \n / Lite summary (7))", false);
     parser.add_argument("-o", "--output", "The path to output result file", false);
     parser.add_argument("-y", "--max", "Use max steps or time for limit simulation. (max steps (0) / max time (1) )", false);
     parser.add_argument("-v", "--verbose", "Enable pretty print of model (print model (0) / silent(1))", false);
@@ -51,19 +51,19 @@ int main(int argc, const char* argv[])
 
     int mode = 0; // 0 = GPU, 1 = CPU, 2 = BOTH
     string o_path = std::filesystem::current_path();
-    int write_mode = 1; // 0 = file, 1 = console, 2 = both
+    writer_modes write_mode; // 0 = file, 1 = console, 2 = both
     bool verbose = true;
 
     if (parser.exists("b")) strategy.block_n = parser.get<int>("b");
     if (parser.exists("t")) strategy.threads_n = parser.get<int>("t");
     if (parser.exists("a")) strategy.simulations_per_thread = parser.get<unsigned int>("a");
-    if (parser.exists("c")) strategy.simulation_runs = parser.get<int>("c");
+    if (parser.exists("c")) strategy.simulation_runs = parser.get<unsigned int>("c");
     if (parser.exists("s")) strategy.max_sim_steps = parser.get<unsigned int>("s");
     if (parser.exists("p")) strategy.max_time_progression = parser.get<double>("p");
     if (parser.exists("u")) strategy.cpu_threads_n = parser.get<unsigned int>("u");
     if (parser.exists("d")) mode = parser.get<int>("d");
     if (parser.exists("o")) o_path = o_path + "/" + parser.get<string>("o");
-    if (parser.exists("w")) write_mode = parser.get<int>("w");
+    if (parser.exists("w")) write_mode = static_cast<writer_modes>(parser.get<int>("w"));
     if (parser.exists("y")) strategy.use_max_steps = parser.get<int>("y") == 0;
     if (parser.exists("v")) verbose = parser.get<int>("v") == 0;
     
@@ -122,9 +122,8 @@ int main(int argc, const char* argv[])
 
         model = stochastic_model_t(start_nodes, timer_arr, variable_arr, 5);
     }
-    
     result_writer r_writer = result_writer(&o_path ,strategy, model.get_models_count(), model.get_variable_count(), write_mode);
-
+    
     //Computers were not meant to speak.
     //You can speak when spoken to.
     if (verbose)
@@ -135,7 +134,6 @@ int main(int argc, const char* argv[])
         d_visitor.visit(&model);
         printf("Max exp: %d | Max updates: %d\n", d_visitor.get_max_expression_depth(), d_visitor.get_max_update_width());
     }
-    
 
     //0 == GPU, 1 == CPU, 2 == BOTH
     if (mode == 2 || mode == 0)

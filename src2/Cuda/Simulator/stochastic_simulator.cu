@@ -34,7 +34,7 @@ model_options stochastic_simulator::build_options(stochastic_model_t* model,
     };
 }
 
-void stochastic_simulator::simulate_gpu(stochastic_model_t* model, const simulation_strategy* strategy, const result_writer* r_writer, const bool verbose)
+void stochastic_simulator::simulate_gpu(stochastic_model_t* model, const simulation_strategy* strategy, result_writer* r_writer, const bool verbose)
 {
      //setup start variables
     const unsigned long total_simulations = strategy->total_simulations();
@@ -105,8 +105,11 @@ void stochastic_simulator::simulate_gpu(stochastic_model_t* model, const simulat
         r_writer->write_results(&results, steady_clock::now() - local_start);
     }
 
-    if (verbose) std::cout << "Simulation and result analysis took a total of: " << duration_cast<milliseconds>(steady_clock::now() - global_start).count() << "[ms] \n";
-
+    steady_clock::duration temp_time = steady_clock::now() - global_start;
+    
+    if (verbose) std::cout << "Simulation and result analysis took a total of: " << duration_cast<milliseconds>(temp_time).count() << "[ms] \n";
+    r_writer->write_summary(total_simulations,temp_time);
+    
     //simulator_tools::print_results(&result_map, &lend_variable_r, total_simulations);
     
     //free local variables
@@ -121,7 +124,7 @@ void stochastic_simulator::simulate_gpu(stochastic_model_t* model, const simulat
 void stochastic_simulator::simulate_cpu(
     stochastic_model_t* model,
     const simulation_strategy* strategy,
-    const result_writer* r_writer,
+    result_writer* r_writer,
     const bool verbose)
 {
     //setup start variables
@@ -164,8 +167,11 @@ void stochastic_simulator::simulate_cpu(
         r_writer->write_results(&results, steady_clock::now() - local_start);
     }
 
-    if (verbose) std::cout << "Simulation and result analysis took a total of: " << duration_cast<milliseconds>(steady_clock::now() - global_start).count() << "[ms] \n";
+    const steady_clock::duration temp_time =  steady_clock::now() - global_start;
+    if (verbose) std::cout << "Simulation and result analysis took a total of: " << duration_cast<milliseconds>(temp_time).count() << "[ms] \n";
 
+    r_writer->write_summary(total_simulations,temp_time);
+    
     free(total_memory_heap);
 
     // for (void* it : free_list)
