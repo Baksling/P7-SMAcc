@@ -146,7 +146,8 @@ def analyse_performance(args) -> None:
             '-w', str(3),
             '-o', file_path,
             '-y', '0',
-            '-v', '1'
+            '-v', '1',
+            '-u', str(cpu_count)
         ])
 
 
