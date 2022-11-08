@@ -102,11 +102,11 @@ bool stochastic_engine::run_gpu(
     // void* original_store = malloc(thread_memory_size);
     
     
-    if(cudaSuccess != cudaDeviceSetLimit(cudaLimitMallocHeapSize, 8589934592))
-    {
-        printf("Could not allocate heap space on cuda device\n");
-        return false;
-    }
+    // if(cudaSuccess != cudaDeviceSetLimit(cudaLimitMallocHeapSize, 8589934592))
+    // {
+    //     printf("Could not allocate heap space on cuda device\n");
+    //     return false;
+    // }
     
     //simulate on device
     gpu_simulate<<<strategy->block_n, strategy->threads_n>>>(model, options, random_states, output, total_memory_heap);
@@ -117,8 +117,6 @@ bool stochastic_engine::run_gpu(
     const cudaError success = cudaPeekAtLastError();
     if(success != cudaSuccess) printf("\nAn error of code '%d' occured in cuda :( \n", success);
     cudaFree(random_states);
-
-    cudaFree(total_memory_heap);
 
     return success == cudaSuccess;
 }

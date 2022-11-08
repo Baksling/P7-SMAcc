@@ -51,7 +51,6 @@ int main(int argc, const char* argv[])
 
     int mode = 0; // 0 = GPU, 1 = CPU, 2 = BOTH
     string o_path = std::filesystem::current_path();
-    
     int write_mode = 1; // 0 = file, 1 = console, 2 = both
     bool verbose = true;
 
@@ -68,58 +67,9 @@ int main(int argc, const char* argv[])
     if (parser.exists("y")) strategy.use_max_steps = parser.get<int>("y") == 0;
     if (parser.exists("v")) verbose = parser.get<int>("v") == 0;
     
-    array_t<clock_variable> variable_arr = array_t<clock_variable>(2);
-    variable_arr.arr()[0] = clock_variable(0, 10);
-    variable_arr.arr()[1] = clock_variable(1, 5);
     
-    array_t<constraint_t*> con0_arr = array_t<constraint_t*>(1);
-    con0_arr.arr()[0] = constraint_t::less_equal_v(0, expression::literal_expression(10) );
-
+    stochastic_model_t model(array_t<node_t>(0), array_t<clock_variable>(0), array_t<clock_variable>(0),  0);
     
-    node_t node0 = node_t(0, con0_arr, false,false);
-    node_t node1 = node_t(1, con0_arr, false,false);
-    node_t node2 = node_t(2, con0_arr,false,true);
-
-    expression* exp1 = expression::plus_expression(expression::variable_expression(0), expression::variable_expression(1));
-    expression* exp2 = expression::minus_expression(expression::variable_expression(1), expression::literal_expression(4));
-
-    std::list<update_t*> update_lst;
-
-    // update_t update1 = update_t(0, 0, false, exp1);
-    // update_t update2 = update_t(1, 1, false, exp2);
-    //
-    // update_lst.push_back(&update1);
-    // update_lst.push_back(&update2);
-
-    array_t<update_t*> update_arr = to_array(&update_lst);
-    
-    edge_t* edge0_1 = new edge_t(0, expression::literal_expression(1), &node1, con0_arr, update_arr);
-    edge_t* edge0_2 = new edge_t(1, expression::literal_expression(1), &node2, array_t<constraint_t*>(0), update_arr);
-    edge_t* edge1_0 = new edge_t(2, expression::literal_expression(1), &node0, array_t<constraint_t*>(0), update_arr);
-
-    array_t<clock_variable> timer_arr = array_t<clock_variable>(2);
-    timer_arr.arr()[0] = clock_variable(0, 0.0);
-    timer_arr.arr()[1] = clock_variable(1, 0.0);
-    
-    std::list<edge_t*> node0_lst;
-    std::list<edge_t*> node1_lst;
-    
-    node0_lst.push_back(edge0_1);
-    node0_lst.push_back(edge0_2);
-    node0.set_edges(&node0_lst);
-
-    node1_lst.push_back(edge1_0);
-    node1.set_edges(&node1_lst);
-    
-    array_t<node_t> start_nodes = array_t<node_t>(1);
-    start_nodes.arr()[0] = node0;
-
-    pretty_visitor p_visitor;
-    domain_analysis_visitor d_visitor;
-    // 0 = file, 1 = console, 2 = both
-    
-    
-    stochastic_model_t model(start_nodes, timer_arr, variable_arr, 5);
     if (parser.exists("m"))
     {
         uppaal_tree_parser tree_parser;
@@ -132,16 +82,62 @@ int main(int argc, const char* argv[])
 
         delete[] writeable;
     }
+    else
+    {
+        //TODO remove default model
+        array_t<clock_variable> variable_arr = array_t<clock_variable>(2);
+        variable_arr.arr()[0] = clock_variable(0, 10);
+        variable_arr.arr()[1] = clock_variable(1, 5);
+        
+        array_t<constraint_t*> con0_arr = array_t<constraint_t*>(1);
+        con0_arr.arr()[0] = constraint_t::less_equal_v(0, expression::literal_expression(10) );
+
+        node_t node0 = node_t(0, con0_arr, false,false);
+        node_t node1 = node_t(1, con0_arr, false,false);
+        node_t node2 = node_t(2, con0_arr,false,true);
+
+        std::list<update_t*> update_lst;
+        array_t<update_t*> update_arr = to_array(&update_lst);
+        
+        edge_t* edge0_1 = new edge_t(0, expression::literal_expression(1), &node1, con0_arr, update_arr);
+        edge_t* edge0_2 = new edge_t(1, expression::literal_expression(1), &node2, array_t<constraint_t*>(0), update_arr);
+        edge_t* edge1_0 = new edge_t(2, expression::literal_expression(1), &node0, array_t<constraint_t*>(0), update_arr);
+
+        array_t<clock_variable> timer_arr = array_t<clock_variable>(2);
+        timer_arr.arr()[0] = clock_variable(0, 0.0);
+        timer_arr.arr()[1] = clock_variable(1, 0.0);
+        
+        std::list<edge_t*> node0_lst;
+        std::list<edge_t*> node1_lst;
+        
+        node0_lst.push_back(edge0_1);
+        node0_lst.push_back(edge0_2);
+        node0.set_edges(&node0_lst);
+
+        node1_lst.push_back(edge1_0);
+        node1.set_edges(&node1_lst);
+        
+        array_t<node_t> start_nodes = array_t<node_t>(1);
+        start_nodes.arr()[0] = node0;
+
+        model = stochastic_model_t(start_nodes, timer_arr, variable_arr, 5);
+    }
+    
     result_writer r_writer = result_writer(&o_path ,strategy, model.get_models_count(), model.get_variable_count(), write_mode);
 
+    //Computers were not meant to speak.
+    //You can speak when spoken to.
     if (verbose)
     {
+        pretty_visitor p_visitor;
+        domain_analysis_visitor d_visitor;
         p_visitor.visit(&model);
         d_visitor.visit(&model);
         printf("Max exp: %d | Max updates: %d\n", d_visitor.get_max_expression_depth(), d_visitor.get_max_update_width());
     }
     
-    
+
+    //0 == GPU, 1 == CPU, 2 == BOTH
     if (mode == 2 || mode == 0)
     {
         if (verbose) cout << "GPU SIMULATIONS STARTED! \n";

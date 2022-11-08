@@ -26,7 +26,7 @@ struct model_options
     unsigned int model_count{};
     unsigned int variable_count{};
     unsigned int timer_count{};
-
+    
     CPU GPU unsigned int get_expression_size() const
     {
         return this->max_expression_depth*2+1;

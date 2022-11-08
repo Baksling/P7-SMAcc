@@ -144,6 +144,8 @@ CPU GPU edge_t* simulator_tools::choose_next_edge_bit(
     const lend_array<edge_t*>* edges,
     curandState* r_state)
 {
+    if(static_cast<unsigned long long>(edges->size()) > sizeof(unsigned long long)) printf("Too many edge options.");
+    
     unsigned long long valid_edges_bitarray = 0UL;
     unsigned int valid_count = 0;
     edge_t* valid_edge = nullptr;
