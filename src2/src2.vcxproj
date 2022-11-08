@@ -798,6 +798,7 @@
   <ItemGroup>
     <ClInclude Include="Cuda\Domain\simulator_state.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\parser_exception.h" />
+    <Content Include="Analysis\analysis_plotter.py" />
     <Content Include="Analysis\performance_analysis.py" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\and_guy.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\bigusdickuslmao.xml" />
