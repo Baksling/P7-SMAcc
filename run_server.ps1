@@ -1,7 +1,8 @@
 
 
 #local_folder must not start with ./ or end with /
-$local_folder = "src2"
+$local_folder = "src2/Analysis"
+$local_folder2 = "src2/Cuda"
 
 #server_path must end with "/""
 $server_path = "/home/ubuntu/P7/"
@@ -21,7 +22,9 @@ function Move-Files{
     Write-Output("Yeeting old files on server")
     Invoke-Expression("ssh $ssh_target rm -r $server_path")
     Write-Output("Starting transfering files...")
-    Invoke-Expression("scp -r ./" + $local_folder + " " + $ssh_target + ":" + $server_path )
+    Invoke-Expression("ssh $ssh_target mkdir $server_path")
+    Invoke-Expression("scp -r ./" + $local_folder2 + " " + $ssh_target + ":" + $server_path + "Cuda/" )
+    Invoke-Expression("scp -r ./" + $local_folder + " " + $ssh_target + ":" + $server_path + "Analysis/" )
     Write-Output("Files transfered to '" + $ssh_target + "'.")
     Write-Output " "
 }

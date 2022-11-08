@@ -33,7 +33,7 @@ model_options stochastic_simulator::build_options(const stochastic_model_t* mode
     };
 }
 
-void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, const simulation_strategy* strategy, const result_writer* r_writer)
+void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, const simulation_strategy* strategy, const result_writer* r_writer, const bool verbose)
 {
      //setup start variables
     const unsigned long total_simulations = strategy->total_simulations();
@@ -77,10 +77,10 @@ void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, const s
     cudaMalloc(&total_memory_heap, thread_memory_size * strategy->degree_of_parallelism());
     free_list.push_back(total_memory_heap);
     
-    printf("Allocating: %llu bits\n", thread_memory_size * strategy->degree_of_parallelism());
+    if (verbose) printf("Allocating: %llu bits\n", thread_memory_size * strategy->degree_of_parallelism());
 
     //run simulations
-    std::cout << "Started running!\n";
+    if (verbose) std::cout << "Started running!\n";
     const steady_clock::time_point global_start = steady_clock::now();
     
     for (unsigned i = 0; i < strategy->simulation_runs; ++i)
@@ -92,19 +92,22 @@ void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, const s
         const bool success = stochastic_engine::run_gpu(model_d, options_d, d_result, strategy, total_memory_heap);
         if(!success)
         {
-            printf("An unsuccessful GPU simulation has occured. Stopping simulation.\n");
+            if (verbose) printf("An unsuccessful GPU simulation has occured. Stopping simulation.\n");
             break;
         }
     
         //count result unless last sim
-        std::cout << "Simulation ran for: " << duration_cast<milliseconds>(steady_clock::now() - local_start).count() << "[ms] \n";
-        std::cout << "Reading results...\n";
+        if (verbose)
+        {
+            std::cout << "Simulation ran for: " << duration_cast<milliseconds>(steady_clock::now() - local_start).count() << "[ms] \n";
+            std::cout << "Reading results...\n";
+        }
         
         //simulator_tools::read_results(local_results, total_simulations, model_count, &result_map, &lend_variable_r, true);
         r_writer->write_results(&results, steady_clock::now() - local_start);
     }
 
-    std::cout << "Simulation and result analysis took a total of: " << duration_cast<milliseconds>(steady_clock::now() - global_start).count() << "[ms] \n";
+    if (verbose) std::cout << "Simulation and result analysis took a total of: " << duration_cast<milliseconds>(steady_clock::now() - global_start).count() << "[ms] \n";
 
     //simulator_tools::print_results(&result_map, &lend_variable_r, total_simulations);
     
@@ -120,7 +123,8 @@ void stochastic_simulator::simulate_gpu(const stochastic_model_t* model, const s
 void stochastic_simulator::simulate_cpu(
     const stochastic_model_t* model,
     const simulation_strategy* strategy,
-    const result_writer* r_writer)
+    const result_writer* r_writer,
+    const bool verbose)
 {
     //setup start variables
     const unsigned long total_simulations = strategy->total_simulations();
@@ -141,7 +145,7 @@ void stochastic_simulator::simulate_cpu(
     const unsigned long long int thread_memory_size = options.get_cache_size();
     void* total_memory_heap = malloc(thread_memory_size * strategy->degree_of_parallelism());
 
-    std::cout << "Started running!\n";
+    if (verbose) std::cout << "Started running!\n";
     const steady_clock::time_point global_start = steady_clock::now();
     
     for (unsigned i = 0; i < strategy->simulation_runs; ++i)
@@ -150,16 +154,18 @@ void stochastic_simulator::simulate_cpu(
         const bool success = stochastic_engine::run_cpu(model, &options, &results, strategy, total_memory_heap);
         if(!success)
         {
-            printf("An unsuccessful CPU simulation has occured. Stopping simulation.");
+            if (verbose) printf("An unsuccessful CPU simulation has occured. Stopping simulation.");
             break;
         }
-    
-        std::cout << "Simulation ran for: " << duration_cast<milliseconds>(steady_clock::now() - local_start).count() << "[ms] \n";
-        std::cout << "Reading results...\n";
+        if (verbose)
+        {
+            std::cout << "Simulation ran for: " << duration_cast<milliseconds>(steady_clock::now() - local_start).count() << "[ms] \n";
+            std::cout << "Reading results...\n";
+        }
         r_writer->write_results(&results, steady_clock::now() - local_start);
     }
     
-    std::cout << "Simulation and result analysis took a total of: " << duration_cast<milliseconds>(steady_clock::now() - global_start).count() << "[ms] \n";
+    if (verbose) std::cout << "Simulation and result analysis took a total of: " << duration_cast<milliseconds>(steady_clock::now() - global_start).count() << "[ms] \n";
     
     // for (void* it : free_list)
     // {

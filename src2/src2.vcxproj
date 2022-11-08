@@ -798,6 +798,7 @@
   <ItemGroup>
     <ClInclude Include="Cuda\Domain\simulator_state.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\parser_exception.h" />
+    <Content Include="Analysis\performance_analysis.py" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\and_guy.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\bigusdickuslmao.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\ChanSyn2.xml" />
@@ -816,6 +817,9 @@
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\test3.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\test4.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\testBasic.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Cuda\test_results" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

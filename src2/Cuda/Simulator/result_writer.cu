@@ -106,8 +106,8 @@ void result_writer::write_to_file(
      file_node.open(this->file_path_ + "_node_data.csv");
      file_variable.open(this->file_path_ + "_variable_data.csv");
     
-     file_node << "Simulation" << "," << "Model" << "," << "Node" << "\n";
-     file_variable << "Simulation" << "," << "Variable" << "," << "Value" << "\n";
+     file_node << "Simulation,Model,Node,Steps,Time\n";
+     file_variable << "Simulation,Variable,Value\n";
     
     
      for (unsigned i = 0; i < total_simulations; ++i)
@@ -121,7 +121,7 @@ void result_writer::write_to_file(
          //
          for (unsigned j = 0; j < this->model_count_; ++j)
          {
-             file_node << i << "," << j << "," << results->nodes[this->model_count_ * i + j] << "\n";
+             file_node << i << "," << j << "," << results->nodes[this->model_count_ * i + j] << "," << local_result.steps << "," << local_result.total_time_progress << "\n";
          }
     
          for (unsigned k = 0; k < this->variable_count_; ++k)
@@ -172,13 +172,25 @@ void result_writer::write_to_console(
     std::cout << "\nNr of simulations: " << total_simulations << "\n\n";
 }
 
+void result_writer::write_lite(std::chrono::steady_clock::duration sim_duration) const
+{
+    std::ofstream lite;
+    std::string file_path = file_path_ + "_lite_summary.txt";
+    lite.open(file_path);
+
+    lite << duration_cast<milliseconds>(duration_cast<duration<double>>(sim_duration)).count();
+
+    lite.flush();
+    lite.close();
+}
+
+
 result_writer::result_writer(const std::string* path,const simulation_strategy strategy, const unsigned model_count,
-                             const unsigned variable_count, const bool write_to_console, const bool write_to_file)
+                             const unsigned variable_count, const unsigned write_mode)
 {
     this->file_path_ = *path;
     this->strategy_ = strategy;
-    this->write_to_console_ = write_to_console;
-    this->write_to_file_ = write_to_file;
+    this->write_mode_ = write_mode;
     this->model_count_ = model_count;
     this->variable_count_ = variable_count;
     
@@ -197,12 +209,18 @@ void result_writer::write_results(
         var_result.arr()[k] = variable_result{k,0,0};
     }
 
+    if (this->write_mode_ == 3)
+    {
+        this->write_lite(sim_duration);
+        return;
+    }
+    
     sim_pointers pointers = sim_result->analyse(&result_map, &var_result);
     
-    if (this->write_to_file_) write_to_file(&pointers, &result_map, &var_result,
+    if (this->write_mode_ == 0 || this->write_mode_ == 2) write_to_file(&pointers, &result_map, &var_result,
                                             strategy_.total_simulations(), sim_duration);
 
-    if (this->write_to_console_) write_to_console(&result_map, strategy_.total_simulations(), var_result);
+    if (this->write_mode_ == 1 || this->write_mode_ == 2) write_to_console(&result_map, strategy_.total_simulations(), var_result);
 
     pointers.free_internals();
 }
