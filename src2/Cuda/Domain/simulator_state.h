@@ -57,7 +57,7 @@ public:
     CPU GPU void free_internals();
 
     //CONSTRUCTOR_METHOD
-    CPU GPU static simulator_state from_multi_model(const stochastic_model_t* multi_model, const model_options* options, void* im_in_danger);
+    CPU GPU static simulator_state from_multi_model(const stochastic_model_t* multi_model, const model_options* options, void* memory_heap);
 };
 
 #endif

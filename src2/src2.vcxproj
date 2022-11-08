@@ -160,7 +160,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Cuda\Domain\channel_medium.cu" />
     <ClCompile Include="Cuda\Domain\edge_t.cu" />
     <ClCompile Include="Cuda\Domain\expressions\constraint_t.cu">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
@@ -768,7 +767,6 @@
     <ClCompile Include="Cuda\Domain\node_t.h" />
     <ClCompile Include="Cuda\Domain\clock_variable.h" />
     <ClCompile Include="Cuda\Domain\update_t.h" />
-    <ClInclude Include="Cuda\Domain\channel_medium.h" />
     <ClInclude Include="Cuda\Simulator\result_writer.h" />
     <ClInclude Include="Cuda\Domain\stochastic_model_t.h" />
     <ClInclude Include="Cuda\Simulator\stochastic_engine.h" />

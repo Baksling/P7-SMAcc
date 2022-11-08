@@ -6,7 +6,6 @@
 #include "simulator_tools.h"
 #include "../Domain/edge_t.h"
 #include "../Domain/stochastic_model_t.h"
-#include "../Domain/channel_medium.h"
 
 using namespace std::chrono;
 

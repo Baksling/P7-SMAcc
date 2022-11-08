@@ -1,6 +1,6 @@
 ﻿#include "simulator_state.h"
 #include "node_t.h"
-#include "channel_medium.h"
+#include "edge_t.h"
 
 
 CPU GPU double simulator_state::determine_progression(const node_t* node, curandState* r_state)
@@ -94,7 +94,6 @@ CPU GPU model_state* simulator_state::progress_sim(const model_options* options,
         //If all channels that are left is listeners, then dont bother
         //This also ensures that current_node has edges
         if(!current->current_node->is_progressible()) continue;
-
         
         //if it is not in a valid state, then it is disabled 
         if(!current->current_node->evaluate_invariants(this)) continue;
@@ -130,9 +129,9 @@ CPU GPU double simulator_state::evaluate_expression(expression* expr)
         {
             this->expression_stack.push(current);
             //this->expression_stack.push(current);
-
             if(!current->is_leaf()) //only push twice if it has children
                  this->expression_stack.push(current);
+            
             current = current->get_left();
         }
         if(this->expression_stack.is_empty())

@@ -104,7 +104,6 @@ void edge_t::accept(visitor* v) const
 
 void edge_t:: pretty_print() const
 {
-    //TODO FIX THIS!
     printf("Edge id: %3d | Weight expression: %s | Dest node: %3d | Channel Id: %3s | Is Listener: %s\n",
         this->id_,
         this->weight_expression_->to_string().c_str(),

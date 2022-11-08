@@ -8,7 +8,6 @@
 #include "simulation_strategy.h"
 #include "../common/allocation_helper.h"
 #include "../Domain/edge_t.h"
-#include "../Domain/channel_medium.h"
 
 class simulator_tools
 {
