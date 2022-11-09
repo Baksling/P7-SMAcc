@@ -218,3 +218,14 @@ void result_writer::write_summary(unsigned long long total_simulations, std::chr
     }
 
 }
+
+void result_writer::clear()
+{
+    for (unsigned int k = 0; k < static_cast<unsigned int>(this->var_result_.size()); ++k)
+    {
+        this->var_result_.arr()[k] = variable_result{k,0,0};
+    }
+
+    this->result_map_.clear();
+    
+}

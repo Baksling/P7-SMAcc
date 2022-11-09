@@ -52,5 +52,7 @@ public:
                        std::chrono::steady_clock::duration sim_duration);
 
     void write_summary(unsigned long long total_simulations, std::chrono::steady_clock::duration sim_duration);
+
+    void clear();
     
 };
