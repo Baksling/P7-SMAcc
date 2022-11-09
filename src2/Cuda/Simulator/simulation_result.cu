@@ -1,4 +1,5 @@
 ﻿#include "simulation_result.h"
+#include "../common/allocation_helper.h"
 #include "thread_pool.h"
 #include "simulation_strategy.h"
 
@@ -25,18 +26,6 @@ void simulation_result_container::load_results(simulation_result** out_r, int** 
     *out_v = local_v;
 }
 
-template<typename T>
-CPU GPU void allocate(T** ptr, unsigned long long int size, const bool cuda_allocate)
-{
-    if(cuda_allocate)
-    {
-        cudaMalloc(ptr, size);
-    }
-    else
-    {
-        *ptr = static_cast<T*>(malloc(size));
-    }
-}
 
 simulation_result_container::simulation_result_container(
     const unsigned size,

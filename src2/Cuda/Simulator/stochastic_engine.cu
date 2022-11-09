@@ -148,6 +148,7 @@ bool stochastic_engine::run_cpu(
     
     while(pool.is_busy()) //wait for pool to process all tasks
     {
+        std::this_thread::sleep_for(std::chrono::duration<double>(0.1));
     }
 
     //stop pool

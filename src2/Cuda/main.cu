@@ -122,7 +122,11 @@ int main(int argc, const char* argv[])
 
         model = stochastic_model_t(start_nodes, timer_arr, variable_arr, 5);
     }
-    result_writer r_writer = result_writer(&o_path ,strategy, model.get_models_count(), model.get_variable_count(), write_mode);
+    result_writer r_writer = result_writer(
+        &o_path ,strategy,
+        model.get_models_count(),
+        model.get_variable_count(),
+        write_mode);
     
     //Computers were not meant to speak.
     //You can speak when spoken to.

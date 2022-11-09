@@ -388,6 +388,7 @@
     </ClCompile>
     <ClCompile Include="Cuda\Simulator\result_writer.cu" />
     <ClCompile Include="Cuda\Simulator\simulation_result.cu" />
+    <ClCompile Include="Cuda\Simulator\smart_result_queue.cu" />
     <ClCompile Include="Cuda\Simulator\stochastic_engine.cu" />
     <ClCompile Include="Cuda\Simulator\stochastic_simulator.cu" />
     <ClCompile Include="Cuda\UPPAALTreeParser\arithmetic-expression-evaluator.cpp" />
@@ -769,6 +770,7 @@
     <ClCompile Include="Cuda\Domain\update_t.h" />
     <ClInclude Include="Cuda\Simulator\result_writer.h" />
     <ClInclude Include="Cuda\Domain\stochastic_model_t.h" />
+    <ClInclude Include="Cuda\Simulator\smart_result_queue.h" />
     <ClInclude Include="Cuda\Simulator\stochastic_engine.h" />
     <ClInclude Include="Cuda\Simulator\stochastic_simulator.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\arithmetic-expression-evaluator.h" />

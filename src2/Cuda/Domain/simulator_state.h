@@ -18,9 +18,11 @@
 //Prototype
 class channel_medium;
 class expression;
+class smart_result_queue;
 
 class simulator_state
 {
+    friend class smart_result_queue;
 private:
     GPU CPU double determine_progression(const node_t* node, curandState* r_state);
 
