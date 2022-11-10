@@ -124,7 +124,7 @@ def analyse_performance(args) -> None:
             '-a', str(amount),
             '-c', '1',
             '-d', '0',
-            '-w', str(3),
+            '-w', str(7),
             '-o', file_path,
             '-y', '0',
             '-v', '1'
@@ -133,21 +133,21 @@ def analyse_performance(args) -> None:
     for cpu_core in range(1, cpu_count + 1):
         file_path = f'{args.output_file}_CPU_{cpu_core}'
 
-        amount = math.ceil((args.simulation_amount / cpu_count))
+        amount = math.ceil((args.simulation_amount / cpu_core))
 
         subprocess.run([
             args.simulation_file,
             '-m', args.model_file,
             '-b', str(1),
-            '-t', str(cpu_count),
+            '-t', str(cpu_core),
             '-a', str(amount),
             '-c', '1',
             '-d', '1',
-            '-w', str(3),
+            '-w', str(7),
             '-o', file_path,
             '-y', '0',
             '-v', '1',
-            '-u', str(cpu_count)
+            '-u', str(cpu_core)
         ])
 
 
