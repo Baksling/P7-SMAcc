@@ -29,7 +29,7 @@ public:
     CPU GPU void free_internal() const;
 
     //Host methods
-    cuda_stack<T>* cuda_allocate(const allocation_helper* helper);
+    cuda_stack<T>* cuda_allocate(allocation_helper* helper);
 };
 
 template <typename T>
@@ -122,21 +122,19 @@ void cuda_stack<T>::free_internal() const
 }
 
 template <typename T>
-cuda_stack<T>* cuda_stack<T>::cuda_allocate(const allocation_helper* helper)
+cuda_stack<T>* cuda_stack<T>::cuda_allocate(allocation_helper* helper)
 {
     cuda_stack<T>* cuda = nullptr;
-    cudaMalloc(&cuda, sizeof(cuda_stack<T>));
-    helper->free_list->push_back(cuda);
+    helper->allocate_cuda(&cuda, sizeof(cuda_stack<T>));
 
     T* cuda_store = nullptr;
-    cudaMalloc(&cuda_store, sizeof(T)*this->size_);
-    helper->free_list->push_back(cuda_store);
+    helper->allocate_cuda(&cuda_store, sizeof(T)*this->size_);
 
     //heap allocated, as it is a template, and results in segment fault if not.
-    cuda_stack<T>* copy = new cuda_stack<T>(cuda_store, this->size_);
+    const cuda_stack<T>* copy = new cuda_stack<T>(cuda_store, this->size_);
     
-    cudaMemcpy(cuda, copy, sizeof(cuda_stack<T>), cudaMemcpyHostToDevice);    
-    free(copy); //free heap allocated copy
+    cudaMemcpy(cuda, copy, sizeof(cuda_stack<T>), cudaMemcpyHostToDevice);
+    delete copy; //free heap allocated copy
     return cuda;
 }
 

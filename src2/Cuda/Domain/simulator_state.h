@@ -25,8 +25,6 @@ private:
     GPU CPU double determine_progression(const node_t* node, curandState* r_state);
 
     unsigned int sim_id_ = 0;
-    void* cache_pointer_;
-    
     array_t<model_state> models_{0};
     array_t<clock_variable> variables_{nullptr, 0};
     array_t<clock_variable> timers_{nullptr, 0};
@@ -37,13 +35,14 @@ private:
     CPU GPU void progress_timers(const double time);
     
     CPU GPU simulator_state(
-        void* cache_pointer,
+        curandState* random,
         const cuda_stack<expression*>& expression_stack,
         const cuda_stack<double>& value_stack);
     
 public:
     cuda_stack<double> value_stack{0};
     cuda_stack<expression*> expression_stack{0};
+    curandState* random;
 
     CPU GPU lend_array<clock_variable> get_timers() const;
     CPU GPU lend_array<clock_variable> get_variables() const;
@@ -51,13 +50,15 @@ public:
     CPU GPU void broadcast_channel(const model_state* current_state, const unsigned channel_id, curandState* r_state);
     CPU GPU void reset(unsigned sim_id, const stochastic_model_t* model);
     CPU GPU model_state* progress_sim(const model_options* options, curandState* r_state);
-    CPU GPU double evaluate_expression(expression* expr);
 
     CPU GPU void write_result(const simulation_result_container* output_array) const;
     CPU GPU void free_internals();
 
     //CONSTRUCTOR_METHOD
-    CPU GPU static simulator_state from_multi_model(const stochastic_model_t* multi_model, const model_options* options, void* memory_heap);
+    CPU GPU static simulator_state from_multi_model(
+        const stochastic_model_t* multi_model,
+        const model_options* options,
+        curandState* random, void* memory_heap);
 };
 
 #endif

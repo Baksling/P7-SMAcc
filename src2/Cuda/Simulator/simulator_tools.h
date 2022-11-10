@@ -19,7 +19,7 @@ public:
 
     CPU GPU static edge_t* choose_next_edge_bit(
         simulator_state* state,
-        const lend_array<edge_t*>* edges,
+        const lend_array<edge_t>* edges,
         curandState* r_state);
 
     

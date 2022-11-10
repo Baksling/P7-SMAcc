@@ -23,7 +23,7 @@ CPU GPU void run_simulator(simulator_state* state, curandState* r_state, const m
 
         do //repeat as long as current node is branch node
         {
-            lend_array<edge_t*> outgoing_edges =  current_model->current_node->get_edges();
+            lend_array<edge_t> outgoing_edges =  current_model->current_node->get_edges();
             if(outgoing_edges.size() == 0) break;
 
             const edge_t* edge = simulator_tools::choose_next_edge_bit(state, &outgoing_edges, r_state);
@@ -57,7 +57,7 @@ CPU GPU void simulate_stochastic_model(
     curandState* r_state = &random_states[idx];
     curand_init(options->seed, idx, idx, r_state);
     
-    simulator_state state = simulator_state::from_multi_model(model, options, memory_heap);
+    simulator_state state = simulator_state::from_multi_model(model, options, r_state, memory_heap);
     
     
     for (unsigned i = 0; i < options->simulation_amount; ++i)
@@ -148,6 +148,7 @@ bool stochastic_engine::run_cpu(
     
     while(pool.is_busy()) //wait for pool to process all tasks
     {
+        std::this_thread::yield();
     }
 
     //stop pool

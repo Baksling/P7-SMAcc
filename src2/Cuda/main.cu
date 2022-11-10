@@ -68,7 +68,7 @@ int main(int argc, const char* argv[])
     if (parser.exists("v")) verbose = parser.get<int>("v") == 0;
     
     
-    stochastic_model_t model(array_t<node_t>(0), array_t<clock_variable>(0), array_t<clock_variable>(0),  0);
+    stochastic_model_t model(array_t<node_t*>(0), array_t<clock_variable>(0), array_t<clock_variable>(0),  0);
     
     if (parser.exists("m"))
     {
@@ -89,26 +89,26 @@ int main(int argc, const char* argv[])
         variable_arr.arr()[0] = clock_variable(0, 10);
         variable_arr.arr()[1] = clock_variable(1, 5);
         
-        array_t<constraint_t*> con0_arr = array_t<constraint_t*>(1);
-        con0_arr.arr()[0] = constraint_t::less_equal_v(0, expression::literal_expression(10) );
+        array_t<constraint_t> con0_arr = array_t<constraint_t>(1);
+        con0_arr.arr()[0] = *constraint_t::less_equal_v(0, expression::literal_expression(10) );
 
         node_t node0 = node_t(0, con0_arr, false,false);
         node_t node1 = node_t(1, con0_arr, false,false);
         node_t node2 = node_t(2, con0_arr,false,true);
 
-        std::list<update_t*> update_lst;
-        array_t<update_t*> update_arr = to_array(&update_lst);
+        std::list<update_t> update_lst;
+        array_t<update_t> update_arr = to_array(&update_lst);
         
-        edge_t* edge0_1 = new edge_t(0, expression::literal_expression(1), &node1, con0_arr, update_arr);
-        edge_t* edge0_2 = new edge_t(1, expression::literal_expression(1), &node2, array_t<constraint_t*>(0), update_arr);
-        edge_t* edge1_0 = new edge_t(2, expression::literal_expression(1), &node0, array_t<constraint_t*>(0), update_arr);
+        edge_t edge0_1 = edge_t(0, expression::literal_expression(1), &node1, con0_arr, update_arr);
+        edge_t edge0_2 = edge_t(1, expression::literal_expression(1), &node2, array_t<constraint_t>(0), update_arr);
+        edge_t edge1_0 = edge_t(2, expression::literal_expression(1), &node0, array_t<constraint_t>(0), update_arr);
 
         array_t<clock_variable> timer_arr = array_t<clock_variable>(2);
         timer_arr.arr()[0] = clock_variable(0, 0.0);
         timer_arr.arr()[1] = clock_variable(1, 0.0);
         
-        std::list<edge_t*> node0_lst;
-        std::list<edge_t*> node1_lst;
+        std::list<edge_t> node0_lst;
+        std::list<edge_t> node1_lst;
         
         node0_lst.push_back(edge0_1);
         node0_lst.push_back(edge0_2);
@@ -117,8 +117,8 @@ int main(int argc, const char* argv[])
         node1_lst.push_back(edge1_0);
         node1.set_edges(&node1_lst);
         
-        array_t<node_t> start_nodes = array_t<node_t>(1);
-        start_nodes.arr()[0] = node0;
+        array_t<node_t*> start_nodes = array_t<node_t*>(1);
+        start_nodes.arr()[0] = &node0;
 
         model = stochastic_model_t(start_nodes, timer_arr, variable_arr, 5);
     }

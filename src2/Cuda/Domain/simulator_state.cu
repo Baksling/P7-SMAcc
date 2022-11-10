@@ -52,7 +52,7 @@ CPU GPU void simulator_state::progress_timers(const double time)
 }
 
 simulator_state::simulator_state(
-    void* cache_pointer,
+    curandState* random,
     const cuda_stack<expression*>& expression_stack,
     const cuda_stack<double>& value_stack)
 {
@@ -64,7 +64,7 @@ simulator_state::simulator_state(
     // this->variables_ = variables;
     this->expression_stack = expression_stack;
     this->value_stack = value_stack;
-    this->cache_pointer_ = cache_pointer;
+    this->random = random;
     // this->medium = medium;
 }
 
@@ -117,49 +117,6 @@ CPU GPU model_state* simulator_state::progress_sim(const model_options* options,
     return winning_model;
 }
 
-CPU GPU double simulator_state::evaluate_expression(expression* expr)
-{
-    this->value_stack.clear();
-    this->expression_stack.clear();
-
-    expression* current = expr;
-    while (true)
-    {
-        while(current != nullptr)
-        {
-            this->expression_stack.push(current);
-            //this->expression_stack.push(current);
-            if(!current->is_leaf()) //only push twice if it has children
-                 this->expression_stack.push(current);
-            
-            current = current->get_left();
-        }
-        if(this->expression_stack.is_empty())
-        {
-            break;
-        }
-        current = this->expression_stack.pop();
-        
-        if(!this->expression_stack.is_empty() && this->expression_stack.peak() == current)
-        {
-            current = current->get_right(&this->value_stack);
-        }
-        else
-        {
-            current->evaluate(this);
-            current = nullptr;
-        }
-    }
-
-    if(this->value_stack.count() == 0)
-    {
-        printf("Expression evaluation ended in no values! PANIC!\n");
-        return 0;
-    }
-    
-    return this->value_stack.pop();
-}
-
 CPU GPU void simulator_state::write_result(const simulation_result_container* output_array) const
 {
     simulation_result* output = output_array->get_sim_results(this->sim_id_);
@@ -205,11 +162,10 @@ CPU GPU void simulator_state::free_internals()
 CPU GPU simulator_state simulator_state::from_multi_model(
     const stochastic_model_t* multi_model,
     const model_options* options,
+    curandState* random,
     void* memory_heap)
 {
-    //TODO! Optimize this function by only calling malloc once!
     const unsigned long long int thread_memory_size = options->get_cache_size();
-    // void* original_store = malloc(thread_memory_size); // TODO MOVE THIS FUCKER TO CPU!
     void* store = memory_heap;
 
     expression** expression_store = static_cast<expression**>(store);
@@ -235,7 +191,7 @@ CPU GPU simulator_state simulator_state::from_multi_model(
 
     //init state itself
     simulator_state state = simulator_state{
-        memory_heap,
+        random,
         cuda_stack<expression*>(expression_store, options->get_expression_size()), //needs to fit all each node twice (for left and right evaluation)
         cuda_stack<double>(value_store, options->max_expression_depth)
     };
@@ -246,7 +202,7 @@ CPU GPU simulator_state simulator_state::from_multi_model(
     for (int i = 0; i < multi_model->models_.size(); ++i)
     {
         state_store[i] = model_state{
-            multi_model->models_.at(i),
+            multi_model->models_.get(i),
             false
         }; 
     }
@@ -291,7 +247,7 @@ void simulator_state::broadcast_channel(const model_state* current_state, const 
         if(state->reached_goal) continue; //skip if goal node
         if(!state->current_node->evaluate_invariants(this)) continue; //skip if node disabled
         
-        lend_array<edge_t*> edges = state->current_node->get_edges();
+        lend_array<edge_t> edges = state->current_node->get_edges();
         
         //pick random start index in order to simulate random listener, when multiple listeners on same channel present
         const unsigned size = static_cast<unsigned>(edges.size());
@@ -299,7 +255,7 @@ void simulator_state::broadcast_channel(const model_state* current_state, const 
         
         for (unsigned j = 0; j < size; ++j)
         {
-            const edge_t* edge = edges.get(static_cast<int>((start_index + j) % size)  );
+            const edge_t* edge = edges.at(static_cast<int>((start_index + j) % size)  );
             if(!edge->is_listener()) continue; //skip if not listener
             if(edge->get_channel() != channel_id) continue; //skip if not current channel
             if(!edge->evaluate_constraints(this)) continue; //skip if not valid
@@ -339,7 +295,7 @@ CPU GPU void simulator_state::reset(const unsigned int sim_id, const stochastic_
     for (int i = 0; i < model->models_.size(); ++i)
     {
         this->models_.arr()[i] = model_state{
-            model->models_.at(i),
+            model->models_.get(i),
             false
         }; 
     }

@@ -28,14 +28,14 @@ private:
     edge_channel channel_{};
     expression* weight_expression_;
     node_t* dest_;
-    array_t<constraint_t*> guards_{0};
-    array_t<update_t*> updates_{0};
+    array_t<constraint_t> guards_{0};
+    array_t<update_t> updates_{0};
 public:
     explicit edge_t(int id,
                     expression* weight_expression,
                     node_t* dest,
-                    array_t<constraint_t*> guard,
-                    array_t<update_t*> updates,
+                    const array_t<constraint_t>& guard,
+                    const array_t<update_t>& updates,
                     edge_channel channel = { true, NO_CHANNEL });
 
     //SIMULATION METHODS
@@ -50,7 +50,7 @@ public:
     //HOST METHODS
     void accept(visitor* v) const;
     void pretty_print() const;
-    void cuda_allocate(edge_t** pointer, const allocation_helper* helper) const;
+    void cuda_allocate(edge_t* pointer, allocation_helper* helper) const;
     int get_updates_size() const;
 };
 

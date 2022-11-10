@@ -6,120 +6,172 @@ expression::expression(const expression_type type, const double value, const uns
 {
     this->type_        = type;
     this->left_        = left;
-    this->condition_   = condition;
     this->right_       = right;
-    this->value_       = value;
-    this->variable_id_ = variable_id;
+    
+    if(this->type_ == literal_e || this->type_ == random_e)
+    {
+        this->value = value;
+    }
+    else if(this->type_ == clock_variable_e || this->type_ == system_variable_e)
+    {
+        this->variable_id = variable_id;
+    }
+    else if(this->type_ == conditional_e)
+    {
+        this->condition = condition;
+    }
+    else
+    {
+        //done to align memory
+        this->value = NO_VALUE;
+    }
 }
 
-void expression::evaluate(simulator_state* state) const
+double expression::evaluate_current(simulator_state* state) const
 {
     //! The stack has values in reverse order. 
     double v1, v2;
     switch(this->type_)
     {
     case literal_e:
-        state->value_stack.push(this->value_);
-        break;
+        return this->value;
     case clock_variable_e:
-        state->value_stack.push(state->get_timers().at(static_cast<int>(this->variable_id_))->get_temp_time());
-        break;
+        return state->get_timers().at(static_cast<int>(this->variable_id))->get_temp_time();
     case system_variable_e:
-        state->value_stack.push(state->get_variables().at(static_cast<int>(this->variable_id_))->get_temp_time());
-        break;
+        return state->get_variables().at(static_cast<int>(this->variable_id))->get_temp_time();
+    case random_e:
+        return curand_uniform_double(state->random) * this->value; //this->value repressents max value 
     case plus_e:
         if(state->value_stack.count() < 2) printf("stack not big enough to evaluate plus expression\n");
         v2 = state->value_stack.pop();
         v1 = state->value_stack.pop();
-        state->value_stack.push( v1 + v2 );
-        break;
+        return v1 + v2;
     case minus_e:
         if(state->value_stack.count() < 2) printf("stack not big enough to evaluate minus expression\n");
         v2 = state->value_stack.pop();
         v1 = state->value_stack.pop();
-        state->value_stack.push( v1 - v2 );
-        break;
+        return v1 - v2;
     case multiply_e:
         if(state->value_stack.count() < 2) printf("stack not big enough to evaluate multiply expression\n");
         v2 = state->value_stack.pop();
         v1 = state->value_stack.pop();
-        state->value_stack.push( v1 * v2 );
-        break;
+        return v1 * v2;
     case division_e:
         if(state->value_stack.count() < 2) printf("stack not big enough to evaluate division expression\n");
         v2 = state->value_stack.pop();
         v1 = state->value_stack.pop();
-        if(v2 == 0) printf("Division by zero");  // NOLINT(clang-diagnostic-float-equal)
-        state->value_stack.push( v1 / v2 );
-        break;
+        if(v2 == 0.0) // NOLINT(clang-diagnostic-float-equal)
+        {
+            printf("Division by zero"); return v2;
+        }
+        return v1 / v2;
     case power_e:
         if(state->value_stack.count() < 2) printf("stack not big enough to evaluate power expression\n");
         v2 = state->value_stack.pop();
         v1 = state->value_stack.pop();
-        state->value_stack.push( pow(v1, v2) );
-        break;
+        return pow(v1, v2);
     case sqrt_e:
         if(state->value_stack.count() < 1) printf("stack not big enough to evaluate sqrt expression\n");
         v1 = state->value_stack.pop();
-        state->value_stack.push( sqrt(v1) );
-        break;
+        if(0 > v1)
+        { printf("sqrt of negative numbers"); return 0.0; }
+        return sqrt(v1);
     case negation_e:
         if(state->value_stack.count() < 1) printf("stack not big enough to evaluate negation expression\n");
         v1 = state->value_stack.pop();
-        state->value_stack.push( -v1 );
-        break;
+        return -v1;
     case conditional_e:
-        if(state->value_stack.count() < 2) printf("stack not big enough to evaluate negation expression\n");
+        if(state->value_stack.count() < 2) printf("stack not big enough to evaluate conditional expression\n");
         v2 = state->value_stack.pop();
         state->value_stack.pop();
-        state->value_stack.push(v2);
-        break;
+        return v2;
     case less_equal_e:
         if(state->value_stack.count() < 2) printf("stack not big enough to evaluate less_equal expression\n");
         v2 = state->value_stack.pop();
         v1 = state->value_stack.pop();
-        state->value_stack.push( v1 <= v2 );
-        break;
+        return v1 <= v2;
     case greater_equal_e:
         if(state->value_stack.count() < 2) printf("stack not big enough to evaluate greater_equal expression\n");
         v2 = state->value_stack.pop();
         v1 = state->value_stack.pop();
-        state->value_stack.push( v1 >= v2 );
-        break;
+        return v1 >= v2;
     case less_e:
         if(state->value_stack.count() < 2) printf("stack not big enough to evaluate less expression\n");
         v2 = state->value_stack.pop();
         v1 = state->value_stack.pop();
-        state->value_stack.push( v1 < v2 );
-        break;
+        return v1 < v2;
     case greater_e:
         if(state->value_stack.count() < 2) printf("stack not big enough to evaluate greater expression\n");
         v2 = state->value_stack.pop();
         v1 = state->value_stack.pop();
-        state->value_stack.push( v1 > v2 );
-        break;
+        return v1 > v2;
     case equal_e:
         if(state->value_stack.count() < 2) printf("stack not big enough to evaluate equal expression\n");
         v2 = state->value_stack.pop();
         v1 = state->value_stack.pop();
-        state->value_stack.push( v1 == v2 );  // NOLINT(clang-diagnostic-float-equal)
-        break;
+        return v1 == v2; // NOLINT(clang-diagnostic-float-equal)
     case not_equal_e:
         if(state->value_stack.count() < 2) printf("stack not big enough to evaluate not_equal expression\n");
         v2 = state->value_stack.pop();
         v1 = state->value_stack.pop();
-        state->value_stack.push( v1 != v2 );  // NOLINT(clang-diagnostic-float-equal)
-        break;
+        return v1 != v2; // NOLINT(clang-diagnostic-float-equal)
     case not_e:
         if(state->value_stack.count() < 1) printf("stack not big enough to evaluate not expression\n");
         v1 = state->value_stack.pop();
-        state->value_stack.push( v1 == 0 ? 1.0 : 0.0   );  // NOLINT(clang-diagnostic-float-equal)
-        break;
-    // default:
-    //     printf("EXPRESSION EVALUATION REACHED UNEXPECTED DEFAULT CASE. Returning 0");
-    //     stack->push(0);
-    //     break;
+        return v1 == 0 ? 1.0 : 0.0;
     }
+
+    printf("evaluation of expression not matching any known type\n");
+    return 0.0;
+}
+
+double expression::evaluate(simulator_state* state)
+{
+    state->value_stack.clear();
+    if(this->is_leaf())
+    {
+        return this->evaluate_current(state);
+    }
+    state->expression_stack.clear();
+
+    expression* current = this;
+    while (true)
+    {
+        while(current != nullptr)
+        {
+            state->expression_stack.push(current);
+            
+            if(!current->is_leaf()) //only push twice if it has children
+                state->expression_stack.push(current);
+            
+            current = current->get_left();
+        }
+        if(state->expression_stack.is_empty())
+        {
+            break;
+        }
+        current = state->expression_stack.pop();
+        
+        if(!state->expression_stack.is_empty() && state->expression_stack.peak() == current)
+        {
+            current = current->get_right(&state->value_stack);
+        }
+        else
+        {
+            const double val = current->evaluate_current(state);
+            state->value_stack.push(val);
+            current = nullptr;
+        }
+    }
+
+    if(state->value_stack.is_empty())
+    {
+        printf("Expression evaluation ended in no values! PANIC!\n");
+        return 0.0;
+    }
+    
+    return state->value_stack.pop();
+    
 }
 
 std::string expression::type_to_string() const
@@ -131,10 +183,13 @@ std::string expression::type_to_string() const
         result = "literal";
         break;
     case clock_variable_e:
-        result = "clock variable id: " + std::to_string(this->variable_id_);
+        result = "clock variable id: " + std::to_string(this->variable_id);
         break;
     case system_variable_e:
-        result = "system variable id: " + std::to_string(this->variable_id_);
+        result = "system variable id: " + std::to_string(this->variable_id);
+        break;
+    case random_e:
+        result = "random(" + std::to_string(this->value) + ")";
         break;
     case plus_e:
         result = "+";
@@ -196,29 +251,20 @@ std::string expression::to_string() const
     if (this->right_ != nullptr) right = this->right_->to_string();
     else temp = "";
     
-    if (this->type_ == expression_type::literal_e)
-    {
-        //printf("Left: %s | Right: %s | con: %s | \n", left.c_str(), right.c_str(), con.c_str());
-        return "(" + std::to_string(this->value_) + ")";
-    }
-    return "(" + left + temp + this->type_to_string() + temp + right + ")";   
-    // if (this->type_ == expression_type::literal_e)
-    // {
-    //     return "Type: " + this->type_to_string() + " | Value: " + std::to_string(this->value_) + " | Condition: " + con + " | Left: " + left + " | Right: " + right + "\n";
-    // }
-    //
-    // return "Type: " + this->type_to_string() + " | Condition: " + con + " | Left: " + left + " | Right: " + right + "\n";
+    return (this->type_ == expression_type::literal_e
+        ? "(" + std::to_string(this->value)
+        : "(" + left + temp + this->type_to_string() + temp + right) + ")";
 }
 
 GPU CPU bool expression::is_leaf() const
 {
-    return this->left_ == nullptr && this->right_ == nullptr && this->condition_ == nullptr;
+    return this->left_ == nullptr && this->right_ == nullptr && this->type_ != conditional_e;
 }
 
 GPU CPU expression* expression::get_left() const
 {
     //The left node is dependent on the type. The condition is the switch
-    return this->type_ == conditional_e ? this->condition_ : this->left_;
+    return this->type_ == conditional_e ? this->condition : this->left_;
 }
 
 
@@ -235,15 +281,14 @@ GPU CPU expression* expression::get_right(const cuda_stack<double>* value_stack)
 
 void expression::accept(visitor* v) const
 {
-    return;
-    // if (this->condition_ != nullptr) v->visit(this->condition_);
-    // if (this->left_ != nullptr) v->visit(this->left_);
-    // if (this->right_ != nullptr) v->visit(this->right_);
+    if (this->type_ == conditional_e) v->visit(this->condition);
+    if (this->left_ != nullptr) v->visit(this->left_);
+    if (this->right_ != nullptr) v->visit(this->right_);
 }
 
 unsigned expression::get_depth() const
 {
-    const unsigned conditional = this->condition_ != nullptr ? this->condition_->get_depth() : 0;
+    const unsigned conditional = this->type_ == conditional_e ? this->condition->get_depth() : 0;
     const unsigned left = this->left_ != nullptr ? this->left_->get_depth() : 0;
     const unsigned right = this->right_ != nullptr ? this->right_->get_depth() : 0;
 
@@ -251,45 +296,59 @@ unsigned expression::get_depth() const
     return (conditional > temp ? conditional : temp) + 1;
 }
 
+bool expression::is_constant() const
+{
+    if(this->type_ == literal_e) return true;
+    if(this->type_ == clock_variable_e || this->type_ == system_variable_e) return false;
+
+    constexpr bool left = this->left_ != nullptr ? this->left_->is_constant() : true;
+    constexpr bool right = this->right_ != nullptr ? this->right_->is_constant() : true;
+    constexpr bool cond = this->type_ == conditional_e ? this->condition->is_constant() : true;
+
+    return left && right && cond;
+}
+
 bool expression::contains_clock_expression() const
 {
     if(this->type_ == clock_variable_e) return true;
     
-    const bool con = this->condition_ != nullptr && this->condition_->contains_clock_expression();
+    const bool con = this->type_ == conditional_e && this->condition->contains_clock_expression();
     const bool left = this->left_ != nullptr && this->left_->contains_clock_expression();
     const bool right = this->right_ != nullptr && this->right_->contains_clock_expression();
 
     return con || left || right;
 }
 
-void expression::cuda_allocate(expression* cuda_p, const allocation_helper* helper) const
+void expression::cuda_allocate(expression* cuda_p, allocation_helper* helper) const
 {
     expression* left_cuda = nullptr;
     if(this->left_ != nullptr)
     {
-        cudaMalloc(&left_cuda, sizeof(expression));
-        helper->free_list->push_back(left_cuda);
+        helper->allocate_cuda(&left_cuda, sizeof(expression));
         this->left_->cuda_allocate(left_cuda, helper);
     }
 
     expression* right_cuda = nullptr;
     if(this->right_ != nullptr)
     {
-        cudaMalloc(&right_cuda, sizeof(expression));
-        helper->free_list->push_back(right_cuda);
+        helper->allocate_cuda(&right_cuda, sizeof(expression));
         this->right_->cuda_allocate(right_cuda, helper);
     }
 
     expression* condition_cuda = nullptr;
-    if(this->condition_ != nullptr)
+    if(this->type_ == conditional_e)
     {
-        cudaMalloc(&condition_cuda, sizeof(expression));
-        helper->free_list->push_back(condition_cuda);
-        this->condition_->cuda_allocate(condition_cuda, helper);
+        helper->allocate_cuda(&condition_cuda, sizeof(expression));
+        this->condition->cuda_allocate(condition_cuda, helper);
     }
 
-    const expression copy = expression(this->type_,
-        this->value_, this->variable_id_, left_cuda, right_cuda, condition_cuda);
+    const expression copy = expression(
+        this->type_,
+        this->value,
+        this->variable_id,
+        left_cuda,
+        right_cuda,
+        condition_cuda);
     cudaMemcpy(cuda_p, &copy, sizeof(expression), cudaMemcpyHostToDevice);
 }
 

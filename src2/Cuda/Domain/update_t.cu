@@ -18,7 +18,7 @@ update_t::update_t(const int id, const int variable_id, const bool is_clock_upda
 
 CPU GPU void update_t::apply_update(simulator_state* state) const
 {
-    const double value = state->evaluate_expression(this->expression_);
+    const double value = this->expression_->evaluate(state);
     if(this->is_clock_update_)
     {
         state->get_timers().at(this->variable_id_)->set_time(value);
@@ -32,7 +32,7 @@ CPU GPU void update_t::apply_update(simulator_state* state) const
 
 CPU GPU void update_t::apply_temp_update(simulator_state* state) const
 {
-    const double value = state->evaluate_expression(this->expression_);
+    const double value = this->expression_->evaluate(state);
     if(this->is_clock_update_)
     {
         state->get_timers().at(this->variable_id_)->set_temp_time(value);
@@ -53,7 +53,6 @@ void update_t::reset_temp_update(const simulator_state* state) const
     }
     else
     {
-        //value is rounded correctly by adding 0.5. casting always rounds down.
         state->get_variables().at(this->variable_id_)->reset_temp_time();  // NOLINT(bugprone-incorrect-roundings)
     }
 }
@@ -77,11 +76,10 @@ void update_t::pretty_print() const
     //printf("Update id: %3d | Timer id: %3d\n", this->id_, this->variable_id_);
 }
 
-void update_t::cuda_allocate(update_t* cuda, const allocation_helper* helper) const
+void update_t::cuda_allocate(update_t* cuda, allocation_helper* helper) const
 {
     expression* expr = nullptr;
-    cudaMalloc(&expr, sizeof(expression));
-    helper->free_list->push_back(expr);
+    helper->allocate_cuda(&expr, sizeof(expression));
     this->expression_->cuda_allocate(expr, helper);
     
     const update_t copy = update_t(this, expr);

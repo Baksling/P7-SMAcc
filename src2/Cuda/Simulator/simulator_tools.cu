@@ -2,8 +2,6 @@
 
 #include "../Domain/edge_t.h"
 #include "../Domain/simulator_state.h"
-#include "../common/allocation_helper.h"
-#include "../common/array_t.h"
 #include "../common/lend_array.h"
 
 
@@ -141,7 +139,7 @@ CPU GPU edge_t* find_valid_edge_fast(
 
 CPU GPU edge_t* simulator_tools::choose_next_edge_bit(
     simulator_state* state,
-    const lend_array<edge_t*>* edges,
+    const lend_array<edge_t>* edges,
     curandState* r_state)
 {
     if(static_cast<unsigned long long>(edges->size()) > sizeof(unsigned long long)) printf("Too many edge options.");
@@ -153,14 +151,15 @@ CPU GPU edge_t* simulator_tools::choose_next_edge_bit(
     
     for (int i = 0; i < edges->size(); ++i)
     {
-        edge_t* edge = edges->get(i);
+        edge_t* edge = edges->at(i);
         if(edge->is_listener()) continue;
         if(edge->evaluate_constraints(state))
         {
             simulator_tools::set_bit(&valid_edges_bitarray, i);
             valid_edge = edge;
             valid_count++;
-            weight_sum += edge->get_weight(state);
+            const double weight = edge->get_weight(state);
+            weight_sum += weight > 0 ? weight : 0.0; 
         }
     }
 
@@ -177,9 +176,11 @@ CPU GPU edge_t* simulator_tools::choose_next_edge_bit(
     for (int i = 0; i < edges->size(); ++i)
     {
         if(!simulator_tools::bit_is_set(&valid_edges_bitarray, i)) continue;
-
-        valid_edge = edges->get(i);
-        r_acc += valid_edge->get_weight(state);
+        const double weight = edges->at(i)->get_weight(state);
+        if(weight <= 0) continue;
+        
+        valid_edge = edges->at(i);
+        r_acc += weight;
         if(r_val < r_acc) break;
     }
     return valid_edge;

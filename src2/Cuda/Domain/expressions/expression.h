@@ -9,6 +9,8 @@
 
 #include <string>
 
+#include "../../Simulator/simulation_result.h"
+
 #define NO_V_ID (-1U)
 #define NO_VALUE (0)
 
@@ -21,6 +23,9 @@ enum expression_type
     literal_e = 0,
     clock_variable_e,
     system_variable_e,
+
+    //random
+    random_e,
 
     //arithmatic types
     plus_e,
@@ -49,11 +54,14 @@ class expression final
 {
 private:
     expression_type type_;
-    expression* condition_;
     expression* left_;
     expression* right_;
-    double value_;
-    unsigned int variable_id_;
+    union
+    {
+        expression* condition;
+        double value;
+        unsigned int variable_id;  
+    };
     
     //unsigned int operate(expression_type type, unsigned int left, unsigned int right);
     explicit  expression(expression_type type,
@@ -68,8 +76,10 @@ public:
     //SIMULATION methods
     GPU CPU expression* get_left() const;
     GPU CPU expression* get_right(const cuda_stack<double>* value_stack) const;
-    GPU CPU void evaluate(simulator_state* state
-    ) const;
+    
+    GPU CPU double evaluate_current(simulator_state* state) const;
+    GPU CPU double evaluate(simulator_state* state);
+    
     GPU CPU bool is_leaf() const;
     
 
@@ -78,8 +88,9 @@ public:
     std::string to_string() const;
     void accept(visitor* v) const;
     unsigned int get_depth() const;
+    bool is_constant() const;
     bool contains_clock_expression() const;
-    void cuda_allocate(expression* cuda_p, const allocation_helper* helper) const;
+    void cuda_allocate(expression* cuda_p, allocation_helper* helper) const;
 
     //FACTORY CONSTRUCTORS
     static expression* literal_expression(double value);

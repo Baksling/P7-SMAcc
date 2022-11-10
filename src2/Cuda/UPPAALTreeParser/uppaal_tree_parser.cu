@@ -188,7 +188,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
 {
     string path = file_path;
     xml_document doc;
-    map<int, list<edge_t*>> node_edge_map;
+    map<int, list<edge_t>> node_edge_map; //TODO edge is no longer pointer
     declaration_parser dp;
     
     // load the XML file
@@ -214,7 +214,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             bool is_goal = false;
             node_edge_map.insert_or_assign(node_id, list<edge_t*>());
             
-            list<constraint_t*> invariants;
+            list<constraint_t> invariants; //TODO no longer pointer
             expression* expo_rate = nullptr;
             
             if (string_name == "Goal")
@@ -244,8 +244,8 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
         {
             string string_id = locs.attribute("id").as_string();
             const int node_id = xml_id_to_int(string_id);
-            node_edge_map.insert_or_assign(node_id, list<edge_t*>());
-            nodes_->push_back(new node_t(node_id,array_t<constraint_t*>(0), true));
+            node_edge_map.insert_or_assign(node_id, list<edge_t>()); //TODO removed pointer edge pointer
+            nodes_->push_back(new node_t(node_id,array_t<constraint_t>(0), true));
         }
 
         
@@ -258,8 +258,8 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             int source_id = xml_id_to_int(source);
             int target_id = xml_id_to_int(target);
             
-            list<constraint_t*> guards;
-            list<update_t*> updates;
+            list<constraint_t> guards; //TODO removed pointer part
+            list<update_t> updates; //TODO removed pointer part
             expression* probability = nullptr;
             edge_channel* ec = nullptr;
             
@@ -293,7 +293,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                         }
 
                         
-                        updates.push_back(new update_t(update_id++, get_timer_id(expr), is_clock, e));
+                        updates.push_back(update_t(update_id++, get_timer_id(expr), is_clock, e));
                     }
                 }
                 else if (kind == "synchronisation")
@@ -335,15 +335,9 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             if (probability == nullptr) probability = expression::literal_expression(1.0);
             
             node_t* target_node = get_node(target_id, nodes_);
-            edge_t* result_edge = nullptr;
-            if (ec == nullptr)
-            {
-               result_edge = new edge_t(edge_id++, probability, target_node, to_array(&guards), to_array(&updates));
-            }
-            else
-            {
-                result_edge = new edge_t(edge_id++, probability, target_node, to_array(&guards), to_array(&updates), *ec);
-            }
+            edge_t result_edge = ec //TODO removed edge pointer and converted if statement to ternary :)
+                ? edge_t(edge_id++, probability, target_node, to_array(&guards), to_array(&updates))
+                : edge_t(edge_id++, probability, target_node, to_array(&guards), to_array(&updates), *ec);
 
             //cout << "guard size: " << guards.size() << "\n";
             
@@ -367,7 +361,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
     //This helps cut down on the number of times pointers need to be followed in the simulation.
     //Only reason it was like that before, was because we didnt know how to make the cuda-allocation code without it :)
     // - Bak ඞ
-    array_t<node_t> start_nodes = array_t<node_t>(start_nodes_.size());
+    array_t<node_t*> start_nodes = array_t<node_t*>(start_nodes_.size());
 
     
 
@@ -376,7 +370,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
     {
         auto n_front = nodes_->begin();
         std::advance(n_front, i);
-        start_nodes.arr()[number_of_start_nodes++] = **n_front;
+        start_nodes.arr()[number_of_start_nodes++] = *n_front;
     }
 
     return stochastic_model_t(start_nodes, to_array(timer_list_), to_array(var_list_), chan_id_);

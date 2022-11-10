@@ -5,8 +5,8 @@ edge_t::edge_t(
     const int id,
     expression* weight_expression,
     node_t* dest,
-    const array_t<constraint_t*> guard,
-    const array_t<update_t*> updates,
+    const array_t<constraint_t>& guards,
+    const array_t<update_t>& updates,
     const edge_channel channel
     )
 {
@@ -14,13 +14,13 @@ edge_t::edge_t(
     this->dest_ = dest;
     this->weight_expression_ = weight_expression;
     this->updates_ = updates;
-    this->guards_ = guard;
+    this->guards_ = guards;
     this->channel_ = channel;
 }
 
 CPU GPU double edge_t::get_weight(simulator_state* state) const
 {
-    return state->evaluate_expression(this->weight_expression_);
+    return this->weight_expression_->evaluate(state);
 }
 
 CPU GPU unsigned edge_t::get_channel() const
@@ -49,7 +49,7 @@ CPU GPU bool edge_t::evaluate_constraints(simulator_state* state) const
     //Evaluate guards
     for (int i = 0; i < this->guards_.size(); ++i)
     {
-        if(!this->guards_.get(i)->evaluate(state))
+        if(!this->guards_.at(i)->evaluate(state))
             return false;
     }
 
@@ -57,7 +57,7 @@ CPU GPU bool edge_t::evaluate_constraints(simulator_state* state) const
     //Only if guards pass
     for (int i = 0; i < this->updates_.size(); ++i)
     {
-        const update_t* update = this->updates_.get(i);
+        const update_t* update = this->updates_.at(i);
         update->apply_temp_update(state);
     }
     //check destination node using temporary update values
@@ -66,7 +66,7 @@ CPU GPU bool edge_t::evaluate_constraints(simulator_state* state) const
     //reset updates
     for (int i = 0; i < this->updates_.size(); ++i)
     {
-        this->updates_.get(i)->reset_temp_update(state);
+        this->updates_.at(i)->reset_temp_update(state);
     }
 
     //reset updates first
@@ -77,7 +77,7 @@ CPU GPU void edge_t::execute_updates(simulator_state* state) const
 {
     for (int i = 0; i < this->updates_.size(); ++i)
     {
-        this->updates_.get(i)->apply_update(state);
+        this->updates_.get(i).apply_update(state);
     }
 }
 
@@ -89,13 +89,13 @@ void edge_t::accept(visitor* v) const
     //visit edge guards
     for (int i = 0; i < this->guards_.size(); ++i)
     {
-        v->visit(this->guards_.get(i));
+        v->visit(this->guards_.at(i));
     }
 
     //visit edge updates
     for (int i = 0; i < this->updates_.size(); ++i)
     {
-        update_t* temp = *updates_.at(i);
+        update_t* temp = updates_.at(i);
         v->visit(temp);
     }
 
@@ -112,53 +112,49 @@ void edge_t:: pretty_print() const
         this->is_listener() ? "True" : "False");
 }
 
-void edge_t::cuda_allocate(edge_t** pointer, const allocation_helper* helper) const
+void edge_t::cuda_allocate(edge_t* pointer, allocation_helper* helper) const
 {
-    cudaMalloc(pointer, sizeof(edge_t));
-    helper->free_list->push_back(*pointer);
-
     //allocate node
     node_t* node_p = nullptr;
-    if (helper->node_map->count(this->dest_) == 1)
+    if (helper->node_map.count(this->dest_) == 1)
     {
-        node_p = (*helper->node_map)[this->dest_];
+        node_p = helper->node_map[this->dest_];
     }
     else
     {   //allocate node if its not already allocated
-        cudaMalloc(&node_p, sizeof(node_t));
-        helper->free_list->push_back(node_p);
-        this->dest_->cuda_allocate(node_p, helper); //linear node
         //The node's cuda_allocate method is responsible for adding it to the circular reference resolver
+        helper->allocate_cuda(&node_p, sizeof(node_t));
+        this->dest_->cuda_allocate(node_p, helper); //linear node
     }
 
-    std::list<constraint_t*> guard_lst;
+    constraint_t* guard_p = nullptr;
+    helper->allocate_cuda(&guard_p, sizeof(constraint_t)*this->guards_.size());
     for (int i = 0; i < this->guards_.size(); ++i)
     {
-        constraint_t* invariant_p = nullptr;
-        this->guards_.get(i)->cuda_allocate(&invariant_p, helper);
-        guard_lst.push_back(invariant_p);
+        this->guards_.at(i)->cuda_allocate(&guard_p[i], helper);
     }
     
-    std::list<update_t*> updates;
+    update_t* updates_d = nullptr;
+    helper->allocate_cuda(&updates_d, sizeof(update_t)*this->updates_.size());
     for (int i = 0; i < this->updates_.size(); ++i)
     {
-        update_t* update_p = nullptr;
-        cudaMalloc(&update_p, sizeof(update_t));
-        helper->free_list->push_back(update_p);
-        
-        this->updates_.get(i)->cuda_allocate(update_p, helper);
-        updates.push_back(update_p);
+        this->updates_.at(i)->cuda_allocate(&updates_d[i], helper);
     }
 
     expression* weight_p = nullptr;
-    cudaMalloc(&weight_p, sizeof(expression));
-    helper->free_list->push_back(weight_p);
+    helper->allocate_cuda(&weight_p, sizeof(expression));
     this->weight_expression_->cuda_allocate(weight_p, helper);
     
     
-    const edge_t result(this->id_, weight_p, node_p,
-        cuda_to_array(&guard_lst, helper->free_list), cuda_to_array(&updates, helper->free_list), this->channel_);
-    cudaMemcpy(*pointer, &result, sizeof(edge_t), cudaMemcpyHostToDevice);
+    const edge_t result(
+        this->id_,
+        weight_p,
+        node_p,
+        array_t<constraint_t>(guard_p, this->guards_.size()),
+        array_t<update_t>(updates_d, this->updates_.size()),
+        this->channel_);
+    
+    cudaMemcpy(pointer, &result, sizeof(edge_t), cudaMemcpyHostToDevice);
 }
 
 

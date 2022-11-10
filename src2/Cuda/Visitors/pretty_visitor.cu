@@ -17,11 +17,6 @@ void pretty_visitor::indentation() const
 
 pretty_visitor::pretty_visitor()
 {
-    this->check_ = static_cast<int*>(malloc(3*sizeof(int)));
-    for (int i = 0; i < 3; ++i)
-    {
-        check_[i] = 0;
-    }
 }
 
 void pretty_visitor::visit(constraint_t* constraint)
@@ -59,15 +54,6 @@ void pretty_visitor::visit(node_t* node)
     const bool is_new = checker_.insert(node->get_id()).second;
     if(!is_new) return;
 
-    //std::cout << "set count for node :" << checker_.count(node) << "\n";
-    // if (checker_.count(node))
-    // {
-    //     return;
-    // }
-    //if(check_[node->get_id()] > 0) return;
-    //if(checker_.count(node) == 1) return;
-    //check_[node->get_id()] = 1;
-    //std::cout << "set count for node after insert:" << checker_.count(node) << "\n";
     checker_.insert(node->get_id());
     this->scope_ = 0;
     indentation();

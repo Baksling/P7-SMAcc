@@ -90,7 +90,7 @@ public:
 
     sim_pointers analyse(std::unordered_map<int, node_result>* node_results, const array_t<variable_result>* var_results) const;
 
-    simulation_result_container* cuda_allocate(const allocation_helper* helper) const; 
+    simulation_result_container* cuda_allocate(allocation_helper* helper) const; 
     
     CPU GPU simulation_result* get_sim_results(const unsigned int sim_id) const;
     CPU GPU lend_array<int> get_nodes(const unsigned int sim_id) const;

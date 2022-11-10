@@ -60,7 +60,6 @@ double clock_variable::get_max_value() const
 void clock_variable::accept(visitor* v)
 {
     return;
-    //v.visit()
 }
 
 void clock_variable::pretty_print() const

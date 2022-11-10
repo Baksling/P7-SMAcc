@@ -32,7 +32,7 @@ private:
     std::unordered_map<int, node_result> result_map_;
     array_t<variable_result> var_result_{0};
 
-    static float calc_percentage(unsigned long counter, unsigned long divisor);
+    static float calc_percentage(const unsigned long long counter, const unsigned long long divisor);
 
     static std::string print_node(int node_id, unsigned int reached_count, float reach_percentage, double avg_steps);
 

@@ -34,6 +34,49 @@ model_options stochastic_simulator::build_options(stochastic_model_t* model,
     };
 }
 
+
+void print_model_memory_diagnosis(const allocation_helper* helper)
+{
+    size_t free_mem = 0;
+    size_t total_mem = 0;
+    cudaMemGetInfo(&free_mem, &total_mem);
+
+    printf("Total model memory utilization: %llu bytes (%lf%%).\n",
+        helper->allocated_size / 8UL,
+        (static_cast<double>(helper->allocated_size) / static_cast<double>(total_mem))*100
+    );
+}
+
+void print_cache_memory_diagnosis(const size_t total_cache)
+{
+    size_t free_mem = 0;
+    size_t total_mem = 0;
+    cudaMemGetInfo(&free_mem, &total_mem);
+
+    printf("Total simulation cache memory utilization: %llu bytes (%lf%%).\n",
+        total_cache / 8,
+        (static_cast<double>(total_cache) / static_cast<double>(total_mem))*100
+    );
+}
+
+void print_results_memory_diagnosis(const size_t results_size)
+{
+    size_t free_mem = 0;
+    size_t total_mem = 0;
+    cudaMemGetInfo(&free_mem, &total_mem);
+
+    printf("Total simulation results memory utilization: %llu bytes (%lf%%).\n",
+        results_size / 8,
+        (static_cast<double>(results_size) / static_cast<double>(total_mem))*100
+        );
+
+    printf("Total device memory utilization: %llu / %llu (%lf%%)",
+        free_mem, total_mem,
+        (static_cast<double>(free_mem) / static_cast<double>(total_mem))*100
+        );
+}
+
+
 void stochastic_simulator::simulate_gpu(stochastic_model_t* model, const simulation_strategy* strategy, result_writer* r_writer, const bool verbose)
 {
      //setup start variables
@@ -45,36 +88,38 @@ void stochastic_simulator::simulate_gpu(stochastic_model_t* model, const simulat
     
     std::list<void*> free_list;
     std::unordered_map<node_t*, node_t*> node_map;
-    const allocation_helper allocator = { &free_list, &node_map };
+    allocation_helper allocator = allocation_helper();
     
-     const simulation_result_container results = simulation_result_container(
+    //Allocate model on cuda
+    stochastic_model_t* model_d = nullptr;
+    allocator.allocate_cuda(&model_d, sizeof(stochastic_model_t));
+    model->cuda_allocate(model_d, &allocator);
+
+    //move options to GPU
+    model_options options = build_options(model, strategy);
+    model_options* options_d = nullptr;
+    allocator.allocate_cuda(&options_d, sizeof(model_options));
+    cudaMemcpy(options_d, &options, sizeof(model_options), cudaMemcpyHostToDevice);
+
+    if(verbose) print_model_memory_diagnosis(&allocator);
+    
+    //allocate simulation cache.
+    const unsigned long long int thread_memory_size = options.get_cache_size() * strategy->degree_of_parallelism();
+    void* total_memory_heap = nullptr;
+    allocator.allocate_cuda(&total_memory_heap, thread_memory_size);
+
+    if(verbose) print_cache_memory_diagnosis(thread_memory_size);
+
+    const size_t before_results = allocator.allocated_size;
+    const simulation_result_container results = simulation_result_container(
         total_simulations,
         model_count,
         variable_count,
         true);
-     const simulation_result_container* d_result = results.cuda_allocate(&allocator);
-    
-    
-    //Allocate model on cuda
-    stochastic_model_t* model_d = nullptr;
-    cudaMalloc(&model_d, sizeof(stochastic_model_t));
-    allocator.free_list->push_back(model_d);
-    model->cuda_allocate(model_d, &allocator);
+    const simulation_result_container* d_result = results.cuda_allocate(&allocator);
 
-    //move options to GPU
-    model_options* options_d = nullptr;
-    model_options options = build_options(model, strategy);
-    cudaMalloc(&options_d, sizeof(model_options));
-    cudaMemcpy(options_d, &options, sizeof(model_options), cudaMemcpyHostToDevice);
-
-    //allocate simulation cache.
-    const unsigned long long int thread_memory_size = options.get_cache_size();
-    void* total_memory_heap;
-    cudaMalloc(&total_memory_heap, thread_memory_size * strategy->degree_of_parallelism());
-    free_list.push_back(total_memory_heap);
+    if(verbose) print_results_memory_diagnosis(allocator.allocated_size - before_results);
     
-    if (verbose) printf("Allocating cache: %llu bytes\n", (thread_memory_size * strategy->degree_of_parallelism()) / 8);
-
     //run simulations
     if (verbose) std::cout << "Started running!\n";
     const steady_clock::time_point global_start = steady_clock::now();
@@ -134,7 +179,6 @@ void stochastic_simulator::simulate_cpu(
     const unsigned int variable_count = model->get_variable_count();
     const unsigned int model_count = model->get_models_count();
 
-    //TODO slim this down, this is handled by the result writer
     simulation_result_container results = simulation_result_container(
         total_simulations,
         model_count,
@@ -173,9 +217,4 @@ void stochastic_simulator::simulate_cpu(
     r_writer->write_summary(total_simulations,temp_time);
     
     free(total_memory_heap);
-
-    // for (void* it : free_list)
-    // {
-    //     free(it);
-    // }
 }

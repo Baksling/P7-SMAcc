@@ -48,7 +48,7 @@ using namespace std::chrono;
 //     free(local_node_results);
 // }
 
-float result_writer::calc_percentage(const unsigned long counter, const unsigned long divisor)
+float result_writer::calc_percentage(const unsigned long long counter, const unsigned long long divisor)
 {
     return (static_cast<float>(counter)/static_cast<float>(divisor))*100;
 }

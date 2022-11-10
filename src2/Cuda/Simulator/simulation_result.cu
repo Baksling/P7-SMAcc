@@ -19,7 +19,7 @@ void simulation_result_container::load_results(simulation_result** out_r, int** 
     cudaMemcpy(local_r, this->results_p_ , sizeof(simulation_result) * this->results_count_, cudaMemcpyDeviceToHost);
     cudaMemcpy(local_n, this->node_p_    , sizeof(int) * this->results_count_ * this->models_count_, cudaMemcpyDeviceToHost);
     cudaMemcpy(local_v, this->variable_p_, sizeof(double) * this->results_count_ * this->variables_count_, cudaMemcpyDeviceToHost);
-
+    
     *out_r = local_r;
     *out_n = local_n;
     *out_v = local_v;
@@ -115,11 +115,10 @@ sim_pointers simulation_result_container::analyse(
     return sim_pointers{ this->is_cuda_results_, local_results, local_nodes, local_variables };
 }
 
-simulation_result_container* simulation_result_container::cuda_allocate(const allocation_helper* helper) const
+simulation_result_container* simulation_result_container::cuda_allocate(allocation_helper* helper) const
 {
-    simulation_result_container* p = nullptr; 
-    cudaMalloc(&p, sizeof(simulation_result_container));
-    helper->free_list->push_back(p);
+    simulation_result_container* p = nullptr;
+    helper->allocate_cuda(&p, sizeof(simulation_result_container));
     cudaMemcpy(p, this, sizeof(simulation_result_container), cudaMemcpyHostToDevice);
     return p;
 }
