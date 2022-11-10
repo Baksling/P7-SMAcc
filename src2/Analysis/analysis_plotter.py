@@ -61,7 +61,7 @@ def plot_lines(p_list: List[Tuple[int, int, int]], dims: Tuple[int, int, int], a
     lines = [[] for i in range(thread_dim)]
     
     labels_start = ["CPU"] if args_.min_blocks <= 0 else []
-    labels = labels_start + [f"Block {block}" for block in range(args_.min_blocks, block_dim)]
+    labels = labels_start + [f"#Block {block + 1}" for block in range(args_.min_blocks, block_dim)]
 
     for thread_idx in range(thread_dim):
         for block_idx in range(block_dim + 1):
