@@ -301,9 +301,9 @@ bool expression::is_constant() const
     if(this->type_ == literal_e) return true;
     if(this->type_ == clock_variable_e || this->type_ == system_variable_e) return false;
 
-    constexpr bool left = this->left_ != nullptr ? this->left_->is_constant() : true;
-    constexpr bool right = this->right_ != nullptr ? this->right_->is_constant() : true;
-    constexpr bool cond = this->type_ == conditional_e ? this->condition->is_constant() : true;
+    const bool left = this->left_ != nullptr ? this->left_->is_constant() : true;
+    const bool right = this->right_ != nullptr ? this->right_->is_constant() : true;
+    const bool cond = this->type_ == conditional_e ? this->condition->is_constant() : true;
 
     return left && right && cond;
 }

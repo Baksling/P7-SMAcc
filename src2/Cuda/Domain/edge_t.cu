@@ -77,7 +77,7 @@ CPU GPU void edge_t::execute_updates(simulator_state* state) const
 {
     for (int i = 0; i < this->updates_.size(); ++i)
     {
-        this->updates_.get(i).apply_update(state);
+        this->updates_.at(i)->apply_update(state);
     }
 }
 

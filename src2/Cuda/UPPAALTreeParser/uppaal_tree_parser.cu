@@ -107,7 +107,10 @@ void uppaal_tree_parser::get_guys(const list<string>& expressions, list<T>* t)
             continue;
 
         const string right_side = take_after(expr, get_constraint_op(expr));
-        t->push_back(get_constraint(expr, get_timer_id(expr), update_parser::parse(right_side, &vars_map_, &global_vars_map_)));
+        //TODO fix this plz
+        //Constraint is heap allocated, and is then copied here.
+        //Results in dead memory.
+        t->push_back(*get_constraint(expr, get_timer_id(expr), update_parser::parse(right_side, &vars_map_, &global_vars_map_)));
     }
 }
 
@@ -212,7 +215,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             string string_name = locs.child("name").child_value();
             const int node_id = xml_id_to_int(string_id);
             bool is_goal = false;
-            node_edge_map.insert_or_assign(node_id, list<edge_t*>());
+            node_edge_map.insert_or_assign(node_id, list<edge_t>());
             
             list<constraint_t> invariants; //TODO no longer pointer
             expression* expo_rate = nullptr;

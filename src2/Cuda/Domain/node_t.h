@@ -9,12 +9,12 @@
 
 #include "expressions/expression.h"
 #include "expressions/constraint_t.h"
+#include "edge_t.h"
 
 #include "../Visitors/visitor.h"
 
 
 class simulator_state;
-class edge_t;
 
 class node_t final
 {
