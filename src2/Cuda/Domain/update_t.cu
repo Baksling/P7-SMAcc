@@ -79,7 +79,7 @@ void update_t::pretty_print() const
 void update_t::cuda_allocate(update_t* cuda, allocation_helper* helper) const
 {
     expression* expr = nullptr;
-    helper->allocate_cuda(&expr, sizeof(expression));
+    helper->allocate(&expr, sizeof(expression));
     this->expression_->cuda_allocate(expr, helper);
     
     const update_t copy = update_t(this, expr);

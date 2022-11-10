@@ -109,9 +109,8 @@ void node_t::cuda_allocate(node_t* pointer, allocation_helper* helper)
     //pointer is the cuda location this node will be stored at
     helper->node_map.insert( std::pair<node_t*, node_t*>(this, pointer) );
     
-    std::list<edge_t*> edge_lst;
     edge_t* edge_p = nullptr;
-    helper->allocate_cuda(&edge_p, sizeof(edge_t)*this->edges_.size());
+    helper->allocate(&edge_p, sizeof(edge_t)*this->edges_.size());
     const array_t<edge_t> edge_arr = array_t<edge_t>(edge_p, this->edges_.size());
     for (int i = 0; i < this->edges_.size(); ++i)
     {
@@ -119,7 +118,7 @@ void node_t::cuda_allocate(node_t* pointer, allocation_helper* helper)
     }
 
     constraint_t* invariant_p = nullptr;
-    helper->allocate_cuda(&invariant_p, sizeof(constraint_t)*this->invariants_.size());
+    helper->allocate(&invariant_p, sizeof(constraint_t)*this->invariants_.size());
     const array_t<constraint_t> constraint_arr = array_t<constraint_t>(invariant_p, this->invariants_.size());
     for (int i = 0; i < this->invariants_.size(); ++i)
     {
@@ -129,7 +128,7 @@ void node_t::cuda_allocate(node_t* pointer, allocation_helper* helper)
     expression* expr = nullptr;
     if(this->lambda_expression_ != nullptr)
     {
-        helper->allocate_cuda(&expr, sizeof(expression));
+        helper->allocate(&expr, sizeof(expression));
         this->lambda_expression_->cuda_allocate(expr, helper);
     }
 

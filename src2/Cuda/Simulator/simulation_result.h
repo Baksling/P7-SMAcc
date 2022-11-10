@@ -84,9 +84,7 @@ public:
         const unsigned size,
         const unsigned models,
         const unsigned variables,
-        const bool cuda_allocate);
-
-    void free_internals() const;
+        allocation_helper* cuda_allocate);
 
     sim_pointers analyse(std::unordered_map<int, node_result>* node_results, const array_t<variable_result>* var_results) const;
 

@@ -1,4 +1,5 @@
-﻿#include "stochastic_model_t.h"
+﻿// ReSharper disable CppClangTidyBugproneSizeofExpression
+#include "stochastic_model_t.h"
 
 stochastic_model_t::stochastic_model_t(
     const array_t<node_t*> models,
@@ -37,18 +38,22 @@ void stochastic_model_t::cuda_allocate(stochastic_model_t* device, allocation_he
     //allocate models!
     node_t* node_store = nullptr;
     node_t** node_store_p = nullptr;
-    helper->allocate_cuda(&node_store, sizeof(node_t)*this->models_.size());
-    helper->allocate_cuda(&node_store_p, sizeof(node_t*)*this->models_.size());
+    node_t** local_node_store_p = static_cast<node_t**>(malloc(sizeof(node_t*)*this->models_.size()));
+    helper->allocate(&node_store, sizeof(node_t)*this->models_.size());
+    helper->allocate(&node_store_p, sizeof(node_t*)*this->models_.size());
     const array_t<node_t*> node_arr = array_t<node_t*>(node_store_p, this->models_.size());
+
     for (int i = 0; i < this->models_.size(); ++i)
     {
         this->models_.get(i)->cuda_allocate(&node_store[i], helper);
-        node_store_p[i] = &node_store[i];
+        local_node_store_p[i] = &node_store[i];
     }
+    cudaMemcpy(node_store_p, local_node_store_p, sizeof(node_t*)*this->models_.size(), cudaMemcpyHostToDevice);
+    free(local_node_store_p);
 
     //allocate clocks
     clock_variable* clock_store = nullptr;
-    helper->allocate_cuda(&clock_store, sizeof(clock_variable)*this->timers_.size());
+    helper->allocate(&clock_store, sizeof(clock_variable)*this->timers_.size());
     const array_t<clock_variable> clock_arr = array_t<clock_variable>(clock_store, this->timers_.size());
     for (int i = 0; i < this->timers_.size(); ++i)
     {
@@ -57,7 +62,7 @@ void stochastic_model_t::cuda_allocate(stochastic_model_t* device, allocation_he
 
     //allocate clocks
     clock_variable* variable_store = nullptr;
-    helper->allocate_cuda(&variable_store, sizeof(clock_variable)*this->variables_.size());
+    helper->allocate(&variable_store, sizeof(clock_variable)*this->variables_.size());
     const array_t<clock_variable> variable_arr = array_t<clock_variable>(variable_store, this->variables_.size());
     for (int i = 0; i < this->variables_.size(); ++i)
     {

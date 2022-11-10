@@ -123,26 +123,26 @@ void edge_t::cuda_allocate(edge_t* pointer, allocation_helper* helper) const
     else
     {   //allocate node if its not already allocated
         //The node's cuda_allocate method is responsible for adding it to the circular reference resolver
-        helper->allocate_cuda(&node_p, sizeof(node_t));
+        helper->allocate(&node_p, sizeof(node_t));
         this->dest_->cuda_allocate(node_p, helper); //linear node
     }
 
     constraint_t* guard_p = nullptr;
-    helper->allocate_cuda(&guard_p, sizeof(constraint_t)*this->guards_.size());
+    helper->allocate(&guard_p, sizeof(constraint_t)*this->guards_.size());
     for (int i = 0; i < this->guards_.size(); ++i)
     {
         this->guards_.at(i)->cuda_allocate(&guard_p[i], helper);
     }
     
     update_t* updates_d = nullptr;
-    helper->allocate_cuda(&updates_d, sizeof(update_t)*this->updates_.size());
+    helper->allocate(&updates_d, sizeof(update_t)*this->updates_.size());
     for (int i = 0; i < this->updates_.size(); ++i)
     {
         this->updates_.at(i)->cuda_allocate(&updates_d[i], helper);
     }
 
     expression* weight_p = nullptr;
-    helper->allocate_cuda(&weight_p, sizeof(expression));
+    helper->allocate(&weight_p, sizeof(expression));
     this->weight_expression_->cuda_allocate(weight_p, helper);
     
     

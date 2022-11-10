@@ -113,7 +113,7 @@ void constraint_t::cuda_allocate(constraint_t* pointer, allocation_helper* helpe
     if(!this->left_.is_clock)
     {
         expression* left_expr = nullptr;
-        helper->allocate_cuda(&left_expr, sizeof(expression));
+        helper->allocate(&left_expr, sizeof(expression));
         this->left_.expr->cuda_allocate(left_expr, helper);
         left = constraint_value::from_expression(left_expr);
     }
@@ -123,7 +123,7 @@ void constraint_t::cuda_allocate(constraint_t* pointer, allocation_helper* helpe
     if(!this->right_.is_clock)
     {
         expression* right_expr = nullptr;
-        helper->allocate_cuda(&right_expr, sizeof(expression));
+        helper->allocate(&right_expr, sizeof(expression));
         this->right_.expr->cuda_allocate(right_expr, helper);
         right = constraint_value::from_expression(right_expr);
     }

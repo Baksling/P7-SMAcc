@@ -125,10 +125,10 @@ template <typename T>
 cuda_stack<T>* cuda_stack<T>::cuda_allocate(allocation_helper* helper)
 {
     cuda_stack<T>* cuda = nullptr;
-    helper->allocate_cuda(&cuda, sizeof(cuda_stack<T>));
+    helper->allocate(&cuda, sizeof(cuda_stack<T>));
 
     T* cuda_store = nullptr;
-    helper->allocate_cuda(&cuda_store, sizeof(T)*this->size_);
+    helper->allocate(&cuda_store, sizeof(T)*this->size_);
 
     //heap allocated, as it is a template, and results in segment fault if not.
     const cuda_stack<T>* copy = new cuda_stack<T>(cuda_store, this->size_);

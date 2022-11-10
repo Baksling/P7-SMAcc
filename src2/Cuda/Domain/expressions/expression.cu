@@ -324,21 +324,21 @@ void expression::cuda_allocate(expression* cuda_p, allocation_helper* helper) co
     expression* left_cuda = nullptr;
     if(this->left_ != nullptr)
     {
-        helper->allocate_cuda(&left_cuda, sizeof(expression));
+        helper->allocate(&left_cuda, sizeof(expression));
         this->left_->cuda_allocate(left_cuda, helper);
     }
 
     expression* right_cuda = nullptr;
     if(this->right_ != nullptr)
     {
-        helper->allocate_cuda(&right_cuda, sizeof(expression));
+        helper->allocate(&right_cuda, sizeof(expression));
         this->right_->cuda_allocate(right_cuda, helper);
     }
 
     expression* condition_cuda = nullptr;
     if(this->type_ == conditional_e)
     {
-        helper->allocate_cuda(&condition_cuda, sizeof(expression));
+        helper->allocate(&condition_cuda, sizeof(expression));
         this->condition->cuda_allocate(condition_cuda, helper);
     }
 

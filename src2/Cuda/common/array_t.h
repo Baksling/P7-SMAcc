@@ -81,7 +81,7 @@ array_t<T> cuda_to_array(std::list<T>* list, allocation_helper* helper)
     if(size == 0) return array_t<T>(0);
     T* cuda_arr = nullptr;
     T* local_arr = static_cast<T*>(malloc(sizeof(T)*size));
-    helper->allocate_cuda(&cuda_arr, sizeof(T) * size);
+    helper->allocate(&cuda_arr, sizeof(T) * size);
     
     int i = 0;
     for(T item : *list)

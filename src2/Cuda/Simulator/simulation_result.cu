@@ -25,51 +25,21 @@ void simulation_result_container::load_results(simulation_result** out_r, int** 
     *out_v = local_v;
 }
 
-template<typename T>
-CPU GPU void allocate(T** ptr, unsigned long long int size, const bool cuda_allocate)
-{
-    if(cuda_allocate)
-    {
-        cudaMalloc(ptr, size);
-    }
-    else
-    {
-        *ptr = static_cast<T*>(malloc(size));
-    }
-}
-
 simulation_result_container::simulation_result_container(
     const unsigned size,
     const unsigned models,
     const unsigned variables,
-    const bool cuda_allocate)
+    allocation_helper* cuda_allocate)
 {
-    this->is_cuda_results_ = cuda_allocate;
+    this->is_cuda_results_ = cuda_allocate->use_cuda;
     this->results_count_ = size;
     this->models_count_ = models;
     this->variables_count_ = variables;
 
-    allocate(&this->results_p_, sizeof(simulation_result)*size, this->is_cuda_results_);
-    allocate(&this->variable_p_, sizeof(double)*size*variables, this->is_cuda_results_);
-    allocate(&this->node_p_, sizeof(int)*size*models, this->is_cuda_results_);
+    cuda_allocate->allocate(&this->results_p_, sizeof(simulation_result)*size);
+    cuda_allocate->allocate(&this->variable_p_, sizeof(double)*size*variables);
+    cuda_allocate->allocate(&this->node_p_, sizeof(int)*size*models);
 }
-
-void simulation_result_container::free_internals() const
-{
-    if(this->is_cuda_results_)
-    {
-        cudaFree(this->results_p_);
-        cudaFree(this->variable_p_);
-        cudaFree(this->node_p_);
-    }
-    else
-    {
-        free(this->results_p_);
-        free(this->variable_p_);
-        free(this->node_p_);
-    }
-}
-
 
 sim_pointers simulation_result_container::analyse(
     std::unordered_map<int, node_result>* node_results,
@@ -118,7 +88,7 @@ sim_pointers simulation_result_container::analyse(
 simulation_result_container* simulation_result_container::cuda_allocate(allocation_helper* helper) const
 {
     simulation_result_container* p = nullptr;
-    helper->allocate_cuda(&p, sizeof(simulation_result_container));
+    helper->allocate(&p, sizeof(simulation_result_container));
     cudaMemcpy(p, this, sizeof(simulation_result_container), cudaMemcpyHostToDevice);
     return p;
 }
