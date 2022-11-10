@@ -54,7 +54,7 @@ void print_cache_memory_diagnosis(const size_t total_cache)
     cudaMemGetInfo(&free_mem, &total_mem);
 
     printf("Total simulation cache memory utilization: %llu bytes (%lf%%).\n",
-        total_cache / 8,
+        static_cast<unsigned long long>(total_cache / 8UL),
         (static_cast<double>(total_cache) / static_cast<double>(total_mem))*100
     );
 }
@@ -66,12 +66,13 @@ void print_results_memory_diagnosis(const size_t results_size)
     cudaMemGetInfo(&free_mem, &total_mem);
 
     printf("Total simulation results memory utilization: %llu bytes (%lf%%).\n",
-        results_size / 8,
+         static_cast<unsigned long long>(results_size / 8UL),
         (static_cast<double>(results_size) / static_cast<double>(total_mem))*100
         );
 
     printf("Total device memory utilization: %llu / %llu (%lf%%)",
-        free_mem, total_mem,
+        static_cast<unsigned long long>(free_mem),
+        static_cast<unsigned long long>(total_mem),
         (static_cast<double>(free_mem) / static_cast<double>(total_mem))*100
         );
 }
