@@ -27,7 +27,7 @@
             <source ref="id0"/>
             <target ref="id0"/>
             <label kind="guard" x="-33" y="-102">S&gt;0&amp;&amp;I&gt;0</label>
-            <label kind="assignment" x="-33" y="-68">S=S-1, E=E+1</label>
+            <label kind="assignment" x="-33" y="-68">--S, E++</label>
             <nail x="-51" y="-68"/>
             <nail x="25" y="-68"/>
             <nail x="42" y="-68"/>

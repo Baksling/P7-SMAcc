@@ -119,17 +119,43 @@ expression* update_expression_evaluator::eval_exp4()
 // Evaluate a unary + or -.
 expression* update_expression_evaluator::eval_exp5()
 {
-    char op = 0;
+    string op = "";
     if ((tok_type_ == UPDATEDELIMITER) && *token_ == '+' || *token_ == '-')
     {
-        op = *token_;
+        op += *token_;
         get_token();
+        if ((tok_type_ == UPDATEDELIMITER) && *token_ == '+' || *token_ == '-')
+        {
+            op += *token_;
+            get_token();
+        }
     }
     expression* result = eval_exp6();
+
+    if ((tok_type_ == UPDATEDELIMITER) && *token_ == '+' || *token_ == '-')
+    {
+        char* temp = exp_ptr_ - 1;
+        if (*temp == '+' || *temp == '-')
+        {
+            op += *token_;
+            op += *temp;
+            get_token();
+            get_token();
+        }
+    }
     
-    if (op == '-')
+    cout << "\n OP!!!!:|"<< op << "|";
+    if (op == "-")
     {
         result = expression::negate_expression(result);
+    }
+    else if (op == "--")
+    {
+        result = expression::minus_expression(result, expression::literal_expression(1));
+    }
+    else if (op == "++")
+    {
+        result = expression::plus_expression(result, expression::literal_expression(1));
     }
     
     return result;
@@ -197,6 +223,7 @@ expression* update_expression_evaluator::eval_exp6()
         get_token();
     }
     else
+        cout<<"\nTOKEN:" << token_;
         switch (tok_type_)
         {
             case UPDATEVARIABLE:
@@ -230,6 +257,7 @@ expression* update_expression_evaluator::eval_exp6()
                 }
         }
 }
+
 // Obtain the next token.
 void update_expression_evaluator::get_token()
 {
