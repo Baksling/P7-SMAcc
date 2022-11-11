@@ -1,1 +1,3 @@
 workspace.xml
+src2/Cuda/test_results/
+test_results/

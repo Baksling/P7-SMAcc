@@ -160,7 +160,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Cuda\Domain\channel_medium.cu" />
     <ClCompile Include="Cuda\Domain\edge_t.cu" />
     <ClCompile Include="Cuda\Domain\expressions\constraint_t.cu">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
@@ -768,7 +767,6 @@
     <ClCompile Include="Cuda\Domain\node_t.h" />
     <ClCompile Include="Cuda\Domain\clock_variable.h" />
     <ClCompile Include="Cuda\Domain\update_t.h" />
-    <ClInclude Include="Cuda\Domain\channel_medium.h" />
     <ClInclude Include="Cuda\Simulator\result_writer.h" />
     <ClInclude Include="Cuda\Domain\stochastic_model_t.h" />
     <ClInclude Include="Cuda\Simulator\stochastic_engine.h" />
@@ -800,12 +798,15 @@
   <ItemGroup>
     <ClInclude Include="Cuda\Domain\simulator_state.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\parser_exception.h" />
+    <Content Include="Analysis\analysis_plotter.py" />
+    <Content Include="Analysis\performance_analysis.py" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\and_guy.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\bigusdickuslmao.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\ChanSyn2.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\ChanSyntax.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\covid.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\dicebase.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\dicebaseUnfair.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\ff15.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\ff20.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\gamble.xml" />
@@ -818,6 +819,10 @@
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\test3.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\test4.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\testBasic.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\ThisIsCancer2ElectricBoogaloo.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Cuda\test_results" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

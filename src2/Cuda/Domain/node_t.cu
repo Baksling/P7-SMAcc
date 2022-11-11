@@ -16,6 +16,7 @@ node_t::node_t(const node_t* source, const array_t<constraint_t*> invariant, con
 node_t::node_t(const int id, const array_t<constraint_t*> invariants,
     const bool is_branch_point, const bool is_goal, expression* lambda)
 {
+    //if no lambda supplied, defaults to 1, as to imitate UPPAAL.
     if(lambda == nullptr)
     {
         lambda = expression::literal_expression(1);
@@ -94,8 +95,10 @@ void node_t::accept(visitor* v) const
 
 void node_t::pretty_print() const
 {
-    printf("\nNode id: %3d | Is branch: %d | Is goal: %d \n", this->id_, this->is_branch_point_,
-           this->is_goal_);
+    printf("\nNode id: %3d | Is branch: %d | Is goal: %d \n",
+        this->id_,
+        this->is_branch_point_,
+        this->is_goal_);
 }
 
 void node_t::cuda_allocate(node_t* pointer, const allocation_helper* helper)
@@ -141,6 +144,19 @@ void node_t::cuda_allocate(node_t* pointer, const allocation_helper* helper)
 CPU GPU bool node_t::is_branch_point() const
 {
     return this->is_branch_point_;
+}
+
+bool node_t::is_progressible() const
+{
+    for (int j = 0; j < this->edges_.size(); ++j)
+    {
+        if (!this->edges_.get(j)->is_listener())
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 CPU GPU bool node_t::max_time_progression(simulator_state* state, double* out_max_progression) const

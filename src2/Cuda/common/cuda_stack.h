@@ -13,8 +13,8 @@ class cuda_stack
     T* store_ = nullptr;
     unsigned int size_ = 0;
     unsigned int stack_pointer_ = 0;
-    cuda_stack(T* store, unsigned int size);
 public:
+    CPU GPU cuda_stack(T* store, unsigned int size);
     CPU GPU explicit cuda_stack(unsigned int size);
 
     //SIMULATION methods
@@ -33,7 +33,7 @@ public:
 };
 
 template <typename T>
-cuda_stack<T>::cuda_stack(T* store, unsigned size)
+CPU GPU cuda_stack<T>::cuda_stack(T* store, unsigned size)
 {
     this->store_ = store;
     this->size_ = size;

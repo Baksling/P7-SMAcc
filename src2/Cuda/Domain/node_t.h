@@ -38,6 +38,7 @@ public:
     CPU GPU bool evaluate_invariants(simulator_state* state) const;
     CPU GPU bool max_time_progression(simulator_state* state, double* out_max_progression) const;
     CPU GPU bool is_branch_point() const;
+    CPU GPU bool is_progressible() const;
 
     //HOST METHODS
     void set_edges(std::list<edge_t*>* list);

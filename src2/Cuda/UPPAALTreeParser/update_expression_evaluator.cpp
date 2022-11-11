@@ -293,7 +293,7 @@ void update_expression_evaluator::get_token()
 expression* update_expression_evaluator::parse_update_expr(const string& input, map<string, int>* local_vars, map<string, int>* global_vars)
 {
     update_expression_evaluator ob(local_vars, global_vars);
-    cout << "\nINPUT:"<< input<<"|";
+    //cout << "\nINPUT:"<< input<<"|";
     expression* ans = ob.eval_exp(const_cast<char*>(input.substr(0, input.length()).c_str()));
     return ans;
 }

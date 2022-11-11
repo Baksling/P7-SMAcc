@@ -22,6 +22,11 @@ unsigned stochastic_model_t::get_variable_count() const
     return this->variables_.size();
 }
 
+unsigned stochastic_model_t::get_timer_count() const
+{
+    return this->timers_.size();
+}
+
 unsigned stochastic_model_t::get_models_count() const
 {
     return this->models_.size();
