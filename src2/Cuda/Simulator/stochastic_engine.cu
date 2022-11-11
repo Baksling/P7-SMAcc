@@ -6,6 +6,7 @@
 #include "simulator_tools.h"
 #include "../Domain/edge_t.h"
 #include "../Domain/stochastic_model_t.h"
+#include <unistd.h> // Included for sleep
 
 using namespace std::chrono;
 
@@ -148,6 +149,7 @@ bool stochastic_engine::run_cpu(
     
     while(pool.is_busy()) //wait for pool to process all tasks
     {
+        // sleep(0.1);
         std::this_thread::yield();
     }
 
