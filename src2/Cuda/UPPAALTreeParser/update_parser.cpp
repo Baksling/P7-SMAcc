@@ -3,7 +3,7 @@
 using namespace std;
 using namespace helper;
 
-expression* update_parser::parse(string decl, map<string, int>* local_vars, map<string, int>* global_vars)
+expression* update_parser::parse(string decl, unordered_map<string, int>* local_vars, unordered_map<string, int>* global_vars)
 {
     string line_wo_ws = replace_all(decl, " ", "");
     string nums = take_after(line_wo_ws, '=');

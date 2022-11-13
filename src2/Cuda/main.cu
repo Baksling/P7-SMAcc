@@ -73,14 +73,8 @@ int main(int argc, const char* argv[])
     if (parser.exists("m"))
     {
         uppaal_tree_parser tree_parser;
-        string temp = parser.get<string>("m"); 
-        char* writeable = new char[temp.size() + 1]; //TODO Move this fuckery inside parser
-        std::copy(temp.begin(), temp.end(), writeable);
-        writeable[temp.size()] = '\0';
-        
-        model = tree_parser.parse(writeable);
-
-        delete[] writeable;
+        string input_file_path = parser.get<string>("m"); 
+        model = tree_parser.parse(input_file_path);
     }
     else
     {

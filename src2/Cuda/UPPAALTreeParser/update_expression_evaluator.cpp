@@ -3,7 +3,7 @@
 #include "helper_methods.h"
 
 // Parser constructor.
-update_expression_evaluator::update_expression_evaluator(map<string,int>* local_vars, map<string,int>* global_vars)
+update_expression_evaluator::update_expression_evaluator(unordered_map<string,int>* local_vars, unordered_map<string,int>* global_vars)
 {
     exp_ptr_ = nullptr;
     local_vars_ = local_vars;
@@ -262,7 +262,7 @@ void update_expression_evaluator::get_token()
     *temp = '\0';
 }
 
-expression* update_expression_evaluator::parse_update_expr(const string& input, map<string, int>* local_vars, map<string, int>* global_vars)
+expression* update_expression_evaluator::parse_update_expr(const string& input, unordered_map<string, int>* local_vars, unordered_map<string, int>* global_vars)
 {
     update_expression_evaluator ob(local_vars, global_vars);
     //cout << "\nINPUT:"<< input<<"|";

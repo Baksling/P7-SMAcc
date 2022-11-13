@@ -15,6 +15,7 @@
             <name x="143" y="-34">Goal</name>
         </location>
         <location id="id2" x="153" y="51">
+            <name x="143" y="-34">Hashbully</name>
         </location>
         <init ref="id0"/>
         <transition>
