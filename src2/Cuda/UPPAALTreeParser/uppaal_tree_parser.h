@@ -23,7 +23,6 @@
 #include "declaration.h"
 #include "declaration_parser.h"
 #include "update_parser.h"
-#include "../Visitors/parser_test_visitor.h"
 
 #define GPU __device__
 #define CPU __host__
@@ -38,12 +37,12 @@ private:
     int init_node_id_{};
     list<clock_variable>* timer_list_ = new list<clock_variable>();
     list<clock_variable>* var_list_ = new list<clock_variable>();
+    int timer_amount_ = 0;
     int var_id_ = 0;
     int clock_id_ = 0;
     int chan_id_ = 0;
     declaration_parser dp_;
     template <typename T> void get_guys(const list<string>& expressions, list<T>* t);
-    string get_assignment_keyword(const string& ass);
     map<string, int> timers_map_{};
     map<string, int> vars_map_{};
     map<string, int> global_vars_map_{};

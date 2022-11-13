@@ -1,7 +1,5 @@
 ﻿#include "uppaal_tree_parser.h"
 
-#include <fstream>
-
 
 #define ALPHA "abcdefghijklmnopqrstuvwxyz"
 
@@ -71,7 +69,6 @@ int uppaal_tree_parser::get_timer_id(const string& expr) const
 {
     const string expr_wout_spaces = replace_all(expr, string(" "), string(""));
     int index = 0;
-    bool is_unary = false;
 
     while (true)
     {
@@ -80,26 +77,13 @@ int uppaal_tree_parser::get_timer_id(const string& expr) const
             THROW_LINE("sum tin wong")
         }
         
-        if (in_array(expr_wout_spaces[index], {'<','>','='}))
+        if (in_array(expr_wout_spaces[++index], {'<','>','='}))
         {
             break;
         }
-        cout << "\nHUH?:"<<expr_wout_spaces[index]<<":"<<index;
-        cout << "\nHUH?2:"<<expr_wout_spaces<<":"<<index;
-        if (expr_wout_spaces[index] == '-' && expr_wout_spaces[index+1] == '-' || expr_wout_spaces[index] == '+' && expr_wout_spaces[index+1] == '+')
-        {
-            if (expr_wout_spaces.front() != '-' && expr_wout_spaces.front() != '+') break;
-            
-            index = index + 2;
-            is_unary = true;
-            break;
-        }
-        index++;
     }
 
-    const string sub = is_unary ? expr_wout_spaces.substr(index) : expr_wout_spaces.substr(0, index);
-    cout << "\nSUB!:"<<sub<<":";
-    cout.flush();
+    const string sub = expr_wout_spaces.substr(0, index);
 
     if ( vars_map_.count(sub))
     {
@@ -112,14 +96,6 @@ int uppaal_tree_parser::get_timer_id(const string& expr) const
     }
     
     THROW_LINE("sum tin wong")
-}
-
-string uppaal_tree_parser::get_assignment_keyword(const string& ass)
-{
-    if(ass.substr(0,2) == "--" || ass.substr(0,2) == "++")
-        return ass.substr(2);
-
-    return take_while(ass, '=');
 }
 
 template <typename T>
@@ -311,8 +287,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                             continue;
                         
                         expression* e = update_parser::parse(expr, &vars_map_, &global_vars_map_);
-
-                        string keyword = get_assignment_keyword(expr);
+                        string keyword = take_while(expr, '=');
                         bool is_clock = false;
 
                         if(timers_map_.count(keyword) > 0)
@@ -404,12 +379,11 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
     return stochastic_model_t(start_nodes, to_array(timer_list_), to_array(var_list_), chan_id_);
 }
 
-
-
 __host__ stochastic_model_t uppaal_tree_parser::parse(char* file_path)
 {
     try
     {
+        printf("USING PARSER\n");
         return parse_xml(file_path);
     }
     catch (const std::runtime_error &ex)
