@@ -228,6 +228,6 @@ int result_writer::parse_mode(const std::string& str)
     if(str.find('f') != std::string::npos) mode |= file_sum;
     if(str.find('d') != std::string::npos) mode |= file_data;
     if(str.find('t') != std::string::npos) mode |= trace;
-
+    
     return mode;
 }

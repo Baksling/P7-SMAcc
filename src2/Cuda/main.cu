@@ -52,6 +52,7 @@ int main(int argc, const char* argv[])
     string o_path = std::filesystem::current_path();
     int write_mode = 0; // 0 = file, 1 = console, 2 = both
     bool verbose = true;
+    printf("%d\n", write_mode);
 
     if (parser.exists("b")) strategy.block_n = parser.get<int>("b");
     if (parser.exists("t")) strategy.threads_n = parser.get<int>("t");
@@ -74,7 +75,8 @@ int main(int argc, const char* argv[])
             ? static_cast<trace_interval::interval_type>(parser.get<int>("i"))
             : trace_interval::step_interval;
     }
-    
+    else strategy.trace_settings.mode = trace_interval::disabled;
+
     stochastic_model_t model(array_t<node_t*>(0), array_t<clock_variable>(0), array_t<clock_variable>(0));
     
     if (parser.exists("m"))
