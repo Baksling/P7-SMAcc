@@ -889,6 +889,7 @@
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\gamble3.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\lilleShit.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\Lol.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\mtest.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\sample1.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\test2.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\test3.xml" />

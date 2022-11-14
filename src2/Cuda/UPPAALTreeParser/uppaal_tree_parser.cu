@@ -39,6 +39,23 @@ constraint_t* get_constraint(const string& expr, const int timer_id, expression*
     THROW_LINE("Operand in " + expr + " not found, sad..");
 }
 
+constraint_t* get_constraint(const string& expr, expression* value_1, expression* value)
+{
+    if(expr.find("<=") != std::string::npos)
+        return constraint_t::less_equal_e(value_1, value);
+    if(expr.find(">=") != std::string::npos)
+        return constraint_t::greater_equal_e(value_1,value);
+    if(expr.find("==") != std::string::npos)
+        return constraint_t::equal_e(value_1,value);
+    if(expr.find("!=") != std::string::npos)
+        return constraint_t::not_equal_e(value_1,value);
+    if(expr.find('<') != std::string::npos)
+        return constraint_t::less_e(value_1,value);
+    if(expr.find('>') != std::string::npos)
+        return constraint_t::greater_e(value_1,value);
+    THROW_LINE("Operand in " + expr + " not found, sad..");
+}
+
 constraint_t* get_constraint(const string& expr, const int timer_id_1, const int timer_id_2)
 {
     if(expr.find("<=") != std::string::npos)
@@ -64,6 +81,30 @@ template <typename T> T* list_to_arr(list<T> l)
     }
     
     return arr;
+}
+
+string uppaal_tree_parser::is_timer(const string& expr) const
+{
+    const string expr_wout_spaces = replace_all(expr, string(" "), string(""));
+    int index = 0;
+
+    while (true)
+    {
+        if (static_cast<int>(expr.size()) == index)
+        {
+            THROW_LINE("sum tin wong")
+        }
+        
+        if (in_array(expr_wout_spaces[++index], {'<','>','='}))
+        {
+            break;
+        }
+    }
+
+    const string sub = expr_wout_spaces.substr(0, index);
+
+
+    return sub;
 }
 
 
@@ -109,10 +150,17 @@ void uppaal_tree_parser::get_guys(const list<string>& expressions, list<T>* t)
             continue;
 
         const string right_side = take_after(expr, get_constraint_op(expr));
+        
+        
         //TODO fix this plz
         //Constraint is heap allocated, and is then copied here.
         //Results in dead memory.
-        t->push_back(*get_constraint(expr, get_timer_id(expr), update_parser::parse(right_side, &vars_map_, &global_vars_map_)));
+        string sub = is_timer(expr);
+        
+        if (timers_map_.count(sub) > 0)
+            t->push_back(*get_constraint(expr, get_timer_id(expr), update_parser::parse(right_side, &vars_map_, &global_vars_map_)));
+        else
+            t->push_back(*get_constraint(expr, update_parser::parse(sub, &vars_map_, &global_vars_map_), update_parser::parse(right_side, &vars_map_, &global_vars_map_)));
     }
 }
 

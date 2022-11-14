@@ -68,6 +68,7 @@ private:
     list<int> start_nodes_{};
     list<int> sync_chan_ids_{};
     int get_timer_id(const string& expr) const;
+    string is_timer(const string& expr) const;
     node_t* get_node(const int target_id, const list<node_t*>* arr) const;
     void init_clocks(const pugi::xml_document* doc);
     stochastic_model_t parse_xml(char* file_path);

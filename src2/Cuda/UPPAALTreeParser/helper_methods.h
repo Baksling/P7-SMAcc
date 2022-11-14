@@ -15,7 +15,7 @@ namespace helper
         return s.substr(s.find(while_char)+1);
     }
 
-    inline string take_while(const string& s, const char while_char)
+        inline string take_while(const string& s, const char while_char)
     {
         return s.substr(0,s.find(while_char));
     }
