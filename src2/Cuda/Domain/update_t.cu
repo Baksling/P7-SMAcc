@@ -63,15 +63,17 @@ void update_t::accept(visitor* v) const
     v->visit(this->expression_);
 }
 
-void update_t::pretty_print() const
+void update_t::pretty_print(std::ostream& os) const
 {
     std::string temp, temp2;
     if (is_clock_update_) temp = "Clock " + std::to_string(this->variable_id_) + " = ";
     else temp = "Variable " + std::to_string(this->variable_id_) + " = ";
 
     temp2 = this->expression_->to_string();
+
+    os << temp + temp2 + "\n";
     
-    printf("%s %s\n", temp.c_str(), temp2.c_str());
+    //printf("%s %s\n", temp.c_str(), temp2.c_str());
     
     //std::cout << expression_->to_string();
     //printf("Update id: %3d | Timer id: %3d\n", this->id_, this->variable_id_);

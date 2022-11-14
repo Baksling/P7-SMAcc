@@ -94,7 +94,7 @@ void constraint_t::accept(visitor* v)
     if (!this->right_.is_clock) v->visit(this->right_.expr);
 }
 
-void constraint_t::pretty_print() const
+void constraint_t::pretty_print(std::ostream& os) const
 {
     std::string left, right;
     
@@ -102,9 +102,11 @@ void constraint_t::pretty_print() const
     else left = "(" + this->left_.expr->to_string();
     if (this->right_.is_clock) right = "Clock " + std::to_string(this->right_.clock_id) + ")";
     else right = this->right_.expr->to_string() + ")";
+
+    os << left + " " + constraint_t::logical_operator_to_string(this->type_) + " " + right + "\n";
     
-    printf("%s %s %s\n", left.c_str(), constraint_t::logical_operator_to_string(this->type_).c_str(),
-    right.c_str());
+    // printf("%s %s %s\n", left.c_str(), constraint_t::logical_operator_to_string(this->type_).c_str(),
+    // right.c_str());
 }
 
 void constraint_t::cuda_allocate(constraint_t** pointer, const allocation_helper* helper) const

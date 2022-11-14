@@ -4,24 +4,34 @@
 #include "../Domain/edge_t.h"
 #include "../Domain/node_t.h"
 #include "../Domain/stochastic_model_t.h"
+using namespace std;
 
 void pretty_visitor::indentation() const
 {
+    ostream* os = this->get_stream();
     for (int i = 0; i < scope_; ++i)
     {
-        printf("    ");
+        *os << "  ";
+        // *this.get_stream() << "      "; 
     }
 
     //printf("-----scope: %d\n", this->scope_);
 }
-
-pretty_visitor::pretty_visitor()
+std::ostream* pretty_visitor::get_stream() const
 {
-    this->check_ = static_cast<int*>(malloc(3*sizeof(int)));
-    for (int i = 0; i < 3; ++i)
+    return this->stream_ == nullptr ? &std::cout : this->stream_;
+}
+
+
+pretty_visitor::pretty_visitor(const string& file)
+{
+    if(file.empty() || file == "")
     {
-        check_[i] = 0;
+        std::cout << "THIS SHOULD BE NULLPTR NOW AHSHDAIHDKJAHSDHGAGDUAHDHAKGJS\n";
+        this->stream_ = nullptr;
     }
+    else
+        this->stream_ = new std::ofstream(file, std::ofstream::out | std::ofstream::trunc);      
 }
 
 void pretty_visitor::visit(constraint_t* constraint)
@@ -31,7 +41,8 @@ void pretty_visitor::visit(constraint_t* constraint)
         return;
     }
     indentation();
-    constraint->pretty_print();
+    ostream* os = this->get_stream();
+    constraint->pretty_print(*os);
     scope_++;
     constraint->accept(this);
     scope_--;
@@ -44,7 +55,8 @@ void pretty_visitor::visit(edge_t* edge)
         return;
     }
     indentation();
-    edge->pretty_print();
+    ostream* os = this->get_stream();
+    edge->pretty_print(*os);
     scope_++;
     edge->accept(this);
     scope_--;
@@ -71,7 +83,8 @@ void pretty_visitor::visit(node_t* node)
     checker_.insert(node->get_id());
     this->scope_ = 0;
     indentation();
-    node->pretty_print();
+    ostream* os = this->get_stream();
+    node->pretty_print(*os);
     scope_++;
     node->accept(this);
     scope_--;
@@ -81,10 +94,14 @@ void pretty_visitor::visit(node_t* node)
 void pretty_visitor::visit(stochastic_model_t* model)
 {
     if (model == nullptr) return;
-    model->pretty_print();
+    model->pretty_print(); //TODO model has no pretty print :)
     model->accept(this);
-    printf("Model end\n");
-    pretty_helper();
+    ostream* os = this->get_stream();
+    *os << "\nModel end\n";
+    os->flush();
+    if(this->stream_ != nullptr)
+        this->stream_->close();
+    //pretty_helper();
 }
 
 void pretty_visitor::visit(clock_variable* timer)
@@ -94,7 +111,8 @@ void pretty_visitor::visit(clock_variable* timer)
         return;
     }
     indentation();
-    timer->pretty_print();
+    ostream* os = this->get_stream();
+    timer->pretty_print(*os);
     scope_++;
     timer->accept(this);
     scope_--;
@@ -107,7 +125,8 @@ void pretty_visitor::visit(update_t* update)
         return;
     }
     indentation();
-    update->pretty_print();
+    ostream* os = this->get_stream();
+    update->pretty_print(*os);
     scope_++;
     update->accept(this);
     scope_--;
@@ -119,8 +138,9 @@ void pretty_visitor::visit(expression* expression)
     {
         return;
     }
-    //indentation();
-    //std::cout << expression->to_string();
+    indentation();
+    ostream* os = this->get_stream();
+    expression->pretty_print(*os);
     scope_++;
     expression->accept(this);
     scope_--;

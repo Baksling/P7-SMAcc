@@ -187,6 +187,11 @@ std::string expression::type_to_string() const
     return result;
 }
 
+void expression::pretty_print(std::ostream& os) const
+{
+    os << this->to_string();
+}
+
 std::string expression::to_string() const
 {
     std::string left, right;

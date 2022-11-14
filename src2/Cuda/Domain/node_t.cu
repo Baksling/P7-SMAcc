@@ -1,4 +1,7 @@
 ﻿#include "node_t.h"
+
+#include <string>
+
 #include "edge_t.h"
 #include "simulator_state.h"
 
@@ -92,10 +95,12 @@ void node_t::accept(visitor* v) const
     }
 }
 
-void node_t::pretty_print() const
+void node_t::pretty_print(std::ostream& os) const
 {
-    printf("\nNode id: %3d | Is branch: %d | Is goal: %d \n", this->id_, this->is_branch_point_,
-           this->is_goal_);
+    os << "\nNode id: " + std::to_string(this->id_) + " | Is branch: " + std::to_string(this->is_branch_point()) + " | Is goal: "
+        + std::to_string(this->is_goal_) + "\n";
+    // printf("\nNode id: %3d | Is branch: %d | Is goal: %d \n", this->id_, this->is_branch_point_,
+    //        this->is_goal_);
 }
 
 void node_t::cuda_allocate(node_t* pointer, const allocation_helper* helper)

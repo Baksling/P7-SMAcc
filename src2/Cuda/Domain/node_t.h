@@ -42,7 +42,7 @@ public:
     //HOST METHODS
     void set_edges(std::list<edge_t*>* list);
     void accept(visitor* v) const;
-    void pretty_print() const;
+    void pretty_print(std::ostream& os) const;
     void cuda_allocate(node_t* pointer, const allocation_helper* helper);
 };
 

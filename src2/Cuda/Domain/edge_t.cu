@@ -1,4 +1,8 @@
 ﻿#include "edge_t.h"
+
+#include <string>
+#include <string>
+
 #include "node_t.h"
 
 edge_t::edge_t(
@@ -102,12 +106,16 @@ void edge_t::accept(visitor* v) const
     v->visit(this->weight_expression_);
 }
 
-void edge_t:: pretty_print() const
+void edge_t::pretty_print(std::ostream& os) const
 {
     //TODO FIX THIS!
-    printf("Edge id: %3d | Weight expression: %s | Dest node: %3d | Channel Id: %3s | Is Listener: %d\n",
-        this->id_, this->weight_expression_->to_string().c_str(), this->dest_->get_id(), (this->get_channel() == NO_CHANNEL ? "N/A" : std::to_string(this->get_channel())).c_str(),
-        this->channel_.is_listener);
+    os << "Edge id: " + std::to_string(this->id_) + " | Weight expression: " + this->weight_expression_->to_string() +
+        " | Dest node: " + std::to_string(this->dest_->get_id()) + " | Channel Id: " +
+        (this->get_channel() == NO_CHANNEL ? "N/A" : std::to_string(this->get_channel())) + " | Is Listener: " +
+        std::to_string(this->channel_.is_listener) + "\n";
+    // printf("Edge id: %3d | Weight expression: %s | Dest node: %3d | Channel Id: %3s | Is Listener: %d\n",
+    //     this->id_, this->weight_expression_->to_string().c_str(), this->dest_->get_id(), (this->get_channel() == NO_CHANNEL ? "N/A" : std::to_string(this->get_channel())).c_str(),
+    //     this->channel_.is_listener);
 }
 
 void edge_t::cuda_allocate(edge_t** pointer, const allocation_helper* helper) const

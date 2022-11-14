@@ -21,17 +21,18 @@ int main(int argc, const char* argv[])
     
     ArgumentParser parser("supa_pc_strikes_argina.exe/cuda", "Argument parser example");
 
-    parser.add_argument("-m", "--model", "Model xml file path", false);
-    parser.add_argument("-b", "--block", "Number of block", false);
-    parser.add_argument("-t", "--threads", "Number of threads", false);
     parser.add_argument("-a", "--amount", "Number of simulations", false);
+    parser.add_argument("-b", "--block", "Number of block", false);
     parser.add_argument("-c", "--count", "number of times to repeat simulations", false);
-    parser.add_argument("-s", "--steps", "maximum number of steps per simulation", false);
-    parser.add_argument("-p", "--maxtime", "Maximum number to progress in time (default=100)", false );
     parser.add_argument("-d", "--device", "What simulation to run (GPU (0) / CPU (1) / BOTH (2))", false);
+    parser.add_argument("-f", "--pretty", "Pretty print output file", false);
+    parser.add_argument("-m", "--model", "Model xml file path", false);
+    parser.add_argument("-o", "--output", "The path to output result file", false);
+    parser.add_argument("-p", "--maxtime", "Maximum number to progress in time (default=100)", false );
+    parser.add_argument("-s", "--steps", "maximum number of steps per simulation", false);
+    parser.add_argument("-t", "--threads", "Number of threads", false);
     parser.add_argument("-u", "--cputhread", "The number of threads to use on the CPU", false);
     parser.add_argument("-w", "--write", "Write to file (0) / console (1) / both (2)", false);
-    parser.add_argument("-o", "--output", "The path to output result file", false);
     parser.add_argument("-y", "--max", "Use max steps or time for limit simulation. (max steps (0) / max time (1) )", false);
     parser.enable_help();
     auto err = parser.parse(argc, argv);
@@ -47,23 +48,27 @@ int main(int argc, const char* argv[])
     }
 
     int mode = 0; // 0 = GPU, 1 = CPU, 2 = BOTH
-    string o_path = std::filesystem::current_path();
+    string c_path = std::filesystem::current_path();
+    string pretty = "";
+    string output = "";
 
     int write_mode = -1; // 0 = file, 1 = console, 2 = both
 
 
-    if (parser.exists("b")) strategy.block_n = parser.get<int>("b");
-    if (parser.exists("t")) strategy.threads_n = parser.get<int>("t");
     if (parser.exists("a")) strategy.simulations_per_thread = parser.get<unsigned int>("a");
+    if (parser.exists("b")) strategy.block_n = parser.get<int>("b");
     if (parser.exists("c")) strategy.simulation_runs = parser.get<int>("c");
-    if (parser.exists("s")) strategy.max_sim_steps = parser.get<unsigned int>("s");
-    if (parser.exists("p")) strategy.max_time_progression = parser.get<double>("p");
-    if (parser.exists("u")) strategy.cpu_threads_n = parser.get<unsigned int>("u");
     if (parser.exists("d")) mode = parser.get<int>("d");
-    if (parser.exists("o")) o_path = o_path + parser.get<string>("o");
+    if (parser.exists("f")) pretty = c_path + "/" + parser.get<string>("f");
+    if (parser.exists("o")) output = c_path + "/" + parser.get<string>("o");
+    if (parser.exists("p")) strategy.max_time_progression = parser.get<double>("p");
+    if (parser.exists("s")) strategy.max_sim_steps = parser.get<unsigned int>("s");
+    if (parser.exists("t")) strategy.threads_n = parser.get<int>("t");
+    if (parser.exists("u")) strategy.cpu_threads_n = parser.get<unsigned int>("u");
     if (parser.exists("w")) write_mode = parser.get<int>("w");
     if (parser.exists("y")) strategy.use_max_steps = parser.get<int>("y") == 0;
-    
+
+    std::cout << "Pretty file name here jhadshasjhdkjsahd: " << pretty;
     
     std::cout << "Fuck you\n";
 
@@ -112,8 +117,8 @@ int main(int argc, const char* argv[])
     
     array_t<node_t> start_nodes = array_t<node_t>(1);
     start_nodes.arr()[0] = node0;
-
-    pretty_visitor p_visitor;
+    
+    pretty_visitor p_visitor = pretty_visitor(pretty);
     domain_analysis_visitor d_visitor;
 
     cout << write_mode % 2 << "HELELELELLELELELELLLLLLLOOOOOOOOOOOOO";
@@ -121,7 +126,7 @@ int main(int argc, const char* argv[])
 
     cout << start_nodes.size() << "habahbababahbahba \n";
     
-    result_writer r_writer = result_writer(&o_path ,strategy, start_nodes.size(), write_mode > 0, write_mode % 2 == 0);
+    result_writer r_writer = result_writer(&output ,strategy, start_nodes.size(), write_mode > 0, write_mode % 2 == 0);
     
     stochastic_model_t model(start_nodes, timer_arr, variable_arr, 5);
     if (parser.exists("m"))
@@ -137,6 +142,7 @@ int main(int argc, const char* argv[])
 
         delete[] writeable;
     }
+    //pf << "blah blah testy test\n";
     p_visitor.visit(&model);
     d_visitor.visit(&model);
     printf("Max exp: %d | Max updates: %d\n", d_visitor.get_max_expression_depth(), d_visitor.get_max_update_width());

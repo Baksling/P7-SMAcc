@@ -76,6 +76,7 @@ public:
     //HOST methods
     std::string type_to_string() const;
     std::string to_string() const;
+    void pretty_print(std::ostream& os) const;
     void accept(visitor* v) const;
     unsigned int get_depth() const;
     bool contains_clock_expression() const;

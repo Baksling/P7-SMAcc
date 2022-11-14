@@ -49,7 +49,7 @@ public:
 
     //HOST METHODS
     void accept(visitor* v) const;
-    void pretty_print() const;
+    void pretty_print(std::ostream& os) const;
     void cuda_allocate(edge_t** pointer, const allocation_helper* helper) const;
     int get_updates_size() const;
 };
