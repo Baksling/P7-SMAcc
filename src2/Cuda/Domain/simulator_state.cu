@@ -1,9 +1,10 @@
 ﻿#include "simulator_state.h"
 #include "node_t.h"
 #include "edge_t.h"
+#include "../Simulator/writers/result_manager.h"
 
 
-CPU GPU double simulator_state::determine_progression(const node_t* node, curandState* r_state)
+CPU GPU double simulator_state::determine_progression(const node_t* node)
 {
     double local_max_progress = 0.0;
     const bool has_upper_bound = node->max_time_progression(this, &local_max_progress);
@@ -18,7 +19,7 @@ CPU GPU double simulator_state::determine_progression(const node_t* node, curand
         }
         else
         {
-            time_progression = (1.0 - curand_uniform_double(r_state)) * local_max_progress;
+            time_progression = (1.0 - curand_uniform_double(this->random)) * local_max_progress;
         }
     }
     else
@@ -31,7 +32,7 @@ CPU GPU double simulator_state::determine_progression(const node_t* node, curand
         }
         else
         {
-            time_progression = (-log(curand_uniform_double(r_state))) / lambda;
+            time_progression = (-log(curand_uniform_double(this->random))) / lambda;
         }
     }
 
@@ -68,7 +69,7 @@ simulator_state::simulator_state(
     // this->medium = medium;
 }
 
-CPU GPU model_state* simulator_state::progress_sim(const model_options* options, curandState* r_state)
+CPU GPU model_state* simulator_state::progress_sim(const model_options* options)
 {
     //determine if sim is done
     if((options->use_max_steps      && this->steps_       >= options->max_steps_pr_sim)
@@ -99,7 +100,7 @@ CPU GPU model_state* simulator_state::progress_sim(const model_options* options,
         if(!current->current_node->evaluate_invariants(this)) continue;
 
         //determine current models progress
-        const double local_progress = this->determine_progression(current->current_node, r_state);
+        const double local_progress = this->determine_progression(current->current_node);
 
         //If negative progression, skip. Represents NO_PROGRESS
         if(local_progress < 0) continue;
@@ -117,49 +118,7 @@ CPU GPU model_state* simulator_state::progress_sim(const model_options* options,
     return winning_model;
 }
 
-CPU GPU void simulator_state::write_result(const simulation_result_container* output_array) const
-{
-    simulation_result* output = output_array->get_sim_results(this->sim_id_);
-
-    output->total_time_progress = this->global_time_;
-    output->steps = this->steps_;
-
-    const lend_array<int> node_results = output_array->get_nodes(this->sim_id_);
-    const lend_array<double> var_results = output_array->get_variables(this->sim_id_);
-
-    if(node_results.size() != this->models_.size() || var_results.size() != this->variables_.size())
-    {
-        printf("Expected number of models or variables does not match actual amount of models/variables!\n");
-        return;
-    }
-
-    for (int i = 0; i < node_results.size(); ++i)
-    {
-        int* p = node_results.at(i);
-        (*p) = this->models_.at(i)->reached_goal
-            ? this->models_.at(i)->current_node->get_id()
-            : HIT_MAX_STEPS;
-    }
-
-    for (int i = 0; i < var_results.size(); ++i)
-    {
-        double* p = var_results.at(i);
-        // continue;
-        *p = this->variables_.at(i)->get_max_value();
-    }
-}
-
-CPU GPU void simulator_state::free_internals()
-{
-    // free(this->cache_pointer_);
-    // this->expression_stack.free_internal();
-    // this->value_stack.free_internal();
-    // this->timers_.free_array();
-    // this->variables_.free_array();
-    // this->models_.free_array();
-}
-
-CPU GPU simulator_state simulator_state::from_multi_model(
+CPU GPU simulator_state simulator_state::init(
     const stochastic_model_t* multi_model,
     const model_options* options,
     curandState* random,
@@ -236,7 +195,7 @@ CPU GPU lend_array<clock_variable> simulator_state::get_variables() const
     return lend_array<clock_variable>(&this->variables_);
 }
 
-void simulator_state::broadcast_channel(const model_state* current_state, const unsigned channel_id, curandState* r_state)
+void simulator_state::broadcast_channel(const model_state* current_state, const unsigned channel_id, const result_manager* results)
 {
     if(channel_id == NO_CHANNEL) return;
     
@@ -251,7 +210,7 @@ void simulator_state::broadcast_channel(const model_state* current_state, const 
         
         //pick random start index in order to simulate random listener, when multiple listeners on same channel present
         const unsigned size = static_cast<unsigned>(edges.size());
-        const unsigned start_index = curand(r_state) % size;
+        const unsigned start_index = curand(this->random) % size;
         
         for (unsigned j = 0; j < size; ++j)
         {
@@ -266,6 +225,8 @@ void simulator_state::broadcast_channel(const model_state* current_state, const 
             state->reached_goal = dest->is_goal_node();
             
             edge->execute_updates(this);
+
+            results->write_node_trace(state, this);
             break;
         }
     }

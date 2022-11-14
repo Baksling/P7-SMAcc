@@ -1,24 +1,28 @@
 ﻿#pragma once
-#include <map>
+#include <unordered_map>
 #include <string>
 #include <chrono>
 
-#include "simulation_result.h"
-#include "simulation_strategy.h"
-#include "../common/allocation_helper.h"
-#include "../common/macro.h"
-#include "../common/lend_array.h"
+#include "result_manager.h"
 
+#include "simulation_result.h"
+#include "../simulation_strategy.h"
+#include "../../common/macro.h"
+
+
+//! MUST BE POWERS OF 2 AS IT IS USEd IN BITWISE OPERATIONS
+//Write summary console,
+//Write summary file
+//write file data
+//Write trace
+//write lite
 enum writer_modes
 {
-    no_output = 0,
     console_sum = 1,
     file_sum = 2,
-    console_file_sum = 3,
-    console_file_data = 4,
-    file_sum_file_data = 5,
-    console_sum_file_sum_file_data = 6,
-    lite_sum = 7
+    file_data = 4,
+    trace = 8,
+    lite_sum = 16
 };
 
 class result_writer
@@ -26,10 +30,10 @@ class result_writer
 private:
     std::string file_path_;
     simulation_strategy strategy_;
-    writer_modes write_mode_;
+    int write_mode_;
     unsigned model_count_;
-    unsigned simulation_counter_;
-    std::unordered_map<int, node_result> result_map_;
+    unsigned output_counter_;
+    std::unordered_map<int, node_result> result_map_{};
     array_t<variable_result> var_result_{0};
 
     static float calc_percentage(const unsigned long long counter, const unsigned long long divisor);
@@ -39,18 +43,26 @@ private:
     void write_to_file(const sim_pointers* results,
                        unsigned long long total_simulations, std::chrono::steady_clock::duration sim_duration);
 
-    void write_to_console(const unsigned long total_simulations) const;
     void write_summary_to_stream(std::ostream& stream, unsigned long long total_simulations, std::chrono::steady_clock::duration sim_duration) const;
 
+    void write_trace(const result_manager* trace_tracker) const;
+    
     void write_lite(std::chrono::steady_clock::duration sim_duration) const;
 
 public:
+    const bool trace_enabled;
+
     explicit result_writer(const std::string* path, simulation_strategy strategy, unsigned model_count,
-        unsigned variable_count, writer_modes write_mode);
+        unsigned variable_count, int write_mode);
     
-    void write_results(const simulation_result_container* sim_result,
+    void write(const result_manager* sim_result,
                        std::chrono::steady_clock::duration sim_duration);
 
-    void write_summary(unsigned long long total_simulations, std::chrono::steady_clock::duration sim_duration);
+    void write_summary(unsigned long long total_simulations, std::chrono::steady_clock::duration sim_duration) const;
+
+    void write_model(const stochastic_model_t* model,
+                     std::unordered_map<int, std::string>& name_map,
+                     std::unordered_map<int, int>& model_map);
     
+    static int parse_mode(const std::string& str);
 };

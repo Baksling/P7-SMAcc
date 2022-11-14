@@ -4,7 +4,6 @@
 #include "../common/macro.h"
 #include "../common/lend_array.h"
 #include <map>
-#include "simulation_result.h"
 #include "simulation_strategy.h"
 #include "../common/allocation_helper.h"
 #include "../Domain/edge_t.h"

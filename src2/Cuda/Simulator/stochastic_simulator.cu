@@ -1,10 +1,7 @@
 ﻿#include "stochastic_simulator.h"
 #include "thread_pool.h"
-#include <map>
 #include "device_launch_parameters.h"
 #include <chrono>
-
-#include "result_writer.h"
 #include "simulator_tools.h"
 #include "stochastic_engine.h"
 #include <chrono>
@@ -57,30 +54,11 @@ void print_cache_memory_diagnosis(const size_t total_cache)
     );
 }
 
-void print_results_memory_diagnosis(const size_t results_size)
-{
-    size_t free_mem, total_mem;
-    cudaMemGetInfo(&free_mem, &total_mem);
-
-    printf("Total simulation results memory utilization: %llu bytes (%lf%%).\n",
-         static_cast<unsigned long long>(results_size / 8UL),
-        (static_cast<double>(results_size) / static_cast<double>(total_mem))*100
-        );
-
-    printf("Total device memory utilization: %llu / %llu bytes (%lf%%)\n",
-        static_cast<unsigned long long>((total_mem - free_mem) / 8UL),
-        static_cast<unsigned long long>((total_mem) / 8UL),
-        ( static_cast<double>(total_mem - free_mem) / static_cast<double>(total_mem))*100
-        );
-}
-
 
 void stochastic_simulator::simulate_gpu(stochastic_model_t* model, const simulation_strategy* strategy, result_writer* r_writer, const bool verbose)
 {
      //setup start variables
     const unsigned long total_simulations = strategy->total_simulations();
-    const unsigned int model_count = model->get_models_count();
-    const unsigned int variable_count = model->get_variable_count();
     allocation_helper allocator = allocation_helper(true);
     
     //Allocate model on cuda
@@ -102,19 +80,17 @@ void stochastic_simulator::simulate_gpu(stochastic_model_t* model, const simulat
     allocator.allocate(&total_memory_heap, thread_memory_size);
 
     if(verbose) print_cache_memory_diagnosis(thread_memory_size);
+    
+    result_manager* results;
+    result_manager* d_results;
 
-    const size_t before_results = allocator.allocated_size;
-    const simulation_result_container results = simulation_result_container(
-        total_simulations,
-        model_count,
-        variable_count,
-        &allocator);
-    const simulation_result_container* d_result = results.cuda_allocate(&allocator);
-
-    if(verbose) print_results_memory_diagnosis(allocator.allocated_size - before_results);
+    const size_t pre_results_mem_allocated = allocator.allocated_size;
+    result_manager::init_unified(&results, &d_results, model, strategy, &allocator);
+    
+    if(verbose) results->print_memory_usage(&allocator, pre_results_mem_allocated);
     
     //run simulations
-    if (verbose) std::cout << "Started running!\n";
+    if (verbose) std::cout << "\nStarted running!\n";
     const steady_clock::time_point global_start = steady_clock::now();
     
     for (unsigned i = 0; i < strategy->simulation_runs; ++i)
@@ -125,7 +101,7 @@ void stochastic_simulator::simulate_gpu(stochastic_model_t* model, const simulat
         const steady_clock::time_point local_start = steady_clock::now();
         
         //simulate on device
-        const bool success = stochastic_engine::run_gpu(model_d, options_d, d_result, strategy, total_memory_heap);
+        const bool success = stochastic_engine::run_gpu(model_d, options_d, d_results, strategy, total_memory_heap);
         if(!success)
         {
             printf("An unsuccessful GPU simulation has occured. Stopping simulation.\n");
@@ -140,7 +116,8 @@ void stochastic_simulator::simulate_gpu(stochastic_model_t* model, const simulat
         }
         
         //simulator_tools::read_results(local_results, total_simulations, model_count, &result_map, &lend_variable_r, true);
-        r_writer->write_results(&results, steady_clock::now() - local_start);
+        r_writer->write(results, steady_clock::now() - local_start);
+        results->clear();
     }
 
      const steady_clock::duration temp_time = steady_clock::now() - global_start;
@@ -151,6 +128,7 @@ void stochastic_simulator::simulate_gpu(stochastic_model_t* model, const simulat
     //simulator_tools::print_results(&result_map, &lend_variable_r, total_simulations);
     
     //free local variables
+    free(results);
     allocator.free_allocations();
 }
 
@@ -163,31 +141,24 @@ void stochastic_simulator::simulate_cpu(
     //setup start variables
     const unsigned long total_simulations = strategy->total_simulations();
 
-    //setup results array
-    const unsigned int variable_count = model->get_variable_count();
-    const unsigned int model_count = model->get_models_count();
-
     allocation_helper allocator = allocation_helper(false);
-    simulation_result_container results = simulation_result_container(
-        total_simulations,
-        model_count,
-        variable_count,
-        &allocator);
-    
     model_options options = build_options(model, strategy);
 
     const unsigned long long int thread_memory_size = options.get_cache_size()  * strategy->degree_of_parallelism();
     void* total_memory_heap = nullptr;
     allocator.allocate(&total_memory_heap, thread_memory_size);
 
-    if (verbose) std::cout << "Started running!\n";
+    //Allocate results
+    result_manager* results = result_manager::init(model, strategy, &allocator);
+
+    if (verbose) std::cout << "\nStarted running!\n";
     const steady_clock::time_point global_start = steady_clock::now();
     
     for (unsigned i = 0; i < strategy->simulation_runs; ++i)
     {
         options.seed = static_cast<unsigned long>(time(nullptr));
         const steady_clock::time_point local_start = steady_clock::now();
-        const bool success = stochastic_engine::run_cpu(model, &options, &results, strategy, total_memory_heap);
+        const bool success = stochastic_engine::run_cpu(model, &options, results, strategy, total_memory_heap);
         if(!success)
         {
             if (verbose) printf("An unsuccessful CPU simulation has occured. Stopping simulation.");
@@ -198,13 +169,14 @@ void stochastic_simulator::simulate_cpu(
             std::cout << "Simulation ran for: " << duration_cast<milliseconds>(steady_clock::now() - local_start).count() << "[ms] \n";
             std::cout << "Reading results...\n";
         }
-        r_writer->write_results(&results, steady_clock::now() - local_start);
+        r_writer->write(results, steady_clock::now() - local_start);
+        results->clear();
     }
 
     const steady_clock::duration temp_time =  steady_clock::now() - global_start;
     if (verbose) std::cout << "Simulation and result analysis took a total of: " << duration_cast<milliseconds>(temp_time).count() << "[ms] \n";
 
     r_writer->write_summary(total_simulations,temp_time);
-    
+
     allocator.free_allocations();
 }

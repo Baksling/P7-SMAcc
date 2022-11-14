@@ -11,10 +11,9 @@
 #include "common/argparser.h"
 
 #include "Domain/edge_t.h"
-#include "Simulator/result_writer.h"
+#include "Simulator/writers/result_writer.h"
 
 using namespace argparse;
-
 
 int main(int argc, const char* argv[])
 {
@@ -29,13 +28,16 @@ int main(int argc, const char* argv[])
     parser.add_argument("-a", "--amount", "Number of simulations", false);
     parser.add_argument("-c", "--count", "number of times to repeat simulations", false);
     parser.add_argument("-s", "--steps", "maximum number of steps per simulation", false);
-    parser.add_argument("-p", "--maxtime", "Maximum number to progress in time (default=100)", false );
+    parser.add_argument("-p", "--max_time", "Maximum number to progress in time (default=100)", false );
     parser.add_argument("-d", "--device", "What simulation to run (GPU (0) / CPU (1) / BOTH (2))", false);
-    parser.add_argument("-u", "--cputhread", "The number of threads to use on the CPU", false);
-    parser.add_argument("-w", "--write", "Write to file (\n / No output (0) \n / Console Summary (1) \n / File summary (2) \n / Console and File summary (3) \n / Console summary and File data (4) \n / File summary and File data (5) \n / Console summary, File summary, and File data (6) \n / Lite summary (7))", false);
+    parser.add_argument("-u", "--cpu_thread", "The number of threads to use on the CPU", false);
     parser.add_argument("-o", "--output", "The path to output result file", false);
     parser.add_argument("-y", "--max", "Use max steps or time for limit simulation. (max steps (0) / max time (1) )", false);
     parser.add_argument("-v", "--verbose", "Enable pretty print of model (print model (0) / silent(1))", false);
+    parser.add_argument("-i", "--Interval_type", "Trace interval mode (0 for step interval (default) / 1 for time interval )", false);
+    parser.add_argument("-I", "--Interval", "Trace interval value. Ignored if trace write mode not enabled. Defaults to every 1.0", false);
+    parser.add_argument("-w", "--write", "Output options. chars activates different modes, e.g. '-w cd' for console summary and results dump ( \n / c = Console Summary \n / f = File summary \n / d = full data in file \n / l = lite files \n / t = trace )", false);
+
     parser.enable_help();
     auto err = parser.parse(argc, argv);
     
@@ -51,7 +53,7 @@ int main(int argc, const char* argv[])
 
     int mode = 0; // 0 = GPU, 1 = CPU, 2 = BOTH
     string o_path = std::filesystem::current_path();
-    writer_modes write_mode; // 0 = file, 1 = console, 2 = both
+    int write_mode = 0; // 0 = file, 1 = console, 2 = both
     bool verbose = true;
 
     if (parser.exists("b")) strategy.block_n = parser.get<int>("b");
@@ -63,12 +65,20 @@ int main(int argc, const char* argv[])
     if (parser.exists("u")) strategy.cpu_threads_n = parser.get<unsigned int>("u");
     if (parser.exists("d")) mode = parser.get<int>("d");
     if (parser.exists("o")) o_path = o_path + "/" + parser.get<string>("o");
-    if (parser.exists("w")) write_mode = static_cast<writer_modes>(parser.get<int>("w"));
     if (parser.exists("y")) strategy.use_max_steps = parser.get<int>("y") == 0;
     if (parser.exists("v")) verbose = parser.get<int>("v") == 0;
+    if (parser.exists("w")) write_mode = result_writer::parse_mode(parser.get<std::string>("w"));
+    if(write_mode & trace) //Trace settings, only if trace is enabled
+    {
+        strategy.trace_settings.value = parser.exists("I")
+            ? parser.get<double>("I")
+            : 1.0;
+        strategy.trace_settings.mode =  parser.exists("i")
+            ? static_cast<trace_interval::interval_type>(parser.get<int>("i"))
+            : trace_interval::step_interval;
+    }
     
-    
-    stochastic_model_t model(array_t<node_t*>(0), array_t<clock_variable>(0), array_t<clock_variable>(0),  0);
+    stochastic_model_t model(array_t<node_t*>(0), array_t<clock_variable>(0), array_t<clock_variable>(0));
     
     if (parser.exists("m"))
     {
@@ -120,19 +130,19 @@ int main(int argc, const char* argv[])
         array_t<node_t*> start_nodes = array_t<node_t*>(1);
         start_nodes.arr()[0] = &node0;
 
-        model = stochastic_model_t(start_nodes, timer_arr, variable_arr, 5);
+        model = stochastic_model_t(start_nodes, timer_arr, variable_arr);
     }
-    result_writer r_writer = result_writer(&o_path ,strategy, model.get_models_count(), model.get_variable_count(), write_mode);
+    result_writer r_writer = result_writer(&o_path ,strategy,
+        model.get_models_count(),
+        model.get_variable_count(),
+        write_mode);
     
     //Computers were not meant to speak.
     //You can speak when spoken to.
     if (verbose)
     {
         pretty_visitor p_visitor;
-        domain_analysis_visitor d_visitor;
         p_visitor.visit(&model);
-        d_visitor.visit(&model);
-        printf("Max exp: %d | Max updates: %d\n", d_visitor.get_max_expression_depth(), d_visitor.get_max_update_width());
     }
 
     //0 == GPU, 1 == CPU, 2 == BOTH

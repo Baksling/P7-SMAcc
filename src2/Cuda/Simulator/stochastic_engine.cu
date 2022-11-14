@@ -6,15 +6,17 @@
 #include "simulator_tools.h"
 #include "../Domain/edge_t.h"
 #include "../Domain/stochastic_model_t.h"
+#include "writers/result_manager.h"
+
 
 using namespace std::chrono;
 
 
-CPU GPU void run_simulator(simulator_state* state, curandState* r_state, const model_options* options)
+CPU GPU void run_simulator(simulator_state* state, result_manager* trace_tracker, const model_options* options)
 {
     while (true)
     {
-        model_state* current_model = state->progress_sim(options, r_state);
+        model_state* current_model = state->progress_sim(options);
 
         if(current_model == nullptr || current_model->reached_goal)
         {
@@ -26,7 +28,7 @@ CPU GPU void run_simulator(simulator_state* state, curandState* r_state, const m
             lend_array<edge_t> outgoing_edges =  current_model->current_node->get_edges();
             if(outgoing_edges.size() == 0) break;
 
-            const edge_t* edge = simulator_tools::choose_next_edge_bit(state, &outgoing_edges, r_state);
+            const edge_t* edge = simulator_tools::choose_next_edge_bit(state, &outgoing_edges, state->random);
             if(edge == nullptr)
             {
                 break;
@@ -34,9 +36,11 @@ CPU GPU void run_simulator(simulator_state* state, curandState* r_state, const m
             
             current_model->current_node = edge->get_dest();
             edge->execute_updates(state);
-            state->broadcast_channel(current_model, edge->get_channel(), r_state);
+            state->broadcast_channel(current_model, edge->get_channel(), trace_tracker);
         }
         while (current_model->current_node->is_branch_point());
+
+        trace_tracker->write_step_trace(current_model, state);
         
         if(current_model->current_node->is_goal_node())
         {
@@ -49,7 +53,7 @@ CPU GPU void simulate_stochastic_model(
     const stochastic_model_t* model,
     const model_options* options,
     curandState* random_states,
-    const simulation_result_container* output,
+    result_manager* output,
     const unsigned long idx,
     void* memory_heap
 )
@@ -57,7 +61,7 @@ CPU GPU void simulate_stochastic_model(
     curandState* r_state = &random_states[idx];
     curand_init(options->seed, idx, idx, r_state);
     
-    simulator_state state = simulator_state::from_multi_model(model, options, r_state, memory_heap);
+    simulator_state state = simulator_state::init(model, options, r_state, memory_heap);
     
     
     for (unsigned i = 0; i < options->simulation_amount; ++i)
@@ -66,19 +70,17 @@ CPU GPU void simulate_stochastic_model(
         state.reset(sim_id, model);
 
         //run simulation
-        run_simulator(&state, r_state, options);
+        run_simulator(&state, output, options);
 
-        state.write_result(output);
+        output->write_result(&state);
     }
-    
-    state.free_internals();
 }
 
 __global__ void gpu_simulate(
     const stochastic_model_t* model,
     const model_options* options,
     curandState* r_state,
-    const simulation_result_container* output,
+    result_manager* output,
     void* total_memory_heap
     )
 {
@@ -91,22 +93,12 @@ __global__ void gpu_simulate(
 bool stochastic_engine::run_gpu(
     const stochastic_model_t* model,
     const model_options* options,
-    const simulation_result_container* output,
+    result_manager* output,
     const simulation_strategy* strategy,
     void* total_memory_heap)
 {
     curandState* random_states = nullptr;
     cudaMalloc(&random_states, sizeof(curandState)*strategy->block_n*strategy->threads_n);
-
-    // const unsigned long long int thread_memory_size = options->get_cache_size();
-    // void* original_store = malloc(thread_memory_size);
-    
-    
-    // if(cudaSuccess != cudaDeviceSetLimit(cudaLimitMallocHeapSize, 8589934592))
-    // {
-    //     printf("Could not allocate heap space on cuda device\n");
-    //     return false;
-    // }
     
     //simulate on device
     gpu_simulate<<<strategy->block_n, strategy->threads_n>>>(model, options, random_states, output, total_memory_heap);
@@ -124,7 +116,7 @@ bool stochastic_engine::run_gpu(
 bool stochastic_engine::run_cpu(
     const stochastic_model_t* model,
     const model_options* options,
-    simulation_result_container* output,
+    result_manager* output,
     const simulation_strategy* strategy,
     void* total_memory_heap)
 {

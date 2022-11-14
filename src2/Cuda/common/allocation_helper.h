@@ -19,7 +19,7 @@ struct allocation_helper
     std::list<void*> free_list;
     std::unordered_map<node_t*, node_t*> node_map;
     unsigned long long allocated_size;
-
+    
     void add(void* p, const size_t size)
     {
         this->free_list.push_back(p);
@@ -29,6 +29,11 @@ struct allocation_helper
     template<typename T>
     void allocate(T** p, const size_t size)
     {
+        if(size == 0)
+        {
+            *p = nullptr;
+            return;
+        }
         if(this->use_cuda)
         {
             cudaMalloc(p, size);
@@ -41,8 +46,10 @@ struct allocation_helper
         this->allocated_size += size;
     }
 
-    void free_allocations() const
+    void free_allocations()
     {
+        this->node_map.clear();
+        this->allocated_size = 0;
         for (const auto p : this->free_list)
         {
             if(this->use_cuda)

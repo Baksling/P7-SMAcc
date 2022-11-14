@@ -369,6 +369,11 @@ expression* expression::variable_expression(const unsigned variable_id)
     return new expression(system_variable_e, NO_VALUE, variable_id, NO_VALUE, nullptr, nullptr);
 }
 
+expression* expression::random_expression(const double max)
+{
+    return new expression(random_e, max, NO_VALUE, nullptr, nullptr, nullptr);
+}
+
 expression* expression::plus_expression(expression* left, expression* right)
 {
     return new expression(plus_e, NO_VALUE, NO_V_ID, left, right, nullptr);

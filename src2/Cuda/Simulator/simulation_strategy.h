@@ -4,6 +4,7 @@
 
 #define HIT_MAX_STEPS (-1)
 #include "../Domain/clock_variable.h"
+#include "writers/trace.h"
 class node_t;
 
 struct model_state
@@ -57,6 +58,8 @@ struct simulation_strategy
     unsigned int cpu_threads_n = 1;
     unsigned int simulation_runs = 1;
 
+    trace_interval trace_settings = {trace_interval::disabled, 0};
+    
     bool use_max_steps = true;
     unsigned int max_sim_steps = 100;
     double max_time_progression = 100.0;
