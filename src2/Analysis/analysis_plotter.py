@@ -8,7 +8,7 @@ import argparse
 COLORS = ['r', 'g', 'b', 'k']
 COLORS_LEN = len(COLORS)
 
-def plot_points(p_list: List[Tuple[int, int, int]], dims: Tuple[int, int, int]) -> None:
+def plot_points(p_list: List[Tuple[int, int, int]], dims: Tuple[int, int, int], args_) -> None:
     ax = plt.figure().add_subplot(projection='3d')
     block_dim, thread_dim, time_dim = dims
 
@@ -16,6 +16,7 @@ def plot_points(p_list: List[Tuple[int, int, int]], dims: Tuple[int, int, int]) 
 
     for p in range(len(p_list)):
         block, thread, time = p_list[p]
+        if block % args_.interval != 0: continue
 
         color.append(COLORS[block % COLORS_LEN])
 
@@ -61,16 +62,21 @@ def plot_lines(p_list: List[Tuple[int, int, int]], dims: Tuple[int, int, int], a
     lines = [[] for i in range(thread_dim + 1)]
 
     labels_start = ["CPU"] if args_.min_blocks <= 0 else []
-    labels = labels_start + [f"#Block {block + 1}" for block in range(args_.min_blocks, block_dim)]
-
-    fig, ax = plt.subplots()
+    labels = labels_start + [f"#Block {block + args_.interval}" for block in range(args_.min_blocks, block_dim) if (args_.interval > 0 and (block % args_.interval == 0) and block + args_.interval <= block_dim)]
 
     for thread_idx in range(thread_dim):
         for block_idx in range(block_dim + 1):
+            if (block_idx % args_.interval != 0): continue
+
             if thread_idx == 0:  # This is needed for plot thingy!
                 lines[thread_idx].append(v_lst[block_idx][thread_idx][1])
             data = v_lst[block_idx][thread_idx][1]
             lines[thread_idx + 1].append(data)
+
+    for x in lines:
+        print(x)
+    for x in labels:
+        print(x)
 
     if args_.show_label > 0: plt.plot(lines, label=labels)
     else:                    plt.plot(lines)
@@ -224,6 +230,16 @@ def get_args():
         required=False
     )
 
+    option_parser.add_argument(
+        '-i',
+        '--interval',
+        dest='interval',
+        help='Interval amount',
+        type=int,
+        default=1,
+        required=False
+    )
+
     args = parser.parse_args()
     return args
 
@@ -237,6 +253,6 @@ if __name__ == "__main__":
     dims = (dims[0], dims[1], max_time)
     # test_dims = (args.block_dim, args.thread_dim, 15)
 
-    plot_points(data, dims)
+    plot_points(data, dims, args)
 
     plot_lines(data, dims, args)
