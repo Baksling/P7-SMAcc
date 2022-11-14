@@ -64,12 +64,15 @@ def plot_lines(p_list: List[Tuple[int, int, int]], dims: Tuple[int, int, int], a
     labels_start = ["CPU"] if args_.min_blocks <= 0 else []
     labels = labels_start + [f"#Block {block + args_.interval}" for block in range(args_.min_blocks, block_dim) if (args_.interval > 0 and (block % args_.interval == 0) and block + args_.interval <= block_dim)]
 
+    for tmp in range(thread_dim - 1):
+        for idx in range(len(lines)):
+
+            if idx < args_.min_threads: lines[idx].append(0)
+
     for thread_idx in range(thread_dim):
         for block_idx in range(block_dim + 1):
             if (block_idx % args_.interval != 0): continue
-
-            if thread_idx == 0:  # This is needed for plot thingy!
-                lines[thread_idx].append(v_lst[block_idx][thread_idx][1])
+            if thread_idx < args_.min_threads - 1: continue
             data = v_lst[block_idx][thread_idx][1]
             lines[thread_idx + 1].append(data)
 
@@ -83,7 +86,7 @@ def plot_lines(p_list: List[Tuple[int, int, int]], dims: Tuple[int, int, int], a
 
     # Make legend, set axes limits and labels
     plt.legend()
-    plt.xlim(1, thread_dim)
+    plt.xlim(args_.min_threads, thread_dim)
     plt.ylim(0, time_dim)
     plt.xlabel('Threads')
     plt.ylabel('Time (ms)')
@@ -108,6 +111,8 @@ def get_data(folder_path: str, args_, dims, filter_str: str = None) -> Tuple[int
         if block > block_dim or block < args_.min_blocks: continue
         if thread > thread_dim or thread < args_.min_threads: continue
         if time > time_dim or time < args_.min_time: continue
+        
+        if block % args_.interval != 0: continue
 
         with open(join(folder_path, file)) as f:
             lines = f.readlines()
