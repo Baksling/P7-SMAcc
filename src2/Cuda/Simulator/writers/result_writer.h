@@ -9,6 +9,7 @@
 #include "../simulation_strategy.h"
 #include "../../common/macro.h"
 
+struct node_with_system_id;
 
 //! MUST BE POWERS OF 2 AS IT IS USEd IN BITWISE OPERATIONS
 //Write summary console,
@@ -22,7 +23,8 @@ enum writer_modes
     file_sum = 2,
     file_data = 4,
     trace = 8,
-    lite_sum = 16
+    lite_sum = 16,
+    model_out = 32
 };
 
 class result_writer
@@ -60,9 +62,10 @@ public:
 
     void write_summary(unsigned long long total_simulations, std::chrono::steady_clock::duration sim_duration) const;
 
-    void write_model(const stochastic_model_t* model,
-                     std::unordered_map<int, std::string>& name_map,
-                     std::unordered_map<int, int>& model_map);
+    void write_model(
+        const std::unordered_map<int, std::string>* name_map,
+        const std::unordered_map<int, node_with_system_id>* subsystem_map) const;
+    
     void clear();
     
     static int parse_mode(const std::string& str);

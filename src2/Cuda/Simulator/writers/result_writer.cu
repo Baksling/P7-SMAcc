@@ -4,6 +4,8 @@
 #include <iostream>
 #include <fstream>
 
+#include "../../UPPAALTreeParser/uppaal_tree_parser.h"
+
 using namespace std::chrono;
 
 float result_writer::calc_percentage(const unsigned long long counter, const unsigned long long divisor)
@@ -126,12 +128,29 @@ void result_writer::write_trace(const result_manager* trace_tracker) const
 }
 
 void result_writer::write_model(
-    const stochastic_model_t* model,
-    std::unordered_map<int, std::string>& name_map,
-    std::unordered_map<int, int>& model_map)
+    const std::unordered_map<int, std::string>* name_map,
+    const std::unordered_map<int, node_with_system_id>* subsystem_map) const
 {
-    //TODO implement when parser suppers :)
-    return;
+    if(!(this->write_mode_ & trace || this->write_mode_ & model_out)) return;
+    std::ofstream file = std::ofstream(this->file_path_ + "_model.csv",
+        std::ofstream::out | std::ofstream::trunc);
+
+    file << "node_id,subsystem_id,name,is_goal";
+
+    for (auto pair : (*subsystem_map))
+    {
+        constexpr char c = ',';
+        std::string name = name_map->count(pair.first) == 1
+            ? name_map->at(pair.first)
+              : std::to_string(pair.first);
+        file << pair.first << c
+            << pair.second.get_system_id() << c
+            <<name << c
+            << pair.second.get_node()->is_goal_node() << '\n';
+    }
+
+    file.flush();
+    file.close();
 }
 
 void result_writer::clear()
@@ -228,6 +247,7 @@ int result_writer::parse_mode(const std::string& str)
     if(str.find('f') != std::string::npos) mode |= file_sum;
     if(str.find('d') != std::string::npos) mode |= file_data;
     if(str.find('t') != std::string::npos) mode |= trace;
+    if(str.find('m') != std::string::npos) mode |= model_out;
     
     return mode;
 }

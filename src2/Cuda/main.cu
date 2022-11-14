@@ -34,7 +34,7 @@ int main(int argc, const char* argv[])
     parser.add_argument("-o", "--output", "The path to output result file", false);
     parser.add_argument("-y", "--max", "Use max steps or time for limit simulation. (max steps (0) / max time (1) )", false);
     parser.add_argument("-v", "--verbose", "Enable pretty print of model (print model (0) / silent(1))", false);
-    parser.add_argument("-w", "--write", "Write mode \n / No output (0) \n / Console Summary (1) \n / File summary (2) (-o required) \n / Console and File summary (3) (-o required) \n / Console summary and File data (4) (-o required) \n / File summary and File data (5) (-o required) \n / Console summary, File summary, and File data (6) (-o required) \n / Lite summary (7) (-o required)", false);
+    parser.add_argument("-w", "--write", "Write mode \n / c = console summary  \n / f = file summary \n / d = file data dump \n / t = trace \n / l = lite summary \n / m = write model to file", false);
     parser.enable_help();
     auto err = parser.parse(argc, argv);
     
@@ -52,7 +52,6 @@ int main(int argc, const char* argv[])
     string o_path = std::filesystem::current_path();
     int write_mode = 0; // 0 = file, 1 = console, 2 = both
     bool verbose = true;
-    printf("%d\n", write_mode);
 
     if (parser.exists("b")) strategy.block_n = parser.get<int>("b");
     if (parser.exists("t")) strategy.threads_n = parser.get<int>("t");
@@ -62,10 +61,12 @@ int main(int argc, const char* argv[])
     if (parser.exists("p")) strategy.max_time_progression = parser.get<double>("p");
     if (parser.exists("u")) strategy.cpu_threads_n = parser.get<unsigned int>("u");
     if (parser.exists("d")) mode = parser.get<int>("d");
-    if (parser.exists("o")) o_path = o_path + "/" + parser.get<string>("o");
     if (parser.exists("y")) strategy.use_max_steps = parser.get<int>("y") == 0;
     if (parser.exists("v")) verbose = parser.get<int>("v") == 0;
     if (parser.exists("w")) write_mode = result_writer::parse_mode(parser.get<std::string>("w"));
+    if (parser.exists("o")) o_path = o_path + "/" + parser.get<string>("o");
+    else o_path = o_path + "/output";
+
     if(write_mode & trace) //Trace settings, only if trace is enabled
     {
         strategy.trace_settings.value = parser.exists("I")
@@ -77,11 +78,12 @@ int main(int argc, const char* argv[])
     }
     else strategy.trace_settings.mode = trace_interval::disabled;
 
+    uppaal_tree_parser tree_parser;
     stochastic_model_t model(array_t<node_t*>(0), array_t<clock_variable>(0), array_t<clock_variable>(0));
     
     if (parser.exists("m"))
     {
-        uppaal_tree_parser tree_parser;
+        tree_parser = uppaal_tree_parser();
         string input_file_path = parser.get<string>("m"); 
         model = tree_parser.parse(input_file_path);
     }
@@ -129,6 +131,13 @@ int main(int argc, const char* argv[])
         model.get_models_count(),
         model.get_variable_count(),
         write_mode);
+
+    if(write_mode & trace || write_mode & model_out)
+    {
+        r_writer.write_model(
+            tree_parser.get_nodes_with_name(),
+            tree_parser.get_subsystems());
+    }
     
     //Computers were not meant to speak.
     //You can speak when spoken to.
