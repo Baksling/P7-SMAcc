@@ -881,6 +881,7 @@
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\ChanSyntax.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\covid.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\dicebase.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\dicebaseUnfair.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\ff15.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\ff20.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\gamble.xml" />
@@ -893,6 +894,7 @@
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\test3.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\test4.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\testBasic.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\ThisIsCancer2ElectricBoogaloo.xml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Cuda\test_results" />

@@ -30,14 +30,11 @@ int main(int argc, const char* argv[])
     parser.add_argument("-s", "--steps", "maximum number of steps per simulation", false);
     parser.add_argument("-p", "--max_time", "Maximum number to progress in time (default=100)", false );
     parser.add_argument("-d", "--device", "What simulation to run (GPU (0) / CPU (1) / BOTH (2))", false);
-    parser.add_argument("-u", "--cpu_thread", "The number of threads to use on the CPU", false);
+    parser.add_argument("-u", "--cputhread", "The number of threads to use on the CPU", false);
     parser.add_argument("-o", "--output", "The path to output result file", false);
     parser.add_argument("-y", "--max", "Use max steps or time for limit simulation. (max steps (0) / max time (1) )", false);
     parser.add_argument("-v", "--verbose", "Enable pretty print of model (print model (0) / silent(1))", false);
-    parser.add_argument("-i", "--Interval_type", "Trace interval mode (0 for step interval (default) / 1 for time interval )", false);
-    parser.add_argument("-I", "--Interval", "Trace interval value. Ignored if trace write mode not enabled. Defaults to every 1.0", false);
-    parser.add_argument("-w", "--write", "Output options. chars activates different modes, e.g. '-w cd' for console summary and results dump ( \n / c = Console Summary \n / f = File summary \n / d = full data in file \n / l = lite files \n / t = trace )", false);
-
+    parser.add_argument("-w", "--write", "Write mode \n / No output (0) \n / Console Summary (1) \n / File summary (2) (-o required) \n / Console and File summary (3) (-o required) \n / Console summary and File data (4) (-o required) \n / File summary and File data (5) (-o required) \n / Console summary, File summary, and File data (6) (-o required) \n / Lite summary (7) (-o required)", false);
     parser.enable_help();
     auto err = parser.parse(argc, argv);
     
@@ -83,14 +80,8 @@ int main(int argc, const char* argv[])
     if (parser.exists("m"))
     {
         uppaal_tree_parser tree_parser;
-        string temp = parser.get<string>("m"); 
-        char* writeable = new char[temp.size() + 1]; //TODO Move this fuckery inside parser
-        std::copy(temp.begin(), temp.end(), writeable);
-        writeable[temp.size()] = '\0';
-        
-        model = tree_parser.parse(writeable);
-
-        delete[] writeable;
+        string input_file_path = parser.get<string>("m"); 
+        model = tree_parser.parse(input_file_path);
     }
     else
     {
@@ -149,12 +140,14 @@ int main(int argc, const char* argv[])
     if (mode == 2 || mode == 0)
     {
         if (verbose) cout << "GPU SIMULATIONS STARTED! \n";
+        r_writer.clear();
         stochastic_simulator::simulate_gpu(&model, &strategy, &r_writer, verbose);
         if (verbose) cout << "GPU SIMULATION DONE! \n";
     }
     if (mode > 0)
     {
         if (verbose) cout << "CPU SIMULATION STARTED! \n";
+        r_writer.clear();
         stochastic_simulator::simulate_cpu(&model, &strategy, &r_writer, verbose);
         if(verbose) cout << "CPU SIMULATION DONE! \n";
     }

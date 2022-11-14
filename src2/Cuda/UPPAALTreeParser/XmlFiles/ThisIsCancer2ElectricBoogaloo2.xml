@@ -11,32 +11,32 @@ clock x,y;</declaration>
 		<location id="id0" x="-238" y="-136">
 			<name x="-248" y="-170">Node1</name>
 			<label kind="invariant" x="-255" y="-170">x&lt;10</label>
-			<label kind="exponentialrate" x="-248" y="-102">249.8</label>
+			<label kind="exponentialrate" x="-248" y="-102">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id1" x="-42" y="-136">
 			<name x="-52" y="-170">Node2</name>
-			<label kind="exponentialrate" x="-52" y="-102">249.8</label>
+			<label kind="exponentialrate" x="-52" y="-102">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id2" x="93" y="-136">
 			<name x="83" y="-170">Node3</name>
-			<label kind="exponentialrate" x="83" y="-102">249.8</label>
+			<label kind="exponentialrate" x="83" y="-102">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id3" x="246" y="-144">
 			<name x="236" y="-178">Node4</name>
-			<label kind="exponentialrate" x="236" y="-110">249.8</label>
+			<label kind="exponentialrate" x="236" y="-110">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id4" x="399" y="-136">
 			<name x="389" y="-170">Node5</name>
-			<label kind="exponentialrate" x="389" y="-102">249.8</label>
+			<label kind="exponentialrate" x="389" y="-102">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id5" x="-238" y="-42">
 			<name x="-248" y="-76">Node6</name>
 			<label kind="invariant" x="-289" y="-51">y&lt;20</label>
-			<label kind="exponentialrate" x="-248" y="-8">249.8</label>
+			<label kind="exponentialrate" x="-248" y="-8">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id6" x="-42" y="-34">
 			<name x="-52" y="-68">Node7</name>
-			<label kind="exponentialrate" x="-52" y="0">249.8</label>
+			<label kind="exponentialrate" x="-52" y="0">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id7" x="161" y="-25">
 			<name x="151" y="-59">Node8</name>
@@ -44,68 +44,68 @@ clock x,y;</declaration>
 		</location>
 		<location id="id8" x="331" y="-25">
 			<name x="321" y="-59">Node9</name>
-			<label kind="exponentialrate" x="321" y="9">249.8</label>
+			<label kind="exponentialrate" x="321" y="9">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id9" x="-229" y="51">
 			<name x="-239" y="17">Node10</name>
-			<label kind="exponentialrate" x="-239" y="85">249.8</label>
+			<label kind="exponentialrate" x="-239" y="85">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id10" x="-221" y="144">
 			<name x="-231" y="110">Node13</name>
-			<label kind="exponentialrate" x="-231" y="178">249.8</label>
+			<label kind="exponentialrate" x="-231" y="178">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id11" x="-263" y="221">
 			<name x="-273" y="187">Node14</name>
-			<label kind="exponentialrate" x="-273" y="255">249.8</label>
+			<label kind="exponentialrate" x="-273" y="255">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id12" x="-212" y="314">
 			<name x="-222" y="280">Node15</name>
-			<label kind="exponentialrate" x="-222" y="348">249.8</label>
+			<label kind="exponentialrate" x="-222" y="348">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id13" x="-255" y="408">
 			<name x="-265" y="374">Node16</name>
-			<label kind="exponentialrate" x="-265" y="442">249.8</label>
+			<label kind="exponentialrate" x="-265" y="442">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id14" x="-170" y="399">
 			<name x="-180" y="365">Node17</name>
-			<label kind="exponentialrate" x="-180" y="433">249.8</label>
+			<label kind="exponentialrate" x="-180" y="433">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id15" x="-68" y="365">
 			<name x="-78" y="331">Node18</name>
-			<label kind="exponentialrate" x="-78" y="399">249.8</label>
+			<label kind="exponentialrate" x="-78" y="399">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id16" x="-119" y="212">
 			<name x="-129" y="178">Node19</name>
-			<label kind="exponentialrate" x="-129" y="246">249.8</label>
+			<label kind="exponentialrate" x="-129" y="246">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id17" x="-144" y="85">
 			<name x="-170" y="51">Node12</name>
 			<label kind="invariant" x="-154" y="102">x&lt;10</label>
-			<label kind="exponentialrate" x="-153" y="110">249.8</label>
+			<label kind="exponentialrate" x="-153" y="110">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id18" x="-119" y="17">
 			<name x="-129" y="-17">Node11</name>
-			<label kind="exponentialrate" x="-129" y="51">249.8</label>
+			<label kind="exponentialrate" x="-129" y="51">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id19" x="-25" y="76">
 			<name x="-35" y="42">Node20</name>
-			<label kind="exponentialrate" x="-34" y="119">249.8</label>
+			<label kind="exponentialrate" x="-34" y="119">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id20" x="17" y="59">
 			<name x="7" y="25">Node21</name>
-			<label kind="exponentialrate" x="7" y="93">249.8</label>
+			<label kind="exponentialrate" x="7" y="93">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id21" x="51" y="25">
 			<name x="41" y="-9">Node22</name>
-			<label kind="exponentialrate" x="34" y="42">249.8</label>
+			<label kind="exponentialrate" x="34" y="42">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id22" x="-17" y="144">
 			<name x="-27" y="110">Node23</name>
-			<label kind="exponentialrate" x="-27" y="178">249.8</label>
+			<label kind="exponentialrate" x="-27" y="178">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id23" x="93" y="136">
 			<name x="83" y="102">Node24</name>
-			<label kind="exponentialrate" x="83" y="170">249.8</label>
+			<label kind="exponentialrate" x="83" y="170">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id24" x="51" y="204">
 			<name x="41" y="170">Node32</name>
@@ -114,73 +114,73 @@ clock x,y;</declaration>
 		</location>
 		<location id="id25" x="144" y="85">
 			<name x="134" y="51">Node25</name>
-			<label kind="exponentialrate" x="134" y="119">249.8</label>
+			<label kind="exponentialrate" x="134" y="119">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id26" x="187" y="25">
 			<name x="177" y="-9">Node26</name>
-			<label kind="exponentialrate" x="178" y="51">249.8</label>
+			<label kind="exponentialrate" x="178" y="51">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id27" x="297" y="34">
 			<name x="287" y="0">Node27</name>
-			<label kind="exponentialrate" x="289" y="76">249.8</label>
+			<label kind="exponentialrate" x="289" y="76">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id28" x="348" y="76">
 			<name x="338" y="42">Node29</name>
-			<label kind="exponentialrate" x="338" y="110">249.8</label>
+			<label kind="exponentialrate" x="338" y="110">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id29" x="238" y="110">
 			<name x="228" y="76">Node28</name>
-			<label kind="exponentialrate" x="228" y="144">249.8</label>
+			<label kind="exponentialrate" x="228" y="144">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id30" x="255" y="204">
 			<name x="245" y="170">Node31</name>
-			<label kind="exponentialrate" x="245" y="238">249.8</label>
+			<label kind="exponentialrate" x="245" y="238">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id31" x="161" y="238">
 			<name x="151" y="204">Node33</name>
 			<label kind="invariant" x="151" y="255">x&lt;5</label>
-			<label kind="exponentialrate" x="151" y="272">249.8</label>
+			<label kind="exponentialrate" x="151" y="272">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id32" x="161" y="170">
 			<name x="151" y="136">Node30</name>
-			<label kind="exponentialrate" x="151" y="204">249.8</label>
+			<label kind="exponentialrate" x="151" y="204">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id33" x="272" y="306">
 			<name x="262" y="272">Node34</name>
 			<label kind="invariant" x="262" y="323">y&lt;20</label>
-			<label kind="exponentialrate" x="262" y="340">249.8</label>
+			<label kind="exponentialrate" x="262" y="340">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id34" x="229" y="391">
 			<name x="219" y="357">Node36</name>
-			<label kind="exponentialrate" x="219" y="425">249.8</label>
+			<label kind="exponentialrate" x="219" y="425">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id35" x="348" y="391">
 			<name x="338" y="357">Node37</name>
-			<label kind="exponentialrate" x="338" y="425">249.8</label>
+			<label kind="exponentialrate" x="338" y="425">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id36" x="399" y="289">
 			<name x="389" y="255">Node35</name>
-			<label kind="exponentialrate" x="389" y="323">249.8</label>
+			<label kind="exponentialrate" x="389" y="323">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id37" x="459" y="391">
 			<name x="449" y="357">Node38</name>
-			<label kind="exponentialrate" x="449" y="425">249.8</label>
+			<label kind="exponentialrate" x="449" y="425">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id38" x="586" y="382">
 			<name x="576" y="348">Goal</name>
-			<label kind="exponentialrate" x="576" y="416">249.8</label>
+			<label kind="exponentialrate" x="576" y="416">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id39" x="-161" y="459">
-			<label kind="exponentialrate" x="-171" y="493">249.8</label>
+			<label kind="exponentialrate" x="-171" y="493">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id40" x="459" y="-25">
-			<label kind="exponentialrate" x="449" y="9">249.8</label>
+			<label kind="exponentialrate" x="449" y="9">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id41" x="425" y="178">
-			<label kind="exponentialrate" x="415" y="212">249.8</label>
+			<label kind="exponentialrate" x="415" y="212">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<location id="id42" x="212" y="535">
-			<label kind="exponentialrate" x="202" y="569">249.8</label>
+			<label kind="exponentialrate" x="202" y="569">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</location>
 		<branchpoint id="id43" x="340" y="357">
 		</branchpoint>
@@ -220,17 +220,17 @@ clock x,y;</declaration>
 		<transition>
 			<source ref="id43"/>
 			<target ref="id34"/>
-			<label kind="probability" x="247" y="391">249.8</label>
+			<label kind="probability" x="247" y="391">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</transition>
 		<transition>
 			<source ref="id43"/>
 			<target ref="id36"/>
-			<label kind="probability" x="369" y="340">249.8</label>
+			<label kind="probability" x="369" y="340">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</transition>
 		<transition>
 			<source ref="id43"/>
 			<target ref="id37"/>
-			<label kind="probability" x="358" y="391">249.8</label>
+			<label kind="probability" x="358" y="391">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</transition>
 		<transition>
 			<source ref="id35"/>
@@ -239,12 +239,12 @@ clock x,y;</declaration>
 		<transition>
 			<source ref="id44"/>
 			<target ref="id12"/>
-			<label kind="probability" x="-194" y="369">249.8</label>
+			<label kind="probability" x="-194" y="369">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</transition>
 		<transition>
 			<source ref="id44"/>
 			<target ref="id24"/>
-			<label kind="probability" x="-33" y="314">249.8</label>
+			<label kind="probability" x="-33" y="314">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</transition>
 		<transition>
 			<source ref="id15"/>
@@ -253,23 +253,23 @@ clock x,y;</declaration>
 		<transition>
 			<source ref="id45"/>
 			<target ref="id13"/>
-			<label kind="probability" x="-254" y="306">249.8</label>
+			<label kind="probability" x="-254" y="306">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 			<nail x="-272" y="306"/>
 		</transition>
 		<transition>
 			<source ref="id45"/>
 			<target ref="id11"/>
-			<label kind="probability" x="-245" y="263">249.8</label>
+			<label kind="probability" x="-245" y="263">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</transition>
 		<transition>
 			<source ref="id45"/>
 			<target ref="id14"/>
-			<label kind="probability" x="-178" y="352">249.8</label>
+			<label kind="probability" x="-178" y="352">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</transition>
 		<transition>
 			<source ref="id45"/>
 			<target ref="id16"/>
-			<label kind="probability" x="-169" y="259">249.8</label>
+			<label kind="probability" x="-169" y="259">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</transition>
 		<transition>
 			<source ref="id12"/>
@@ -298,7 +298,7 @@ clock x,y;</declaration>
 		<transition>
 			<source ref="id47"/>
 			<target ref="id32"/>
-			<label kind="probability" x="212" y="85">249.8</label>
+			<label kind="probability" x="212" y="85">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 			<nail x="204" y="85"/>
 		</transition>
 		<transition>
@@ -319,23 +319,23 @@ clock x,y;</declaration>
 			<source ref="id48"/>
 			<target ref="id17"/>
 			<label kind="assignment" x="-174" y="127">x=0</label>
-			<label kind="probability" x="-174" y="144">249.8</label>
+			<label kind="probability" x="-174" y="144">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 			<nail x="-204" y="170"/>
 		</transition>
 		<transition>
 			<source ref="id48"/>
 			<target ref="id16"/>
-			<label kind="probability" x="-194" y="208">249.8</label>
+			<label kind="probability" x="-194" y="208">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</transition>
 		<transition>
 			<source ref="id48"/>
 			<target ref="id12"/>
-			<label kind="probability" x="-212" y="259">249.8</label>
+			<label kind="probability" x="-212" y="259">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</transition>
 		<transition>
 			<source ref="id48"/>
 			<target ref="id11"/>
-			<label kind="probability" x="-237" y="212">249.8</label>
+			<label kind="probability" x="-237" y="212">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</transition>
 		<transition>
 			<source ref="id10"/>
@@ -344,13 +344,13 @@ clock x,y;</declaration>
 		<transition>
 			<source ref="id49"/>
 			<target ref="id6"/>
-			<label kind="probability" x="179" y="17">249.8</label>
+			<label kind="probability" x="179" y="17">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 			<nail x="161" y="0"/>
 		</transition>
 		<transition>
 			<source ref="id49"/>
 			<target ref="id4"/>
-			<label kind="probability" x="378" y="-51">249.8</label>
+			<label kind="probability" x="378" y="-51">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</transition>
 		<transition>
 			<source ref="id8"/>
@@ -359,13 +359,13 @@ clock x,y;</declaration>
 		<transition>
 			<source ref="id50"/>
 			<target ref="id7"/>
-			<label kind="probability" x="161" y="-46">249.8</label>
+			<label kind="probability" x="161" y="-46">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 			<nail x="161" y="-102"/>
 		</transition>
 		<transition>
 			<source ref="id50"/>
 			<target ref="id3"/>
-			<label kind="probability" x="171" y="-106">249.8</label>
+			<label kind="probability" x="171" y="-106">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</transition>
 		<transition>
 			<source ref="id2"/>
@@ -378,18 +378,18 @@ clock x,y;</declaration>
 		<transition>
 			<source ref="id51"/>
 			<target ref="id7"/>
-			<label kind="probability" x="0" y="-68">249.8</label>
+			<label kind="probability" x="0" y="-68">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</transition>
 		<transition>
 			<source ref="id51"/>
 			<target ref="id2"/>
-			<label kind="probability" x="-41" y="-102">249.8</label>
+			<label kind="probability" x="-41" y="-102">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</transition>
 		<transition>
 			<source ref="id51"/>
 			<target ref="id5"/>
 			<label kind="assignment" x="-220" y="-72">y=0</label>
-			<label kind="probability" x="-161" y="-68">249.8</label>
+			<label kind="probability" x="-161" y="-68">1.0+2.0*3.0+4.0/5.0*6.0+7.0-8.0*9.0+10.0*11.0+12.0-13.0+14.0*15.0-16.0</label>
 		</transition>
 		<transition>
 			<source ref="id1"/>
@@ -623,7 +623,7 @@ system Process;
     </system>
 	<queries>
 		<query>
-			<formula>Pr[&lt;=100](&lt;&gt;Process.Goal)</formula>
+			<formula>Pr[&lt;=2;1638400](&lt;&gt;Process.Goal)</formula>
 			<comment></comment>
 		</query>
 	</queries>

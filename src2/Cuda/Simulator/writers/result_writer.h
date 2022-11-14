@@ -63,6 +63,7 @@ public:
     void write_model(const stochastic_model_t* model,
                      std::unordered_map<int, std::string>& name_map,
                      std::unordered_map<int, int>& model_map);
+    void clear();
     
     static int parse_mode(const std::string& str);
 };

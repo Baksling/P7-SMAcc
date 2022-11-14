@@ -3,6 +3,8 @@
 
 #define ALPHA "abcdefghijklmnopqrstuvwxyz"
 
+
+
 char get_constraint_op(const string& expr)
 {
     if(expr.find("<=") != std::string::npos)
@@ -118,10 +120,8 @@ void uppaal_tree_parser::get_guys(const list<string>& expressions, list<T>* t)
 void uppaal_tree_parser::init_clocks(const xml_document* doc)
 {
     string global_decl = doc->child("nta").child("declaration").child_value();
-    //cout << "\nGLOBAL GUYS: " << global_decl << " :NICE\n";
     global_decl = replace_all(global_decl, " ", "");
     const list<declaration> decls = dp_.parse(global_decl);
-    //cout << "\nSIZE: " << decls.size() << "\n";
         
     for (declaration d : decls)
     {
@@ -149,7 +149,6 @@ void uppaal_tree_parser::init_clocks(const xml_document* doc)
         string decl = templates.child("declaration").child_value();
         decl = replace_all(decl, " ", "");
         list<declaration> declarations = dp_.parse(decl);
-        //cout << "\nSIZE: " << declarations.size() << "\n";
         
         for (declaration d : declarations)
         {
@@ -191,7 +190,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
 {
     string path = file_path;
     xml_document doc;
-    map<int, list<edge_t>> node_edge_map; //TODO edge is no longer pointer
+    unordered_map<int, list<edge_t>> node_edge_map; //TODO edge is no longer pointer
     declaration_parser dp;
     
     // load the XML file
@@ -220,8 +219,11 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             list<constraint_t> invariants; //TODO no longer pointer
             expression* expo_rate = nullptr;
             
-            if (string_name == "Goal")
-                is_goal = true;
+            if (string_name != "")
+            {
+                is_goal = string_name == "Goal" ? true : false;
+                node_names_->emplace(node_id, string_name);
+            }
             
             string kind = locs.child("label").attribute("kind").as_string();
             string expr_string = locs.child("label").child_value();
@@ -239,8 +241,10 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             }
             if (init_node_id_ == node_id)
                 start_nodes_.push_back(nodes_->size());
-            nodes_->push_back(new node_t(node_id, to_array(&invariants),false, is_goal, expo_rate));
             
+            node_t* node = new node_t(node_id, to_array(&invariants),false, is_goal, expo_rate);
+            nodes_->push_back(node);
+            nodes_map_->emplace(node->get_id(), node_with_system_id(node, this->system_count));
         }
 
         for (pugi::xml_node locs: templates.children("branchpoint"))
@@ -280,7 +284,6 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                 else if (kind == "assignment")
                 {
                     list<string> expressions = split_expr(expr_string, ',');
-                    //cout << "\nASS0: " << expressions.size() << " " << expr_string <<"\n";
                     for(const auto& expr: expressions)
                     {
                         if (expr.empty())
@@ -338,24 +341,18 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             if (probability == nullptr) probability = expression::literal_expression(1.0);
             
             node_t* target_node = get_node(target_id, nodes_);
-            edge_t result_edge = ec //TODO removed edge pointer and converted if statement to ternary :)
+            edge_t result_edge = ec == nullptr
                 ? edge_t(edge_id++, probability, target_node, to_array(&guards), to_array(&updates))
                 : edge_t(edge_id++, probability, target_node, to_array(&guards), to_array(&updates), *ec);
-
-            //cout << "guard size: " << guards.size() << "\n";
-            
-            // if (guards.empty())
-            //     result_edge = new edge_t(edge_id, probability, target_node, array_t<constraint_t*>(0));
-            //result_edge->set_updates(&updates);
             
             node_edge_map.at(source_id).push_back(result_edge);
         }
         vars_map_.clear();
+        this->system_count++;
     }
 
     for(node_t* node: *nodes_)
     {
-        //cout << "\n" << node->get_id() <<" HELLLLO!";
         node->set_edges(&node_edge_map.at(node->get_id()));
     }
     
@@ -379,11 +376,16 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
     return stochastic_model_t(start_nodes, to_array(timer_list_), to_array(var_list_));
 }
 
-__host__ stochastic_model_t uppaal_tree_parser::parse(char* file_path)
+__host__ stochastic_model_t uppaal_tree_parser::parse(string file_path)
 {
     try
     {
-        return parse_xml(file_path);
+        char* writeable = new char[file_path.size() + 1];
+        std::copy(file_path.begin(), file_path.end(), writeable);
+        writeable[file_path.size()] = '\0';
+        auto model = parse_xml(writeable);
+        delete[] writeable;
+        return model;
     }
     catch (const std::runtime_error &ex)
     {
