@@ -30,8 +30,8 @@ def plot_points(p_list: List[Tuple[int, int, int]], dims: Tuple[int, int, int], 
 
     # Make legend, set axes limits and labels
     ax.legend()
-    ax.set_xlim(0, block_dim)
-    ax.set_ylim(1, thread_dim)
+    ax.set_xlim(args_.min_blocks, block_dim)
+    ax.set_ylim(args_.min_threads, thread_dim)
     ax.set_zlim(0, time_dim)
     ax.set_xlabel('Blocks')
     ax.set_ylabel('Threads')
@@ -64,9 +64,13 @@ def plot_lines(p_list: List[Tuple[int, int, int]], dims: Tuple[int, int, int], a
     labels_start = ["CPU"] if args_.min_blocks <= 0 else []
     labels = labels_start + [f"#Block {block + args_.interval}" for block in range(args_.min_blocks, block_dim) if (args_.interval > 0 and (block % args_.interval == 0) and block + args_.interval <= block_dim)]
 
-    for tmp in range(thread_dim - 1):
-        for idx in range(len(lines)):
+    if labels_start[0] == "CPU":
+        for tmp in range(args_.min_threads):
+            lines[tmp].append(0)
 
+    for tmp in range(block_dim - 1):
+        for idx in range(len(lines)):
+            if tmp % args_.interval != 0: continue
             if idx < args_.min_threads: lines[idx].append(0)
 
     for thread_idx in range(thread_dim):
