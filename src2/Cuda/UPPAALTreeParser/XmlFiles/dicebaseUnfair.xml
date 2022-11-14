@@ -393,7 +393,7 @@ system coin, die_sim;
     </system>
 	<queries>
 		<query>
-			<formula>Pr[&lt;=100](&lt;&gt;die_sim.Goal)</formula>
+			<formula>Pr[&lt;=100;1000000](&lt;&gt;die_sim.Goal)</formula>
 			<comment></comment>
 		</query>
 	</queries>

@@ -1,4 +1,5 @@
 ﻿import matplotlib.pyplot as plt
+import matplotlib.transforms as transforms
 from typing import List, Tuple
 from os import listdir
 from os.path import isfile, join
@@ -6,7 +7,6 @@ import argparse
 
 COLORS = ['r', 'g', 'b', 'k']
 COLORS_LEN = len(COLORS)
-
 
 def plot_points(p_list: List[Tuple[int, int, int]], dims: Tuple[int, int, int]) -> None:
     ax = plt.figure().add_subplot(projection='3d')
@@ -30,7 +30,7 @@ def plot_points(p_list: List[Tuple[int, int, int]], dims: Tuple[int, int, int]) 
     # Make legend, set axes limits and labels
     ax.legend()
     ax.set_xlim(0, block_dim)
-    ax.set_ylim(0, thread_dim)
+    ax.set_ylim(1, thread_dim)
     ax.set_zlim(0, time_dim)
     ax.set_xlabel('Blocks')
     ax.set_ylabel('Threads')
@@ -50,7 +50,7 @@ def plot_lines(p_list: List[Tuple[int, int, int]], dims: Tuple[int, int, int], a
 
     for p in range(len(p_list)):
         block, thread, time = p_list[p]
-        
+
         block_idx = block - args_.min_blocks
         v_lst[block_idx].append((thread, time))
 
@@ -58,20 +58,26 @@ def plot_lines(p_list: List[Tuple[int, int, int]], dims: Tuple[int, int, int], a
         lst = v_lst[lst_idx]
         v_lst[lst_idx] = sorted(lst, key=lambda t: t[0])
 
-    lines = [[] for i in range(thread_dim)]
-    
+    lines = [[] for i in range(thread_dim + 1)]
+
     labels_start = ["CPU"] if args_.min_blocks <= 0 else []
     labels = labels_start + [f"#Block {block + 1}" for block in range(args_.min_blocks, block_dim)]
 
+    fig, ax = plt.subplots()
+
     for thread_idx in range(thread_dim):
         for block_idx in range(block_dim + 1):
-            lines[thread_idx].append(v_lst[block_idx][thread_idx][1])
+            if thread_idx == 0:  # This is needed for plot thingy!
+                lines[thread_idx].append(v_lst[block_idx][thread_idx][1])
+            data = v_lst[block_idx][thread_idx][1]
+            lines[thread_idx + 1].append(data)
 
-    plt.plot(lines, label=labels)
+    if args_.show_label > 0: plt.plot(lines, label=labels)
+    else:                    plt.plot(lines)
 
     # Make legend, set axes limits and labels
     plt.legend()
-    plt.xlim(0, thread_dim)
+    plt.xlim(1, thread_dim)
     plt.ylim(0, time_dim)
     plt.xlabel('Threads')
     plt.ylabel('Time (ms)')
@@ -203,6 +209,16 @@ def get_args():
         '--min_time',
         dest='min_time',
         help='Minimum time',
+        type=int,
+        default=0,
+        required=False
+    )
+    
+    option_parser.add_argument(
+        '-l',
+        '--label',
+        dest='show_label',
+        help='Set to 1 if you want to see labels',
         type=int,
         default=0,
         required=False
