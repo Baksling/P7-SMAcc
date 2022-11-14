@@ -134,6 +134,15 @@ void result_writer::write_model(
     return;
 }
 
+void result_writer::clear()
+{
+    this->result_map_.clear();
+    
+    for (unsigned int k = 0; k < static_cast<unsigned int>(this->var_result_.size()); ++k)
+    {
+        this->var_result_.arr()[k] = variable_result{k,0,0};
+    }
+}
 
 
 void result_writer::write_lite(const steady_clock::duration sim_duration) const
@@ -164,11 +173,7 @@ result_writer::result_writer(
     this->output_counter_ = 0;
     this->result_map_ = std::unordered_map<int, node_result> ();
     this->var_result_ = array_t<variable_result>(static_cast<int>(variable_count));
-
-    for (unsigned int k = 0; k < static_cast<unsigned int>(this->var_result_.size()); ++k)
-    {
-        this->var_result_.arr()[k] = variable_result{k,0,0};
-    }
+    this->clear();
 }
 
 void result_writer::write(
