@@ -50,10 +50,30 @@ def parse_arguments():
     )
 
     option_parser.add_argument(
+        '-mb',
+        '--min_block',
+        dest='min_block',
+        help='Minimum number of blocks to use',
+        type=int,
+        default=1,
+        required=False
+    )
+
+    option_parser.add_argument(
         '-b',
         '--max_block',
         dest='max_block',
         help='Number of Max blocks',
+        type=int,
+        default=1,
+        required=False
+    )
+
+    option_parser.add_argument(
+        '-mt',
+        '--min_threads',
+        dest='min_threads',
+        help='Minimum number of threads to use',
         type=int,
         default=1,
         required=False
@@ -76,6 +96,16 @@ def parse_arguments():
         help='Max number of threads that can be called by GPU',
         type=int,
         default=(128 * 512),
+        required=False
+    )
+
+    option_parser.add_argument(
+        '-mco',
+        '--min_cpu_threads',
+        dest='min_cpu_threads',
+        help='Mimumnum number of threads to use',
+        type=int,
+        default=1,
         required=False
     )
 
@@ -104,12 +134,12 @@ def parse_arguments():
 
 
 def analyse_performance(args) -> None:
-    blocks: int = args.max_block
-    block_threads: int = args.max_threads
-    cpu_count: int = args.cpu_threads
+    min_blocks, blocks= args.min_block, args.max_block
+    min_threads, block_threads = args.min_threads, args.max_threads
+    min_cpu_count, cpu_count= args.min_cpu_threads, args.cpu_threads
     max_gpu_compute: int = args.max_gpu_compute 
 
-    generator = ((block, thread) for block in range(1, blocks + 1) for thread in range(1, block_threads + 1) if
+    generator = ((block, thread) for block in range(min_blocks, blocks + 1) for thread in range(min_threads, block_threads + 1) if
                  (block * thread <= max_gpu_compute))
 
     for block, thread in generator:
@@ -130,7 +160,7 @@ def analyse_performance(args) -> None:
             '-v', '1'
         ])
 
-    for cpu_core in range(1, cpu_count + 1):
+    for cpu_core in range(min_cpu_count, cpu_count + 1):
         file_path = f'{args.output_file}_CPU_{cpu_core}'
 
         amount = math.ceil((args.simulation_amount / cpu_core))

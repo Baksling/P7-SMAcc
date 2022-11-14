@@ -1,4 +1,5 @@
 ﻿import matplotlib.pyplot as plt
+import matplotlib.transforms as transforms
 from typing import List, Tuple
 from os import listdir
 from os.path import isfile, join
@@ -7,8 +8,7 @@ import argparse
 COLORS = ['r', 'g', 'b', 'k']
 COLORS_LEN = len(COLORS)
 
-
-def plot_points(p_list: List[Tuple[int, int, int]], dims: Tuple[int, int, int]) -> None:
+def plot_points(p_list: List[Tuple[int, int, int]], dims: Tuple[int, int, int], args_) -> None:
     ax = plt.figure().add_subplot(projection='3d')
     block_dim, thread_dim, time_dim = dims
 
@@ -16,6 +16,7 @@ def plot_points(p_list: List[Tuple[int, int, int]], dims: Tuple[int, int, int]) 
 
     for p in range(len(p_list)):
         block, thread, time = p_list[p]
+        if block % args_.interval != 0: continue
 
         color.append(COLORS[block % COLORS_LEN])
 
@@ -29,8 +30,8 @@ def plot_points(p_list: List[Tuple[int, int, int]], dims: Tuple[int, int, int]) 
 
     # Make legend, set axes limits and labels
     ax.legend()
-    ax.set_xlim(0, block_dim)
-    ax.set_ylim(0, thread_dim)
+    ax.set_xlim(args_.min_blocks, block_dim)
+    ax.set_ylim(args_.min_threads, thread_dim)
     ax.set_zlim(0, time_dim)
     ax.set_xlabel('Blocks')
     ax.set_ylabel('Threads')
@@ -50,7 +51,7 @@ def plot_lines(p_list: List[Tuple[int, int, int]], dims: Tuple[int, int, int], a
 
     for p in range(len(p_list)):
         block, thread, time = p_list[p]
-        
+
         block_idx = block - args_.min_blocks
         v_lst[block_idx].append((thread, time))
 
@@ -58,20 +59,38 @@ def plot_lines(p_list: List[Tuple[int, int, int]], dims: Tuple[int, int, int], a
         lst = v_lst[lst_idx]
         v_lst[lst_idx] = sorted(lst, key=lambda t: t[0])
 
-    lines = [[] for i in range(thread_dim)]
-    
+    lines = [[] for i in range(thread_dim + 1)]
+
     labels_start = ["CPU"] if args_.min_blocks <= 0 else []
-    labels = labels_start + [f"#Block {block + 1}" for block in range(args_.min_blocks, block_dim)]
+    labels = labels_start + [f"#Block {block + args_.interval}" for block in range(args_.min_blocks, block_dim) if (args_.interval > 0 and (block % args_.interval == 0) and block + args_.interval <= block_dim)]
+
+    if labels_start[0] == "CPU":
+        for tmp in range(args_.min_threads):
+            lines[tmp].append(0)
+
+    for tmp in range(block_dim - 1):
+        for idx in range(len(lines)):
+            if tmp % args_.interval != 0: continue
+            if idx < args_.min_threads: lines[idx].append(0)
 
     for thread_idx in range(thread_dim):
         for block_idx in range(block_dim + 1):
-            lines[thread_idx].append(v_lst[block_idx][thread_idx][1])
+            if (block_idx % args_.interval != 0): continue
+            if thread_idx < args_.min_threads - 1: continue
+            data = v_lst[block_idx][thread_idx][1]
+            lines[thread_idx + 1].append(data)
 
-    plt.plot(lines, label=labels)
+    for x in lines:
+        print(x)
+    for x in labels:
+        print(x)
+
+    if args_.show_label > 0: plt.plot(lines, label=labels)
+    else:                    plt.plot(lines)
 
     # Make legend, set axes limits and labels
     plt.legend()
-    plt.xlim(0, thread_dim)
+    plt.xlim(args_.min_threads, thread_dim)
     plt.ylim(0, time_dim)
     plt.xlabel('Threads')
     plt.ylabel('Time (ms)')
@@ -96,6 +115,8 @@ def get_data(folder_path: str, args_, dims, filter_str: str = None) -> Tuple[int
         if block > block_dim or block < args_.min_blocks: continue
         if thread > thread_dim or thread < args_.min_threads: continue
         if time > time_dim or time < args_.min_time: continue
+        
+        if block % args_.interval != 0: continue
 
         with open(join(folder_path, file)) as f:
             lines = f.readlines()
@@ -207,6 +228,26 @@ def get_args():
         default=0,
         required=False
     )
+    
+    option_parser.add_argument(
+        '-l',
+        '--label',
+        dest='show_label',
+        help='Set to 1 if you want to see labels',
+        type=int,
+        default=0,
+        required=False
+    )
+
+    option_parser.add_argument(
+        '-i',
+        '--interval',
+        dest='interval',
+        help='Interval amount',
+        type=int,
+        default=1,
+        required=False
+    )
 
     args = parser.parse_args()
     return args
@@ -221,6 +262,6 @@ if __name__ == "__main__":
     dims = (dims[0], dims[1], max_time)
     # test_dims = (args.block_dim, args.thread_dim, 15)
 
-    plot_points(data, dims)
+    plot_points(data, dims, args)
 
     plot_lines(data, dims, args)
