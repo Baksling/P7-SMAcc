@@ -6,6 +6,7 @@
 #include "../../Domain/stochastic_model_t.h"
 #include "trace.h"
 #include "../../Domain/simulator_state.h"
+#include <string>
 
 struct sim_pointers
 {
@@ -81,6 +82,8 @@ public:
         const stochastic_model_t* model,
         const simulation_strategy* strategy,
         allocation_helper* helper);
+
+    static trace_interval parse_interval(const std::string& str);
 };
 
 

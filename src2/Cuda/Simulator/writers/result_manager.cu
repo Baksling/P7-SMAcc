@@ -1,5 +1,7 @@
 ﻿#include "result_manager.h"
 #include "../simulation_strategy.h"
+#include <string>
+#include <iostream>
 
 sim_pointers::sim_pointers(const bool owns_pointers, simulation_result* results, int* nodes, double* variables):
     owns_pointers_(owns_pointers)
@@ -306,4 +308,25 @@ void result_manager::init_unified(result_manager** host_handle, result_manager**
 
     const cudaMemcpyKind kind = helper->use_cuda ? cudaMemcpyHostToDevice : cudaMemcpyHostToHost;
     cudaMemcpy(*device_handle, *host_handle, sizeof(result_manager), kind);
+}
+
+trace_interval result_manager::parse_interval(const std::string& str)
+{
+    trace_interval interval = trace_interval{ trace_interval::step_interval, 1.0 };
+    if(str.empty()) return interval;
+
+    if(str.back() == 't') interval.mode = trace_interval::time_interval;
+    else if(str.back() == 's') interval.mode = trace_interval::step_interval;
+    else if(str.back() == 'd') interval.mode = trace_interval::disabled;
+
+    try
+    {
+        interval.value = std::stod(str.substr(0, str.size()-1));
+    }
+    catch (std::invalid_argument&)
+    {
+        printf("Could nto parse parse interval as double.");
+        throw;
+    }
+    return interval;
 }

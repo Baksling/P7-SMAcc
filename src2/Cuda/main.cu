@@ -12,6 +12,7 @@
 
 #include "Domain/edge_t.h"
 #include "Simulator/writers/result_writer.h"
+#include "Simulator/writers/result_manager.h"
 
 using namespace argparse;
 
@@ -34,6 +35,7 @@ int main(int argc, const char* argv[])
     parser.add_argument("-o", "--output", "The path to output result file", false);
     parser.add_argument("-y", "--max", "Use max steps or time for limit simulation. (max steps (0) / max time (1) )", false);
     parser.add_argument("-v", "--verbose", "Enable pretty print of model (print model (0) / silent(1))", false);
+    parser.add_argument("-i", "--interval", "Interval to store trace. e.g. 10t = trace every 10 simulation seconds / 10s = every 10 step  (default = 1s). \n Parameter '-s' is used to specify the max number of steps to store.", false);
     parser.add_argument("-w", "--write", "Write mode \n / c = console summary  \n / f = file summary \n / d = file data dump \n / t = trace \n / l = lite summary \n / m = write model to file", false);
     parser.enable_help();
     auto err = parser.parse(argc, argv);
@@ -69,21 +71,17 @@ int main(int argc, const char* argv[])
 
     if(write_mode & trace) //Trace settings, only if trace is enabled
     {
-        strategy.trace_settings.value = parser.exists("I")
-            ? parser.get<double>("I")
-            : 1.0;
-        strategy.trace_settings.mode =  parser.exists("i")
-            ? static_cast<trace_interval::interval_type>(parser.get<int>("i"))
-            : trace_interval::step_interval;
+        strategy.trace_settings =  result_manager::parse_interval(parser.exists("i")
+            ? parser.get<std::string>("i")
+            : "1s");
     }
     else strategy.trace_settings.mode = trace_interval::disabled;
 
-    uppaal_tree_parser tree_parser;
+    uppaal_tree_parser tree_parser = uppaal_tree_parser();
     stochastic_model_t model(array_t<node_t*>(0), array_t<clock_variable>(0), array_t<clock_variable>(0));
     
     if (parser.exists("m"))
     {
-        tree_parser = uppaal_tree_parser();
         string input_file_path = parser.get<string>("m"); 
         model = tree_parser.parse(input_file_path);
     }
@@ -134,8 +132,7 @@ int main(int argc, const char* argv[])
 
     if(write_mode & trace || write_mode & model_out)
     {
-        r_writer.write_model(
-            tree_parser.get_nodes_with_name(),
+        r_writer.write_model(tree_parser.get_nodes_with_name(),
             tree_parser.get_subsystems());
     }
     
