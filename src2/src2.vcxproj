@@ -874,6 +874,7 @@
     <ClInclude Include="Cuda\Domain\simulator_state.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\parser_exception.h" />
     <Content Include="Analysis\analysis_plotter.py" />
+    <Content Include="Analysis\integration_test.py" />
     <Content Include="Analysis\performance_analysis.py" />
     <Content Include="Analysis\trace_analyser.py" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\and_guy.xml" />
@@ -881,8 +882,6 @@
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\ChanSyn2.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\ChanSyntax.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\covid.xml" />
-    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\dicebase.xml" />
-    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\dicebaseUnfair.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\ff15.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\ff20.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\gamble.xml" />
@@ -896,6 +895,13 @@
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\test3.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\test4.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\testBasic.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\tests\clock_var.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\tests\dicebase.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\tests\dicebaseUnfair.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\tests\random_test.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\tests\rare_events.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\tests\rate_test.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\tests\var_test.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\ThisIsCancer2ElectricBoogaloo.xml" />
   </ItemGroup>
   <ItemGroup>

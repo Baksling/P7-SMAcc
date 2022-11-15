@@ -8,8 +8,7 @@ int z = 0;
 int p = 0;</declaration>
 	<template>
 		<name x="5" y="5">Model1</name>
-		<declaration>// Place local declarations here.
-</declaration>
+		<declaration>// Place local declarations here.</declaration>
 		<location id="id0" x="0" y="0">
 			<name x="-10" y="-34">Start</name>
 			<label kind="exponentialrate" x="-8" y="17">2</label>
@@ -37,12 +36,13 @@ int p = 0;</declaration>
 		<transition>
 			<source ref="id1"/>
 			<target ref="id2"/>
-			<label kind="guard" x="110" y="59">z &gt; 10 &amp;&amp; y &lt; 50</label>
+			<label kind="guard" x="119" y="42">z &gt; 10 &amp;&amp; y &lt; 50</label>
+			<label kind="assignment" x="102" y="76">test = 100</label>
 		</transition>
 		<transition>
 			<source ref="id0"/>
 			<target ref="id1"/>
-			<label kind="guard" x="25" y="-17">x &lt; 2</label>
+			<label kind="guard" x="25" y="-17">x &lt; 5</label>
 			<label kind="assignment" x="76" y="-17">x = 0</label>
 		</transition>
 	</template>
@@ -87,7 +87,11 @@ system M1, M2;
     </system>
 	<queries>
 		<query>
-			<formula>Pr[&lt;=60; 1000000](&lt;&gt; M1.Goal)</formula>
+			<formula>Pr[&lt;=60; 100000](&lt;&gt; M1.Goal)</formula>
+			<comment></comment>
+		</query>
+		<query>
+			<formula>simulate[&lt;=60;10]{z,p,test}</formula>
 			<comment></comment>
 		</query>
 	</queries>

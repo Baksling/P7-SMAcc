@@ -68,11 +68,11 @@ int val = 0;</declaration>
 			<label kind="exponentialrate" x="372" y="365">1</label>
 		</location>
 		<location id="id7" x="476" y="263">
-			<name x="466" y="229">Goal</name>
+			<name x="466" y="229">Five</name>
 			<label kind="exponentialrate" x="466" y="297">1</label>
 		</location>
 		<location id="id8" x="476" y="187">
-			<name x="466" y="153">Goal</name>
+			<name x="466" y="153">Four</name>
 			<label kind="exponentialrate" x="466" y="221">1</label>
 		</location>
 		<location id="id9" x="382" y="221">
@@ -87,18 +87,18 @@ int val = 0;</declaration>
 			<label kind="exponentialrate" x="287" y="255">1</label>
 		</location>
 		<location id="id12" x="476" y="136">
-			<name x="466" y="102">Goal</name>
+			<name x="466" y="102">Three</name>
 			<label kind="exponentialrate" x="466" y="170">1</label>
 		</location>
 		<location id="id13" x="476" y="51">
-			<name x="466" y="17">Goal</name>
+			<name x="466" y="17">Two</name>
 			<label kind="exponentialrate" x="466" y="85">1</label>
 		</location>
 		<location id="id14" x="382" y="93">
 			<label kind="exponentialrate" x="372" y="127">1</label>
 		</location>
 		<location id="id15" x="476" y="-25">
-			<name x="466" y="-59">Goal</name>
+			<name x="467" y="-59">One</name>
 			<label kind="exponentialrate" x="466" y="9">1</label>
 		</location>
 		<location id="id16" x="382" y="-25">
@@ -255,7 +255,7 @@ system coin, die_sim;
     </system>
 	<queries>
 		<query>
-			<formula>Pr[&lt;=100](&lt;&gt;die_sim.Six)</formula>
+			<formula>Pr[&lt;=100; 100000](&lt;&gt;die_sim.Goal)</formula>
 			<comment></comment>
 		</query>
 	</queries>
