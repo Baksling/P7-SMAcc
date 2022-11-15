@@ -248,6 +248,7 @@ int result_writer::parse_mode(const std::string& str)
     if(str.find('d') != std::string::npos) mode |= file_data;
     if(str.find('t') != std::string::npos) mode |= trace;
     if(str.find('m') != std::string::npos) mode |= model_out;
+    if(str.find('p') != std::string::npos) mode |= pretty_out;
     
     return mode;
 }

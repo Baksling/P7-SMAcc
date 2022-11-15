@@ -78,7 +78,7 @@ public:
     //HOST METHODS
     void accept(visitor* v);
     void pretty_print(std::ostream& os) const;
-    void cuda_allocate(constraint_t** pointer, allocation_helper* helper) const;
+    void cuda_allocate(constraint_t* pointer, allocation_helper* helper) const;
     CPU static std::string logical_operator_to_string(logical_operator_t op);
 
 

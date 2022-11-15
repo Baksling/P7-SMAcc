@@ -56,7 +56,7 @@ int main(int argc, const char* argv[])
     string pretty = "";
     string output = "";
     int write_mode = -1; // 0 = file, 1 = console, 2 = both
-    bool verbose = true
+    bool verbose = true;
 
     if (parser.exists("a")) strategy.simulations_per_thread = parser.get<unsigned int>("a");
     if (parser.exists("b")) strategy.block_n = parser.get<int>("b");
@@ -70,8 +70,8 @@ int main(int argc, const char* argv[])
     if (parser.exists("v")) verbose = parser.get<int>("v") == 0;
     if (parser.exists("w")) write_mode = result_writer::parse_mode(parser.get<std::string>("w"));
     if (parser.exists("y")) strategy.use_max_steps = parser.get<int>("y") == 0;
-    if (parser.exists("o")) o_path = c_path + "/" + parser.get<string>("o");
-    else o_path = c_path + "/output";
+    if (parser.exists("o")) output = c_path + "/" + parser.get<string>("o");
+    else output = c_path + "/output";
 
     if(write_mode & trace) //Trace settings, only if trace is enabled
     {
@@ -129,7 +129,7 @@ int main(int argc, const char* argv[])
 
         model = stochastic_model_t(start_nodes, timer_arr, variable_arr);
     }
-    result_writer r_writer = result_writer(&o_path ,strategy,
+    result_writer r_writer = result_writer(&output ,strategy,
         model.get_models_count(),
         model.get_variable_count(),
         write_mode);
@@ -142,9 +142,9 @@ int main(int argc, const char* argv[])
     
     //Computers were not meant to speak.
     //You can speak when spoken to.
-    if (verbose)
+    if (write_mode & pretty_out || verbose)
     {
-        pretty_visitor p_visitor;
+        pretty_visitor p_visitor = pretty_visitor(verbose, pretty);
         p_visitor.visit(&model);
     }
 

@@ -24,7 +24,8 @@ enum writer_modes
     file_data = 4,
     trace = 8,
     lite_sum = 16,
-    model_out = 32
+    model_out = 32,
+    pretty_out = 64
 };
 
 class result_writer

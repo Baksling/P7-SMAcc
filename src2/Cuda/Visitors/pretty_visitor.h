@@ -19,8 +19,9 @@ private:
     void indentation() const;
     void pretty_print(std::string string) const;
     std::ostream* get_stream() const;
+    bool to_console_;
 public:
-    explicit pretty_visitor(const std::string& file);
+    explicit pretty_visitor(const bool to_console, const std::string& file);
     
     virtual void visit(constraint_t* constraint) override;
 
