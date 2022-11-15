@@ -231,7 +231,7 @@ void result_writer::write(
     if(this->write_mode_ & trace)
         this->write_trace(sim_result);
 
-    if(this->write_mode_ & (console_sum | file_sum | file_data))
+    if(this->write_mode_ & (console_sum | file_sum | file_data | hit_file))
     {
         const sim_pointers pointers = sim_result->analyse(&this->result_map_, &this->var_result_);
         
