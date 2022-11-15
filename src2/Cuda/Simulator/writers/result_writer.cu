@@ -135,7 +135,7 @@ void result_writer::write_model(
     std::ofstream file = std::ofstream(this->file_path_ + "_model.csv",
         std::ofstream::out | std::ofstream::trunc);
 
-    file << "node_id,subsystem_id,name,is_goal";
+    file << "node_id,subsystem_id,name,is_goal\n";
 
     for (auto pair : (*subsystem_map))
     {

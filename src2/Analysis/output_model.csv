@@ -1,0 +1,6 @@
+node_id,subsystem_id,name,is_goal
+4,1,M2_1,0
+3,1,M2_Start,0
+2,0,Goal,1
+1,0,M1_1,0
+0,0,Start,0

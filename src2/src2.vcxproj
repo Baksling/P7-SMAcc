@@ -875,6 +875,7 @@
     <ClInclude Include="Cuda\UPPAALTreeParser\parser_exception.h" />
     <Content Include="Analysis\analysis_plotter.py" />
     <Content Include="Analysis\performance_analysis.py" />
+    <Content Include="Analysis\trace_analyser.py" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\and_guy.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\bigusdickuslmao.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\ChanSyn2.xml" />
