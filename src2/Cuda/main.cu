@@ -36,7 +36,7 @@ int main(int argc, const char* argv[])
     parser.add_argument("-t", "--threads", "Number of threads", false);
     parser.add_argument("-u", "--cputhread", "The number of threads to use on the CPU", false);
     parser.add_argument("-v", "--verbose", "Enable pretty print of model (print model (0) / silent(1))", false);
-    parser.add_argument("-w", "--write", "Write mode \n / c = console summary  \n / f = file summary \n / d = file data dump \n / t = trace \n / l = lite summary \n / m = write model to file", false);
+    parser.add_argument("-w", "--write", "Write mode \n / c = console summary  \n / f = file summary \n / d = file data dump \n / t = trace \n / l = lite summary \n / m = write model to file \n / r = write hit percentage to file", false);
     parser.add_argument("-y", "--max", "Use max steps or time for limit simulation. (max steps (0) / max time (1) )", false);
     parser.enable_help();
     auto err = parser.parse(argc, argv);

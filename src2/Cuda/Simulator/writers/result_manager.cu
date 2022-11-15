@@ -152,9 +152,7 @@ CPU GPU void result_manager::write_node_trace(const model_state* node, const sim
 CPU GPU void result_manager::write_result(const simulator_state* state) const
 {
     simulation_result* output = this->get_sim_results(state->sim_id_);
-
-    printf("Hababa: %u\n", state->sim_id_);
-    
+        
     output->total_time_progress = 0; //state->global_time_;
     output->steps = 1; // state->steps_;
 
@@ -284,16 +282,13 @@ result_manager* result_manager::init(
     const simulation_strategy* strategy,
     allocation_helper* helper)
 {
-    const result_manager instance = result_manager(
+    result_manager* instance = new result_manager(
         model,
         strategy,
         helper);
 
-    result_manager* p = nullptr;
-    const cudaMemcpyKind kind = helper->use_cuda ? cudaMemcpyHostToDevice : cudaMemcpyHostToHost;
-    helper->allocate(&p, sizeof(result_manager));
-    cudaMemcpy(p, &instance, sizeof(result_manager), kind);
-    return p;
+    helper->add(instance, sizeof(result_manager));
+    return instance;
 }
 
 void result_manager::init_unified(result_manager** host_handle, result_manager** device_handle,
