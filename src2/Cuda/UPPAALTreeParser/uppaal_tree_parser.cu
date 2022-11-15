@@ -176,18 +176,25 @@ void uppaal_tree_parser::init_clocks(const xml_document* doc)
         //global declarations
         if(d.get_type() == clock_type)
         {
-            global_vars_map_.insert_or_assign(d.get_name(),clock_id_);
-            timers_map_.insert_or_assign(d.get_name(), clock_id_);
+            insert_to_map(&this->global_vars_map_, d.get_name(), clock_id_);
+            insert_to_map(&this->timers_map_, d.get_name(), clock_id_);
+            // global_vars_map_.insert_or_assign(d.get_name(),clock_id_);
+            // timers_map_.insert_or_assign(d.get_name(), clock_id_);
             timer_list_->push_back(clock_variable(clock_id_++, d.get_value()));
+            
         }
         else if(d.get_type() == chan_type)
         {
-            global_vars_map_.insert_or_assign(d.get_name(), chan_id_++);
+            // global_vars_map_.insert_or_assign(d.get_name(), chan_id_++);
+
+            insert_to_map(&this->global_vars_map_, d.get_name(), chan_id_++);
         }
         else
         {
-            global_vars_map_.insert_or_assign(d.get_name(), var_id_);
+            insert_to_map(&this->global_vars_map_, d.get_name(), var_id_);
+            // global_vars_map_.insert_or_assign(d.get_name(), var_id_);
             var_list_->push_back(clock_variable(var_id_++, d.get_value()));
+
         }
     }
     
@@ -203,18 +210,25 @@ void uppaal_tree_parser::init_clocks(const xml_document* doc)
             //local declarations
             if(d.get_type() == clock_type)
             {
-                vars_map_.insert_or_assign(d.get_name(),clock_id_);
-                timers_map_.insert_or_assign(d.get_name(), clock_id_);
+                insert_to_map(&this->vars_map_, d.get_name(), clock_id_);
+                insert_to_map(&this->timers_map_, d.get_name(), clock_id_);
+                // vars_map_.insert_or_assign(d.get_name(),clock_id_);
+                // timers_map_.insert_or_assign(d.get_name(), clock_id_);
                 timer_list_->push_back(clock_variable(clock_id_++, d.get_value()));
+
             }
             else if(d.get_type() == chan_type)
             {
-                vars_map_.insert_or_assign(d.get_name(), chan_id_++);
+                // vars_map_.insert_or_assign(d.get_name(), chan_id_++);
+
+                insert_to_map(&this->vars_map_, d.get_name(), chan_id_++);
             }
             else
             {
-                vars_map_.insert_or_assign(d.get_name(), var_id_);
+                // vars_map_.insert_or_assign(d.get_name(), var_id_);
+                insert_to_map(&this->vars_map_, d.get_name(), var_id_);
                 var_list_->push_back(clock_variable(var_id_++, d.get_value()));
+
             }
         }
     }
@@ -262,7 +276,9 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             string string_name = locs.child("name").child_value();
             const int node_id = xml_id_to_int(string_id);
             bool is_goal = false;
-            node_edge_map.insert_or_assign(node_id, list<edge_t>());
+            // node_edge_map.insert_or_assign(node_id, list<edge_t>());
+
+            insert_to_map(&node_edge_map, node_id, list<edge_t>());
             
             list<constraint_t> invariants; //TODO no longer pointer
             expression* expo_rate = nullptr;
@@ -299,7 +315,8 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
         {
             string string_id = locs.attribute("id").as_string();
             const int node_id = xml_id_to_int(string_id);
-            node_edge_map.insert_or_assign(node_id, list<edge_t>()); //TODO removed pointer edge pointer
+            // node_edge_map.insert_or_assign(node_id, list<edge_t>()); //TODO removed pointer edge pointer
+            insert_to_map(&node_edge_map, node_id, list<edge_t>());
             nodes_->push_back(new node_t(node_id,array_t<constraint_t>(0), true));
         }
 

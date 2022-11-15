@@ -176,6 +176,23 @@ void result_writer::write_lite(const steady_clock::duration sim_duration) const
     lite.close();
 }
 
+void result_writer::write_hit_file(const unsigned long long total_simulations) const
+{
+    std::ofstream file = std::ofstream(this->file_path_ + "_results.csv", std::ofstream::out|std::ofstream::trunc);
+    
+    for (const auto& pair : this->result_map_)
+    {
+        if (pair.first == HIT_MAX_STEPS) continue;
+
+        const float percentage = this->calc_percentage(pair.second.reach_count, total_simulations);
+        
+        file << percentage << "\n";
+    }  
+
+    file.flush();
+    file.close();
+}
+
 
 result_writer::result_writer(
     const std::string* path,
@@ -235,6 +252,10 @@ void result_writer::write_summary(const unsigned long long total_simulations, co
         summary.flush();
         summary.close();
     }
+    if (this->write_mode_ & hit_file)
+    {
+        this->write_hit_file(total_simulations);   
+    }
 }
 
 int result_writer::parse_mode(const std::string& str)
@@ -249,6 +270,7 @@ int result_writer::parse_mode(const std::string& str)
     if(str.find('t') != std::string::npos) mode |= trace;
     if(str.find('m') != std::string::npos) mode |= model_out;
     if(str.find('p') != std::string::npos) mode |= pretty_out;
+    if(str.find('r') != std::string::npos) mode |= hit_file;
     
     return mode;
 }

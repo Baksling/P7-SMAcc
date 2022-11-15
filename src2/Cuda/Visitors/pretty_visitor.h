@@ -21,7 +21,7 @@ private:
     std::ostream* get_stream() const;
     bool to_console_;
 public:
-    explicit pretty_visitor(const bool to_console, const std::string& file);
+    explicit pretty_visitor(const bool to_console, const bool to_file , const std::string& file);
     
     virtual void visit(constraint_t* constraint) override;
 

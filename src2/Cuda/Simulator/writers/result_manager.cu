@@ -94,7 +94,7 @@ result_manager::result_manager(
     allocator->allocate(&this->results_p_, sizeof(simulation_result) * this->simulations_);
     allocator->allocate(&this->variable_p_, sizeof(double) * this->simulations_ * this->variables_count_);
     allocator->allocate(&this->node_p_, sizeof(int) * this->simulations_ * this->models_count_);
-
+    
     if(this->interval_.mode != trace_interval::disabled)
     {
         allocator->allocate(&this->trace_data_, sizeof(trace_vector)* this->simulations_ * this->trace_data_size_);
@@ -153,8 +153,10 @@ CPU GPU void result_manager::write_result(const simulator_state* state) const
 {
     simulation_result* output = this->get_sim_results(state->sim_id_);
 
-    output->total_time_progress = state->global_time_;
-    output->steps = state->steps_;
+    printf("Hababa: %u\n", state->sim_id_);
+    
+    output->total_time_progress = 0; //state->global_time_;
+    output->steps = 1; // state->steps_;
 
     const lend_array<int> node_results = this->get_nodes(state->sim_id_);
     const lend_array<double> var_results = this->get_variables(state->sim_id_);
@@ -164,7 +166,6 @@ CPU GPU void result_manager::write_result(const simulator_state* state) const
         printf("Expected number of models or variables does not match actual amount of models/variables!\n");
         return;
     }
-    
     for (int i = 0; i < node_results.size(); ++i)
     {
         int* p = node_results.at(i);

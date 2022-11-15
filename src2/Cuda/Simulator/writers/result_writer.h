@@ -25,7 +25,8 @@ enum writer_modes
     trace = 8,
     lite_sum = 16,
     model_out = 32,
-    pretty_out = 64
+    pretty_out = 64,
+    hit_file = 128
 };
 
 class result_writer
@@ -51,6 +52,8 @@ private:
     void write_trace(const result_manager* trace_tracker) const;
     
     void write_lite(std::chrono::steady_clock::duration sim_duration) const;
+
+    void write_hit_file(unsigned long long total_simulations) const;
 
 public:
     const bool trace_enabled;

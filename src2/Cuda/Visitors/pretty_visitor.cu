@@ -23,10 +23,10 @@ void pretty_visitor::indentation() const
 }
 
 
-pretty_visitor::pretty_visitor(const bool to_console ,const string& file)
+pretty_visitor::pretty_visitor(const bool to_console, const bool to_file ,const string& file)
 {
     this->to_console_ = to_console;
-    if(file.empty() || file == "")
+    if(file.empty() || !to_file)
     {
         this->stream_ = nullptr;
     }

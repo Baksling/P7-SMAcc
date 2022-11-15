@@ -20,9 +20,17 @@ private:
     std::map<declaration_types, std::string> print_map_;
     void populate_map()
     {
-        print_map_.insert_or_assign(clock_type, "clock");
-        print_map_.insert_or_assign(double_type, "double");
-        print_map_.insert_or_assign(int_type, "int");
+        if (print_map_.count(clock_type)) print_map_[clock_type] = "clock";
+        else print_map_.insert(std::pair<declaration_types, std::string>(clock_type, "clock"));
+
+        if (print_map_.count(double_type)) print_map_[double_type] = "double";
+        else print_map_.insert(std::pair<declaration_types, std::string>(double_type, "double"));
+
+        if (print_map_.count(int_type)) print_map_[int_type] = "int";
+        else print_map_.insert(std::pair<declaration_types, std::string>(int_type, "int"));
+        // print_map_.insert_or_assign(clock_type, "clock");
+        // print_map_.insert_or_assign(double_type, "double");
+        // print_map_.insert_or_assign(int_type, "int");
     }
 public:
     declaration(const declaration_types type, const string& var_name, const string& val, const int id)

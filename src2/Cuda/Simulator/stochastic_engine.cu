@@ -68,11 +68,11 @@ CPU GPU void simulate_stochastic_model(
     {
         const unsigned int sim_id = i + options->simulation_amount * static_cast<unsigned int>(idx);
         state.reset(sim_id, model);
-
         //run simulation
         run_simulator(&state, output, options);
 
         output->write_result(&state);
+        continue;
     }
 }
 
@@ -130,6 +130,7 @@ bool stochastic_engine::run_cpu(
     for (unsigned i = 0; i < strategy->degree_of_parallelism(); i++)
     {
         unsigned long long int offset = (i * thread_memory_size) / sizeof(char);
+
         pool.queue_job([model, options, random_states, output, i, total_memory_heap, offset]()
         {
             simulate_stochastic_model(model, options, random_states, output, i, static_cast<void*>(&static_cast<char*>(total_memory_heap)[offset]));
@@ -143,7 +144,6 @@ bool stochastic_engine::run_cpu(
         // sleep(0.1);
         std::this_thread::yield();
     }
-
     //stop pool
     pool.stop();
     free(random_states);

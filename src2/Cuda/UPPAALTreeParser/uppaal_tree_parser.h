@@ -72,6 +72,13 @@ private:
     node_t* get_node(const int target_id, const list<node_t*>* arr) const;
     void init_clocks(const pugi::xml_document* doc);
     stochastic_model_t parse_xml(char* file_path);
+    template<typename T, typename V>
+    static void insert_to_map(unordered_map<T, V>* map, const T& key, const V& value)
+    {
+        if (map->count(key)) (*map)[key] = value;
+        else map->insert(std::pair<T, V>(key, value));
+    }
+
 public:
     unordered_map<int, string>* get_nodes_with_name() const {return this->node_names_;}
     unordered_map<int, node_with_system_id>* get_subsystems() const {return this->nodes_map_;}

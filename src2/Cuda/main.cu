@@ -52,17 +52,14 @@ int main(int argc, const char* argv[])
     }
 
     int mode = 0; // 0 = GPU, 1 = CPU, 2 = BOTH
-    string c_path = std::filesystem::current_path();
-    string pretty = "";
-    string output = "";
-    int write_mode = -1; // 0 = file, 1 = console, 2 = both
+    string o_path = "./"; // std::filesystem::current_path();
+    int write_mode = 0; // 0 = file, 1 = console, 2 = both
     bool verbose = true;
 
     if (parser.exists("a")) strategy.simulations_per_thread = parser.get<unsigned int>("a");
     if (parser.exists("b")) strategy.block_n = parser.get<int>("b");
     if (parser.exists("c")) strategy.simulation_runs = parser.get<unsigned int>("c");
     if (parser.exists("d")) mode = parser.get<int>("d");
-    if (parser.exists("f")) pretty = c_path + "/" + parser.get<string>("f");
     if (parser.exists("p")) strategy.max_time_progression = parser.get<double>("p");
     if (parser.exists("s")) strategy.max_sim_steps = parser.get<unsigned int>("s");
     if (parser.exists("t")) strategy.threads_n = parser.get<int>("t");
@@ -70,8 +67,8 @@ int main(int argc, const char* argv[])
     if (parser.exists("v")) verbose = parser.get<int>("v") == 0;
     if (parser.exists("w")) write_mode = result_writer::parse_mode(parser.get<std::string>("w"));
     if (parser.exists("y")) strategy.use_max_steps = parser.get<int>("y") == 0;
-    if (parser.exists("o")) output = c_path + "/" + parser.get<string>("o");
-    else output = c_path + "/output";
+    if (parser.exists("o")) o_path = o_path + parser.get<string>("o");
+    else o_path = o_path + "output";
 
     if(write_mode & trace) //Trace settings, only if trace is enabled
     {
@@ -129,7 +126,7 @@ int main(int argc, const char* argv[])
 
         model = stochastic_model_t(start_nodes, timer_arr, variable_arr);
     }
-    result_writer r_writer = result_writer(&output ,strategy,
+    result_writer r_writer = result_writer(&o_path ,strategy,
         model.get_models_count(),
         model.get_variable_count(),
         write_mode);
@@ -144,7 +141,7 @@ int main(int argc, const char* argv[])
     //You can speak when spoken to.
     if (write_mode & pretty_out || verbose)
     {
-        pretty_visitor p_visitor = pretty_visitor(verbose, pretty);
+        pretty_visitor p_visitor = pretty_visitor(verbose, write_mode & pretty_out, o_path + "_pretty_model.txt");
         p_visitor.visit(&model);
     }
 
