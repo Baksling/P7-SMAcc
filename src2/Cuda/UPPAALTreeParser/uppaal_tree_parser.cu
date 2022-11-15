@@ -341,13 +341,13 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                         string keyword = take_while(expr, '=');
                         bool is_clock = false;
 
-                        if(timers_map_.count(keyword) > 0)
+                        if(timers_map_.count(replace_all(keyword, " " , "")) > 0)
                         {
                             is_clock = true;
                         }
 
                         
-                        updates.push_back(update_t(update_id++, get_timer_id(expr), is_clock, e));
+                        updates.emplace_back(update_t(update_id++, get_timer_id(expr), is_clock, e));
                     }
                 }
                 else if (kind == "synchronisation")
