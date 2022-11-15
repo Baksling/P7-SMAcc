@@ -75,6 +75,10 @@ void result_manager::load_results(simulation_result** out_r, int** out_n, double
 CPU GPU void result_manager::write_trace_to_stack(const unsigned sim_id, const trace_vector& data) const
 {
     unsigned* stack_p = &this->trace_stack_p_[sim_id];
+    if(*stack_p >= this->simulations_)
+    {
+        this->trace_data_[this->trace_data_size_ * sim_id + (this->simulations_ - 1)] = data;
+    }
     this->trace_data_[this->trace_data_size_ * sim_id + (*stack_p)] = data;
     (*stack_p) += 1;
 }
@@ -108,7 +112,7 @@ result_manager::result_manager(
     }
 }
 
-CPU GPU void result_manager::write_step_trace(const model_state* node, simulator_state* state)
+CPU GPU void result_manager::write_step_trace(const model_state* node, simulator_state* state) const
 {
     if(this->interval_.mode == trace_interval::disabled) return; //trace tracking disabled
     if(this->interval_.mode == trace_interval::time_interval && state->trace_time_ < this->interval_.value ) return;

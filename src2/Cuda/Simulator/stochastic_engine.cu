@@ -63,7 +63,6 @@ CPU GPU void simulate_stochastic_model(
     
     simulator_state state = simulator_state::init(model, options, r_state, memory_heap);
     
-    
     for (unsigned i = 0; i < options->simulation_amount; ++i)
     {
         const unsigned int sim_id = i + options->simulation_amount * static_cast<unsigned int>(idx);

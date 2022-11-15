@@ -10,7 +10,7 @@ class node_t;
 struct allocation_helper
 {
     const bool use_cuda;
-    explicit allocation_helper(bool use_cuda): use_cuda(use_cuda) {
+    explicit allocation_helper(const bool use_cuda): use_cuda(use_cuda) {
         this->free_list = std::list<void*>();
         this->node_map = std::unordered_map<node_t*, node_t*>();
         allocated_size = 0;

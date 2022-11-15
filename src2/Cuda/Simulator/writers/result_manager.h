@@ -56,7 +56,7 @@ public:
     const bool tracking_trace;
     
     //SIMULATION methods
-    CPU GPU void write_step_trace(const model_state* node, simulator_state* state);
+    CPU GPU void write_step_trace(const model_state* node, simulator_state* state) const;
     CPU GPU void write_node_trace(const model_state* node, const simulator_state* state) const;
     CPU GPU void write_result(const simulator_state* state) const;
     CPU GPU simulation_result* get_sim_results(const unsigned int sim_id) const;
