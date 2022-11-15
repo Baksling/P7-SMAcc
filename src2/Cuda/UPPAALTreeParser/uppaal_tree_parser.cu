@@ -157,7 +157,7 @@ void uppaal_tree_parser::get_guys(const list<string>& expressions, list<T>* t)
         //Results in dead memory.
         string sub = is_timer(expr);
         
-        if (timers_map_.count(sub) > 0)
+        if (timers_map_.count(sub) || global_timers_map_.count(sub))
             t->push_back(*get_constraint(expr, get_timer_id(expr), update_parser::parse(right_side, &vars_map_, &global_vars_map_)));
         else
             t->push_back(*get_constraint(expr, update_parser::parse(sub, &vars_map_, &global_vars_map_), update_parser::parse(right_side, &vars_map_, &global_vars_map_)));
@@ -165,19 +165,18 @@ void uppaal_tree_parser::get_guys(const list<string>& expressions, list<T>* t)
 }
 
 
-void uppaal_tree_parser::init_clocks(const xml_document* doc)
+void uppaal_tree_parser::init_global_clocks(const xml_document* doc)
 {
     string global_decl = doc->child("nta").child("declaration").child_value();
     global_decl = replace_all(global_decl, " ", "");
     const list<declaration> decls = dp_.parse(global_decl);
-        
     for (declaration d : decls)
     {
         //global declarations
         if(d.get_type() == clock_type)
         {
             insert_to_map(&this->global_vars_map_, d.get_name(), clock_id_);
-            insert_to_map(&this->timers_map_, d.get_name(), clock_id_);
+            insert_to_map(&this->global_timers_map_, d.get_name(), clock_id_);
             // global_vars_map_.insert_or_assign(d.get_name(),clock_id_);
             // timers_map_.insert_or_assign(d.get_name(), clock_id_);
             timer_list_->push_back(clock_variable(clock_id_++, d.get_value()));
@@ -197,39 +196,38 @@ void uppaal_tree_parser::init_clocks(const xml_document* doc)
 
         }
     }
+}
+
+void uppaal_tree_parser::init_local_clocks(xml_node template_node)
+{
+    string decl = template_node.child("declaration").child_value();
+    decl = replace_all(decl, " ", "");
+    list<declaration> declarations = dp_.parse(decl);
     
-    
-    for (pugi::xml_node templates: doc->child("nta").children("template"))
+    for (declaration d : declarations)
     {
-        string decl = templates.child("declaration").child_value();
-        decl = replace_all(decl, " ", "");
-        list<declaration> declarations = dp_.parse(decl);
-        
-        for (declaration d : declarations)
+        //local declarations
+        if(d.get_type() == clock_type)
         {
-            //local declarations
-            if(d.get_type() == clock_type)
-            {
-                insert_to_map(&this->vars_map_, d.get_name(), clock_id_);
-                insert_to_map(&this->timers_map_, d.get_name(), clock_id_);
-                // vars_map_.insert_or_assign(d.get_name(),clock_id_);
-                // timers_map_.insert_or_assign(d.get_name(), clock_id_);
-                timer_list_->push_back(clock_variable(clock_id_++, d.get_value()));
+            insert_to_map(&this->vars_map_, d.get_name(), clock_id_);
+            insert_to_map(&this->timers_map_, d.get_name(), clock_id_);
+            // vars_map_.insert_or_assign(d.get_name(),clock_id_);
+            // timers_map_.insert_or_assign(d.get_name(), clock_id_);
+            timer_list_->push_back(clock_variable(clock_id_++, d.get_value()));
 
-            }
-            else if(d.get_type() == chan_type)
-            {
-                // vars_map_.insert_or_assign(d.get_name(), chan_id_++);
+        }
+        else if(d.get_type() == chan_type)
+        {
+            // vars_map_.insert_or_assign(d.get_name(), chan_id_++);
 
-                insert_to_map(&this->vars_map_, d.get_name(), chan_id_++);
-            }
-            else
-            {
-                // vars_map_.insert_or_assign(d.get_name(), var_id_);
-                insert_to_map(&this->vars_map_, d.get_name(), var_id_);
-                var_list_->push_back(clock_variable(var_id_++, d.get_value()));
+            insert_to_map(&this->vars_map_, d.get_name(), chan_id_++);
+        }
+        else
+        {
+            // vars_map_.insert_or_assign(d.get_name(), var_id_);
+            insert_to_map(&this->vars_map_, d.get_name(), var_id_);
+            var_list_->push_back(clock_variable(var_id_++, d.get_value()));
 
-            }
         }
     }
 }
@@ -264,12 +262,14 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
     int edge_id = 0;
     int update_id = 0;
 
-    init_clocks(&doc);
+    init_global_clocks(&doc);
     
     for (pugi::xml_node templates: doc.child("nta").children("template"))
     {
         string init_node = templates.child("init").attribute("ref").as_string();
         init_node_id_ = xml_id_to_int(init_node);
+        init_local_clocks(templates);
+        
         for (pugi::xml_node locs: templates.children("location"))
         {
             string string_id = locs.attribute("id").as_string();
@@ -358,7 +358,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                         string keyword = take_while(expr, '=');
                         bool is_clock = false;
 
-                        if(timers_map_.count(replace_all(keyword, " " , "")) > 0)
+                        if(timers_map_.count(replace_all(keyword, " " , "")) > 0 ||global_timers_map_.count(replace_all(keyword, " " , "")) > 0)
                         {
                             is_clock = true;
                         }
@@ -413,6 +413,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             node_edge_map.at(source_id).push_back(result_edge);
         }
         vars_map_.clear();
+        timers_map_.clear();
         this->system_count++;
     }
 

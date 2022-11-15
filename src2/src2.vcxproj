@@ -903,6 +903,7 @@
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\tests\rate_test.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\tests\var_test.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\ThisIsCancer2ElectricBoogaloo.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\var_test_test.xml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Cuda\test_results" />

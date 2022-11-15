@@ -69,14 +69,11 @@ list<declaration> declaration_parser::parse(const string& decl)
         
         string line_trimmed = remove_while(line, ' ');
         //Remove tabs
-        line_trimmed = remove_while(line, '\v');
+        line_trimmed = remove_while(line, '\t');
         
         if (line_trimmed.substr(0,2) == "//")
             continue;
 
-        //cout << "\n!! LETS GOOO1:" << line_trimmed<<":";
-        //cout.flush();
-        
         if (is_this_keyword(line_trimmed,"clock"))
         {
             list<declaration> cloc_decls = parse_keyword(line_trimmed, clock_type);

@@ -58,6 +58,7 @@ private:
     declaration_parser dp_;
     template <typename T> void get_guys(const list<string>& expressions, list<T>* t);
     unordered_map<string, int> timers_map_{};
+    unordered_map<string, int> global_timers_map_{};
     unordered_map<string, int> vars_map_{};
     unordered_map<string, int> global_vars_map_{};
     unordered_map<int, string>* node_names_ = new unordered_map<int, string>();
@@ -70,7 +71,8 @@ private:
     int get_timer_id(const string& expr) const;
     string is_timer(const string& expr) const;
     node_t* get_node(const int target_id, const list<node_t*>* arr) const;
-    void init_clocks(const pugi::xml_document* doc);
+    void init_global_clocks(const pugi::xml_document* doc);
+    void init_local_clocks(const pugi::xml_node template_node);
     stochastic_model_t parse_xml(char* file_path);
     template<typename T, typename V>
     static void insert_to_map(unordered_map<T, V>* map, const T& key, const V& value)
