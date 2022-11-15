@@ -1,3 +1,11 @@
 workspace.xml
 src2/Cuda/test_results/
 test_results/
+*.db
+src2/.vs/src2/v17/.suo
+*.lock
+*.vsidx
+*.filters
+*.vcxproj
+*.user
+*.filters

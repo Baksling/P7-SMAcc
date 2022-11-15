@@ -1,4 +1,8 @@
-﻿#include "uppaal_tree_parser.h"
+﻿#include <utility>
+
+#include "uppaal_tree_parser.h"
+
+#include "variable_expression_evaluator.h"
 
 
 #define ALPHA "abcdefghijklmnopqrstuvwxyz"
@@ -85,7 +89,7 @@ template <typename T> T* list_to_arr(list<T> l)
 
 string uppaal_tree_parser::is_timer(const string& expr) const
 {
-    const string expr_wout_spaces = replace_all(expr, string(" "), string(""));
+    const string expr_wout_spaces = replace_all(expr, string(" "), string("")); //TODO trimmer
     int index = 0;
 
     while (true)
@@ -101,10 +105,7 @@ string uppaal_tree_parser::is_timer(const string& expr) const
         }
     }
 
-    const string sub = expr_wout_spaces.substr(0, index);
-
-
-    return sub;
+    return expr_wout_spaces.substr(0, index);;
 }
 
 
@@ -142,25 +143,25 @@ int uppaal_tree_parser::get_timer_id(const string& expr) const
 }
 
 template <typename T>
-void uppaal_tree_parser::get_guys(const list<string>& expressions, list<T>* t)
+void uppaal_tree_parser::fill_expressions(const list<string>& expressions, list<T>* t)
 {
     for(const auto& expr: expressions)
     {
         if (expr.empty())
             continue;
 
-        const string right_side = take_after(expr, get_constraint_op(expr));
-        
-        
+        string right_side = take_after(expr, get_constraint_op(expr));
+        right_side = replace_all(right_side, " ", ""); //TODO Trimmer
+     
         //TODO fix this plz
         //Constraint is heap allocated, and is then copied here.
         //Results in dead memory.
         string sub = is_timer(expr);
         
         if (timers_map_.count(sub) || global_timers_map_.count(sub))
-            t->push_back(*get_constraint(expr, get_timer_id(expr), update_parser::parse(right_side, &vars_map_, &global_vars_map_)));
+            t->push_back(*get_constraint(expr, get_timer_id(expr), variable_expression_evaluator::parse_update_expr(right_side, &vars_map_, &global_vars_map_)));
         else
-            t->push_back(*get_constraint(expr, update_parser::parse(sub, &vars_map_, &global_vars_map_), update_parser::parse(right_side, &vars_map_, &global_vars_map_)));
+            t->push_back(*get_constraint(expr, variable_expression_evaluator::parse_update_expr(sub, &vars_map_, &global_vars_map_), variable_expression_evaluator::parse_update_expr(right_side, &vars_map_, &global_vars_map_)));
     }
 }
 
@@ -201,25 +202,20 @@ void uppaal_tree_parser::init_global_clocks(const xml_document* doc)
 void uppaal_tree_parser::init_local_clocks(xml_node template_node)
 {
     string decl = template_node.child("declaration").child_value();
-    decl = replace_all(decl, " ", "");
-    list<declaration> declarations = dp_.parse(decl);
+    decl = replace_all(decl, " ", ""); //TODO Trimmer
     
-    for (declaration d : declarations)
+    for (declaration d : dp_.parse(decl))
     {
         //local declarations
         if(d.get_type() == clock_type)
         {
             insert_to_map(&this->vars_map_, d.get_name(), clock_id_);
             insert_to_map(&this->timers_map_, d.get_name(), clock_id_);
-            // vars_map_.insert_or_assign(d.get_name(),clock_id_);
-            // timers_map_.insert_or_assign(d.get_name(), clock_id_);
             timer_list_->push_back(clock_variable(clock_id_++, d.get_value()));
 
         }
         else if(d.get_type() == chan_type)
         {
-            // vars_map_.insert_or_assign(d.get_name(), chan_id_++);
-
             insert_to_map(&this->vars_map_, d.get_name(), chan_id_++);
         }
         else
@@ -245,93 +241,60 @@ node_t* uppaal_tree_parser::get_node(const int target_id, const list<node_t*>* a
     return arr->front();
 }
 
-
-__host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
+void uppaal_tree_parser::handle_locations(const xml_node locs)
 {
-    string path = file_path;
-    xml_document doc;
-    unordered_map<int, list<edge_t>> node_edge_map; //TODO edge is no longer pointer
-    declaration_parser dp;
-    
-    // load the XML file
-    if (!doc.load_file(file_path))
+    const string string_id = locs.attribute("id").as_string();
+    string string_name = locs.child("name").child_value();
+    const int node_id = xml_id_to_int(string_id);
+    list<constraint_t> invariants;
+    expression* expo_rate = nullptr;
+    bool is_goal = false;
+
+    insert_to_map(&node_edge_map, node_id, list<edge_t>());
+            
+    if (string_name != "")
     {
-        THROW_LINE("The specified file does not exist.. stupid.")
+        is_goal = string_name == "Goal" ? true : false;
+        node_names_->emplace(node_id, string_name);
     }
 
-    int edge_id = 0;
-    int update_id = 0;
+    const string kind = locs.child("label").attribute("kind").as_string();
+    const string expr_string = locs.child("label").child_value();
 
-    init_global_clocks(&doc);
-    
-    for (pugi::xml_node templates: doc.child("nta").children("template"))
+    const list<string> expressions = split_expr(expr_string);
+            
+    if (kind == "exponentialrate")
     {
-        string init_node = templates.child("init").attribute("ref").as_string();
-        init_node_id_ = xml_id_to_int(init_node);
-        init_local_clocks(templates);
-        
-        for (pugi::xml_node locs: templates.children("location"))
-        {
-            string string_id = locs.attribute("id").as_string();
-            string string_name = locs.child("name").child_value();
-            const int node_id = xml_id_to_int(string_id);
-            bool is_goal = false;
-            // node_edge_map.insert_or_assign(node_id, list<edge_t>());
+        //TODO make string trimmer
+        const string line_wo_ws = replace_all(expr_string, " ", "");
+        const string nums = take_after(line_wo_ws, '=');
+                
+        expo_rate = variable_expression_evaluator::parse_update_expr(nums,&vars_map_, &global_vars_map_);
+    }
+            
+    if (kind == "invariant")
+    {
+        fill_expressions(expressions, &invariants);
+    }
+            
+    if (init_node_id_ == node_id)
+        start_nodes_.push_back(nodes_->size());
+            
+    node_t* node = new node_t(node_id, to_array(&invariants),false, is_goal, expo_rate);
+    nodes_->push_back(node);
+    nodes_map_->emplace(node->get_id(), node_with_system_id(node, this->system_count_));
+}
 
-            insert_to_map(&node_edge_map, node_id, list<edge_t>());
-            
-            list<constraint_t> invariants; //TODO no longer pointer
-            expression* expo_rate = nullptr;
-            
-            if (string_name != "")
-            {
-                is_goal = string_name == "Goal" ? true : false;
-                node_names_->emplace(node_id, string_name);
-            }
-            
-            string kind = locs.child("label").attribute("kind").as_string();
-            string expr_string = locs.child("label").child_value();
-
-            list<string> expressions = split_expr(expr_string);
-            
-            if (kind == "exponentialrate")
-            {
-                expo_rate = update_parser::parse(expr_string, &vars_map_, &global_vars_map_);
-            }
-            
-            if (kind == "invariant")
-            {
-                get_guys(expressions, &invariants);
-            }
-            if (init_node_id_ == node_id)
-                start_nodes_.push_back(nodes_->size());
-            
-            node_t* node = new node_t(node_id, to_array(&invariants),false, is_goal, expo_rate);
-            nodes_->push_back(node);
-            nodes_map_->emplace(node->get_id(), node_with_system_id(node, this->system_count));
-        }
-
-        for (pugi::xml_node locs: templates.children("branchpoint"))
-        {
-            string string_id = locs.attribute("id").as_string();
-            const int node_id = xml_id_to_int(string_id);
-            // node_edge_map.insert_or_assign(node_id, list<edge_t>()); //TODO removed pointer edge pointer
-            insert_to_map(&node_edge_map, node_id, list<edge_t>());
-            nodes_->push_back(new node_t(node_id,array_t<constraint_t>(0), true));
-        }
-
-        
-        
-        for (pugi::xml_node trans: templates.children("transition"))
-        {
-            string source = trans.child("source").attribute("ref").as_string();
+void uppaal_tree_parser::handle_transitions(const xml_node trans)
+{
+    string source = trans.child("source").attribute("ref").as_string();
             string target = trans.child("target").attribute("ref").as_string();
 
             int source_id = xml_id_to_int(source);
             int target_id = xml_id_to_int(target);
             
-            list<constraint_t> guards; //TODO removed pointer part
-            list<update_t> updates; //TODO removed pointer part
+            list<constraint_t> guards;
+            list<update_t> updates;
             expression* probability = nullptr;
             edge_channel* ec = nullptr;
             
@@ -344,62 +307,21 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
                 if(kind == "guard")
                 {
                     list<string> expressions = split_expr(expr_string);
-                    get_guys(expressions, &guards);
+                    fill_expressions(expressions, &guards);
                 }
                 else if (kind == "assignment")
                 {
-                    list<string> expressions = split_expr(expr_string, ',');
-                    for(const auto& expr: expressions)
-                    {
-                        if (expr.empty())
-                            continue;
-                        
-                        expression* e = update_parser::parse(expr, &vars_map_, &global_vars_map_);
-                        string keyword = take_while(expr, '=');
-                        bool is_clock = false;
-
-                        if(timers_map_.count(replace_all(keyword, " " , "")) > 0 ||global_timers_map_.count(replace_all(keyword, " " , "")) > 0)
-                        {
-                            is_clock = true;
-                        }
-
-                        
-                        updates.emplace_back(update_t(update_id++, get_timer_id(expr), is_clock, e));
-                    }
+                    updates = handle_assignment(expr_string);
                 }
                 else if (kind == "synchronisation")
                 {
-                    ec = new edge_channel();
-                    // printf("\n !=!=!==!=!=!== %s \n | %d", expr_string.c_str(), !does_not_contain(expr_string, "!"));
-                    if (!does_not_contain(expr_string, "!"))
-                    {
-                        ec->is_listener = false;
-                    }
-                    else
-                    {
-                        ec->is_listener = true;
-                    }
-                    string sync_keyword = replace_all(expr_string, "!", "");
-                    sync_keyword = replace_all(sync_keyword, "?", "");
-                    sync_keyword = replace_all(sync_keyword, " ", "");
-                    
-                    if (vars_map_.count(sync_keyword))
-                    {
-                        ec->channel_id = vars_map_.at(sync_keyword);
-                    }
-                    else if (global_vars_map_.count(sync_keyword))
-                    {
-                        ec->channel_id = global_vars_map_.at(sync_keyword);
-                    }
-                    else
-                    {
-                        THROW_LINE(sync_keyword + " NOT IN LOCAL, NOR GLOBAL MAP, comeon dude..");
-                    }
-                    
+                    ec = handle_sync(expr_string);
                 }
                 else if (kind == "probability")
                 {
-                    probability = update_parser::parse(expr_string, &vars_map_, &global_vars_map_);
+                    string line_wo_ws = replace_all(expr_string, " ", "");
+                    string nums = take_after(line_wo_ws, '='); //TODO Trimmer
+                    probability = variable_expression_evaluator::parse_update_expr(nums,&vars_map_, &global_vars_map_);
                 }
             }
 
@@ -407,38 +329,129 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(char* file_path)
             
             node_t* target_node = get_node(target_id, nodes_);
             edge_t result_edge = ec == nullptr
-                ? edge_t(edge_id++, probability, target_node, to_array(&guards), to_array(&updates))
-                : edge_t(edge_id++, probability, target_node, to_array(&guards), to_array(&updates), *ec);
+                ? edge_t(edge_id_++, probability, target_node, to_array(&guards), to_array(&updates))
+                : edge_t(edge_id_++, probability, target_node, to_array(&guards), to_array(&updates), *ec);
             
             node_edge_map.at(source_id).push_back(result_edge);
+}
+
+list<update_t> uppaal_tree_parser::handle_assignment(const string& input)
+{
+    const list<string> expressions = split_expr(input, ',');
+    list<update_t> result;
+    for(const auto& expr: expressions)
+    {
+        if (expr.empty())
+            continue;
+
+        string line_wo_ws = replace_all(expr, " ", "");
+        string right_side = take_after(line_wo_ws, '='); //TODO Trimmer
+                        
+        expression* right_expression = variable_expression_evaluator::parse_update_expr(right_side,&this->vars_map_, &this->global_vars_map_);
+        const string left_side = take_while(line_wo_ws, '=');
+        bool is_clock = false;
+
+        if(this-> timers_map_.count(left_side) || this->global_timers_map_.count(left_side) > 0)
+        {
+            is_clock = true;
         }
-        vars_map_.clear();
-        timers_map_.clear();
-        this->system_count++;
+        
+        result.emplace_back(update_t(this->update_id_++, get_timer_id(expr), is_clock, right_expression));
+    }
+    
+    return result;
+}
+
+edge_channel* uppaal_tree_parser::handle_sync(const string& input) const
+{
+    const auto ec = new edge_channel();
+    
+    ec->is_listener = input.find("?")!=std::string::npos;
+    
+    string sync_keyword = replace_all(input, " ", "");
+    sync_keyword = replace_all(sync_keyword, ec->is_listener ? "?" : "!", "");
+                    
+    if (vars_map_.count(sync_keyword))
+    {
+        ec->channel_id = vars_map_.at(sync_keyword);
+        return ec;
+    }
+    
+    if (global_vars_map_.count(sync_keyword))
+    {
+        ec->channel_id = global_vars_map_.at(sync_keyword);
+        return ec;
     }
 
+    THROW_LINE(sync_keyword + " NOT IN LOCAL, NOR GLOBAL MAP, comeon dude..");
+}
+
+array_t<node_t*> uppaal_tree_parser::after_processing()
+{
     for(node_t* node: *nodes_)
     {
         node->set_edges(&node_edge_map.at(node->get_id()));
     }
     
-    //TODO i broke plz fix :)
-    //The stochastic model now expects an array of objects, rather than a array of object pointers.
-    //This helps cut down on the number of times pointers need to be followed in the simulation.
-    //Only reason it was like that before, was because we didnt know how to make the cuda-allocation code without it :)
-    // - Bak ඞ
-    array_t<node_t*> start_nodes = array_t<node_t*>(start_nodes_.size());
-
-    
+    const array_t<node_t*> start_nodes = array_t<node_t*>(start_nodes_.size());
 
     int number_of_start_nodes = 0;
-    for (int i : start_nodes_)
+    for (const int i : start_nodes_)
     {
         auto n_front = nodes_->begin();
         std::advance(n_front, i);
         start_nodes.arr()[number_of_start_nodes++] = *n_front;
     }
+    
+    return start_nodes;
+}
 
+
+__host__ stochastic_model_t uppaal_tree_parser::parse_xml(const char* file_path)
+{
+    string path = file_path;
+    xml_document doc;
+    declaration_parser dp;
+    
+    // load the XML file
+    if (!doc.load_file(file_path))
+    {
+        THROW_LINE("The specified file does not exist.. stupid.")
+    }
+
+    init_global_clocks(&doc);
+    
+    for (pugi::xml_node templates: doc.child("nta").children("template"))
+    {
+        const string init_node = templates.child("init").attribute("ref").as_string();
+        init_node_id_ = xml_id_to_int(init_node);
+        init_local_clocks(templates);
+        
+        for (const pugi::xml_node locs: templates.children("location"))
+        {
+            handle_locations(locs);
+        }
+
+        for (pugi::xml_node locs: templates.children("branchpoint"))
+        {
+            const string string_id = locs.attribute("id").as_string();
+            const int node_id = xml_id_to_int(string_id);
+            insert_to_map(&node_edge_map, node_id, list<edge_t>());
+            nodes_->push_back(new node_t(node_id,array_t<constraint_t>(0), true));
+        }
+        
+        for (const pugi::xml_node trans: templates.children("transition"))
+        {
+            handle_transitions(trans);
+        }
+        
+        //Done with system, clear storage
+        vars_map_.clear();
+        timers_map_.clear();
+        this->system_count_++;
+    }
+
+    const auto start_nodes = after_processing();
     return stochastic_model_t(start_nodes, to_array(timer_list_), to_array(var_list_));
 }
 

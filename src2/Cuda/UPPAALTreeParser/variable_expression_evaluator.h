@@ -21,7 +21,7 @@ using namespace std;
  
 enum update_types { UPDATEDELIMITER = 1, UPDATEVARIABLE, UPDATENUMBER, UPDATEFUNCTION };
 const int UPDATE_NUMVARS = 26;
-class update_expression_evaluator {
+class variable_expression_evaluator {
     char *exp_ptr_; // points to the expression
     char token_[256]; // holds current token
     char tok_type_; // holds token's type
@@ -36,7 +36,7 @@ class update_expression_evaluator {
     expression* eval_exp(char *exp);
     void get_token();
 public:
-    update_expression_evaluator(unordered_map<string,int>* local_vars, unordered_map<string,int>* global_vars);
+    variable_expression_evaluator(unordered_map<string,int>* local_vars, unordered_map<string,int>* global_vars);
     static expression* parse_update_expr(const string& input, unordered_map<string, int>* local_vars, unordered_map<string, int>* global_vars);
     
     char errormsg[64];

@@ -22,7 +22,6 @@
 #include "../Domain/edge_t.h"
 #include "declaration.h"
 #include "declaration_parser.h"
-#include "update_parser.h"
 
 #define GPU __device__
 #define CPU __host__
@@ -54,13 +53,16 @@ private:
     int var_id_ = 0;
     int clock_id_ = 0;
     int chan_id_ = 0;
-    int system_count = 0;
+    int system_count_ = 0;
+    int update_id_ = 0;
+    int edge_id_ = 0;
     declaration_parser dp_;
-    template <typename T> void get_guys(const list<string>& expressions, list<T>* t);
+    template <typename T> void fill_expressions(const list<string>& expressions, list<T>* t);
     unordered_map<string, int> timers_map_{};
     unordered_map<string, int> global_timers_map_{};
     unordered_map<string, int> vars_map_{};
     unordered_map<string, int> global_vars_map_{};
+    unordered_map<int, list<edge_t>> node_edge_map{};
     unordered_map<int, string>* node_names_ = new unordered_map<int, string>();
     unordered_map<int, node_with_system_id>* nodes_map_= new unordered_map<int, node_with_system_id>();
     list<node_t*>* nodes_ = new list<node_t*>();
@@ -71,9 +73,14 @@ private:
     int get_timer_id(const string& expr) const;
     string is_timer(const string& expr) const;
     node_t* get_node(const int target_id, const list<node_t*>* arr) const;
+    edge_channel* handle_sync(const string& input) const;
+    list<update_t> handle_assignment(const string& input);
+    void handle_transitions(const xml_node trans);
+    void handle_locations(const xml_node locs);
+    array_t<node_t*> after_processing();
     void init_global_clocks(const pugi::xml_document* doc);
     void init_local_clocks(const pugi::xml_node template_node);
-    stochastic_model_t parse_xml(char* file_path);
+    stochastic_model_t parse_xml(const char* file_path);
     template<typename T, typename V>
     static void insert_to_map(unordered_map<T, V>* map, const T& key, const V& value)
     {

@@ -1,9 +1,9 @@
-﻿#include "update_expression_evaluator.h"
+﻿#include "variable_expression_evaluator.h"
 
 #include "helper_methods.h"
 
 // Parser constructor.
-update_expression_evaluator::update_expression_evaluator(unordered_map<string,int>* local_vars, unordered_map<string,int>* global_vars)
+variable_expression_evaluator::variable_expression_evaluator(unordered_map<string,int>* local_vars, unordered_map<string,int>* global_vars)
 {
     exp_ptr_ = nullptr;
     local_vars_ = local_vars;
@@ -11,7 +11,7 @@ update_expression_evaluator::update_expression_evaluator(unordered_map<string,in
 }
 
 // Parser entry point.
-expression* update_expression_evaluator::eval_exp(char *exp)
+expression* variable_expression_evaluator::eval_exp(char *exp)
 {
     
     exp_ptr_ = exp;
@@ -30,7 +30,7 @@ expression* update_expression_evaluator::eval_exp(char *exp)
     return result;
 }
 // Process an assignment.
-expression* update_expression_evaluator::eval_exp1()
+expression* variable_expression_evaluator::eval_exp1()
 {
     int slot;
     expression* result;
@@ -61,7 +61,7 @@ expression* update_expression_evaluator::eval_exp1()
     return result;
 }
 // Add or subtract two terms.
- expression* update_expression_evaluator::eval_exp2()
+ expression* variable_expression_evaluator::eval_exp2()
 {
     char op;
     expression* result = eval_exp3();
@@ -83,7 +83,7 @@ expression* update_expression_evaluator::eval_exp1()
     return  result;
 }
 // Multiply or divide two factors.
-expression* update_expression_evaluator::eval_exp3()
+expression* variable_expression_evaluator::eval_exp3()
 {
     char op;
     double temp;
@@ -105,7 +105,7 @@ expression* update_expression_evaluator::eval_exp3()
     return result;
 }
 // Process an exponent.
-expression* update_expression_evaluator::eval_exp4()
+expression* variable_expression_evaluator::eval_exp4()
 {
     expression* result = eval_exp5();
     while (*token_ == '^')
@@ -117,7 +117,7 @@ expression* update_expression_evaluator::eval_exp4()
     return result;
 }
 // Evaluate a unary + or -.
-expression* update_expression_evaluator::eval_exp5()
+expression* variable_expression_evaluator::eval_exp5()
 {
     char op = 0;
     if ((tok_type_ == UPDATEDELIMITER) && *token_ == '+' || *token_ == '-')
@@ -135,7 +135,7 @@ expression* update_expression_evaluator::eval_exp5()
     return result;
 }
 // Process a function, a parenthesized expression, a value or a variable
-expression* update_expression_evaluator::eval_exp6()
+expression* variable_expression_evaluator::eval_exp6()
 {
     const bool is_func = (tok_type_ == UPDATEFUNCTION);
     if (is_func)
@@ -231,7 +231,7 @@ expression* update_expression_evaluator::eval_exp6()
         }
 }
 // Obtain the next token.
-void update_expression_evaluator::get_token()
+void variable_expression_evaluator::get_token()
 {
     tok_type_ = 0;
     char* temp = token_;
@@ -262,10 +262,9 @@ void update_expression_evaluator::get_token()
     *temp = '\0';
 }
 
-expression* update_expression_evaluator::parse_update_expr(const string& input, unordered_map<string, int>* local_vars, unordered_map<string, int>* global_vars)
+expression* variable_expression_evaluator::parse_update_expr(const string& input, unordered_map<string, int>* local_vars, unordered_map<string, int>* global_vars)
 {
-    update_expression_evaluator ob(local_vars, global_vars);
-    //cout << "\nINPUT:"<< input<<"|";
+    variable_expression_evaluator ob(local_vars, global_vars);
     expression* ans = ob.eval_exp(const_cast<char*>(input.substr(0, input.length()).c_str()));
     return ans;
 }
