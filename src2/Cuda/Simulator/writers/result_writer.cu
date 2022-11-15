@@ -180,6 +180,13 @@ void result_writer::write_hit_file(const unsigned long long total_simulations) c
 {
     std::ofstream file = std::ofstream(this->file_path_ + "_results.csv", std::ofstream::out|std::ofstream::trunc);
     
+    if (result_map_.empty() || result_map_.size() == 1 && result_map_.count(HIT_MAX_STEPS))
+    {
+        file << "0";
+        file.flush();
+        file.close();
+        return;
+    } 
     for (const auto& pair : this->result_map_)
     {
         if (pair.first == HIT_MAX_STEPS) continue;
