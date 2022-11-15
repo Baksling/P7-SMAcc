@@ -98,7 +98,7 @@ result_manager::result_manager(
     allocator->allocate(&this->results_p_, sizeof(simulation_result) * this->simulations_);
     allocator->allocate(&this->variable_p_, sizeof(double) * this->simulations_ * this->variables_count_);
     allocator->allocate(&this->node_p_, sizeof(int) * this->simulations_ * this->models_count_);
-
+    
     if(this->interval_.mode != trace_interval::disabled)
     {
         allocator->allocate(&this->trace_data_, sizeof(trace_vector)* this->simulations_ * this->trace_data_size_);
@@ -156,9 +156,9 @@ CPU GPU void result_manager::write_node_trace(const model_state* node, const sim
 CPU GPU void result_manager::write_result(const simulator_state* state) const
 {
     simulation_result* output = this->get_sim_results(state->sim_id_);
-
-    output->total_time_progress = state->global_time_;
-    output->steps = state->steps_;
+        
+    output->total_time_progress = 0; //state->global_time_;
+    output->steps = 1; // state->steps_;
 
     const lend_array<int> node_results = this->get_nodes(state->sim_id_);
     const lend_array<double> var_results = this->get_variables(state->sim_id_);
@@ -168,7 +168,6 @@ CPU GPU void result_manager::write_result(const simulator_state* state) const
         printf("Expected number of models or variables does not match actual amount of models/variables!\n");
         return;
     }
-    
     for (int i = 0; i < node_results.size(); ++i)
     {
         int* p = node_results.at(i);
@@ -287,16 +286,13 @@ result_manager* result_manager::init(
     const simulation_strategy* strategy,
     allocation_helper* helper)
 {
-    const result_manager instance = result_manager(
+    result_manager* instance = new result_manager(
         model,
         strategy,
         helper);
 
-    result_manager* p = nullptr;
-    const cudaMemcpyKind kind = helper->use_cuda ? cudaMemcpyHostToDevice : cudaMemcpyHostToHost;
-    helper->allocate(&p, sizeof(result_manager));
-    cudaMemcpy(p, &instance, sizeof(result_manager), kind);
-    return p;
+    helper->add(instance, sizeof(result_manager));
+    return instance;
 }
 
 void result_manager::init_unified(result_manager** host_handle, result_manager** device_handle,

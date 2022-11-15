@@ -139,6 +139,8 @@ void stochastic_simulator::simulate_cpu(
     const bool verbose)
 {
     //setup start variables
+
+    
     const unsigned long total_simulations = strategy->total_simulations();
 
     allocation_helper allocator = allocation_helper(false);
@@ -175,7 +177,7 @@ void stochastic_simulator::simulate_cpu(
 
     const steady_clock::duration temp_time =  steady_clock::now() - global_start;
     if (verbose) std::cout << "Simulation and result analysis took a total of: " << duration_cast<milliseconds>(temp_time).count() << "[ms] \n";
-
+    
     r_writer->write_summary(total_simulations,temp_time);
 
     allocator.free_allocations();

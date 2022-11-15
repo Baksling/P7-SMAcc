@@ -4,19 +4,34 @@
 #include "../Domain/edge_t.h"
 #include "../Domain/node_t.h"
 #include "../Domain/stochastic_model_t.h"
+using namespace std;
 
 void pretty_visitor::indentation() const
 {
-    for (int i = 0; i < scope_; ++i)
+    if(this->to_console_)
     {
-        printf("    ");
+        for (int i = 0; i < scope_; ++i)
+            std::cout << "  ";
+    }
+    if(this->stream_ != nullptr)
+    {
+        for (int j = 0; j < scope_; ++j)
+            *this->stream_ << "  ";
     }
 
     //printf("-----scope: %d\n", this->scope_);
 }
 
-pretty_visitor::pretty_visitor()
+
+pretty_visitor::pretty_visitor(const bool to_console, const bool to_file ,const string& file)
 {
+    this->to_console_ = to_console;
+    if(file.empty() || !to_file)
+    {
+        this->stream_ = nullptr;
+    }
+    else
+        this->stream_ = new std::ofstream(file, std::ofstream::out | std::ofstream::trunc);      
 }
 
 void pretty_visitor::visit(constraint_t* constraint)
@@ -26,7 +41,10 @@ void pretty_visitor::visit(constraint_t* constraint)
         return;
     }
     indentation();
-    constraint->pretty_print();
+    if(this->to_console_)
+        constraint->pretty_print(std::cout);
+    if(this->stream_ != nullptr)
+        constraint->pretty_print(*this->stream_);
     scope_++;
     constraint->accept(this);
     scope_--;
@@ -39,7 +57,10 @@ void pretty_visitor::visit(edge_t* edge)
         return;
     }
     indentation();
-    edge->pretty_print();
+    if(this->to_console_)
+        edge->pretty_print(std::cout);
+    if(this->stream_ != nullptr)
+        edge->pretty_print(*this->stream_);
     scope_++;
     edge->accept(this);
     scope_--;
@@ -57,7 +78,10 @@ void pretty_visitor::visit(node_t* node)
     checker_.insert(node->get_id());
     this->scope_ = 0;
     indentation();
-    node->pretty_print();
+    if(this->to_console_)
+        node->pretty_print(std::cout);
+    if(this->stream_ != nullptr)
+        node->pretty_print(*this->stream_);
     scope_++;
     node->accept(this);
     scope_--;
@@ -67,10 +91,22 @@ void pretty_visitor::visit(node_t* node)
 void pretty_visitor::visit(stochastic_model_t* model)
 {
     if (model == nullptr) return;
-    model->pretty_print();
+    if(this->to_console_)
+        model->pretty_print(); //TODO model has no pretty print :)
+    if(this->stream_ != nullptr)
+        model->pretty_print();
     model->accept(this);
-    printf("Model end\n");
-    pretty_helper();
+    // ostream* os = this->get_stream();
+    // *os << "\nModel end\n";
+    // os->flush();
+    if(this->stream_ != nullptr)
+    {
+        this->stream_->flush();
+        this->stream_->close();
+    }
+    else
+        std::cout.flush();
+    //pretty_helper();
 }
 
 void pretty_visitor::visit(clock_variable* timer)
@@ -80,7 +116,10 @@ void pretty_visitor::visit(clock_variable* timer)
         return;
     }
     indentation();
-    timer->pretty_print();
+    if(this->to_console_)
+        timer->pretty_print(std::cout);
+    if(this->stream_ != nullptr)
+        timer->pretty_print(*this->stream_);
     scope_++;
     timer->accept(this);
     scope_--;
@@ -93,7 +132,10 @@ void pretty_visitor::visit(update_t* update)
         return;
     }
     indentation();
-    update->pretty_print();
+    if(this->to_console_)
+        update->pretty_print(std::cout);
+    if(this->stream_ != nullptr)
+        update->pretty_print(*this->stream_);
     scope_++;
     update->accept(this);
     scope_--;
@@ -105,8 +147,11 @@ void pretty_visitor::visit(expression* expression)
     {
         return;
     }
-    //indentation();
-    //std::cout << expression->to_string();
+    indentation();
+    if(this->to_console_)
+        expression->pretty_print(std::cout);
+    if(this->stream_ != nullptr)
+        expression->pretty_print(*this->stream_);
     scope_++;
     expression->accept(this);
     scope_--;

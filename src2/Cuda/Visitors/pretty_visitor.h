@@ -4,6 +4,8 @@
 #define PRETTY_VISITOR_H
 
 #include <unordered_set>
+#include <iostream>
+#include <fstream>
 #include "visitor.h"
 
 
@@ -13,9 +15,13 @@ private:
     std::unordered_set<int> checker_ = {};
     int* check_ = nullptr;
     int scope_ = 0;
+    std::ofstream* stream_ = nullptr;
     void indentation() const;
+    void pretty_print(std::string string) const;
+    std::ostream* get_stream() const;
+    bool to_console_;
 public:
-    explicit pretty_visitor();
+    explicit pretty_visitor(const bool to_console, const bool to_file , const std::string& file);
     
     virtual void visit(constraint_t* constraint) override;
 

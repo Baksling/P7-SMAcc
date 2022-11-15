@@ -154,7 +154,7 @@ def analyse_performance(args) -> None:
             '-a', str(amount),
             '-c', '1',
             '-d', '0',
-            '-w', str(7),
+            '-w', 'l',
             '-o', file_path,
             '-y', '0',
             '-v', '1'
@@ -173,7 +173,7 @@ def analyse_performance(args) -> None:
             '-a', str(amount),
             '-c', '1',
             '-d', '1',
-            '-w', str(7),
+            '-w', 'l',
             '-o', file_path,
             '-y', '0',
             '-v', '1',

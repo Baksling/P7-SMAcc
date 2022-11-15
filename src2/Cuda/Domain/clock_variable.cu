@@ -1,5 +1,8 @@
 ﻿#include "clock_variable.h"
 
+#include <string>
+#include <string>
+
 clock_variable::clock_variable(const int id, const double start_value)
 {
     this->id_ = id;
@@ -62,9 +65,10 @@ void clock_variable::accept(visitor* v)
     return;
 }
 
-void clock_variable::pretty_print() const
+void clock_variable::pretty_print(std::ostream& os) const
 {
-    printf("Timer id: %3d | Value: %10f \n", this->id_, this->current_time_);
+    os << "Timer id: " + std::to_string(this->id_) + " | Value: " + std::to_string(this->current_time_) + "\n";
+    //printf("Timer id: %3d | Value: %10f \n", this->id_, this->current_time_);
 }
 
 
