@@ -3,7 +3,7 @@
 #include "helper_methods.h"
 
 // Parser constructor.
-update_expression_evaluator::update_expression_evaluator(map<string,int>* local_vars, map<string,int>* global_vars)
+update_expression_evaluator::update_expression_evaluator(unordered_map<string,int>* local_vars, unordered_map<string,int>* global_vars)
 {
     exp_ptr_ = nullptr;
     local_vars_ = local_vars;
@@ -74,6 +74,7 @@ expression* update_expression_evaluator::eval_exp1()
         {
         case '-':
             result = expression::minus_expression(result, temp);
+            break;
         case '+':
             result = expression::plus_expression(result, temp);
         }
@@ -95,6 +96,7 @@ expression* update_expression_evaluator::eval_exp3()
         {
         case '*':
             result = expression::multiply_expression(result, temp);
+            break;
         case '/':  // NOLINT(clang-diagnostic-implicit-fallthrough)
             result = expression::division_expression(result, temp);
         }
@@ -124,12 +126,13 @@ expression* update_expression_evaluator::eval_exp5()
         get_token();
     }
     expression* result = eval_exp6();
-    return result;
+    
     if (op == '-')
     {
-        //TODO Parse NEgate
-        
+        result = expression::negate_expression(result);
     }
+    
+    return result;
 }
 // Process a function, a parenthesized expression, a value or a variable
 expression* update_expression_evaluator::eval_exp6()
@@ -259,9 +262,10 @@ void update_expression_evaluator::get_token()
     *temp = '\0';
 }
 
-expression* update_expression_evaluator::parse_update_expr(const string& input, map<string, int>* local_vars, map<string, int>* global_vars)
+expression* update_expression_evaluator::parse_update_expr(const string& input, unordered_map<string, int>* local_vars, unordered_map<string, int>* global_vars)
 {
     update_expression_evaluator ob(local_vars, global_vars);
+    //cout << "\nINPUT:"<< input<<"|";
     expression* ans = ob.eval_exp(const_cast<char*>(input.substr(0, input.length()).c_str()));
     return ans;
 }

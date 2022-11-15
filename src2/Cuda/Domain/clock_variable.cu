@@ -43,6 +43,12 @@ CPU GPU void clock_variable::add_time(const double progression)
     set_time(this->current_time_ + progression);
 }
 
+void clock_variable::reset_value(const double start_value)
+{
+    this->set_time(start_value);
+    this->max_value_ = 0;
+}
+
 CPU GPU clock_variable clock_variable::duplicate() const
 {
     return clock_variable{this->id_, this->current_time_};
@@ -57,7 +63,6 @@ double clock_variable::get_max_value() const
 void clock_variable::accept(visitor* v)
 {
     return;
-    //v.visit()
 }
 
 void clock_variable::pretty_print(std::ostream& os) const

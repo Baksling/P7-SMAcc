@@ -31,8 +31,21 @@ using namespace std;
 using namespace pugi;
 using namespace helper;
 
+struct node_with_system_id
+{
+private:
+    node_t* node_;
+    int system_id_;
+public:
+    node_with_system_id(node_t* node, int system_id_) {this->node_ = node; this->system_id_ = system_id_;}
+    node_t* get_node() const {return this->node_;}
+    int get_system_id() const {return this->system_id_;}
+    bool is_in_system(int system_id) const {return system_id == system_id_;}
+};
+
 class uppaal_tree_parser
 {
+   
 private:
     int init_node_id_{};
     list<clock_variable>* timer_list_ = new list<clock_variable>();
@@ -41,22 +54,28 @@ private:
     int var_id_ = 0;
     int clock_id_ = 0;
     int chan_id_ = 0;
+    int system_count = 0;
     declaration_parser dp_;
     template <typename T> void get_guys(const list<string>& expressions, list<T>* t);
-    map<string, int> timers_map_{};
-    map<string, int> vars_map_{};
-    map<string, int> global_vars_map_{};
+    unordered_map<string, int> timers_map_{};
+    unordered_map<string, int> vars_map_{};
+    unordered_map<string, int> global_vars_map_{};
+    unordered_map<int, string>* node_names_ = new unordered_map<int, string>();
+    unordered_map<int, node_with_system_id>* nodes_map_= new unordered_map<int, node_with_system_id>();
     list<node_t*>* nodes_ = new list<node_t*>();
     list<node_t*>* goal_nodes_ = new list<node_t*>();
     list<int> branchpoint_nodes{};
     list<int> start_nodes_{};
     list<int> sync_chan_ids_{};
     int get_timer_id(const string& expr) const;
+    string is_timer(const string& expr) const;
     node_t* get_node(const int target_id, const list<node_t*>* arr) const;
     void init_clocks(const pugi::xml_document* doc);
     stochastic_model_t parse_xml(char* file_path);
 public:
+    unordered_map<int, string>* get_nodes_with_name() const {return this->node_names_;}
+    unordered_map<int, node_with_system_id>* get_subsystems() const {return this->nodes_map_;}
     uppaal_tree_parser();
-    __host__ stochastic_model_t parse(char* file_path);
+    __host__ stochastic_model_t parse(string file_path);
 };
 #endif

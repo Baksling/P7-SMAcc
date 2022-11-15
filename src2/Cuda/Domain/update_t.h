@@ -29,7 +29,7 @@ public:
     //HOST METHODS
     void accept(visitor* v) const;
     void pretty_print(std::ostream& os) const;
-    void cuda_allocate(update_t* cuda, const allocation_helper* helper) const;
+    void cuda_allocate(update_t* cuda, allocation_helper* helper) const;
     unsigned get_expression_depth() const;
 };
 

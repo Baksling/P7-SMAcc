@@ -23,7 +23,7 @@ GPU CPU double get_constraint_value(const constraint_value* con, simulator_state
     {
         return state->get_timers().at(con->clock_id)->get_temp_time();
     }
-    return state->evaluate_expression(con->expr);
+    return con->expr->evaluate(state);
 }
 
 
@@ -67,7 +67,7 @@ CPU GPU bool constraint_t::check_max_time_progression(simulator_state* state, do
         (this->type_ == logical_operator_t::less_t || this->type_ == logical_operator_t::less_equal_t))
     {
         const double time = state->get_timers().at(this->left_.clock_id)->get_time();
-        const double value = state->evaluate_expression(this->right_.expr);
+        const double value = this->right_.expr->evaluate(state);
 
         const double diff = value - time;
         (*out_max_progression) = diff; //TODO rethink this. What to do if a diff is negative.
@@ -78,7 +78,7 @@ CPU GPU bool constraint_t::check_max_time_progression(simulator_state* state, do
         (this->type_ == logical_operator_t::greater_t || this->type_ == logical_operator_t::greater_equal_t))
     {
         const double time = state->get_timers().at(this->right_.clock_id)->get_time();
-        const double value = state->evaluate_expression(this->left_.expr);
+        const double value = this->left_.expr->evaluate(state);
 
         const double diff = value - time;
         (*out_max_progression) = diff; //TODO rethink this. What to do if a diff is negative.
@@ -109,17 +109,13 @@ void constraint_t::pretty_print(std::ostream& os) const
     // right.c_str());
 }
 
-void constraint_t::cuda_allocate(constraint_t** pointer, const allocation_helper* helper) const
+void constraint_t::cuda_allocate(constraint_t* pointer, allocation_helper* helper) const
 {
-    cudaMalloc(pointer, sizeof(constraint_t));
-    helper->free_list->push_back(*pointer);
-    
     constraint_value left;
     if(!this->left_.is_clock)
     {
         expression* left_expr = nullptr;
-        cudaMalloc(&left_expr, sizeof(expression));
-        helper->free_list->push_back(left_expr);
+        helper->allocate(&left_expr, sizeof(expression));
         this->left_.expr->cuda_allocate(left_expr, helper);
         left = constraint_value::from_expression(left_expr);
     }
@@ -129,15 +125,14 @@ void constraint_t::cuda_allocate(constraint_t** pointer, const allocation_helper
     if(!this->right_.is_clock)
     {
         expression* right_expr = nullptr;
-        cudaMalloc(&right_expr, sizeof(expression));
-        helper->free_list->push_back(right_expr);
+        helper->allocate(&right_expr, sizeof(expression));
         this->right_.expr->cuda_allocate(right_expr, helper);
         right = constraint_value::from_expression(right_expr);
     }
     else right = constraint_value::from_timer(this->right_.clock_id);
 
     const constraint_t con = constraint_t(this->type_, left, right, false);
-    cudaMemcpy(*pointer, &con, sizeof(constraint_t), cudaMemcpyHostToDevice);
+    cudaMemcpy(pointer, &con, sizeof(constraint_t), cudaMemcpyHostToDevice);
 }
 
 std::string constraint_t::logical_operator_to_string(const logical_operator_t op)

@@ -3,6 +3,7 @@
 
 #include "macro.h"
 #include <list>
+#include "allocation_helper.h"
 
 template<typename T>
 struct array_t
@@ -74,14 +75,13 @@ array_t<T> to_array(std::list<T>* list)
 }
 
 template<typename T>
-array_t<T> cuda_to_array(std::list<T>* list, std::list<void*>* free_list)
+array_t<T> cuda_to_array(std::list<T>* list, allocation_helper* helper)
 {
     int size = static_cast<int>(list->size());
     if(size == 0) return array_t<T>(0);
     T* cuda_arr = nullptr;
     T* local_arr = static_cast<T*>(malloc(sizeof(T)*size));
-    cudaMalloc(&cuda_arr, sizeof(T) * size);
-    free_list->push_back(cuda_arr);
+    helper->allocate(&cuda_arr, sizeof(T) * size);
     
     int i = 0;
     for(T item : *list)

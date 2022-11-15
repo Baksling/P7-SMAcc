@@ -24,11 +24,11 @@ void domain_analysis_visitor::visit(node_t* node)
     if (checker.find(node) != checker.end()) return;
     checker.insert(node);
     
-    const lend_array<edge_t*> arr = node->get_edges();
+    const lend_array<edge_t> arr = node->get_edges();
     unsigned int acc = 0;
     for (int i = 0; i < arr.size(); ++i)
     {
-        acc += arr.get(i)->get_updates_size();
+        acc += arr.at(i)->get_updates_size();
     }
     if (acc > max_update_per_node_) max_update_per_node_ = acc;
     node->accept(this);

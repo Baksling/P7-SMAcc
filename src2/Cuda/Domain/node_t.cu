@@ -1,11 +1,7 @@
 ﻿#include "node_t.h"
-
-#include <string>
-
-#include "edge_t.h"
 #include "simulator_state.h"
 
-node_t::node_t(const node_t* source, const array_t<constraint_t*> invariant, const array_t<edge_t*> edges, expression* lambda)
+node_t::node_t(const node_t* source, const array_t<constraint_t>& invariant, const array_t<edge_t>& edges, expression* lambda)
 {
     this->id_ = source->id_;
     this->is_branch_point_ = source->is_branch_point_;
@@ -16,9 +12,10 @@ node_t::node_t(const node_t* source, const array_t<constraint_t*> invariant, con
 }
 
 
-node_t::node_t(const int id, const array_t<constraint_t*> invariants,
+node_t::node_t(const int id, const array_t<constraint_t>& invariants,
     const bool is_branch_point, const bool is_goal, expression* lambda)
 {
+    //if no lambda supplied, defaults to 1, as to imitate UPPAAL.
     if(lambda == nullptr)
     {
         lambda = expression::literal_expression(1);
@@ -29,10 +26,11 @@ node_t::node_t(const int id, const array_t<constraint_t*> invariants,
     this->invariants_ = invariants;
     this->lambda_expression_ = lambda;
     this->is_branch_point_ = is_branch_point;
-    this->edges_ = array_t<edge_t*>(0);
+    this->edges_ = array_t<edge_t>(0);
 }
 
-GPU CPU int node_t::get_id() const
+
+int node_t::get_id() const
 {
     return this->id_;
 }
@@ -40,19 +38,19 @@ GPU CPU int node_t::get_id() const
 GPU CPU double node_t::get_lambda(simulator_state* state) const
 {
     if(this->lambda_expression_ != nullptr)
-        return state->evaluate_expression(this->lambda_expression_);
+        return this->lambda_expression_->evaluate(state);
 
     return 0.0; //illegal lambda value.
 }
 
-void node_t::set_edges(std::list<edge_t*>* list)
+void node_t::set_edges(std::list<edge_t>* list)
 {
     this->edges_ = to_array(list);
 }
 
-CPU GPU lend_array<edge_t*> node_t::get_edges()
+CPU GPU lend_array<edge_t> node_t::get_edges()
 {
-    return lend_array<edge_t*>(&this->edges_);
+    return lend_array<edge_t>(&this->edges_);
 }
 
 CPU GPU bool node_t::is_goal_node() const
@@ -64,7 +62,7 @@ CPU GPU bool node_t::evaluate_invariants(simulator_state* state) const
 {
     for (int i = 0; i < this->invariants_.size(); ++i)
     {
-        if(!this->invariants_.get(i)->evaluate(state))
+        if(!this->invariants_.at(i)->evaluate(state))
             return false;
     }
 
@@ -79,19 +77,19 @@ void node_t::accept(visitor* v) const
     
     for (int i = 0; i < this->invariants_.size(); ++i)
     {
-        v->visit(this->invariants_.get(i));
+        v->visit(this->invariants_.at(i));
     }
 
     //visit edges
     for (int i = 0; i < this->edges_.size(); ++i)
     {
-        v->visit(this->edges_.get(i));
+        v->visit(this->edges_.at(i));
     }
 
     //visit edge destinations
     for (int i = 0; i < this->edges_.size(); ++i)
     {
-        v->visit(this->edges_.get(i)->get_dest());
+        v->visit(this->edges_.at(i)->get_dest());
     }
 }
 
@@ -103,42 +101,41 @@ void node_t::pretty_print(std::ostream& os) const
     //        this->is_goal_);
 }
 
-void node_t::cuda_allocate(node_t* pointer, const allocation_helper* helper)
+void node_t::cuda_allocate(node_t* pointer, allocation_helper* helper)
 {
-    if(helper->node_map->count(this) == 1) return;
-    // cudaMalloc(pointer, sizeof(node_t));
-    // helper->free_list->push_back(*pointer);
+    if(helper->node_map.count(this) == 1) return;
 
     //add current node to circular reference resolver
-    helper->node_map->insert(std::pair<node_t*, node_t*>(this, pointer) );
+    //pointer is the cuda location this node will be stored at
+    helper->node_map.insert( std::pair<node_t*, node_t*>(this, pointer) );
     
-    std::list<edge_t*> edge_lst;
+    edge_t* edge_p = nullptr;
+    helper->allocate(&edge_p, sizeof(edge_t)*this->edges_.size());
+    const array_t<edge_t> edge_arr = array_t<edge_t>(edge_p, this->edges_.size());
     for (int i = 0; i < this->edges_.size(); ++i)
     {
-        edge_t* edge_p = nullptr;
-        this->edges_.get(i)->cuda_allocate(&edge_p, helper);
-        edge_lst.push_back(edge_p);
+        this->edges_.at(i)->cuda_allocate(&edge_p[i], helper);
     }
 
-    std::list<constraint_t*> invariant_lst;
+    constraint_t* invariant_p = nullptr;
+    helper->allocate(&invariant_p, sizeof(constraint_t)*this->invariants_.size());
+    const array_t<constraint_t> constraint_arr = array_t<constraint_t>(invariant_p, this->invariants_.size());
     for (int i = 0; i < this->invariants_.size(); ++i)
     {
-        constraint_t* invariant_p = nullptr;
-        this->invariants_.get(i)->cuda_allocate(&invariant_p, helper);
-        invariant_lst.push_back(invariant_p);
+        this->invariants_.at(i)->cuda_allocate(&invariant_p[i], helper);
     }
 
     expression* expr = nullptr;
     if(this->lambda_expression_ != nullptr)
     {
-        cudaMalloc(&expr, sizeof(expression));
-        helper->free_list->push_back(expr);
+        helper->allocate(&expr, sizeof(expression));
         this->lambda_expression_->cuda_allocate(expr, helper);
     }
 
     const node_t result(this,
-        cuda_to_array(&invariant_lst, helper->free_list),
-        cuda_to_array(&edge_lst, helper->free_list), expr);
+        constraint_arr,
+        edge_arr,
+        expr);
     cudaMemcpy(pointer, &result, sizeof(node_t), cudaMemcpyHostToDevice);
 }
 
@@ -146,6 +143,19 @@ void node_t::cuda_allocate(node_t* pointer, const allocation_helper* helper)
 CPU GPU bool node_t::is_branch_point() const
 {
     return this->is_branch_point_;
+}
+
+bool node_t::is_progressible() const
+{
+    for (int j = 0; j < this->edges_.size(); ++j)
+    {
+        if (!this->edges_.at(j)->is_listener())
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 CPU GPU bool node_t::max_time_progression(simulator_state* state, double* out_max_progression) const
@@ -156,7 +166,7 @@ CPU GPU bool node_t::max_time_progression(simulator_state* state, double* out_ma
     for (int i = 0; i < this->invariants_.size(); ++i)
     {
         double local_max = -1.0;
-        if(this->invariants_.get(i)->check_max_time_progression(state, &local_max))
+        if(this->invariants_.at(i)->check_max_time_progression(state, &local_max))
         {
             if(node_max < 0) node_max = local_max;
             else node_max = node_max < local_max ? node_max : local_max;

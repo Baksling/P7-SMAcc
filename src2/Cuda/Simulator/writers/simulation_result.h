@@ -29,9 +29,4 @@ struct simulation_result
 {
     unsigned int steps;
     double total_time_progress;
-    int* end_node_id_arr;
-    double* variables_max_value_arr;
 };
-
-
-

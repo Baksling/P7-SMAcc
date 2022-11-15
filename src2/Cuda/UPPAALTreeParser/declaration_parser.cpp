@@ -74,8 +74,8 @@ list<declaration> declaration_parser::parse(const string& decl)
         if (line_trimmed.substr(0,2) == "//")
             continue;
 
-        cout << "\n!! LETS GOOO1:" << line_trimmed<<":";
-        cout.flush();
+        //cout << "\n!! LETS GOOO1:" << line_trimmed<<":";
+        //cout.flush();
         
         if (is_this_keyword(line_trimmed,"clock"))
         {
@@ -94,11 +94,11 @@ list<declaration> declaration_parser::parse(const string& decl)
 
         else if (is_this_keyword(line_trimmed, "broadcastchan"))
         {
-            cout << "\n!! LETS GOOO:" << line_trimmed<<":";
-            cout.flush();
+            //cout << "\n!! LETS GOOO:" << line_trimmed<<":";
+            //cout.flush();
             list<declaration> chan_decls = parse_keyword(line_trimmed, chan_type);
-            cout << "\n CHANSIZE:"<< chan_decls.size();
-            cout << "\n FRONT - BACK:" << chan_decls.front().get_name() << ":" << chan_decls.back().get_name();
+            //cout << "\n CHANSIZE:"<< chan_decls.size();
+            //cout << "\n FRONT - BACK:" << chan_decls.front().get_name() << ":" << chan_decls.back().get_name();
             result.insert(result.end(), chan_decls.begin(), chan_decls.end());
         }
 

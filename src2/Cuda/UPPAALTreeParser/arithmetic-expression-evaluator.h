@@ -271,21 +271,7 @@ namespace evalguy
 {
     float eval_expr(string input)
     {
-        //cout << "\nEVALUATING: " <<input.substr(0,input.length()-1)<<"\n";
         parser ob;
-        // char expstr[256];
-        // do
-        // {
-        //     cout << "Enter expression: ";
-        //     cin.getline(expstr, 255);
-        //     double ans = ob.eval_exp(expstr);
-        //     if (*ob.errormsg)
-        //         cout << "Error: " << ob.errormsg << "\n\n";
-        //     else
-        //         cout << "Answer: " << ans << "\n\n";
-        // } while (*expstr);
-
-        
         float ans = ob.eval_exp((char*)input.substr(0,input.length()).c_str());
         return ans;
     }
