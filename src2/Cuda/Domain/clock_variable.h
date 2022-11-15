@@ -30,7 +30,7 @@ public:
     
     //HOST METHODS
     void accept(visitor* v);
-    void pretty_print() const;
+    void pretty_print(std::ostream& os) const;
     void cuda_allocate(clock_variable* pointer, const allocation_helper* helper) const;
 };
 

@@ -23,20 +23,21 @@ int main(int argc, const char* argv[])
     
     ArgumentParser parser("supa_pc_strikes_argina.exe/cuda", "Argument parser example");
 
-    parser.add_argument("-m", "--model", "Model xml file path", false);
-    parser.add_argument("-b", "--block", "Number of block", false);
-    parser.add_argument("-t", "--threads", "Number of threads", false);
     parser.add_argument("-a", "--amount", "Number of simulations", false);
+    parser.add_argument("-b", "--block", "Number of block", false);
     parser.add_argument("-c", "--count", "number of times to repeat simulations", false);
-    parser.add_argument("-s", "--steps", "maximum number of steps per simulation", false);
-    parser.add_argument("-p", "--max_time", "Maximum number to progress in time (default=100)", false );
     parser.add_argument("-d", "--device", "What simulation to run (GPU (0) / CPU (1) / BOTH (2))", false);
-    parser.add_argument("-u", "--cputhread", "The number of threads to use on the CPU", false);
-    parser.add_argument("-o", "--output", "The path to output result file", false);
-    parser.add_argument("-y", "--max", "Use max steps or time for limit simulation. (max steps (0) / max time (1) )", false);
-    parser.add_argument("-v", "--verbose", "Enable pretty print of model (print model (0) / silent(1))", false);
+    parser.add_argument("-f", "--pretty", "Pretty print output file", false);
     parser.add_argument("-i", "--interval", "Interval to store trace. e.g. 10t = trace every 10 simulation seconds / 10s = every 10 step  (default = 1s). \n Parameter '-s' is used to specify the max number of steps to store.", false);
+    parser.add_argument("-m", "--model", "Model xml file path", false);
+    parser.add_argument("-o", "--output", "The path to output result file", false);
+    parser.add_argument("-p", "--max_time", "Maximum number to progress in time (default=100)", false );
+    parser.add_argument("-s", "--steps", "maximum number of steps per simulation", false);
+    parser.add_argument("-t", "--threads", "Number of threads", false);
+    parser.add_argument("-u", "--cputhread", "The number of threads to use on the CPU", false);
+    parser.add_argument("-v", "--verbose", "Enable pretty print of model (print model (0) / silent(1))", false);
     parser.add_argument("-w", "--write", "Write mode \n / c = console summary  \n / f = file summary \n / d = file data dump \n / t = trace \n / l = lite summary \n / m = write model to file", false);
+    parser.add_argument("-y", "--max", "Use max steps or time for limit simulation. (max steps (0) / max time (1) )", false);
     parser.enable_help();
     auto err = parser.parse(argc, argv);
     
@@ -51,23 +52,26 @@ int main(int argc, const char* argv[])
     }
 
     int mode = 0; // 0 = GPU, 1 = CPU, 2 = BOTH
-    string o_path = std::filesystem::current_path();
-    int write_mode = 0; // 0 = file, 1 = console, 2 = both
+    string c_path = std::filesystem::current_path();
+    string pretty = "";
+    string output = "";
+    int write_mode = -1; // 0 = file, 1 = console, 2 = both
     bool verbose = true;
 
-    if (parser.exists("b")) strategy.block_n = parser.get<int>("b");
-    if (parser.exists("t")) strategy.threads_n = parser.get<int>("t");
     if (parser.exists("a")) strategy.simulations_per_thread = parser.get<unsigned int>("a");
+    if (parser.exists("b")) strategy.block_n = parser.get<int>("b");
     if (parser.exists("c")) strategy.simulation_runs = parser.get<unsigned int>("c");
-    if (parser.exists("s")) strategy.max_sim_steps = parser.get<unsigned int>("s");
-    if (parser.exists("p")) strategy.max_time_progression = parser.get<double>("p");
-    if (parser.exists("u")) strategy.cpu_threads_n = parser.get<unsigned int>("u");
     if (parser.exists("d")) mode = parser.get<int>("d");
-    if (parser.exists("y")) strategy.use_max_steps = parser.get<int>("y") == 0;
+    if (parser.exists("f")) pretty = c_path + "/" + parser.get<string>("f");
+    if (parser.exists("p")) strategy.max_time_progression = parser.get<double>("p");
+    if (parser.exists("s")) strategy.max_sim_steps = parser.get<unsigned int>("s");
+    if (parser.exists("t")) strategy.threads_n = parser.get<int>("t");
+    if (parser.exists("u")) strategy.cpu_threads_n = parser.get<unsigned int>("u");
     if (parser.exists("v")) verbose = parser.get<int>("v") == 0;
     if (parser.exists("w")) write_mode = result_writer::parse_mode(parser.get<std::string>("w"));
-    if (parser.exists("o")) o_path = o_path + "/" + parser.get<string>("o");
-    else o_path = o_path + "/output";
+    if (parser.exists("y")) strategy.use_max_steps = parser.get<int>("y") == 0;
+    if (parser.exists("o")) output = c_path + "/" + parser.get<string>("o");
+    else output = c_path + "/output";
 
     if(write_mode & trace) //Trace settings, only if trace is enabled
     {
@@ -125,7 +129,7 @@ int main(int argc, const char* argv[])
 
         model = stochastic_model_t(start_nodes, timer_arr, variable_arr);
     }
-    result_writer r_writer = result_writer(&o_path ,strategy,
+    result_writer r_writer = result_writer(&output ,strategy,
         model.get_models_count(),
         model.get_variable_count(),
         write_mode);
@@ -138,9 +142,9 @@ int main(int argc, const char* argv[])
     
     //Computers were not meant to speak.
     //You can speak when spoken to.
-    if (verbose)
+    if (write_mode & pretty_out || verbose)
     {
-        pretty_visitor p_visitor;
+        pretty_visitor p_visitor = pretty_visitor(verbose, pretty);
         p_visitor.visit(&model);
     }
 
