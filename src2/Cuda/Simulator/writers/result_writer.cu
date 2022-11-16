@@ -182,7 +182,7 @@ void result_writer::write_hit_file(const unsigned long long total_simulations, c
     
     if (result_map_.empty() || result_map_.size() == 1 && result_map_.count(HIT_MAX_STEPS))
     {
-        file << "0\t" << duration_cast<microseconds>(duration_cast<duration<double>>(sim_duration)).count();
+        file << "0\t" << duration_cast<milliseconds>(duration_cast<duration<double>>(sim_duration)).count();
         file.flush();
         file.close();
         return;
@@ -193,7 +193,7 @@ void result_writer::write_hit_file(const unsigned long long total_simulations, c
 
         const float percentage = this->calc_percentage(pair.second.reach_count, total_simulations);
         
-        file << percentage << "\t" << duration_cast<microseconds>(duration_cast<duration<double>>(sim_duration)).count();
+        file << percentage << "\t" << duration_cast<milliseconds>(duration_cast<duration<double>>(sim_duration)).count();
     }  
 
     file.flush();
