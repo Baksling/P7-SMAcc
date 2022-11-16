@@ -3,6 +3,8 @@
 #include <map>
 #include <string>
 
+#include "helper_methods.h"
+
 using namespace std;
 
 #define THROW_LINE(arg); throw parser_exception(arg, __FILE__, __LINE__);

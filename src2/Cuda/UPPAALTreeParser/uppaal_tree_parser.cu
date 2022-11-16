@@ -8,23 +8,23 @@
 #define ALPHA "abcdefghijklmnopqrstuvwxyz"
 
 
-
-char get_constraint_op(const string& expr)
+string get_constraint_op(const string& expr)
 {
     if(expr.find("<=") != std::string::npos)
-        return '=';
+        return "<=";
     if(expr.find(">=") != std::string::npos)
-        return '=';
+        return ">=";
     if(expr.find("==") != std::string::npos)
-        return '=';
+        return "==";
     if(expr.find("!=") != std::string::npos)
-        return '=';
+        return "!=";
     if(expr.find('<') != std::string::npos)
-        return '<';
+        return "<";
     if(expr.find('>') != std::string::npos)
-        return '>';
+        return ">";
     THROW_LINE("Operand in " + expr + " not found, sad..");
 }
+
 
 constraint_t* get_constraint(const string& expr, const int timer_id, expression* value)
 {
@@ -40,6 +40,23 @@ constraint_t* get_constraint(const string& expr, const int timer_id, expression*
         return constraint_t::less_v(timer_id,value);
     if(expr.find('>') != std::string::npos)
         return constraint_t::greater_v(timer_id,value);
+    THROW_LINE("Operand in " + expr + " not found, sad..");
+}
+
+expression* get_expression_con(const string& expr, expression* left, expression* right)
+{
+    if(expr.find("<=") != std::string::npos)
+        return expression::less_equal_expression(left, right);
+    if(expr.find(">=") != std::string::npos)
+        return expression::greater_equal_expression(left,right);
+    if(expr.find("==") != std::string::npos)
+        return expression::equal_expression(left,right);
+    if(expr.find("!=") != std::string::npos)
+        return expression::not_equal_expression(left,right);
+    if(expr.find('<') != std::string::npos)
+        return expression::less_expression(left,right);
+    if(expr.find('>') != std::string::npos)
+        return expression::greater_expression(left,right);
     THROW_LINE("Operand in " + expr + " not found, sad..");
 }
 
@@ -118,7 +135,7 @@ int uppaal_tree_parser::get_timer_id(const string& expr) const
     {
         if (static_cast<int>(expr.size()) == index)
         {
-            THROW_LINE("sum tin wong")
+            break;
         }
         
         if (in_array(expr_wout_spaces[++index], {'<','>','='}))
@@ -128,7 +145,6 @@ int uppaal_tree_parser::get_timer_id(const string& expr) const
     }
 
     const string sub = expr_wout_spaces.substr(0, index);
-
     if ( vars_map_.count(sub))
     {
         return vars_map_.at(sub);
@@ -139,7 +155,14 @@ int uppaal_tree_parser::get_timer_id(const string& expr) const
         return global_vars_map_.at(sub);
     }
     
-    THROW_LINE("sum tin wong")
+    THROW_LINE("sum tin wong");
+}
+
+void uppaal_tree_parser::get_condition_strings(const string& con, string* left, string* op, string* right)
+{
+    *op = get_constraint_op(con);
+    *left = take_while(con, *op);
+    *right = take_after(con, *op);
 }
 
 template <typename T>
@@ -147,21 +170,24 @@ void uppaal_tree_parser::fill_expressions(const list<string>& expressions, list<
 {
     for(const auto& expr: expressions)
     {
-        if (expr.empty())
+        string trimmed = replace_all(expr, " ", "");
+        if (trimmed.empty())
             continue;
 
-        string right_side = take_after(expr, get_constraint_op(expr));
-        right_side = replace_all(right_side, " ", ""); //TODO Trimmer
-     
+        string op;
+        string right_side;
+        string left_side;
+
+        get_condition_strings(trimmed, &left_side, &op, &right_side);
+
         //TODO fix this plz
         //Constraint is heap allocated, and is then copied here.
         //Results in dead memory.
-        string sub = is_timer(expr);
         
-        if (timers_map_.count(sub) || global_timers_map_.count(sub))
-            t->push_back(*get_constraint(expr, get_timer_id(expr), variable_expression_evaluator::parse_update_expr(right_side, &vars_map_, &global_vars_map_)));
+        if (timers_map_.count(left_side) || global_timers_map_.count(left_side))
+            t->push_back(*get_constraint(trimmed, get_timer_id(trimmed), variable_expression_evaluator::parse_update_expr(right_side, &vars_map_, &global_vars_map_)));
         else
-            t->push_back(*get_constraint(expr, variable_expression_evaluator::parse_update_expr(sub, &vars_map_, &global_vars_map_), variable_expression_evaluator::parse_update_expr(right_side, &vars_map_, &global_vars_map_)));
+            t->push_back(*get_constraint(trimmed, variable_expression_evaluator::parse_update_expr(left_side, &vars_map_, &global_vars_map_), variable_expression_evaluator::parse_update_expr(right_side, &vars_map_, &global_vars_map_)));
     }
 }
 
@@ -267,7 +293,7 @@ void uppaal_tree_parser::handle_locations(const xml_node locs)
     {
         //TODO make string trimmer
         const string line_wo_ws = replace_all(expr_string, " ", "");
-        const string nums = take_after(line_wo_ws, '=');
+        const string nums = take_after(line_wo_ws, "=");
                 
         expo_rate = variable_expression_evaluator::parse_update_expr(nums,&vars_map_, &global_vars_map_);
     }
@@ -320,7 +346,7 @@ void uppaal_tree_parser::handle_transitions(const xml_node trans)
                 else if (kind == "probability")
                 {
                     string line_wo_ws = replace_all(expr_string, " ", "");
-                    string nums = take_after(line_wo_ws, '='); //TODO Trimmer
+                    string nums = take_after(line_wo_ws, "="); //TODO Trimmer
                     probability = variable_expression_evaluator::parse_update_expr(nums,&vars_map_, &global_vars_map_);
                 }
             }
@@ -335,28 +361,68 @@ void uppaal_tree_parser::handle_transitions(const xml_node trans)
             node_edge_map.at(source_id).push_back(result_edge);
 }
 
+bool uppaal_tree_parser::is_if_statement(const string& expr)
+{
+    return expr.find("?")!=std::string::npos && expr.find(":")!=std::string::npos;
+}
+
+expression* uppaal_tree_parser::handle_if_statement(const string& input)
+{
+    string con = take_after(input, "=");
+    const string condition = replace_all(take_while(input, "?"), " ", "");
+    const string if_true = replace_all(take_while(take_after(input, "?"), ":"), " ", "");
+    const string if_false = replace_all(take_after(input, ":"), ";", "");
+
+    string op;
+    string right_side_con;
+    string left_side_con;
+    get_condition_strings(condition, &left_side_con, &op, &right_side_con);
+
+    //Build the condition
+    expression* right_side_con_expr = variable_expression_evaluator::parse_update_expr(right_side_con,&this->vars_map_, &this->global_vars_map_);
+    expression* left_side_con_expr = variable_expression_evaluator::parse_update_expr(left_side_con,&this->vars_map_, &this->global_vars_map_);
+    expression* condition_e = get_expression_con(condition, left_side_con_expr, right_side_con_expr);
+    
+    expression* if_true_e = variable_expression_evaluator::parse_update_expr(if_true,&this->vars_map_, &this->global_vars_map_);
+    expression* if_false_e = variable_expression_evaluator::parse_update_expr(if_false,&this->vars_map_, &this->global_vars_map_);
+            
+    return expression::conditional_expression(condition_e, if_true_e, if_false_e);
+}
+
 list<update_t> uppaal_tree_parser::handle_assignment(const string& input)
 {
     const list<string> expressions = split_expr(input, ',');
     list<update_t> result;
+    expression* right_side;
+    
     for(const auto& expr: expressions)
     {
+        const string line_wo_ws = replace_all(expr, " ", "");
         if (expr.empty())
             continue;
 
-        string line_wo_ws = replace_all(expr, " ", "");
-        string right_side = take_after(line_wo_ws, '='); //TODO Trimmer
-                        
-        expression* right_expression = variable_expression_evaluator::parse_update_expr(right_side,&this->vars_map_, &this->global_vars_map_);
-        const string left_side = take_while(line_wo_ws, '=');
+        const string left_side = take_while(line_wo_ws, "=");
+        const string right_side_of_equal = take_after(line_wo_ws, "=");
+
+        if (is_if_statement(right_side_of_equal))
+        {
+            //Is if statement
+            right_side = handle_if_statement(right_side_of_equal);
+        }
+        else
+        {
+            //Is normal assignment
+            right_side = variable_expression_evaluator::parse_update_expr(right_side_of_equal,&this->vars_map_, &this->global_vars_map_);
+        }
+        
         bool is_clock = false;
 
-        if(this-> timers_map_.count(left_side) || this->global_timers_map_.count(left_side) > 0)
+        if(this-> timers_map_.count(left_side) || this->global_timers_map_.count(left_side))
         {
             is_clock = true;
         }
         
-        result.emplace_back(update_t(this->update_id_++, get_timer_id(expr), is_clock, right_expression));
+        result.emplace_back(update_t(this->update_id_++, get_timer_id(left_side), is_clock, right_side));
     }
     
     return result;
@@ -370,7 +436,6 @@ edge_channel* uppaal_tree_parser::handle_sync(const string& input) const
     
     string sync_keyword = replace_all(input, " ", "");
     sync_keyword = replace_all(sync_keyword, ec->is_listener ? "?" : "!", "");
-                    
     if (vars_map_.count(sync_keyword))
     {
         ec->channel_id = vars_map_.at(sync_keyword);

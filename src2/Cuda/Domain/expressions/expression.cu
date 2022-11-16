@@ -42,7 +42,7 @@ double expression::evaluate_current(simulator_state* state) const
     case random_e:
         if(state->value_stack.count() < 1) printf("stack not big enough to evaluate random expression\n");
         v1 = state->value_stack.pop();
-        return curand_uniform_double(state->random) * v1; //v1 repressents max value 
+        return (1-curand_uniform_double(state->random)) * v1; //v1 repressents max value 
     case plus_e:
         if(state->value_stack.count() < 2) printf("stack not big enough to evaluate plus expression\n");
         v2 = state->value_stack.pop();

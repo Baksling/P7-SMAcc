@@ -138,63 +138,31 @@ expression* variable_expression_evaluator::eval_exp5()
 expression* variable_expression_evaluator::eval_exp6()
 {
     const bool is_func = (tok_type_ == UPDATEFUNCTION);
+    char temp_token[80];
     if (is_func)
     {
-        char temp_token[80];
         strcpy(temp_token, token_);
         get_token();
-    } 
+    }
     if (*token_ == '(') 
     {
         get_token();
-        return eval_exp2();
+        auto result = eval_exp2();
         if (*token_ != ')')
-            strcpy(errormsg, "Unbalanced Parentheses");
+        {
+            THROW_LINE("Unbalanced Parentheses");
+        }
         if (is_func)
         {
-            // TODO Parse Funcs?
-            // if (!strcmp(temp_token, "SIN"))
-            //     result = sin(PI / 180 * result);
-            // else if (!strcmp(temp_token, "COS"))
-            //     result = cos(PI / 180 * result);
-            // else if (!strcmp(temp_token, "TAN"))
-            //     result = tan(PI / 180 * result);
-            // else if (!strcmp(temp_token, "ASIN"))
-            //     result = 180 / PI*asin(result);
-            // else if (!strcmp(temp_token, "ACOS"))
-            //     result = 180 / PI*acos(result);
-            // else if (!strcmp(temp_token, "ATAN"))
-            //     result = 180 / PI*atan(result);
-            // else if (!strcmp(temp_token, "SINH"))
-            //     result = sinh(result);
-            // else if (!strcmp(temp_token, "COSH"))
-            //     result = cosh(result);
-            // else if (!strcmp(temp_token, "TANH"))
-            //     result = tanh(result);
-            // else if (!strcmp(temp_token, "ASINH"))
-            //     result = asinh(result);
-            // else if (!strcmp(temp_token, "ACOSH"))
-            //     result = acosh(result);
-            // else if (!strcmp(temp_token, "ATANH"))
-            //     result = atanh(result);
-            // else if (!strcmp(temp_token, "LN"))
-            //     result = log(result);
-            // else if (!strcmp(temp_token, "LOG"))
-            //     result = log10(result);
-            // else if (!strcmp(temp_token, "EXP"))
-            //     result = exp(result);
-            // else if (!strcmp(temp_token, "SQRT"))
-            //     result = sqrt(result);
-            // else if (!strcmp(temp_token, "SQR"))
-            //     result = result*result;
-            // else if (!strcmp(temp_token, "ROUND"))
-            //     result = round(result);
-            // else if (!strcmp(temp_token, "INT"))
-            //     result = floor(result);
-            // else
-            //     strcpy(errormsg, "Unknown Function");
+            if (!strcmp(temp_token, "random"))
+                result = expression::random_expression(result);
+            else
+            {
+                THROW_LINE("Unknown Function");
+            }
         }
         get_token();
+        return result;
     }
     else
         switch (tok_type_)
@@ -256,7 +224,7 @@ void variable_expression_evaluator::get_token()
     else if (isdigit(*exp_ptr_) || *exp_ptr_ == '.')
     {
         while (!strchr(" +-/*%^=()\t\r", *exp_ptr_) && (*exp_ptr_))
-            *temp++ = toupper(*exp_ptr_++);
+            *temp++ = *exp_ptr_++;
         tok_type_ = UPDATENUMBER;
     }
     *temp = '\0';

@@ -95,7 +95,6 @@ def run_simulations(args_) -> None:
     only_files = [f for f in listdir(folder_path) if isfile(join(folder_path, f))]
 
     for file in only_files:
-        if file == 'random_test.xml': continue
         print("RUNNING", file)
         file_path = join(folder_path, file)
         amount = int(ceil(float(args_.amount) / float(32 * 512)))
@@ -151,7 +150,8 @@ def get_expected_simulation_results() -> dict[str, float]:
         'random_test': 14.4,
         'rare_events': 0.0001,
         'rate_test': 33.45,
-        'var_test': 47.4
+        'var_test': 47.4,
+        'ifelse_test': 50.0
     }
 
 

@@ -10,14 +10,27 @@ using namespace std;
 
 namespace helper
 {
-    inline string take_after(const string& s, const char while_char)
+
+    inline string capitalize(string input)
     {
-        return s.substr(s.find(while_char)+1);
+        string result;
+        int i = 0;
+        while (i<input.length())
+        {
+            result += toupper(input[i]);
+            i++;
+        }
+        return result;
+    }
+    
+    inline string take_after(const string& s, const string& while_string)
+    {
+        return s.substr(s.find(while_string)+while_string.length());
     }
 
-        inline string take_while(const string& s, const char while_char)
+    inline string take_while(const string& s, const string& while_string)
     {
-        return s.substr(0,s.find(while_char));
+        return s.substr(0,s.find(while_string));
     }
 
     inline string remove_while(const string& s, const char while_char)

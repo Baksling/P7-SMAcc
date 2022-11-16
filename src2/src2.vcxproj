@@ -896,6 +896,7 @@
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\tests\clock_var.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\tests\dicebase.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\tests\dicebaseUnfair.xml" />
+    <Content Include="Cuda\UPPAALTreeParser\XmlFiles\tests\ifelse_test.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\tests\random_test.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\tests\rare_events.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\tests\rate_test.xml" />

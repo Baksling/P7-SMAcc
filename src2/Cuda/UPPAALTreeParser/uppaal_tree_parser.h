@@ -71,10 +71,13 @@ private:
     list<int> start_nodes_{};
     list<int> sync_chan_ids_{};
     int get_timer_id(const string& expr) const;
+    void get_condition_strings(const string& con, string* left, string* op, string* right);
     string is_timer(const string& expr) const;
     node_t* get_node(const int target_id, const list<node_t*>* arr) const;
     edge_channel* handle_sync(const string& input) const;
     list<update_t> handle_assignment(const string& input);
+    bool is_if_statement(const string& expr);
+    expression* handle_if_statement(const string& input);
     void handle_transitions(const xml_node trans);
     void handle_locations(const xml_node locs);
     array_t<node_t*> after_processing();
