@@ -96,7 +96,7 @@ public:
     static expression* clock_expression(unsigned int clock_id);
     static expression* variable_expression(unsigned int variable_id);
     
-    static expression* random_expression(double max);
+    static expression* random_expression(expression* expr);
     
     static expression* plus_expression(expression* left, expression* right);
     static expression* minus_expression(expression* left, expression* right);

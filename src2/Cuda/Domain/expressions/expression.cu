@@ -8,7 +8,7 @@ expression::expression(const expression_type type, const double value, const uns
     this->left_        = left;
     this->right_       = right;
     
-    if(this->type_ == literal_e || this->type_ == random_e)
+    if(this->type_ == literal_e)
     {
         this->value = value;
     }
@@ -22,7 +22,7 @@ expression::expression(const expression_type type, const double value, const uns
     }
     else
     {
-        //done to align memory
+        //done to instantiate memory to known value.
         this->value = NO_VALUE;
     }
 }
@@ -40,7 +40,9 @@ double expression::evaluate_current(simulator_state* state) const
     case system_variable_e:
         return state->get_variables().at(static_cast<int>(this->variable_id))->get_temp_time();
     case random_e:
-        return curand_uniform_double(state->random) * this->value; //this->value repressents max value 
+        if(state->value_stack.count() < 1) printf("stack not big enough to evaluate random expression\n");
+        v1 = state->value_stack.pop();
+        return curand_uniform_double(state->random) * v1; //v1 repressents max value 
     case plus_e:
         if(state->value_stack.count() < 2) printf("stack not big enough to evaluate plus expression\n");
         v2 = state->value_stack.pop();
@@ -189,7 +191,7 @@ std::string expression::type_to_string() const
         result = "system variable id: " + std::to_string(this->variable_id);
         break;
     case random_e:
-        result = "random(" + std::to_string(this->value) + ")";
+        result = "random(" + this->left_->type_to_string() + ")";
         break;
     case plus_e:
         result = "+";
@@ -374,9 +376,9 @@ expression* expression::variable_expression(const unsigned variable_id)
     return new expression(system_variable_e, NO_VALUE, variable_id, NO_VALUE, nullptr, nullptr);
 }
 
-expression* expression::random_expression(const double max)
+expression* expression::random_expression(expression* expr)
 {
-    return new expression(random_e, max, NO_VALUE, nullptr, nullptr, nullptr);
+    return new expression(random_e, NO_VALUE, NO_V_ID, expr, nullptr, nullptr);
 }
 
 expression* expression::plus_expression(expression* left, expression* right)
