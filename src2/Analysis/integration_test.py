@@ -3,6 +3,7 @@ import os
 import subprocess
 from os import listdir
 from os.path import isfile, join
+from math import ceil
 
 TEMP_FOLDER_NAME = './tmp_results'
 POST_FIX_TMP_NAME = '_results.csv'
@@ -97,7 +98,7 @@ def run_simulations(args_) -> None:
         if file == 'random_test.xml': continue
         print("RUNNING", file)
         file_path = join(folder_path, file)
-        amount = float(32 * 512) / float(args_.amount)
+        amount = int(ceil(float(args_.amount) / float(32 * 512)))
 
         subprocess.run([
             simulator_path,
@@ -107,7 +108,7 @@ def run_simulations(args_) -> None:
             '-a', str(amount),
             '-c', '1',
             '-d', '0',
-            '-w', 'r',
+            '-w', 'cr',
             '-o', f'{join(TEMP_FOLDER_NAME, file.replace(".xml", ""))}',
             '-y', str(args_.use_time),
             '-s', str(args_.max_progression),
@@ -121,21 +122,25 @@ def check_simulation_results(args_, expected_results) -> None:
         return expected + variance > actual > expected - variance and 100.0 >= actual >= 0.0  # actual < expected + variance and actual > expected - variance <-- OLD BUT SECURE
 
     only_files = [f for f in listdir(TEMP_FOLDER_NAME) if isfile(join(TEMP_FOLDER_NAME, f))]
-
+    print(only_files)
     for file in only_files:
         file_path = join(TEMP_FOLDER_NAME, file)
         expected_result = expected_results[f'{file.replace(POST_FIX_TMP_NAME, "")}']
         actual_result = 0.0
-
-        with open(file_path, 'r') as f:
-            value = float(f.readlines()[0].replace('\n', ''))
-
-            actual_result = value
-
-        if within_range(expected_result, actual_result, args_.variance):
-            print(file, 'PASSED')
-        else:
-            print(file, 'FAILED')
+        try:
+            with open(file_path, 'r') as f:
+                value = float(f.readlines()[0].replace('\n', ''))
+    
+                actual_result = value
+    
+            output_str = f'{file} '
+            if within_range(expected_result, actual_result, args_.variance):
+                output_str += 'PASSED'
+            else:
+                output_str += 'FAILED'
+            print(output_str)
+        except:
+            print(file, 'FAILED - EXCEPT')
 
 
 def get_expected_simulation_results() -> dict[str, float]:
@@ -146,7 +151,7 @@ def get_expected_simulation_results() -> dict[str, float]:
         'random_test': 14.4,
         'rare_events': 0.0001,
         'rate_test': 33.45,
-        'var_test': 39.0
+        'var_test': 47.4
     }
 
 

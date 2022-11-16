@@ -2,13 +2,13 @@
 <!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
 <nta>
 	<declaration>// Place global declarations here.
-clock x, y;
+clock x;
 int test = 0;
-int z = 0;
-int p = 0;</declaration>
+int z = 0;</declaration>
 	<template>
 		<name x="5" y="5">Model1</name>
-		<declaration>// Place local declarations here.</declaration>
+		<declaration>// Place local declarations here.
+clock y;</declaration>
 		<location id="id0" x="0" y="0">
 			<name x="-10" y="-34">Start</name>
 			<label kind="exponentialrate" x="-8" y="17">2</label>
@@ -21,12 +21,6 @@ int p = 0;</declaration>
 			<name x="42" y="85">Goal</name>
 		</location>
 		<init ref="id0"/>
-		<transition>
-			<source ref="id0"/>
-			<target ref="id0"/>
-			<nail x="-25" y="17"/>
-			<nail x="-25" y="-8"/>
-		</transition>
 		<transition>
 			<source ref="id1"/>
 			<target ref="id0"/>
@@ -48,6 +42,7 @@ int p = 0;</declaration>
 	</template>
 	<template>
 		<name>Model2</name>
+		<declaration>int p = 0;</declaration>
 		<location id="id3" x="0" y="0">
 			<name x="-17" y="-42">M2_Start</name>
 			<label kind="exponentialrate" x="-17" y="17">10 - p</label>
