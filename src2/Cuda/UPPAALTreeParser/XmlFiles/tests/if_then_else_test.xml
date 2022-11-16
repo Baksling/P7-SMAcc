@@ -2,56 +2,47 @@
 <!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
 <nta>
 	<declaration>// Place global declarations here.
-double x = 0.0;
-double y = 0.0;
-int p = 90;
-int q = 10;</declaration>
+double rand = 0.0;
+int x = 0;</declaration>
 	<template>
-		<name x="5" y="5">random_test</name>
+		<name x="5" y="5">Template</name>
 		<declaration>// Place local declarations here.</declaration>
 		<location id="id0" x="0" y="0">
 			<label kind="exponentialrate" x="-10" y="34">1</label>
 		</location>
-		<location id="id1" x="110" y="0">
-			<label kind="exponentialrate" x="100" y="34">1</label>
+		<location id="id1" x="127" y="0">
+			<label kind="exponentialrate" x="117" y="34">1</label>
 		</location>
-		<location id="id2" x="204" y="-68">
-			<name x="194" y="-102">Goal</name>
+		<location id="id2" x="246" y="-85">
 		</location>
-		<location id="id3" x="204" y="68">
+		<location id="id3" x="255" y="68">
+			<name x="245" y="34">Goal</name>
 		</location>
-		<branchpoint id="id4" x="204" y="0">
-		</branchpoint>
 		<init ref="id0"/>
 		<transition>
-			<source ref="id4"/>
+			<source ref="id1"/>
 			<target ref="id3"/>
-			<label kind="probability" x="212" y="17">x</label>
-		</transition>
-		<transition>
-			<source ref="id4"/>
-			<target ref="id2"/>
-			<label kind="probability" x="212" y="-34">y</label>
+			<label kind="guard" x="187" y="8">x == 0</label>
 		</transition>
 		<transition>
 			<source ref="id1"/>
-			<target ref="id4"/>
+			<target ref="id2"/>
+			<label kind="guard" x="145" y="-76">x == 1</label>
 		</transition>
 		<transition>
 			<source ref="id0"/>
 			<target ref="id1"/>
-			<label kind="assignment" x="8" y="17">x = random(p),
-y = random(q)</label>
+			<label kind="assignment" x="-42" y="34">x = random(10) &lt;= 5 ? 1 : 0</label>
 		</transition>
 	</template>
 	<system>// Place template instantiations here.
-Process = random_test();
+Process = Template();
 // List one or more processes to be composed into a system.
 system Process;
     </system>
 	<queries>
 		<query>
-			<formula>Pr[&lt;=100;1000000](&lt;&gt; Process.Goal)</formula>
+			<formula>Pr[&lt;=100; 100000](&lt;&gt; Process.Goal)</formula>
 			<comment></comment>
 		</query>
 	</queries>
