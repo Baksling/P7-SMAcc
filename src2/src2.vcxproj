@@ -464,6 +464,7 @@
     </ClCompile>
     <ClCompile Include="Cuda\Simulator\writers\trace.cu" />
     <ClCompile Include="Cuda\UPPAALTreeParser\arithmetic-expression-evaluator.cpp" />
+    <ClCompile Include="Cuda\UPPAALTreeParser\variable_expression_evaluator.cpp" />
     <ClCompile Include="Cuda\UPPAALTreeParser\declaration_parser.cpp" />
     <ClCompile Include="Cuda\Simulator\simulator_tools.cu" />
     <ClCompile Include="Cuda\Simulator\thread_pool.cu" />
@@ -540,8 +541,6 @@
       <SDLCheck>true</SDLCheck>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
-    <ClCompile Include="Cuda\UPPAALTreeParser\update_expression_evaluator.cpp" />
-    <ClCompile Include="Cuda\UPPAALTreeParser\update_parser.cpp" />
     <ClCompile Include="Cuda\UPPAALTreeParser\uppaal_tree_parser.cu">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -851,6 +850,7 @@
     <ClInclude Include="Cuda\UPPAALTreeParser\declaration.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\declaration_parser.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\helper_methods.h" />
+    <ClInclude Include="Cuda\UPPAALTreeParser\variable_expression_evaluator.h" />
     <ClInclude Include="Cuda\common\allocation_helper.h" />
     <ClInclude Include="Cuda\common\argparser.h" />
     <ClInclude Include="Cuda\common\array_t.h" />
@@ -863,8 +863,6 @@
     <ClInclude Include="Cuda\Simulator\thread_pool.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\pugiconfig.hpp" />
     <ClInclude Include="Cuda\UPPAALTreeParser\pugixml.hpp" />
-    <ClInclude Include="Cuda\UPPAALTreeParser\update_expression_evaluator.h" />
-    <ClInclude Include="Cuda\UPPAALTreeParser\update_parser.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\uppaal_tree_parser.h" />
     <ClInclude Include="Cuda\Visitors\domain_analysis_visitor.h" />
     <ClInclude Include="Cuda\Visitors\pretty_visitor.h" />

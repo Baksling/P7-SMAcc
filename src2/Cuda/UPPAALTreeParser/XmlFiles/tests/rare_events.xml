@@ -39,7 +39,7 @@ broadcast chan ask, try;</declaration>
 		<transition>
 			<source ref="id4"/>
 			<target ref="id1"/>
-			<label kind="probability" x="25" y="-42">1000000000</label>
+			<label kind="probability" x="25" y="-42">10000000</label>
 		</transition>
 		<transition>
 			<source ref="id0"/>
