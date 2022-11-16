@@ -4,9 +4,16 @@ import subprocess
 from os import listdir
 from os.path import isfile, join
 from math import ceil
+from typing import Dict
 
 TEMP_FOLDER_NAME = './tmp_results'
-POST_FIX_TMP_NAME = '_results.csv'
+POST_FIX_TMP_NAME = '_results.tsv'
+
+
+class value_checker():
+    def __init__(self, val, time):
+        self.value = val
+        self.time = time
 
 
 def __parse_args():
@@ -68,9 +75,9 @@ def __parse_args():
         '-a',
         '--amount',
         dest='amount',
-        help='Number of total simulations to run default = 1B',
+        help='Number of total simulations to run default = 1M',
         type=int,
-        default=1000000000,
+        default=1000000,
         required=False
     )
 
@@ -81,6 +88,16 @@ def __parse_args():
         help='How much the results may variate from the facts [In percent default = 1.0]',
         type=float,
         default=1.0,
+        required=False
+    )
+
+    general_options.add_argument(
+        '-t',
+        '--time_variance',
+        dest='time_variance',
+        help='How much the time results may variate form the facts [In ms default = 50] [0 to ignore]',
+        type=int,
+        default=50,
         required=False
     )
 
@@ -98,7 +115,6 @@ def run_simulations(args_) -> None:
         print("RUNNING", file)
         file_path = join(folder_path, file)
         amount = int(ceil(float(args_.amount) / float(32 * 512)))
-
         subprocess.run([
             simulator_path,
             '-m', file_path,
@@ -107,7 +123,7 @@ def run_simulations(args_) -> None:
             '-a', str(amount),
             '-c', '1',
             '-d', '0',
-            '-w', 'cr',
+            '-w', 'r',
             '-o', f'{join(TEMP_FOLDER_NAME, file.replace(".xml", ""))}',
             '-y', str(args_.use_time),
             '-s', str(args_.max_progression),
@@ -116,42 +132,49 @@ def run_simulations(args_) -> None:
         ])
 
 
-def check_simulation_results(args_, expected_results) -> None:
+def check_simulation_results(args_, _expected_results) -> None:
     def within_range(expected, actual, variance) -> bool:
-        return expected + variance > actual > expected - variance and 100.0 >= actual >= 0.0  # actual < expected + variance and actual > expected - variance <-- OLD BUT SECURE
+        return expected + variance > actual > expected - variance  # actual < expected + variance and actual > expected - variance <-- OLD BUT SECURE
 
     only_files = [f for f in listdir(TEMP_FOLDER_NAME) if isfile(join(TEMP_FOLDER_NAME, f))]
     print(only_files)
     for file in only_files:
         file_path = join(TEMP_FOLDER_NAME, file)
-        expected_result = expected_results[f'{file.replace(POST_FIX_TMP_NAME, "")}']
+        file_results = _expected_results[f'{file.replace(POST_FIX_TMP_NAME, "")}']
+        expected_value = file_results.value
+        expected_time = file_results.time
         actual_result = 0.0
+        actual_time = 0.0
         try:
             with open(file_path, 'r') as f:
-                value = float(f.readlines()[0].replace('\n', ''))
-    
-                actual_result = value
-    
+                data_line = f.readlines()[0].replace('\n', '')
+                tmp_split = data_line.split('\t')
+
+                actual_result = float(tmp_split[0])
+                actual_time = int(tmp_split[1])
+
             output_str = f'{file} '
-            if within_range(expected_result, actual_result, args_.variance):
-                output_str += 'PASSED'
+            if within_range(expected_value, actual_result, args_.variance) and \
+                    (args_.time_variance == 0 or within_range(expected_time, actual_time, args_.time_variance)):
+                output_str += f'PASSED'
             else:
                 output_str += 'FAILED'
+            output_str += f' - Value variance: {expected_value - actual_result} percent | Time variance {expected_time - actual_time} [ms]'
             print(output_str)
         except:
             print(file, 'FAILED - EXCEPT')
 
 
-def get_expected_simulation_results() -> dict[str, float]:
+def get_expected_simulation_results() -> dict[str, value_checker]:
     return {
-        'clock_var': 100.0,
-        'dicebase': 16.6,
-        'dicebaseUnfair': 6.3,
-        'random_test': 14.4,
-        'rare_events': 0.0001,
-        'rate_test': 33.45,
-        'var_test': 47.4,
-        'ifelse_test': 50.0
+        'clock_var': value_checker(100.0, 270),
+        'dicebase': value_checker(16.6, 440),
+        'dicebaseUnfair': value_checker(6.3, 1350),
+        'random_test': value_checker(14.4, 122),
+        'rare_events': value_checker(0.0001, 1000),
+        'rate_test': value_checker(33.45, 155),
+        'var_test': value_checker(47.4, 10300),
+        'ifelse_test': value_checker(50.0, 225)
     }
 
 
@@ -168,4 +191,4 @@ if __name__ == '__main__':
         run_simulations(args)
         check_simulation_results(args, expected_results)
     finally:
-        pass# subprocess.run(['rm', '-r', TEMP_FOLDER_NAME])
+        pass  # subprocess.run(['rm', '-r', TEMP_FOLDER_NAME])
