@@ -110,9 +110,9 @@ expression* variable_expression_evaluator::eval_exp4()
     expression* result = eval_exp5();
     while (*token_ == '^')
     {
-        // get_token();
-        eval_exp5();
-        // result = pow(result, temp); TODO Parse ^
+        get_token();
+        expression* temp = eval_exp5();
+        result = expression::power_expression(result, temp);
     }
     return result;
 }
@@ -156,6 +156,8 @@ expression* variable_expression_evaluator::eval_exp6()
         {
             if (!strcmp(temp_token, "random"))
                 result = expression::random_expression(result);
+            else if (!strcmp(temp_token, "sqrt"))
+                result = expression::sqrt_expression(result);
             else
             {
                 THROW_LINE("Unknown Function");
