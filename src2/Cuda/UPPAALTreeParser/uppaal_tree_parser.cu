@@ -91,40 +91,6 @@ constraint_t* get_constraint(const string& expr, const int timer_id_1, const int
     THROW_LINE("Operand in " + expr + " not found, sad..")
 }
 
-
-template <typename T> T* list_to_arr(list<T> l)
-{
-    T* arr = static_cast<T*>(malloc(sizeof(T) * l.size()));
-    int k = 0;
-    for (T const &i: l) {
-        arr[k++] = i;
-    }
-    
-    return arr;
-}
-
-string uppaal_tree_parser::is_timer(const string& expr) const
-{
-    const string expr_wout_spaces = replace_all(expr, string(" "), string("")); //TODO trimmer
-    int index = 0;
-
-    while (true)
-    {
-        if (static_cast<int>(expr.size()) == index)
-        {
-            THROW_LINE("sum tin wong")
-        }
-        
-        if (in_array(expr_wout_spaces[++index], {'<','>','='}))
-        {
-            break;
-        }
-    }
-
-    return expr_wout_spaces.substr(0, index);;
-}
-
-
 int uppaal_tree_parser::get_timer_id(const string& expr) const
 {
     const string expr_wout_spaces = replace_all(expr, string(" "), string(""));
@@ -203,21 +169,16 @@ void uppaal_tree_parser::init_global_clocks(const xml_document* doc)
         {
             insert_to_map(&this->global_vars_map_, d.get_name(), clock_id_);
             insert_to_map(&this->global_timers_map_, d.get_name(), clock_id_);
-            // global_vars_map_.insert_or_assign(d.get_name(),clock_id_);
-            // timers_map_.insert_or_assign(d.get_name(), clock_id_);
             timer_list_->push_back(clock_variable(clock_id_++, d.get_value()));
             
         }
         else if(d.get_type() == chan_type)
         {
-            // global_vars_map_.insert_or_assign(d.get_name(), chan_id_++);
-
             insert_to_map(&this->global_vars_map_, d.get_name(), chan_id_++);
         }
         else
         {
             insert_to_map(&this->global_vars_map_, d.get_name(), var_id_);
-            // global_vars_map_.insert_or_assign(d.get_name(), var_id_);
             var_list_->push_back(clock_variable(var_id_++, d.get_value()));
 
         }
@@ -367,7 +328,6 @@ bool uppaal_tree_parser::is_if_statement(const string& expr)
 
 expression* uppaal_tree_parser::handle_if_statement(const string& input)
 {
-    string con = take_after(input, "=");
     const string condition = replace_all(take_while(input, "?"), " ", "");
     const string if_true = replace_all(take_while(take_after(input, "?"), ":"), " ", "");
     const string if_false = replace_all(take_after(input, ":"), ";", "");

@@ -51,7 +51,6 @@ private:
     int init_node_id_{};
     list<clock_variable>* timer_list_ = new list<clock_variable>();
     list<clock_variable>* var_list_ = new list<clock_variable>();
-    int timer_amount_ = 0;
     int var_id_ = 0;
     int clock_id_ = 0;
     int chan_id_ = 0;
@@ -68,13 +67,10 @@ private:
     unordered_map<int, string>* node_names_ = new unordered_map<int, string>();
     unordered_map<int, node_with_system_id>* nodes_map_= new unordered_map<int, node_with_system_id>();
     list<node_t*>* nodes_ = new list<node_t*>();
-    list<node_t*>* goal_nodes_ = new list<node_t*>();
-    list<int> branchpoint_nodes{};
     list<int> start_nodes_{};
-    list<int> sync_chan_ids_{};
+    
     int get_timer_id(const string& expr) const;
     void get_condition_strings(const string& con, string* left, string* op, string* right);
-    string is_timer(const string& expr) const;
     node_t* get_node(const int target_id, const list<node_t*>* arr) const;
     edge_channel* handle_sync(const string& input) const;
     list<update_t> handle_assignment(const string& input);
