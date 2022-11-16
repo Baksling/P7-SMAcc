@@ -53,7 +53,7 @@ private:
     
     void write_lite(std::chrono::steady_clock::duration sim_duration) const;
 
-    void write_hit_file(unsigned long long total_simulations) const;
+    void write_hit_file(const unsigned long long total_simulations, const std::chrono::steady_clock::duration sim_duration) const;
 
 public:
     const bool trace_enabled;

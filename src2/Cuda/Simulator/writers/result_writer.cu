@@ -176,9 +176,9 @@ void result_writer::write_lite(const steady_clock::duration sim_duration) const
     lite.close();
 }
 
-void result_writer::write_hit_file(const unsigned long long total_simulations) const
+void result_writer::write_hit_file(const unsigned long long total_simulations, const steady_clock::duration sim_duration) const
 {
-    std::ofstream file = std::ofstream(this->file_path_ + "_results.csv", std::ofstream::out|std::ofstream::trunc);
+    std::ofstream file = std::ofstream(this->file_path_ + "_results.tsv", std::ofstream::out|std::ofstream::trunc);
     
     if (result_map_.empty() || result_map_.size() == 1 && result_map_.count(HIT_MAX_STEPS))
     {
@@ -193,7 +193,7 @@ void result_writer::write_hit_file(const unsigned long long total_simulations) c
 
         const float percentage = this->calc_percentage(pair.second.reach_count, total_simulations);
         
-        file << percentage << "\n";
+        file << percentage << "\t" << duration_cast<microseconds>(duration_cast<duration<double>>(sim_duration)).count();
     }  
 
     file.flush();
@@ -261,7 +261,7 @@ void result_writer::write_summary(const unsigned long long total_simulations, co
     }
     if (this->write_mode_ & hit_file)
     {
-        this->write_hit_file(total_simulations);   
+        this->write_hit_file(total_simulations, sim_duration);   
     }
 }
 
