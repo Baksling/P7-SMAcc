@@ -22,6 +22,8 @@
 #include "../Domain/edge_t.h"
 #include "declaration.h"
 #include "declaration_parser.h"
+#include <utility>
+#include "variable_expression_evaluator.h"
 
 #define GPU __device__
 #define CPU __host__

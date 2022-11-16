@@ -1,12 +1,11 @@
-﻿#include <utility>
-
-#include "uppaal_tree_parser.h"
-
-#include "variable_expression_evaluator.h"
+﻿#include "uppaal_tree_parser.h"
 
 
-#define ALPHA "abcdefghijklmnopqrstuvwxyz"
-
+/* 
+ * TODO init like this: double x,y = 0.0;
+ * TODO If else in init, guards, and invariants
+ * TODO Clean up, e.g. add trimmer for whitespace AND TABS!
+ */
 
 string get_constraint_op(const string& expr)
 {
