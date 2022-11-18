@@ -464,6 +464,7 @@
     </ClCompile>
     <ClCompile Include="Cuda\Simulator\writers\trace.cu" />
     <ClCompile Include="Cuda\UPPAALTreeParser\arithmetic-expression-evaluator.cpp" />
+    <ClCompile Include="Cuda\UPPAALTreeParser\string_extractor.cpp" />
     <ClCompile Include="Cuda\UPPAALTreeParser\variable_expression_evaluator.cpp" />
     <ClCompile Include="Cuda\UPPAALTreeParser\declaration_parser.cpp" />
     <ClCompile Include="Cuda\Simulator\simulator_tools.cu" />
@@ -850,6 +851,7 @@
     <ClInclude Include="Cuda\UPPAALTreeParser\declaration.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\declaration_parser.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\helper_methods.h" />
+    <ClInclude Include="Cuda\UPPAALTreeParser\string_extractor.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\variable_expression_evaluator.h" />
     <ClInclude Include="Cuda\common\allocation_helper.h" />
     <ClInclude Include="Cuda\common\argparser.h" />

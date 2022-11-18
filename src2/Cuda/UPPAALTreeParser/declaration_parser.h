@@ -16,8 +16,6 @@ private:
     int global_clock_id_counter_ = 0;
     int global_chan_id_counter_ = 0;
     list<declaration> parse_keyword(const string& line, declaration_types type);
-    // string parse_equation(string eq_string);
-    // declaration number_parser(const string& line);
     string val_;
 public:
     std::list<declaration> parse(const std::string& decl);
