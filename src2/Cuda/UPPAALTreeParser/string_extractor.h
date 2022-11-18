@@ -1,10 +1,12 @@
 ﻿#pragma once
+#ifndef STRING_EXTRACTOR
+#define STRING_EXTRACTOR
+#include <iostream>
 #include <string>
+#include <utility>
 #include "helper_methods.h"
 using namespace std;
 using namespace helper;
-
-
 struct extract_input
 {
     const string input;
@@ -28,8 +30,8 @@ struct extract_if_statement : extract_input
     {
     }
 
-    explicit extract_if_statement(const string& condition, const string& if_true, const string& if_false, const string& trimmed_input) : extract_input(trimmed_input),
-        condition(condition), if_true(if_true), if_false(if_false)
+    explicit extract_if_statement(string condition, string if_true, string if_false, const string& trimmed_input) : extract_input(trimmed_input),
+        condition(std::move(condition)), if_true(std::move(if_true)), if_false(std::move(if_false))
     {
     }
 };
@@ -45,8 +47,8 @@ struct extract_condition : extract_input
     {
     }
 
-    explicit extract_condition(const string& op,const string& left,const string& right, const string& trimmed_input)
-        : extract_input(trimmed_input), op(op), left(left), right(right)
+    explicit extract_condition(string op, const basic_string<char>& left, string right, const string& trimmed_input)
+        : extract_input(trimmed_input), op(std::move(op)), left(left), right(std::move(right))
     {
     }
 };
@@ -61,8 +63,8 @@ struct extract_assignment : extract_input
     {
     }
 
-    explicit extract_assignment(const string& left, const string& right, const string& ex)
-        : extract_input(ex), left(left), right(right)
+    explicit extract_assignment(const basic_string<char>& left, string right, const string& ex)
+        : extract_input(ex), left(left), right(std::move(right))
     {
     }
 };
@@ -77,10 +79,10 @@ struct extract_sync : extract_input
         {
     }
     
-     explicit extract_sync(const bool is_listener, const string& keyword,const string& ex)
+     explicit extract_sync(const bool is_listener, string keyword,const string& ex)
         : extract_input(ex),
           is_listener(is_listener),
-          keyword(keyword)
+          keyword(std::move(keyword))
     {
     }
 
@@ -95,9 +97,9 @@ struct extract_probability : extract_input
     {
     }
     
-    explicit extract_probability(const string& value, const string& ex)
+    explicit extract_probability(string value, const string& ex)
         : extract_input(ex),
-          value(value)
+          value(std::move(value))
     {
     }
 };
@@ -119,6 +121,23 @@ struct extract_node_id : extract_input
     }
 };
 
+struct extract_declaration : extract_input
+{
+    string input_keyword;
+    list<string> keywords;
+    const string right;
+    
+    explicit extract_declaration(const string& ex, string input_keyword)
+        : extract_input(ex), input_keyword(std::move(input_keyword))
+    {
+    }
+
+    explicit extract_declaration(list<string> keywords, string right,const string& ex)
+        : extract_input(ex), keywords(std::move(keywords)), right(std::move(right))
+    {
+    }
+};
+
 class string_extractor
 {
 public:
@@ -127,6 +146,8 @@ public:
     static extract_assignment extract(const extract_assignment& extract);
     static extract_sync extract(const extract_sync& extract);
     static extract_probability extract(const extract_probability& extract);
+    static extract_declaration extract(const extract_declaration& extract);
     static int extract(const extract_node_id& extract);
 };
 
+#endif

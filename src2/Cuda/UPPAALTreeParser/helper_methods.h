@@ -1,4 +1,6 @@
 ﻿#pragma once
+#ifndef HELPER
+#define HELPER
 #include <list>
 #include <sstream>
 #include <string>
@@ -10,6 +12,24 @@ using namespace std;
 
 namespace helper
 {
+    inline bool string_contains(const string& expr, const string& element)
+    {
+        return expr.find(element)!=std::string::npos;
+    }
+    
+    inline std::list<string> split_all(const string& input, const string& delimiter){
+        std::list<string> result;
+        size_t pos = 0;
+        string s = input;
+        while ((pos = s.find(delimiter)) != std::string::npos) {
+            std::string token = s.substr(0, pos);
+            result.push_back(token);
+            s.erase(0, pos + delimiter.length());
+        }
+        result.push_back(s);
+        return result;
+    }
+    
     inline string take_after(const string& s, const string& while_string)
     {
         return s.substr(s.find(while_string)+while_string.length());
@@ -75,4 +95,6 @@ namespace helper
         return result;
     }
 }
+
+#endif
 

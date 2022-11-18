@@ -2,9 +2,9 @@
 
 
 /* 
- * TODO init like this: double x,y = 0.0;
+ * TODO init like this: double x,y = 0.0; --flueben
  * TODO If else in init, guards, and invariants
- * TODO Clean up, e.g. add trimmer for whitespace AND TABS!
+ * TODO Clean up, e.g. add trimmer for whitespace AND TABS! --flueben
  */
 
 
@@ -77,7 +77,7 @@ constraint_t* get_constraint(const string& expr, const int timer_id_1, const int
 
 int uppaal_tree_parser::get_timer_id(const string& expr) const
 {
-    const string expr_wout_spaces = remove_whitespace(expr);
+    const string expr_wout_spaces = replace_all(remove_whitespace(expr), "\n", "");
     int index = 0;
 
     while (true)
@@ -112,6 +112,8 @@ void uppaal_tree_parser::fill_expressions(const list<string>& expressions, list<
 {
     for(const auto& expr: expressions)
     {
+        if (expr.empty())
+            continue;
         
         const extract_condition extracted_condition = string_extractor::extract(extract_condition(expr));
 
@@ -219,7 +221,6 @@ void uppaal_tree_parser::handle_locations(const xml_node locs)
 
     const string kind = locs.child("label").attribute("kind").as_string();
     const string expr_string = locs.child("label").child_value();
-
     const list<string> expressions = split_expr(expr_string);
             
     if (kind == "exponentialrate")
@@ -456,7 +457,6 @@ __host__ stochastic_model_t uppaal_tree_parser::parse(string file_path)
     }
     catch (const std::runtime_error &ex)
     {
-        cout << "Parse error: " << ex.what() << "\n";
         throw runtime_error("parse error");
     }
 }
