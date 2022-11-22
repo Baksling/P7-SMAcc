@@ -1,6 +1,7 @@
 import argparse
 from os import listdir
 from os.path import isfile, join
+from tqdm import tqdm
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -67,7 +68,7 @@ def analyse_data(args):
     result = data_wrapper()
     only_files = [f for f in listdir(args.folder_path) if isfile(join(args.folder_path, f)) ]
 
-    for file in only_files:
+    for file in tqdm(only_files):
 
         # Guard to skip data we dont want
         file_split = file.split('_')
