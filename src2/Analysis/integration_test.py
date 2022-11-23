@@ -241,4 +241,4 @@ if __name__ == '__main__':
         not_run_set, all_files = run_simulations(args)
         check_simulation_results(args, expected_results, not_run_set, all_files)
     finally:
-        pass # subprocess.run(['rm', '-r', TEMP_FOLDER_NAME])
+        subprocess.run(['rm', '-r', TEMP_FOLDER_NAME])
