@@ -3,6 +3,8 @@ from os import listdir
 from os.path import isfile, join
 from tqdm import tqdm
 
+BUFFER_SIZE = 10
+
 def parse_args():
     parser = argparse.ArgumentParser(
         prog="Data Performance Analysis",
@@ -56,12 +58,18 @@ class data_wrapper():
         self.min_time = 2_147_483_647
         self.min_time_file = 'Not defined'
 
+        self.min_time_arr = [2_147_483_647 for _ in range(BUFFER_SIZE)]
+        self.min_time_arr_str = ['' for _ in range(BUFFER_SIZE)]
+
         self.average_dict = {}
         self.min_average_time = 2_147_483_647.0
         self.lowest_average_block = 'Not defined'
 
     def __str__(self):
-        return f'Minimum time: {self.min_time_file} | Minimum Average Block: {self.lowest_average_block}'
+        buffer_str = f'{BUFFER_SIZE} lowest time combinations:\n'
+        for i in range(BUFFER_SIZE):
+            buffer_str += f'{i}: {self.min_time_arr_str[i]}\n'
+        return f'Minimum time: {self.min_time_file} | Minimum Average Block: {self.lowest_average_block} \n{buffer_str}'
         
 
 def analyse_data(args):
@@ -81,11 +89,18 @@ def analyse_data(args):
         path = join(args.folder_path, file)
         with open(path, 'r') as f:
             data = int(f.readlines()[0].replace('\n', ''))
+            block_str = f'Blocks: {block}, Threads: {thread}'
             if data < result.min_time:
                 result.min_time = data
-                result.min_time_file = f'Blocks: {block}, Threads: {thread}'
+                result.min_time_file = block_str
             
             result.average_dict[block] = result.average_dict.get(block, []) + [data]
+
+            for i in range(BUFFER_SIZE):
+                if result.min_time_arr[i] > data and block_str != result.min_time_arr_str[i]:
+                    result.min_time_arr[i] = data
+                    result.min_time_arr_str[i] = block_str
+                    break
 
     for key, val_lst in result.average_dict.items():
         value = 0 if len(val_lst) == 0 else float(sum(val_lst)) / float(len(val_lst))
