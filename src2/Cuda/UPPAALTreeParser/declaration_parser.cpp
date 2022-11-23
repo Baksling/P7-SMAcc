@@ -6,28 +6,32 @@ using namespace std;
 using namespace helper;
 using namespace evalguy;
 
-list<declaration> declaration_parser::parse_keyword(const string& line, declaration_types type)
+list<declaration> declaration_parser::parse_keyword(const string& lines, declaration_types type)
 {
     list<declaration> result;
     const string keyword = decl_type_map_.at(type);
-    const extract_declaration extracted_declaration = string_extractor::extract(extract_declaration(line, keyword));
 
-    const string expr = extracted_declaration.right.empty() ? "" : to_string(eval_expr(extracted_declaration.right));
-    
-    for (const string& extracted_keyword : extracted_declaration.keywords)
+    for (const auto& line : split_expr(lines, ','))
     {
-        if (!expr.empty() && (type == clock_type || type == chan_type))
-        {
-            result.emplace_back(type, extracted_keyword, expr, type == clock_type ? global_clock_id_counter_++ : global_chan_id_counter_++);
-        }
-        else if (type == clock_type || type == chan_type)
-            result.emplace_back(type, extracted_keyword, "0", type == clock_type ? global_clock_id_counter_++ : global_chan_id_counter_++);
-        else if (!expr.empty())
-            result.emplace_back(type, extracted_keyword, expr, 1);
-        else
-            result.emplace_back(type, extracted_keyword, "0", 1);
-    }
+        const extract_declaration extracted_declaration = string_extractor::extract(extract_declaration(line, keyword));
 
+        const string expr = extracted_declaration.right.empty() ? "" : to_string(eval_expr(extracted_declaration.right));
+    
+        for (const string& extracted_keyword : extracted_declaration.keywords)
+        {
+            if (!expr.empty() && (type == clock_type || type == chan_type))
+            {
+                result.emplace_back(type, extracted_keyword, expr, type == clock_type ? global_clock_id_counter_++ : global_chan_id_counter_++);
+            }
+            else if (type == clock_type || type == chan_type)
+                result.emplace_back(type, extracted_keyword, "0", type == clock_type ? global_clock_id_counter_++ : global_chan_id_counter_++);
+            else if (!expr.empty())
+                result.emplace_back(type, extracted_keyword, expr, 1);
+            else
+                result.emplace_back(type, extracted_keyword, "0", 1);
+        }
+    }
+    
     return result;
 }
 
