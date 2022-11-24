@@ -232,7 +232,7 @@ void variable_expression_evaluator::get_token()
     *temp = '\0';
 }
 
-expression* variable_expression_evaluator::parse_update_expr(const string& input, unordered_map<string, int>* local_vars, unordered_map<string, int>* global_vars)
+expression* variable_expression_evaluator::evaluate_variable_expression(const string& input, unordered_map<string, int>* local_vars, unordered_map<string, int>* global_vars)
 {
     variable_expression_evaluator ob(local_vars, global_vars);
     expression* ans = ob.eval_exp(const_cast<char*>(input.substr(0, input.length()).c_str()));

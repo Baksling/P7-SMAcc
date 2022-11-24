@@ -1,61 +1,60 @@
 ﻿#include "declaration_parser.h"
 
 #include "arithmetic-expression-evaluator.h"
+#include "string_extractor.h"
 using namespace std;
 using namespace helper;
 using namespace evalguy;
 
-declaration number_parser(const string& line, declaration_types type)
+list<declaration> declaration_parser::parse_keyword(const string& lines, declaration_types type)
 {
-    const string line_wo_ws = replace_all(line, " ", "");
-    const string nums = take_after(line_wo_ws, "=");
-    return declaration{type, take_while(line_wo_ws, "="), to_string(eval_expr(nums)), 1};
-}
-
-list<declaration> declaration_parser::parse_keyword(const string& line, declaration_types type)
-{
-    string keyword;
-    if (type == clock_type)
-    {
-        keyword = "clock";
-    }
-    else if (type == chan_type)
-    {
-        keyword = "broadcastchan";
-    }
-    
     list<declaration> result;
-    const size_t keyword_start = line.find(keyword);
-    const size_t keyword_end = line.find(';');
-        
-    string keyword_vals = line.substr(keyword_start+keyword.length(),keyword_end-1);
-    keyword_vals = replace_all(keyword_vals, string(" "), string(""));
+    const string keyword = decl_type_map_.at(type);
 
-    std::stringstream keyword_vals_stream(keyword_vals);
-    std::string keyword_val;
-    
-    while(std::getline(keyword_vals_stream, keyword_val, ','))
+    for (const auto& line : split_expr(lines, ','))
     {
-        string keyword_val_without = keyword_val;
-        if (keyword_val.find(';') != std::string::npos)
-            keyword_val_without = replace_all(keyword_val, ";", "");
+        const extract_declaration extracted_declaration = string_extractor::extract(extract_declaration(line, keyword));
 
-        if (keyword_val_without.find('=') != std::string::npos)
+        const string expr = extracted_declaration.right.empty() ? "" : to_string(eval_expr(extracted_declaration.right));
+    
+        for (const string& extracted_keyword : extracted_declaration.keywords)
         {
-            const string nums = take_after(keyword_val_without, "=");
-            result.emplace_back(type, take_while(keyword_val_without, "="), to_string(eval_expr(nums)), type == clock_type ? global_clock_id_counter_++ : global_chan_id_counter_++);
+            if (!expr.empty() && (type == clock_type || type == chan_type))
+            {
+                result.emplace_back(type, extracted_keyword, expr, type == clock_type ? global_clock_id_counter_++ : global_chan_id_counter_++);
+            }
+            else if (type == clock_type || type == chan_type)
+                result.emplace_back(type, extracted_keyword, "0", type == clock_type ? global_clock_id_counter_++ : global_chan_id_counter_++);
+            else if (!expr.empty())
+                result.emplace_back(type, extracted_keyword, expr, 1);
+            else
+                result.emplace_back(type, extracted_keyword, "0", 1);
         }
-        else
-            result.emplace_back(type, keyword_val_without, "0", type == clock_type ? global_clock_id_counter_++ : global_chan_id_counter_++);
     }
-
+    
     return result;
 }
 
-bool is_this_keyword(string expr, string keyword)
+bool is_this_keyword(const string& expr, const string& keyword)
 {
     return expr.substr(0, keyword.length()) == keyword;
 }
+
+
+void declaration_parser::number_parser(const string& input_string, list<declaration>* result)
+{
+    if (is_this_keyword(input_string,"double"))
+    {
+        list<declaration> cloc_decls = parse_keyword(input_string, double_type);
+        result->insert(result->end(), cloc_decls.begin(), cloc_decls.end());
+    }
+    if (is_this_keyword(input_string,"int"))
+    {
+        list<declaration> cloc_decls = parse_keyword(input_string, int_type);
+        result->insert(result->end(), cloc_decls.begin(), cloc_decls.end());
+    }
+}
+
 
 list<declaration> declaration_parser::parse(const string& decl)
 {
@@ -82,20 +81,14 @@ list<declaration> declaration_parser::parse(const string& decl)
         else if (is_this_keyword(line_trimmed,"const"))
         {   
             string const_string = remove_while(line_trimmed.substr(5), ' ');
-            if (is_this_keyword(const_string,"double"))
-                result.emplace_back(number_parser(const_string.substr(6), double_type));
-            if (is_this_keyword(const_string,"int"))
-                result.emplace_back(number_parser(const_string.substr(3), int_type));
+            number_parser(const_string, &result);
         }
         else if (is_this_keyword(line_trimmed, "broadcastchan"))
         {
             list<declaration> chan_decls = parse_keyword(line_trimmed, chan_type);
             result.insert(result.end(), chan_decls.begin(), chan_decls.end());
         }
-        else if (is_this_keyword(line_trimmed, "double"))
-            result.emplace_back(number_parser(line_trimmed.substr(6), double_type));
-        else if (is_this_keyword(line_trimmed, "int"))
-            result.emplace_back(number_parser(line_trimmed.substr(3), int_type));
+        number_parser(line_trimmed, &result);
     }
     
     return result;

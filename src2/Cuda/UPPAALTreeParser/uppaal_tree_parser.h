@@ -20,6 +20,7 @@
 #include <sstream>
 #include "helper_methods.h"
 #include "../Domain/edge_t.h"
+#include "string_extractor.h"
 #include "declaration.h"
 #include "declaration_parser.h"
 #include <utility>

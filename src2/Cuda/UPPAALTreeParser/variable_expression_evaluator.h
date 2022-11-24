@@ -37,7 +37,7 @@ class variable_expression_evaluator {
     void get_token();
 public:
     variable_expression_evaluator(unordered_map<string,int>* local_vars, unordered_map<string,int>* global_vars);
-    static expression* parse_update_expr(const string& input, unordered_map<string, int>* local_vars, unordered_map<string, int>* global_vars);
+    static expression* evaluate_variable_expression(const string& input, unordered_map<string, int>* local_vars, unordered_map<string, int>* global_vars);
     
     char errormsg[64];
 };

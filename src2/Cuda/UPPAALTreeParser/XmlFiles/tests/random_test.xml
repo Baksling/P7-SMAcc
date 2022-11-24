@@ -2,8 +2,7 @@
 <!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
 <nta>
 	<declaration>// Place global declarations here.
-double x = 0.0;
-double y = 0.0;
+double x, y = 0.0;
 int p = 90;
 int q = 10;</declaration>
 	<template>

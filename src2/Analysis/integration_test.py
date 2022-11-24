@@ -2,12 +2,17 @@
 import os
 import subprocess
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, join, exists
 from math import ceil
 from typing import Dict
 
 TEMP_FOLDER_NAME = './tmp_results'
 POST_FIX_TMP_NAME = '_results.tsv'
+
+PASSED = '\033[92m'
+FAILED = '\033[93m'
+WARNING = '\033[91m'
+ENDC = '\033[0m'
 
 
 class value_checker():
@@ -105,7 +110,8 @@ def __parse_args():
     return args
 
 
-def run_simulations(args_) -> None:
+def run_simulations(args_) -> set[str]:
+    not_run_set = set()
     simulator_path = args_.simulation_path
     folder_path = args_.folder_path
 
@@ -131,13 +137,20 @@ def run_simulations(args_) -> None:
             '-v', '1'
         ])
 
+        new_file_name = f'{file.replace(".xml", "")}_results.tsv'
+        if not exists(join(TEMP_FOLDER_NAME, new_file_name)):
+            not_run_set.add(new_file_name)
 
-def check_simulation_results(args_, _expected_results) -> None:
+    return (not_run_set, only_files)
+
+
+def check_simulation_results(args_, _expected_results, not_run_set, all_files) -> None:
     def within_range(expected, actual, variance) -> bool:
         return expected + variance > actual > expected - variance  # actual < expected + variance and actual > expected - variance <-- OLD BUT SECURE
 
-    only_files = [f for f in listdir(TEMP_FOLDER_NAME) if isfile(join(TEMP_FOLDER_NAME, f))]
-    print(only_files)
+    only_files = [f'{file.replace(".xml", "")}_results.tsv' for file in all_files]
+
+    # print(only_files)
     for file in only_files:
         file_path = join(TEMP_FOLDER_NAME, file)
         file_results = _expected_results[f'{file.replace(POST_FIX_TMP_NAME, "")}']
@@ -145,24 +158,26 @@ def check_simulation_results(args_, _expected_results) -> None:
         expected_time = file_results.time
         actual_result = 0.0
         actual_time = 0.0
-        try:
-            with open(file_path, 'r') as f:
-                data_line = f.readlines()[0].replace('\n', '')
-                tmp_split = data_line.split('\t')
+        if file not in not_run_set:
+            try:
+                with open(file_path, 'r') as f:
+                    data_line = f.readlines()[0].replace('\n', '')
+                    tmp_split = data_line.split('\t')
 
-                actual_result = float(tmp_split[0])
-                actual_time = int(tmp_split[1])
+                    actual_result = float(tmp_split[0])
+                    actual_time = int(tmp_split[1])
 
-            output_str = f'{file} '
-            if within_range(expected_value, actual_result, args_.variance) and \
-                    (args_.time_variance == 0 or within_range(expected_time, actual_time, args_.time_variance)):
-                output_str += f'PASSED'
-            else:
-                output_str += 'FAILED'
-            output_str += f' - Value variance: {expected_value - actual_result} percent | Time variance {expected_time - actual_time} [ms]'
-            print(output_str)
-        except:
-            print(file, 'FAILED - EXCEPT')
+                output_str = f'{file} '
+                if within_range(expected_value, actual_result, args_.variance) and \
+                        (args_.time_variance == 0 or within_range(expected_time, actual_time, args_.time_variance)):
+                    output_str += f'{PASSED}PASSED{ENDC}'
+                else:
+                    output_str += f'{FAILED}FAILED{ENDC}'
+                output_str += f' - Value variance: {expected_value - actual_result} percent | Time variance {expected_time - actual_time} [ms]'
+                print(output_str)
+            except:
+                print(file, f'{FAILED}FAILED{ENDC} - EXCEPT')
+        else: print(file, f"{WARNING}FAILED{ENDC} - DID NOT FINISH SIMULATION!")
 
 
 def get_expected_simulation_results() -> dict[str, value_checker]:
@@ -174,7 +189,42 @@ def get_expected_simulation_results() -> dict[str, value_checker]:
         'rare_events': value_checker(0.0001, 1000),
         'rate_test': value_checker(33.45, 155),
         'var_test': value_checker(47.4, 10300),
-        'ifelse_test': value_checker(50.0, 225)
+        'ifelse_test': value_checker(50.0, 225),
+        'random_test_1': value_checker(0.376, 0),
+        'clock_assign_1': value_checker(0.809, 0),
+        'clock_assign_2': value_checker(0.689, 0),
+        'clock_assign_3': value_checker(0.818, 0),
+        'int_assign_1': value_checker(0.00, 0),
+        'int_assign_2': value_checker(1.00, 0),
+        'int_assign_3': value_checker(0.50, 0),
+        'int_assign_4': value_checker(0.50, 0),
+        'double_assign_1': value_checker(0.00, 0),
+        'double_assign_2': value_checker(1.00, 0),
+        'double_assign_3': value_checker(0.50, 0),
+        'double_assign_4': value_checker(0.50, 0),
+        'guardz_1': value_checker(63.0, 0),
+        'guardz_2': value_checker(63.0, 0),
+        'guardz_3': value_checker(63.0, 0),
+        'guardz_4': value_checker(63.0, 0),
+        'guardz_5': value_checker(63.0, 0),
+        'update_1': value_checker(36.5, 0),
+        'update_2': value_checker(36.5, 0),
+        'update_3': value_checker(73.8, 0),
+        'update_4': value_checker(36.5, 0),
+        'update_5': value_checker(50.0, 0),
+        'update_6': value_checker(50.0, 0),
+        'update_7': value_checker(30.0, 0),
+        'update_8': value_checker(30.0, 0),
+        'invariant_1': value_checker(25.0, 0),
+        'invariant_2': value_checker(50.0, 0),
+        'invariant_3': value_checker(50.0, 0),
+        'rates_1': value_checker(50.0, 0),
+        'rates_2': value_checker(0.00, 0),
+        'rates_3': value_checker(50.0, 0),
+        'rates_4': value_checker(50.0, 0),
+        'rates_5': value_checker(31.0, 0),
+        'rates_6': value_checker(50.0, 0),
+        'rates_7': value_checker(50.0, 0)
     }
 
 
@@ -188,7 +238,7 @@ if __name__ == '__main__':
         pass
 
     try:
-        run_simulations(args)
-        check_simulation_results(args, expected_results)
+        not_run_set, all_files = run_simulations(args)
+        check_simulation_results(args, expected_results, not_run_set, all_files)
     finally:
-        pass  # subprocess.run(['rm', '-r', TEMP_FOLDER_NAME])
+        subprocess.run(['rm', '-r', TEMP_FOLDER_NAME])

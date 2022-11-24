@@ -1,4 +1,6 @@
 ﻿#pragma once
+#ifndef HELPER
+#define HELPER
 #include <list>
 #include <sstream>
 #include <string>
@@ -10,16 +12,21 @@ using namespace std;
 
 namespace helper
 {
-
-    inline string capitalize(string input)
+    inline bool string_contains(const string& expr, const string& element)
     {
-        string result;
-        int i = 0;
-        while (i<input.length())
-        {
-            result += toupper(input[i]);
-            i++;
+        return expr.find(element)!=std::string::npos;
+    }
+    
+    inline std::list<string> split_all(const string& input, const string& delimiter){
+        std::list<string> result;
+        size_t pos = 0;
+        string s = input;
+        while ((pos = s.find(delimiter)) != std::string::npos) {
+            std::string token = s.substr(0, pos);
+            result.push_back(token);
+            s.erase(0, pos + delimiter.length());
         }
+        result.push_back(s);
         return result;
     }
     
@@ -57,95 +64,10 @@ namespace helper
     {
         return std::find(array.begin(), array.end(), value) != array.end();
     } 
-
-    inline int get_expr_value(const string& expr)
+    
+    inline string remove_whitespace(const string& expr)
     {
-        const string expr_wo_ws = replace_all(expr, " ", "");
-        unsigned long long index = expr_wo_ws.length();
-        while (true)
-        {
-            if (index == 0)
-            {
-                return stoi(expr_wo_ws);
-            }
-            
-            if (!in_array(expr_wo_ws[--index], {'1','2','3','4','5','6','7','8','9','0'}))
-            {
-                return stoi(expr_wo_ws.substr(index+1));
-            }
-        }
-    }
-
-    inline bool does_not_contain(const string& input, const string& does_not_contain )
-    {
-        // const bool not_contained = input.find_first_not_of(does_not_contain) != std::string::npos;
-
-        //I BRUTE FORCE IT!
-        
-        for (int i = 0; i < static_cast<int>(input.length()); ++i)
-        {
-            for (int j = 0; j < static_cast<int>(does_not_contain.length()); ++j)
-            {
-                if (i + j >= static_cast<int>(input.length())) continue;
-                
-                if (input.c_str()[i + j] != does_not_contain.c_str()[j]) break;
-
-                if (j == static_cast<int>(does_not_contain.length()) - 1) return false;
-            }
-        }
-
-        return true;
-        
-        // return not_contained;
-    }
-
-    inline float get_expr_value_float(const string& expr)
-    {
-        const string expr_wo_ws = replace_all(expr, " ", "");
-        unsigned long long index = expr_wo_ws.length();
-        while (true)
-        {
-            if (index == 0)
-            {
-                return stof(expr_wo_ws);
-            }
-            
-            if (in_array(expr_wo_ws[--index], {'=',' ','<','>'}))
-            {
-                return stof(expr_wo_ws.substr(index+1));
-            }
-        }
-    }
-
-    inline string get_expr_value_string(const string& expr)
-    {
-        string expr_wo_ws = replace_all(expr, " ", "");
-        unsigned long long index = expr_wo_ws.length();
-        while (true)
-        {
-            if (index == 0)
-            {
-                return expr_wo_ws;
-            }
-            
-            if (in_array(expr_wo_ws[--index], {'=',' ','<','>'}))
-            {
-                return expr_wo_ws.substr(index+1);
-            }
-        }
-    }
-
-    inline int xml_id_to_int(string id_string)
-    {
-        return stoi(id_string.replace(0,2,""));
-    }
-
-    template <typename T>
-    void insert_into_list(list<list<T>>* t_list, int index, T item)
-    {
-        auto l_front = t_list->begin();
-        std::advance(l_front, index);
-        l_front->emplace_back(item);
+        return replace_all(expr, " ", "");
     }
 
     inline list<std::string> split_expr(const string& expr)
@@ -168,10 +90,11 @@ namespace helper
         std::string segment;
         while(std::getline(test, segment, split_on))
         {
-
             result.push_back(segment);
         }
         return result;
     }
 }
+
+#endif
 

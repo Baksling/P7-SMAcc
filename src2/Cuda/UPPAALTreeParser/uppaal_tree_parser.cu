@@ -2,27 +2,11 @@
 
 
 /* 
- * TODO init like this: double x,y = 0.0;
+ * TODO init like this: double x,y = 0.0; --flueben
  * TODO If else in init, guards, and invariants
- * TODO Clean up, e.g. add trimmer for whitespace AND TABS!
+ * TODO Clean up, e.g. add trimmer for whitespace AND TABS! --flueben
  */
 
-string get_constraint_op(const string& expr)
-{
-    if(expr.find("<=") != std::string::npos)
-        return "<=";
-    if(expr.find(">=") != std::string::npos)
-        return ">=";
-    if(expr.find("==") != std::string::npos)
-        return "==";
-    if(expr.find("!=") != std::string::npos)
-        return "!=";
-    if(expr.find('<') != std::string::npos)
-        return "<";
-    if(expr.find('>') != std::string::npos)
-        return ">";
-    THROW_LINE("Operand in " + expr + " not found, sad..");
-}
 
 
 constraint_t* get_constraint(const string& expr, const int timer_id, expression* value)
@@ -93,7 +77,7 @@ constraint_t* get_constraint(const string& expr, const int timer_id_1, const int
 
 int uppaal_tree_parser::get_timer_id(const string& expr) const
 {
-    const string expr_wout_spaces = replace_all(expr, string(" "), string(""));
+    const string expr_wout_spaces = replace_all(remove_whitespace(expr), "\n", "");
     int index = 0;
 
     while (true)
@@ -123,36 +107,27 @@ int uppaal_tree_parser::get_timer_id(const string& expr) const
     THROW_LINE("sum tin wong");
 }
 
-void uppaal_tree_parser::get_condition_strings(const string& con, string* left, string* op, string* right)
-{
-    *op = get_constraint_op(con);
-    *left = take_while(con, *op);
-    *right = take_after(con, *op);
-}
-
 template <typename T>
 void uppaal_tree_parser::fill_expressions(const list<string>& expressions, list<T>* t)
 {
     for(const auto& expr: expressions)
     {
-        string trimmed = replace_all(expr, " ", "");
-        if (trimmed.empty())
+        if (expr.empty())
             continue;
+        
+        const extract_condition extracted_condition = string_extractor::extract(extract_condition(expr));
 
-        string op;
-        string right_side;
-        string left_side;
-
-        get_condition_strings(trimmed, &left_side, &op, &right_side);
-
+        if (extracted_condition.input.empty())
+            continue;
+        
         //TODO fix this plz
         //Constraint is heap allocated, and is then copied here.
         //Results in dead memory.
         
-        if (timers_map_.count(left_side) || global_timers_map_.count(left_side))
-            t->push_back(*get_constraint(trimmed, get_timer_id(trimmed), variable_expression_evaluator::parse_update_expr(right_side, &vars_map_, &global_vars_map_)));
+        if (timers_map_.count(extracted_condition.left) || global_timers_map_.count(extracted_condition.left))
+            t->push_back(*get_constraint(extracted_condition.input, get_timer_id(extracted_condition.input), variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right, &vars_map_, &global_vars_map_)));
         else
-            t->push_back(*get_constraint(trimmed, variable_expression_evaluator::parse_update_expr(left_side, &vars_map_, &global_vars_map_), variable_expression_evaluator::parse_update_expr(right_side, &vars_map_, &global_vars_map_)));
+            t->push_back(*get_constraint(extracted_condition.input, variable_expression_evaluator::evaluate_variable_expression(extracted_condition.left, &vars_map_, &global_vars_map_), variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right, &vars_map_, &global_vars_map_)));
     }
 }
 
@@ -160,7 +135,7 @@ void uppaal_tree_parser::fill_expressions(const list<string>& expressions, list<
 void uppaal_tree_parser::init_global_clocks(const xml_document* doc)
 {
     string global_decl = doc->child("nta").child("declaration").child_value();
-    global_decl = replace_all(global_decl, " ", "");
+    global_decl = remove_whitespace(global_decl);
     const list<declaration> decls = dp_.parse(global_decl);
     for (declaration d : decls)
     {
@@ -188,7 +163,7 @@ void uppaal_tree_parser::init_global_clocks(const xml_document* doc)
 void uppaal_tree_parser::init_local_clocks(xml_node template_node)
 {
     string decl = template_node.child("declaration").child_value();
-    decl = replace_all(decl, " ", ""); //TODO Trimmer
+    decl = remove_whitespace(decl);
     
     for (declaration d : dp_.parse(decl))
     {
@@ -230,8 +205,8 @@ node_t* uppaal_tree_parser::get_node(const int target_id, const list<node_t*>* a
 void uppaal_tree_parser::handle_locations(const xml_node locs)
 {
     const string string_id = locs.attribute("id").as_string();
-    string string_name = locs.child("name").child_value();
-    const int node_id = xml_id_to_int(string_id);
+    const string string_name = locs.child("name").child_value();
+    const int node_id = string_extractor::extract(extract_node_id(string_id));
     list<constraint_t> invariants;
     expression* expo_rate = nullptr;
     bool is_goal = false;
@@ -246,16 +221,15 @@ void uppaal_tree_parser::handle_locations(const xml_node locs)
 
     const string kind = locs.child("label").attribute("kind").as_string();
     const string expr_string = locs.child("label").child_value();
-
     const list<string> expressions = split_expr(expr_string);
             
     if (kind == "exponentialrate")
     {
         //TODO make string trimmer
-        const string line_wo_ws = replace_all(expr_string, " ", "");
+        const string line_wo_ws = remove_whitespace(expr_string);
         const string nums = take_after(line_wo_ws, "=");
                 
-        expo_rate = variable_expression_evaluator::parse_update_expr(nums,&vars_map_, &global_vars_map_);
+        expo_rate = variable_expression_evaluator::evaluate_variable_expression(nums,&vars_map_, &global_vars_map_);
     }
             
     if (kind == "invariant")
@@ -273,52 +247,51 @@ void uppaal_tree_parser::handle_locations(const xml_node locs)
 
 void uppaal_tree_parser::handle_transitions(const xml_node trans)
 {
-    string source = trans.child("source").attribute("ref").as_string();
-            string target = trans.child("target").attribute("ref").as_string();
+    const string source = trans.child("source").attribute("ref").as_string();
+    const string target = trans.child("target").attribute("ref").as_string();
 
-            int source_id = xml_id_to_int(source);
-            int target_id = xml_id_to_int(target);
-            
-            list<constraint_t> guards;
-            list<update_t> updates;
-            expression* probability = nullptr;
-            edge_channel* ec = nullptr;
-            
-            for (pugi::xml_node labels: trans.children("label"))
-            {
-                string kind = labels.attribute("kind").as_string();
-                string expr_string = labels.child_value();
+    const int source_id = string_extractor::extract(extract_node_id(source));
+    const int target_id = string_extractor::extract(extract_node_id(target));
+    
+    list<constraint_t> guards;
+    list<update_t> updates;
+    expression* probability = nullptr;
+    edge_channel* ec = nullptr;
+    
+    for (pugi::xml_node labels: trans.children("label"))
+    {
+        string kind = labels.attribute("kind").as_string();
+        string expr_string = labels.child_value();
 
-                
-                if(kind == "guard")
-                {
-                    list<string> expressions = split_expr(expr_string);
-                    fill_expressions(expressions, &guards);
-                }
-                else if (kind == "assignment")
-                {
-                    updates = handle_assignment(expr_string);
-                }
-                else if (kind == "synchronisation")
-                {
-                    ec = handle_sync(expr_string);
-                }
-                else if (kind == "probability")
-                {
-                    string line_wo_ws = replace_all(expr_string, " ", "");
-                    string nums = take_after(line_wo_ws, "="); //TODO Trimmer
-                    probability = variable_expression_evaluator::parse_update_expr(nums,&vars_map_, &global_vars_map_);
-                }
-            }
+        
+        if(kind == "guard")
+        {
+            list<string> expressions = split_expr(expr_string);
+            fill_expressions(expressions, &guards);
+        }
+        else if (kind == "assignment")
+        {
+            updates = handle_assignment(expr_string);
+        }
+        else if (kind == "synchronisation")
+        {
+            ec = handle_sync(expr_string);
+        }
+        else if (kind == "probability")
+        {
+            extract_probability extracted_probability = string_extractor::extract(extract_probability(expr_string));
+            probability = variable_expression_evaluator::evaluate_variable_expression(extracted_probability.value,&vars_map_, &global_vars_map_);
+        }
+    }
 
-            if (probability == nullptr) probability = expression::literal_expression(1.0);
-            
-            node_t* target_node = get_node(target_id, nodes_);
-            edge_t result_edge = ec == nullptr
-                ? edge_t(edge_id_++, probability, target_node, to_array(&guards), to_array(&updates))
-                : edge_t(edge_id_++, probability, target_node, to_array(&guards), to_array(&updates), *ec);
-            
-            node_edge_map.at(source_id).push_back(result_edge);
+    if (probability == nullptr) probability = expression::literal_expression(1.0);
+    
+    node_t* target_node = get_node(target_id, nodes_);
+    edge_t result_edge = ec == nullptr
+        ? edge_t(edge_id_++, probability, target_node, to_array(&guards), to_array(&updates))
+        : edge_t(edge_id_++, probability, target_node, to_array(&guards), to_array(&updates), *ec);
+    
+    node_edge_map.at(source_id).push_back(result_edge);
 }
 
 bool uppaal_tree_parser::is_if_statement(const string& expr)
@@ -328,22 +301,16 @@ bool uppaal_tree_parser::is_if_statement(const string& expr)
 
 expression* uppaal_tree_parser::handle_if_statement(const string& input)
 {
-    const string condition = replace_all(take_while(input, "?"), " ", "");
-    const string if_true = replace_all(take_while(take_after(input, "?"), ":"), " ", "");
-    const string if_false = replace_all(take_after(input, ":"), ";", "");
-
-    string op;
-    string right_side_con;
-    string left_side_con;
-    get_condition_strings(condition, &left_side_con, &op, &right_side_con);
+    const extract_if_statement extracted_if_statement = string_extractor::extract(extract_if_statement(input));
+    const extract_condition extracted_condition = string_extractor::extract(extract_condition(extracted_if_statement.condition));
 
     //Build the condition
-    expression* right_side_con_expr = variable_expression_evaluator::parse_update_expr(right_side_con,&this->vars_map_, &this->global_vars_map_);
-    expression* left_side_con_expr = variable_expression_evaluator::parse_update_expr(left_side_con,&this->vars_map_, &this->global_vars_map_);
-    expression* condition_e = get_expression_con(condition, left_side_con_expr, right_side_con_expr);
+    expression* right_side_con_expr = variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right,&this->vars_map_, &this->global_vars_map_);
+    expression* left_side_con_expr = variable_expression_evaluator::evaluate_variable_expression(extracted_condition.left,&this->vars_map_, &this->global_vars_map_);
+    expression* condition_e = get_expression_con(extracted_if_statement.condition, left_side_con_expr, right_side_con_expr);
     
-    expression* if_true_e = variable_expression_evaluator::parse_update_expr(if_true,&this->vars_map_, &this->global_vars_map_);
-    expression* if_false_e = variable_expression_evaluator::parse_update_expr(if_false,&this->vars_map_, &this->global_vars_map_);
+    expression* if_true_e = variable_expression_evaluator::evaluate_variable_expression(extracted_if_statement.if_true,&this->vars_map_, &this->global_vars_map_);
+    expression* if_false_e = variable_expression_evaluator::evaluate_variable_expression(extracted_if_statement.if_false,&this->vars_map_, &this->global_vars_map_);
             
     return expression::conditional_expression(condition_e, if_true_e, if_false_e);
 }
@@ -356,32 +323,31 @@ list<update_t> uppaal_tree_parser::handle_assignment(const string& input)
     
     for(const auto& expr: expressions)
     {
-        const string line_wo_ws = replace_all(expr, " ", "");
-        if (expr.empty())
+
+        extract_assignment extracted_assignment = string_extractor::extract(extract_assignment(expr));
+
+        if (extracted_assignment.input.empty())
             continue;
 
-        const string left_side = take_while(line_wo_ws, "=");
-        const string right_side_of_equal = take_after(line_wo_ws, "=");
-
-        if (is_if_statement(right_side_of_equal))
+        if (is_if_statement(extracted_assignment.right))
         {
             //Is if statement
-            right_side = handle_if_statement(right_side_of_equal);
+            right_side = handle_if_statement(extracted_assignment.right);
         }
         else
         {
             //Is normal assignment
-            right_side = variable_expression_evaluator::parse_update_expr(right_side_of_equal,&this->vars_map_, &this->global_vars_map_);
+            right_side = variable_expression_evaluator::evaluate_variable_expression(extracted_assignment.right,&this->vars_map_, &this->global_vars_map_);
         }
         
         bool is_clock = false;
 
-        if(this-> timers_map_.count(left_side) || this->global_timers_map_.count(left_side))
+        if(this-> timers_map_.count(extracted_assignment.left) || this->global_timers_map_.count(extracted_assignment.left))
         {
             is_clock = true;
         }
         
-        result.emplace_back(update_t(this->update_id_++, get_timer_id(left_side), is_clock, right_side));
+        result.emplace_back(update_t(this->update_id_++, get_timer_id(extracted_assignment.left), is_clock, right_side));
     }
     
     return result;
@@ -390,24 +356,23 @@ list<update_t> uppaal_tree_parser::handle_assignment(const string& input)
 edge_channel* uppaal_tree_parser::handle_sync(const string& input) const
 {
     const auto ec = new edge_channel();
-    
-    ec->is_listener = input.find("?")!=std::string::npos;
-    
-    string sync_keyword = replace_all(input, " ", "");
-    sync_keyword = replace_all(sync_keyword, ec->is_listener ? "?" : "!", "");
-    if (vars_map_.count(sync_keyword))
+
+    const extract_sync extracted_sync = string_extractor::extract(extract_sync(input));
+    ec->is_listener = extracted_sync.is_listener;
+
+    if (vars_map_.count(extracted_sync.keyword))
     {
-        ec->channel_id = vars_map_.at(sync_keyword);
+        ec->channel_id = vars_map_.at(extracted_sync.keyword);
         return ec;
     }
     
-    if (global_vars_map_.count(sync_keyword))
+    if (global_vars_map_.count(extracted_sync.keyword))
     {
-        ec->channel_id = global_vars_map_.at(sync_keyword);
+        ec->channel_id = global_vars_map_.at(extracted_sync.keyword);
         return ec;
     }
 
-    THROW_LINE(sync_keyword + " NOT IN LOCAL, NOR GLOBAL MAP, comeon dude..");
+    THROW_LINE(extracted_sync.keyword + " NOT IN LOCAL, NOR GLOBAL MAP, comeon dude..");
 }
 
 array_t<node_t*> uppaal_tree_parser::after_processing()
@@ -448,7 +413,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(const char* file_path)
     for (pugi::xml_node templates: doc.child("nta").children("template"))
     {
         const string init_node = templates.child("init").attribute("ref").as_string();
-        init_node_id_ = xml_id_to_int(init_node);
+        init_node_id_ = string_extractor::extract(extract_node_id(init_node));
         init_local_clocks(templates);
         
         for (const pugi::xml_node locs: templates.children("location"))
@@ -459,7 +424,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(const char* file_path)
         for (pugi::xml_node locs: templates.children("branchpoint"))
         {
             const string string_id = locs.attribute("id").as_string();
-            const int node_id = xml_id_to_int(string_id);
+            const int node_id = string_extractor::extract(extract_node_id(string_id));
             insert_to_map(&node_edge_map, node_id, list<edge_t>());
             nodes_->push_back(new node_t(node_id,array_t<constraint_t>(0), true));
         }
@@ -492,7 +457,6 @@ __host__ stochastic_model_t uppaal_tree_parser::parse(string file_path)
     }
     catch (const std::runtime_error &ex)
     {
-        cout << "Parse error: " << ex.what() << "\n";
         throw runtime_error("parse error");
     }
 }
