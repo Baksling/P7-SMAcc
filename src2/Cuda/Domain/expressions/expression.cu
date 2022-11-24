@@ -36,13 +36,13 @@ double expression::evaluate_current(simulator_state* state) const
     case literal_e:
         return this->value;
     case clock_variable_e:
-        return state->get_timers().at(static_cast<int>(this->variable_id))->get_temp_time();
+        return state->get_timer(static_cast<int>(this->variable_id))->get_temp_time();
     case system_variable_e:
-        return state->get_variables().at(static_cast<int>(this->variable_id))->get_temp_time();
+        return state->get_variable(static_cast<int>(this->variable_id))->get_temp_time();
     case random_e:
         if(state->value_stack.count() < 1) printf("stack not big enough to evaluate random expression\n");
         v1 = state->value_stack.pop();
-        return (1-curand_uniform_double(state->random)) * v1; //v1 repressents max value 
+        return (1.0 - curand_uniform_double(state->random)) * v1; //v1 repressents max value 
     case plus_e:
         if(state->value_stack.count() < 2) printf("stack not big enough to evaluate plus expression\n");
         v2 = state->value_stack.pop();
@@ -120,7 +120,7 @@ double expression::evaluate_current(simulator_state* state) const
     case not_e:
         if(state->value_stack.count() < 1) printf("stack not big enough to evaluate not expression\n");
         v1 = state->value_stack.pop();
-        return v1 == 0 ? 1.0 : 0.0;
+        return v1 == 0.0 ? 1.0 : 0.0;
     }
 
     printf("evaluation of expression not matching any known type\n");
@@ -178,70 +178,29 @@ double expression::evaluate(simulator_state* state)
 
 std::string expression::type_to_string() const
 {
-    std::string result;
     switch (this->type_)
     {
-    case literal_e:
-        result = "literal";
-        break;
-    case clock_variable_e:
-        result = "clock variable id: " + std::to_string(this->variable_id);
-        break;
-    case system_variable_e:
-        result = "system variable id: " + std::to_string(this->variable_id);
-        break;
-    case random_e:
-        result = "random(" + this->left_->type_to_string() + ")";
-        break;
-    case plus_e:
-        result = "+";
-        break;
-    case minus_e:
-        result = "-";
-        break;
-    case multiply_e:
-        result = "*";
-        break;
-    case division_e:
-        result = "/";
-        break;
-    case power_e:
-        result = "^";
-        break;
-    case negation_e:
-        result = "~";
-        break;
-    case sqrt_e:
-        result = "sqrt";
-        break;
-    case less_equal_e:
-        result = "<=";
-        break;
-    case greater_equal_e:
-        result = ">=";
-        break;
-    case less_e:
-        result = "<";
-        break;
-    case greater_e:
-        result = ">";
-        break;
-    case equal_e:
-        result = "==";
-        break;
-    case not_equal_e:
-        result = "!=";
-        break;
-    case not_e:
-        result = "!";
-        break;
-    case conditional_e:
-        result = "if";
-        break;
-    default:
-        result = "Not implemented yet";
+    case literal_e: return "literal"; 
+    case clock_variable_e: return "clock variable id: " + std::to_string(this->variable_id); 
+    case system_variable_e: return "system variable id: " + std::to_string(this->variable_id); 
+    case random_e: return "random(" + this->left_->type_to_string() + ")"; 
+    case plus_e: return "+"; 
+    case minus_e: return "-"; 
+    case multiply_e: return "*"; 
+    case division_e: return "/"; 
+    case power_e: return "^"; 
+    case negation_e: return "~"; 
+    case sqrt_e: return "sqrt"; 
+    case less_equal_e: return "<="; 
+    case greater_equal_e: return ">="; 
+    case less_e: return "<"; 
+    case greater_e: return ">"; 
+    case equal_e: return "=="; 
+    case not_equal_e: return "!="; 
+    case not_e: return "!"; 
+    case conditional_e: return "if"; 
+    default: return "Not implemented yet";
     }
-    return result;
 }
 
 void expression::pretty_print(std::ostream& os) const

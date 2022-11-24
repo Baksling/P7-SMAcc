@@ -21,12 +21,12 @@ CPU GPU void update_t::apply_update(simulator_state* state) const
     const double value = this->expression_->evaluate(state);
     if(this->is_clock_update_)
     {
-        state->get_timers().at(this->variable_id_)->set_time(value);
+        state->get_timer(this->variable_id_)->set_time(value);
     }
     else
     {
         //value is rounded correctly by adding 0.5. casting always rounds down.
-        state->get_variables().at(this->variable_id_)->set_time(value);  // NOLINT(bugprone-incorrect-roundings)
+        state->get_variable(this->variable_id_)->set_time(value);  // NOLINT(bugprone-incorrect-roundings)
     }
 }
 
@@ -35,13 +35,11 @@ CPU GPU void update_t::apply_temp_update(simulator_state* state) const
     const double value = this->expression_->evaluate(state);
     if(this->is_clock_update_)
     {
-        state->get_timers().at(this->variable_id_)->set_temp_time(value);
+        state->get_timer(this->variable_id_)->set_temp_time(value);
     }
     else
     {
-        //value is rounded correctly by adding 0.5. casting always rounds down.
-        state->get_variables().at(this->variable_id_)
-            ->set_temp_time(value);  // NOLINT(bugprone-incorrect-roundings)
+        state->get_variable(this->variable_id_)->set_temp_time(value);
     }
 }
 
@@ -49,11 +47,11 @@ void update_t::reset_temp_update(const simulator_state* state) const
 {
     if(this->is_clock_update_)
     {
-        state->get_timers().at(this->variable_id_)->reset_temp_time();
+        state->get_timer(this->variable_id_)->reset_temp_time();
     }
     else
     {
-        state->get_variables().at(this->variable_id_)->reset_temp_time();  // NOLINT(bugprone-incorrect-roundings)
+        state->get_variable(this->variable_id_)->reset_temp_time();
     }
 }
 

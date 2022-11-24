@@ -5,18 +5,18 @@
 #include "../common/lend_array.h"
 
 
-CPU GPU bool simulator_tools::bit_is_set(const unsigned long long* n, const unsigned int i)
+CPU GPU inline bool bit_is_set(const unsigned long long n, const unsigned int i)
 {
-    return (*n) & (1UL << i);
+    return (n) & (1UL << i);
 }
 
 
-CPU GPU void simulator_tools::set_bit(unsigned long long* n, const unsigned int i)
+CPU GPU inline void set_bit(unsigned long long* n, const unsigned int i)
 {
     (*n) |=  (1UL << (i));
 }
 
-CPU GPU void simulator_tools::unset_bit(unsigned long long* n, const unsigned int i)
+CPU GPU inline void unset_bit(unsigned long long* n, const unsigned int i)
 {
     (*n) &= ~(1UL << (i));
 }
@@ -24,39 +24,32 @@ CPU GPU void simulator_tools::unset_bit(unsigned long long* n, const unsigned in
 
 CPU GPU edge_t* find_valid_edge_heap(
     simulator_state* state,
-    const lend_array<edge_t*>* edges,
+    const lend_array<edge_t>* edges,
     curandState* r_state)
 {
     // return nullptr;
-    edge_t** valid_edges = static_cast<edge_t**>(malloc(sizeof(edge_t*) * edges->size()));  // NOLINT(bugprone-sizeof-expression)
-    if(valid_edges == nullptr) printf("COULD NOT ALLOCATE HEAP MEMORY\n");
-    int valid_count = 0;
-    
-    for (int i = 0; i < edges->size(); ++i)
-    {
-        valid_edges[i] = nullptr; //clean malloc
-        edge_t* edge = edges->get(i);
-        if(edge->evaluate_constraints(state))
-            valid_edges[valid_count++] = edge;
-    }
-    
-    if(valid_count == 0)
-    {
-        free(valid_edges);
-        return nullptr;
-    }
-    if(valid_count == 1)
-    {
-        edge_t* result = valid_edges[0];
-        free(valid_edges);
-        return result;
-    }
-
-    //summed weight
+    edge_t** valid_edges_arr = static_cast<edge_t**>(malloc(sizeof(void*) * edges->size()));  // NOLINT(bugprone-sizeof-expression)
+    if(valid_edges_arr == nullptr) printf("COULD NOT ALLOCATE HEAP MEMORY\n");
+    edge_t* valid_edge = nullptr;
     double weight_sum = 0.0;
-    for(int i = 0; i < valid_count; i++)
+    unsigned valid_count = 0;
+    
+    for (unsigned i = 0; i < edges->size(); ++i)
     {
-        weight_sum += valid_edges[i]->get_weight(state);
+        valid_edges_arr[i] = nullptr; //clean malloc
+        edge_t* edge = edges->at(i);
+        if(valid_edge->evaluate_constraints(state))
+        {
+            valid_edge = edge;
+            valid_edges_arr[valid_count++] = edge;
+            weight_sum += edge->get_weight(state);
+        }
+    }
+    
+    if(valid_count == 0 || valid_count == 1)
+    {
+        free(valid_edges_arr);
+        return valid_edge; //is nullptr if == 0 and valid if == 1
     }
 
     //curand_uniform return ]0.0f, 1.0f], but we require [0.0f, 1.0f[
@@ -65,101 +58,45 @@ CPU GPU edge_t* find_valid_edge_heap(
     double r_acc = 0.0; 
 
     //pick the weighted random value.
-    for (int i = 0; i < valid_count; ++i)
+    for (unsigned i = 0; i < valid_count; ++i)
     {
-        edge_t* temp = valid_edges[i];
-        r_acc += temp->get_weight(state);
-        if(r_val < r_acc)
-        {
-            free(valid_edges);
-            return temp;
-        }
-    }
-
-    //This should be handled in for loop.
-    //This is for safety :)
-    edge_t* edge = valid_edges[valid_count - 1];
-    free(valid_edges);
-    return edge;
-}
-
-CPU GPU edge_t* find_valid_edge_fast(
-    simulator_state* state,
-    const lend_array<edge_t*>* edges,
-    curandState* r_state)
-{
-    unsigned long long valid_edges_bitarray = 0UL;
-    unsigned int valid_count = 0;
-    edge_t* valid_edge = nullptr;
-    
-    for (int i = 0; i < edges->size(); ++i)
-    {
-        edge_t* edge = edges->get(i);
-        if(edge->evaluate_constraints(state))
-        {
-            simulator_tools::set_bit(&valid_edges_bitarray, i);
-            valid_edge = edge;
-            valid_count++;
-        }
-    }
-
-    if(valid_count == 0) return nullptr;
-    if(valid_count == 1 && valid_edge != nullptr) return valid_edge;
-    
-    //summed weight
-    double weight_sum = 0.0;
-    for(int i = 0; i  < edges->size(); i++)
-    {
-        if(simulator_tools::bit_is_set(&valid_edges_bitarray, i))
-            weight_sum += edges->get(i)->get_weight(state);
-    }
-
-    //curand_uniform return ]0.0f, 1.0f], but we require [0.0f, 1.0f[
-    //conversion from float to int is floored, such that a array of 10 (index 0..9) will return valid index.
-    const double r_val = (1.0 - curand_uniform_double(r_state)) * weight_sum;
-    double r_acc = 0.0; 
-
-    //pick the weighted random value.
-    valid_edge = nullptr; //reset valid edge !IMPORTANT
-    for (int i = 0; i < edges->size(); ++i)
-    {
-        if(!simulator_tools::bit_is_set(&valid_edges_bitarray, i)) continue;
-
-        valid_edge = edges->get(i);
+        valid_edge = valid_edges_arr[i];
         r_acc += valid_edge->get_weight(state);
-        if(r_val < r_acc)
-        {
-            return valid_edge;
-        }
+        if(r_val < r_acc) break;
     }
+
+    free(valid_edges_arr);
     return valid_edge;
+    
 }
-
-
 
 CPU GPU edge_t* simulator_tools::choose_next_edge_bit(
     simulator_state* state,
     const lend_array<edge_t>* edges,
     curandState* r_state)
 {
-    if(static_cast<unsigned long long>(edges->size()) > sizeof(unsigned long long)) printf("Too many edge options.");
+    if(static_cast<size_t>(edges->size()) > sizeof(size_t))
+    {
+        printf("Too many edge options.");
+        return find_valid_edge_heap(state, edges, r_state);
+    }
     
     unsigned long long valid_edges_bitarray = 0UL;
     unsigned int valid_count = 0;
     edge_t* valid_edge = nullptr;
     double weight_sum = 0.0;
     
-    for (int i = 0; i < edges->size(); ++i)
+    for (unsigned i = 0; i < edges->size(); ++i)
     {
         edge_t* edge = edges->at(i);
         if(edge->is_listener()) continue;
         if(edge->evaluate_constraints(state))
         {
-            simulator_tools::set_bit(&valid_edges_bitarray, i);
+            set_bit(&valid_edges_bitarray, i);
             valid_edge = edge;
             valid_count++;
             const double weight = edge->get_weight(state);
-            weight_sum += weight > 0 ? weight : 0.0; 
+            weight_sum += weight; 
         }
     }
 
@@ -173,9 +110,9 @@ CPU GPU edge_t* simulator_tools::choose_next_edge_bit(
 
     //pick the weighted random value.
     valid_edge = nullptr; //reset valid edge !IMPORTANT
-    for (int i = 0; i < edges->size(); ++i)
+    for (unsigned i = 0; i < edges->size(); ++i)
     {
-        if(!simulator_tools::bit_is_set(&valid_edges_bitarray, i)) continue;
+        if(!bit_is_set(valid_edges_bitarray, i)) continue;
         const double weight = edges->at(i)->get_weight(state);
         if(weight <= 0) continue;
         
@@ -253,20 +190,20 @@ CPU GPU edge_t* simulator_tools::choose_next_edge_bit(
 // }
 
 
-CPU GPU edge_t* simulator_tools::choose_next_edge(simulator_state* state, const lend_array<edge_t*>* edges, curandState* r_state)
+CPU GPU edge_t* simulator_tools::choose_next_edge(simulator_state* state, const lend_array<edge_t>* edges, curandState* r_state)
 {
     //if no possible edges, return null pointer
     if(edges->size() == 0) return nullptr;
     if(edges->size() == 1)
     {
-        edge_t* edge = edges->get(0);
+        edge_t* edge = edges->at(0);
         return edge->evaluate_constraints(state)
                 ? edge
                 : nullptr;
     }
 
-    if(static_cast<unsigned long long>(edges->size()) < sizeof(unsigned long long)*8)
-        return find_valid_edge_fast(state, edges, r_state);
+    if(static_cast<size_t>(edges->size()) < sizeof(size_t))
+        return choose_next_edge_bit(state, edges, r_state);
     else
         return find_valid_edge_heap(state, edges, r_state);
 }

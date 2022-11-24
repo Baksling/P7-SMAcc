@@ -46,8 +46,8 @@ public:
     cuda_stack<expression*> expression_stack{0};
     curandState* random;
 
-    CPU GPU lend_array<clock_variable> get_timers() const;
-    CPU GPU lend_array<clock_variable> get_variables() const;
+    CPU GPU clock_variable* get_timer(int id) const;
+    CPU GPU clock_variable* get_variable(int id) const;
 
     CPU GPU void broadcast_channel(const model_state* current_state, const unsigned channel_id, const result_manager* results);
     CPU GPU void reset(unsigned sim_id, const stochastic_model_t* model);

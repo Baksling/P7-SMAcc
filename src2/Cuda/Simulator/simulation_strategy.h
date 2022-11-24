@@ -30,6 +30,8 @@ struct model_options
     
     CPU GPU unsigned int get_expression_size() const
     {
+        //The algorithm used places itself on the stack twice in order to know which path to take.
+        //Therefore, all the elements in a tree path has to be stored twice + 1 in order to fit. 
         return this->max_expression_depth*2+1;
     }
     

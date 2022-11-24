@@ -45,7 +45,7 @@ private:
     static std::string print_node(int node_id, unsigned int reached_count, float reach_percentage, double avg_steps);
 
     void write_to_file(const sim_pointers* results,
-                       unsigned long long total_simulations, std::chrono::steady_clock::duration sim_duration);
+                       unsigned long long total_simulations, std::chrono::steady_clock::duration sim_duration) const;
 
     void write_summary_to_stream(std::ostream& stream, unsigned long long total_simulations, std::chrono::steady_clock::duration sim_duration) const;
 

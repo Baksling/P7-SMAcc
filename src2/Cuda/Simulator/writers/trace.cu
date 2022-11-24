@@ -14,7 +14,10 @@ trace_pointers::trace_pointers(const bool owns_pointers,
 
 lend_array<trace_vector> trace_pointers::get_trace(const unsigned sim_id) const
 {
-    return lend_array<trace_vector>(&this->data[sim_id*size], this->stack_counters[sim_id]);
+    return lend_array<trace_vector>(
+        &this->data[static_cast<int>(sim_id*size)],
+        this->stack_counters[static_cast<int>(sim_id)]
+        );
 }
 
 void trace_pointers::free_internals() const

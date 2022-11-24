@@ -21,7 +21,7 @@ GPU CPU double get_constraint_value(const constraint_value* con, simulator_state
 {
     if(con->is_clock)
     {
-        return state->get_timers().at(con->clock_id)->get_temp_time();
+        return state->get_timer(con->clock_id)->get_temp_time();
     }
     return con->expr->evaluate(state);
 }
@@ -66,7 +66,7 @@ CPU GPU bool constraint_t::check_max_time_progression(simulator_state* state, do
     if(this->left_.is_clock &&
         (this->type_ == logical_operator_t::less_t || this->type_ == logical_operator_t::less_equal_t))
     {
-        const double time = state->get_timers().at(this->left_.clock_id)->get_time();
+        const double time = state->get_timer(this->left_.clock_id)->get_time();
         const double value = this->right_.expr->evaluate(state);
 
         const double diff = value - time;
@@ -77,7 +77,7 @@ CPU GPU bool constraint_t::check_max_time_progression(simulator_state* state, do
     if(this->right_.is_clock &&
         (this->type_ == logical_operator_t::greater_t || this->type_ == logical_operator_t::greater_equal_t))
     {
-        const double time = state->get_timers().at(this->right_.clock_id)->get_time();
+        const double time = state->get_timer(this->right_.clock_id)->get_time();
         const double value = this->left_.expr->evaluate(state);
 
         const double diff = value - time;

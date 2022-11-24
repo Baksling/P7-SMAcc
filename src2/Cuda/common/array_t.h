@@ -27,15 +27,13 @@ public:
 
     GPU CPU T* at(int i) const
     {
-        if(i < 0 || i >= this->size_)
-            return nullptr;
+        // if(i < 0 || i >= this->size_) return nullptr;
         return &this->store_[i];
     }
 
     GPU CPU T get(int i) const
     {
-        if(i < 0 || i >= this->size_)
-            return nullptr;
+        if(i < 0 || i >= this->size_) return NULL;
         return this->store_[i];
     }
 
@@ -50,7 +48,7 @@ public:
     }
 
     // ReSharper disable once CppMemberFunctionMayBeConst
-    GPU CPU void free_array()
+    GPU CPU void free_internal()
     {
         free(this->store_);
     }

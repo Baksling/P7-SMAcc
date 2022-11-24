@@ -1,22 +1,28 @@
 ﻿#include "stochastic_engine.h"
 #include "stochastic_simulator.h"
 #include "thread_pool.h"
-#include "device_launch_parameters.h"
 #include <chrono>
 #include "simulator_tools.h"
 #include "../Domain/edge_t.h"
 #include "../Domain/stochastic_model_t.h"
 #include "writers/result_manager.h"
+#include <cuda_runtime.h>
+
+#include "cuda_runtime.h"
+#include "device_launch_parameters.h"
+#include <cuda.h>
+#include <cuda_runtime_api.h>
 
 
 using namespace std::chrono;
 
 
-CPU GPU void run_simulator(simulator_state* state, result_manager* trace_tracker, const model_options* options)
+CPU GPU void run_simulator(simulator_state* state, const result_manager* trace_tracker, const model_options* options)
 {
     while (true)
     {
         model_state* current_model = state->progress_sim(options);
+        // cuda_syncthreads_();
 
         if(current_model == nullptr || current_model->reached_goal)
         {
@@ -26,6 +32,7 @@ CPU GPU void run_simulator(simulator_state* state, result_manager* trace_tracker
         do //repeat as long as current node is branch node
         {
             lend_array<edge_t> outgoing_edges =  current_model->current_node->get_edges();
+            // cuda_syncthreads_();
             if(outgoing_edges.size() == 0) break;
 
             const edge_t* edge = simulator_tools::choose_next_edge_bit(state, &outgoing_edges, state->random);
@@ -36,9 +43,11 @@ CPU GPU void run_simulator(simulator_state* state, result_manager* trace_tracker
             
             current_model->current_node = edge->get_dest();
             edge->execute_updates(state);
+            // cuda_syncthreads_();
             state->broadcast_channel(current_model, edge->get_channel(), trace_tracker);
         }
         while (current_model->current_node->is_branch_point());
+        // cuda_syncthreads_();
 
         trace_tracker->write_step_trace(current_model, state);
         
@@ -53,7 +62,7 @@ CPU GPU void simulate_stochastic_model(
     const stochastic_model_t* model,
     const model_options* options,
     curandState* random_states,
-    result_manager* output,
+    const result_manager* output,
     const unsigned long idx,
     void* memory_heap
 )
@@ -71,7 +80,7 @@ CPU GPU void simulate_stochastic_model(
         run_simulator(&state, output, options);
 
         output->write_result(&state);
-        continue;
+        // cuda_syncthreads_();
     }
 }
 
@@ -79,25 +88,30 @@ __global__ void gpu_simulate(
     const stochastic_model_t* model,
     const model_options* options,
     curandState* r_state,
-    result_manager* output,
+    const result_manager* output,
     void* total_memory_heap
     )
 {
     const unsigned long idx = threadIdx.x + blockDim.x * blockIdx.x;
     const unsigned long long int thread_memory_size = options->get_cache_size();
     const unsigned long long int offset = (idx * thread_memory_size) / sizeof(char);
-    simulate_stochastic_model(model, options, r_state, output, idx, static_cast<void*>(&static_cast<char*>(total_memory_heap)[offset]));
+    simulate_stochastic_model(model, options, r_state, output, idx, &static_cast<char*>(total_memory_heap)[offset]);
 }
 
 bool stochastic_engine::run_gpu(
     const stochastic_model_t* model,
     const model_options* options,
-    result_manager* output,
+    const result_manager* output,
     const simulation_strategy* strategy,
     void* total_memory_heap)
 {
     curandState* random_states = nullptr;
     cudaMalloc(&random_states, sizeof(curandState)*strategy->block_n*strategy->threads_n);
+    // if(cudaSuccess != cudaFuncSetCacheConfig(reinterpret_cast<const void*>(gpu_simulate), cudaFuncCachePreferL1))
+    // {
+    //     printf("REEEEEEEEEEEE");
+    //     throw std::runtime_error("REEE");
+    // }
     
     //simulate on device
     gpu_simulate<<<strategy->block_n, strategy->threads_n>>>(model, options, random_states, output, total_memory_heap);
@@ -132,7 +146,7 @@ bool stochastic_engine::run_cpu(
 
         pool.queue_job([model, options, random_states, output, i, total_memory_heap, offset]()
         {
-            simulate_stochastic_model(model, options, random_states, output, i, static_cast<void*>(&static_cast<char*>(total_memory_heap)[offset]));
+            simulate_stochastic_model(model, options, random_states, output, i, &static_cast<char*>(total_memory_heap)[offset]);
         });
     }
     //Start processing jobs in pool.

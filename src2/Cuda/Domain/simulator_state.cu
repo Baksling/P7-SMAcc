@@ -185,14 +185,14 @@ CPU GPU simulator_state simulator_state::init(
     return state;
 }
 
-CPU GPU lend_array<clock_variable> simulator_state::get_timers() const
+CPU GPU clock_variable* simulator_state::get_timer(const int id) const
 {
-    return lend_array<clock_variable>(&this->timers_);
+    return this->timers_.at(id);
 }
 
-CPU GPU lend_array<clock_variable> simulator_state::get_variables() const
+CPU GPU clock_variable* simulator_state::get_variable(const int id) const
 {
-    return lend_array<clock_variable>(&this->variables_);
+    return this->variables_.at(id);
 }
 
 void simulator_state::broadcast_channel(const model_state* current_state, const unsigned channel_id, const result_manager* results)

@@ -157,8 +157,8 @@ CPU GPU void result_manager::write_result(const simulator_state* state) const
 {
     simulation_result* output = this->get_sim_results(state->sim_id_);
         
-    output->total_time_progress = 0; //state->global_time_;
-    output->steps = 1; // state->steps_;
+    output->total_time_progress = state->global_time_;
+    output->steps = state->steps_;
 
     const lend_array<int> node_results = this->get_nodes(state->sim_id_);
     const lend_array<double> var_results = this->get_variables(state->sim_id_);

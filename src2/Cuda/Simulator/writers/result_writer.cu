@@ -23,7 +23,7 @@ std::string result_writer::print_node(const int node_id, const unsigned reached_
 void result_writer::write_to_file(
     const sim_pointers* results,
     const unsigned long long total_simulations,
-    steady_clock::duration sim_duration)
+    steady_clock::duration sim_duration) const
 {
     std::ofstream file_node, file_variable;
     

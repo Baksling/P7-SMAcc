@@ -11,11 +11,6 @@
 class simulator_tools
 {
 public:
-    CPU GPU static bool bit_is_set(const unsigned long long* n, unsigned int i);
-    CPU GPU static void set_bit(unsigned long long* n, unsigned int i);
-    CPU GPU static void unset_bit(unsigned long long* n, unsigned int i);
-    
-
     CPU GPU static edge_t* choose_next_edge_bit(
         simulator_state* state,
         const lend_array<edge_t>* edges,
@@ -24,7 +19,7 @@ public:
     
     CPU GPU static  edge_t* choose_next_edge(
         simulator_state* state,
-        const lend_array<edge_t*>* edges,
+        const lend_array<edge_t>* edges,
         curandState* r_state);
 };
 
