@@ -140,7 +140,7 @@ def run_simulations(args):
             cpu_core = args.cpu_cores
             amount = ceil((float(run_idx) / float(cpu_core)))
 
-            file_path = f'{cpu_core*amount}_CPU_{cpu_core}'
+            file_path = f'{cpu_core*amount}_CPU_{run_idx}'
 
             subprocess.run([
                 args.simulation_file,
