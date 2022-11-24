@@ -138,7 +138,7 @@ def run_simulations(args):
         
         if args.device == 1:
             cpu_core = args.cpu_cores
-            amount = ceil((args.max_amount / cpu_core))
+            amount = ceil((float(run_idx) / float(cpu_core)))
 
             file_path = f'{cpu_core*amount}_CPU_{cpu_core}'
 
