@@ -2,14 +2,6 @@
 
 #include "helper_methods.h"
 
-// Parser constructor.
-variable_expression_evaluator::variable_expression_evaluator(unordered_map<string,int>* local_vars, unordered_map<string,int>* global_vars)
-{
-    exp_ptr_ = nullptr;
-    local_vars_ = local_vars;
-    global_vars_ = global_vars;
-}
-
 // Parser entry point.
 expression* variable_expression_evaluator::eval_exp(char *exp)
 {
@@ -174,8 +166,16 @@ expression* variable_expression_evaluator::eval_exp6()
                     const string var = token_;
                     expression* result;
 
-                    if (local_vars_->count(var))
+                    if (local_clocks_->count(var))
+                    {
+                        result = expression::clock_expression(local_clocks_->at(var));
+                    }
+                    else if (local_vars_->count(var))
                         result = expression::variable_expression(local_vars_->at(var));
+                    else if (global_clocks_->count(var))
+                    {
+                        result = expression::clock_expression(global_clocks_->at(var));
+                    }
                     else if (global_vars_->count(var))
                         result = expression::variable_expression(global_vars_->at(var));
                     else
@@ -232,9 +232,11 @@ void variable_expression_evaluator::get_token()
     *temp = '\0';
 }
 
-expression* variable_expression_evaluator::evaluate_variable_expression(const string& input, unordered_map<string, int>* local_vars, unordered_map<string, int>* global_vars)
+
+expression* variable_expression_evaluator::evaluate_variable_expression(const string& input, unordered_map<string, int>* local_vars, unordered_map<string, int>* global_vars,
+                                                                        unordered_map<string, int>* local_clocks, unordered_map<string, int>* global_clocks)
 {
-    variable_expression_evaluator ob(local_vars, global_vars);
+    variable_expression_evaluator ob(local_vars, global_vars, local_clocks,global_clocks);
     expression* ans = ob.eval_exp(const_cast<char*>(input.substr(0, input.length()).c_str()));
     return ans;
 }

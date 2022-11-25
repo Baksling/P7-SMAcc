@@ -27,6 +27,8 @@ class variable_expression_evaluator {
     char tok_type_; // holds token's type
     unordered_map<string, int>* local_vars_;
     unordered_map<string, int>* global_vars_;
+    unordered_map<string, int>* local_clocks_;
+    unordered_map<string, int>* global_clocks_;
     expression* eval_exp1();
     expression* eval_exp2();
     expression* eval_exp3();
@@ -36,8 +38,17 @@ class variable_expression_evaluator {
     expression* eval_exp(char *exp);
     void get_token();
 public:
-    variable_expression_evaluator(unordered_map<string,int>* local_vars, unordered_map<string,int>* global_vars);
-    static expression* evaluate_variable_expression(const string& input, unordered_map<string, int>* local_vars, unordered_map<string, int>* global_vars);
+    variable_expression_evaluator(unordered_map<string, int>* local_vars,
+    unordered_map<string, int>* global_vars, unordered_map<string, int>* local_clocks,
+    unordered_map<string, int>* global_clocks) : exp_ptr_(nullptr), token_{}, tok_type_(0), local_vars_(local_vars),
+                                                global_vars_(global_vars), local_clocks_(local_clocks),
+                                                global_clocks_(global_clocks), errormsg{}{}
+
+    
+    static auto evaluate_variable_expression(const string& input, unordered_map<string, int>* local_vars,
+                                             unordered_map<string, int>* global_vars,
+                                             unordered_map<string, int>* local_clocks,
+                                             unordered_map<string, int>* global_clocks) -> expression*;
     
     char errormsg[64];
 };
