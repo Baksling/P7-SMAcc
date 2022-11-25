@@ -125,9 +125,13 @@ void uppaal_tree_parser::fill_expressions(const list<string>& expressions, list<
         //Results in dead memory.
         
         if (timers_map_.count(extracted_condition.left) || global_timers_map_.count(extracted_condition.left))
-            t->push_back(*get_constraint(extracted_condition.input, get_timer_id(extracted_condition.input), variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right, &vars_map_, &global_vars_map_)));
+            t->push_back(*get_constraint(extracted_condition.input, get_timer_id(extracted_condition.input), variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right, &vars_map_, &global_vars_map_, &timers_map_, &global_timers_map_)));
         else
-            t->push_back(*get_constraint(extracted_condition.input, variable_expression_evaluator::evaluate_variable_expression(extracted_condition.left, &vars_map_, &global_vars_map_), variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right, &vars_map_, &global_vars_map_)));
+            t->push_back(*get_constraint(extracted_condition.input,
+                variable_expression_evaluator::evaluate_variable_expression(extracted_condition.left, &vars_map_, &global_vars_map_,
+                    &timers_map_, &global_timers_map_),
+                variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right, &vars_map_, &global_vars_map_,
+                    &timers_map_, &global_timers_map_)));
     }
 }
 
@@ -229,7 +233,7 @@ void uppaal_tree_parser::handle_locations(const xml_node locs)
         const string line_wo_ws = remove_whitespace(expr_string);
         const string nums = take_after(line_wo_ws, "=");
                 
-        expo_rate = variable_expression_evaluator::evaluate_variable_expression(nums,&vars_map_, &global_vars_map_);
+        expo_rate = variable_expression_evaluator::evaluate_variable_expression(nums,&vars_map_, &global_vars_map_, &timers_map_, &global_timers_map_);
     }
             
     if (kind == "invariant")
@@ -280,7 +284,7 @@ void uppaal_tree_parser::handle_transitions(const xml_node trans)
         else if (kind == "probability")
         {
             extract_probability extracted_probability = string_extractor::extract(extract_probability(expr_string));
-            probability = variable_expression_evaluator::evaluate_variable_expression(extracted_probability.value,&vars_map_, &global_vars_map_);
+            probability = variable_expression_evaluator::evaluate_variable_expression(extracted_probability.value,&vars_map_, &global_vars_map_, &timers_map_, &global_timers_map_);
         }
     }
 
@@ -305,12 +309,12 @@ expression* uppaal_tree_parser::handle_if_statement(const string& input)
     const extract_condition extracted_condition = string_extractor::extract(extract_condition(extracted_if_statement.condition));
 
     //Build the condition
-    expression* right_side_con_expr = variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right,&this->vars_map_, &this->global_vars_map_);
-    expression* left_side_con_expr = variable_expression_evaluator::evaluate_variable_expression(extracted_condition.left,&this->vars_map_, &this->global_vars_map_);
+    expression* right_side_con_expr = variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right,&this->vars_map_, &this->global_vars_map_, &timers_map_, &global_timers_map_);
+    expression* left_side_con_expr = variable_expression_evaluator::evaluate_variable_expression(extracted_condition.left,&this->vars_map_, &this->global_vars_map_, &timers_map_, &global_timers_map_);
     expression* condition_e = get_expression_con(extracted_if_statement.condition, left_side_con_expr, right_side_con_expr);
     
-    expression* if_true_e = variable_expression_evaluator::evaluate_variable_expression(extracted_if_statement.if_true,&this->vars_map_, &this->global_vars_map_);
-    expression* if_false_e = variable_expression_evaluator::evaluate_variable_expression(extracted_if_statement.if_false,&this->vars_map_, &this->global_vars_map_);
+    expression* if_true_e = variable_expression_evaluator::evaluate_variable_expression(extracted_if_statement.if_true,&this->vars_map_, &this->global_vars_map_, &timers_map_, &global_timers_map_);
+    expression* if_false_e = variable_expression_evaluator::evaluate_variable_expression(extracted_if_statement.if_false,&this->vars_map_, &this->global_vars_map_, &timers_map_, &global_timers_map_);
             
     return expression::conditional_expression(condition_e, if_true_e, if_false_e);
 }
@@ -337,7 +341,8 @@ list<update_t> uppaal_tree_parser::handle_assignment(const string& input)
         else
         {
             //Is normal assignment
-            right_side = variable_expression_evaluator::evaluate_variable_expression(extracted_assignment.right,&this->vars_map_, &this->global_vars_map_);
+            right_side = variable_expression_evaluator::evaluate_variable_expression(extracted_assignment.right,&this->vars_map_, &this->global_vars_map_, &timers_map_, &global_timers_map_);
+            
         }
         
         bool is_clock = false;

@@ -71,7 +71,6 @@ private:
     list<int> start_nodes_{};
     
     int get_timer_id(const string& expr) const;
-    void get_condition_strings(const string& con, string* left, string* op, string* right);
     node_t* get_node(const int target_id, const list<node_t*>* arr) const;
     edge_channel* handle_sync(const string& input) const;
     list<update_t> handle_assignment(const string& input);
