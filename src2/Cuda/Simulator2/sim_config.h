@@ -1,4 +1,8 @@
-﻿#include "macro.cu"
+﻿
+#ifndef SIM_CONFIG_H
+#define SIM_CONFIG_H
+
+#include "macro.h"
 
 struct sim_config
 {
@@ -24,9 +28,6 @@ struct sim_config
     
     //Allocation variables
     unsigned int max_expression_depth{};
-
-    size_t thread_heap_size() const
-    {
-        return 5000;
-    }
 };
+
+#endif

@@ -1,8 +1,23 @@
 ﻿#pragma once
+#include "memory_allocator.h"
+#include "../Domain.h"
 
 class cuda_allocator
 {
+    memory_allocator* allocator_;
 public:
-    cuda_allocator() {  }
+    explicit cuda_allocator(memory_allocator* allocator)
+    {
+        this->allocator_ = allocator;
+    }
+
+    //The one to rule them all!
+    automata* allocate_automata(const automata* source);
     
+    void allocate_node(const node* source, node* dest);
+    void allocate_edge(const edge* source, edge* dest);
+    void allocate_constraint(const constraint* source, constraint* dest);
+    void allocate_update(const update* source, update* dest);
+    void allocate_clock(const clock_var* source, clock_var* dest) const;
+    void allocate_expr(const expr* source, expr* dest);
 };

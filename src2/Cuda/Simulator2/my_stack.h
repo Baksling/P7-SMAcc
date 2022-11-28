@@ -1,4 +1,4 @@
-﻿#include "macro.cu"
+﻿#include "macro.h"
 
 template<typename T>
 class my_stack

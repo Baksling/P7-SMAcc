@@ -1,10 +1,8 @@
 ﻿
-#include "macro.cu"
-// #include "automata.cu"
-
-//automata is included through this
-//Sim_config too
-#include "./results/result_store.cu" 
+#include "macro.h"
+#include "sim_config.h"
+#include "Domain.cu"
+#include "./results/result_store.h" 
 #include "device_launch_parameters.h"
 
 

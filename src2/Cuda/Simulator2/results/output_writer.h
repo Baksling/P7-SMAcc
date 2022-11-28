@@ -1,9 +1,8 @@
 ﻿#pragma once
 #include <array>
-#include "../sim_config.cu"
 #include <string>
 #include <unordered_map>
-#include "result_store.cu"
+#include "result_store.h"
 #include <chrono>
 #include <iostream>
 #include <fstream>
@@ -62,8 +61,6 @@ private:
     arr<variable_summary> variable_summaries_ = arr<variable_summary>::empty();
 
     static float calc_percentage(const unsigned long long counter, const unsigned long long divisor);
-
-    static std::string print_node(int node_id, unsigned int reached_count, float reach_percentage, double avg_steps);
 
     void write_to_file(const result_pointers* results,
         std::chrono::steady_clock::duration sim_duration) const;

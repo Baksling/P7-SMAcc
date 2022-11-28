@@ -386,13 +386,87 @@
       <SDLCheck>true</SDLCheck>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
-    <ClCompile Include="Cuda\Simulator2\Allocation_visitor.cpp" />
+    <ClCompile Include="Cuda\Simulator2\allocations\cuda_allocator.cpp">
+      <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <Optimization>Disabled</Optimization>
+      <SupportJustMyCode>true</SupportJustMyCode>
+      <AssemblerOutput>NoListing</AssemblerOutput>
+      <AssemblerListingLocation>x64\Debug\</AssemblerListingLocation>
+      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
+      <BrowseInformation>false</BrowseInformation>
+      <BrowseInformationFile>x64\Debug\</BrowseInformationFile>
+      <CompileAs>Default</CompileAs>
+      <ConformanceMode>true</ConformanceMode>
+      <DiagnosticsFormat>Column</DiagnosticsFormat>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <ErrorReporting>Prompt</ErrorReporting>
+      <ExpandAttributedSource>false</ExpandAttributedSource>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <EnableASAN>false</EnableASAN>
+      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <GenerateModuleDependencies>false</GenerateModuleDependencies>
+      <GenerateSourceDependencies>false</GenerateSourceDependencies>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>Default</LanguageStandard_C>
+      <MinimalRebuild>false</MinimalRebuild>
+      <ModuleDependenciesFile>x64\Debug\</ModuleDependenciesFile>
+      <ModuleOutputFile>x64\Debug\</ModuleOutputFile>
+      <OmitDefaultLibName>false</OmitDefaultLibName>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <ObjectFileName>x64\Debug\</ObjectFileName>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ProgramDataBaseFileName>x64\Debug\vc142.pdb</ProgramDataBaseFileName>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>x64\Debug\src2.pch</PrecompiledHeaderOutputFile>
+      <PreprocessToFile>false</PreprocessToFile>
+      <PreprocessKeepComments>false</PreprocessKeepComments>
+      <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+      <ShowIncludes>false</ShowIncludes>
+      <SourceDependenciesFile>x64\Debug\</SourceDependenciesFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <SpectreMitigation>false</SpectreMitigation>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <TrackerLogDirectory>x64\Debug\src2.tlog\</TrackerLogDirectory>
+      <TranslateIncludes>false</TranslateIncludes>
+      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <UseFullPaths>true</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <XMLDocumentationFileName>x64\Debug\</XMLDocumentationFileName>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <IntelJCCErratum>false</IntelJCCErratum>
+      <TreatAngleIncludeAsExternal>false</TreatAngleIncludeAsExternal>
+      <ExternalWarningLevel>InheritWarningLevel</ExternalWarningLevel>
+      <TreatExternalTemplatesAsInternal>true</TreatExternalTemplatesAsInternal>
+      <DisableAnalyzeExternal>false</DisableAnalyzeExternal>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_UNICODE;UNICODE;</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.7\include</AdditionalIncludeDirectories>
+      <SDLCheck>true</SDLCheck>
+      <LinkCompiled>true</LinkCompiled>
+    </ClCompile>
+    <ClCompile Include="Cuda\Simulator2\allocations\memory_allocator.cpp" />
     <ClCompile Include="Cuda\Simulator2\automata_engine.cu" />
     <ClCompile Include="Cuda\Simulator2\main.cu" />
-    <ClCompile Include="Cuda\Simulator2\my_stack.cu" />
+    <ClInclude Include="Cuda\Simulator2\my_stack.h" />
     <ClCompile Include="Cuda\Simulator2\Domain.cu" />
     <ClCompile Include="Cuda\Simulator2\results\ouput_write.cu" />
-    <ClCompile Include="Cuda\Simulator2\sim_config.cu" />
+    <ClCompile Include="Cuda\Simulator2\results\result_store.cu" />
+    <ClInclude Include="Cuda\Simulator2\sim_config.h" />
     <ClCompile Include="Cuda\Simulator\stochastic_engine.cu" />
     <ClCompile Include="Cuda\Simulator\stochastic_simulator.cu" />
     <ClCompile Include="Cuda\Simulator\writers\result_manager.cu" />
@@ -1292,12 +1366,12 @@
     <ClCompile Include="Cuda\Domain\clock_variable.h" />
     <ClCompile Include="Cuda\Domain\update_t.h" />
     <ClInclude Include="Cuda\Domain\stochastic_model_t.h" />
-    <ClInclude Include="Cuda\Simulator2\Allocation_visitor.h" />
+    <ClInclude Include="Cuda\Simulator2\allocations\cuda_allocator.h" />
+    <ClInclude Include="Cuda\Simulator2\allocations\memory_allocator.h" />
     <ClInclude Include="Cuda\Simulator2\Domain.h" />
-    <ClInclude Include="Cuda\Simulator2\memory_allocator.h" />
-    <ClCompile Include="Cuda\Simulator2\macro.cu" />
-    <ClCompile Include="Cuda\Simulator2\results\result_store.cu" />
-    <ClInclude Include="Cuda\Simulator2\results\outout_writer.h" />
+    <ClInclude Include="Cuda\Simulator2\macro.h" />
+    <ClInclude Include="Cuda\Simulator2\results\output_writer.h" />
+    <ClInclude Include="Cuda\Simulator2\results\result_store.h" />
     <ClInclude Include="Cuda\Simulator\stochastic_engine.h" />
     <ClInclude Include="Cuda\Simulator\stochastic_simulator.h" />
     <ClInclude Include="Cuda\Simulator\writers\result_manager.h" />

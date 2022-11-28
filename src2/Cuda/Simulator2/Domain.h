@@ -5,8 +5,10 @@ struct state;
 struct edge;
 struct node;
 
-#include "macro.cu"
-#include "my_stack.cu"
+#include "macro.h"
+#include "my_stack.h"
+
+#define HAS_HIT_MAX_STEPS(x) ((x) < 0)
 
 template<typename T>
 struct arr
@@ -180,47 +182,8 @@ struct state
 
     CPU GPU void broadcast_channel(int channel, const node* source);
 
-    CPU GPU static state init(void* cache, curandState* random,  const automata* model, const unsigned expr_depth)
-    {
-        node** nodes = static_cast<node**>(cache);
-        cache = static_cast<void*>(&nodes[model->network.size]);
-        
-        clock_var* vars = static_cast<clock_var*>(cache);
-        cache = static_cast<void*>(&vars[model->variables.size]);
-        
-        expr** exp = static_cast<expr**>(cache);
-        cache = static_cast<void*>(&exp[expr_depth*2+1]);
-        
-        double* val_store = static_cast<double*>(cache);
-        cache = static_cast<void*>(&val_store[expr_depth]);
-        
-        return state{
-            0,
-            0,
-            0.0,
-            arr<node*>{ nodes, model->network.size },
-            arr<clock_var>{ vars, model->variables.size },
-            random,
-            my_stack<expr*>(exp, static_cast<int>(expr_depth*2+1)),
-            my_stack<double>(val_store, static_cast<int>(expr_depth))
-        };
-    }
+    CPU GPU static state init(void* cache, curandState* random,  const automata* model, const unsigned expr_depth);
 
-    CPU GPU void reset(const unsigned sim_id, const automata* model)
-    {
-        this->simulation_id = sim_id;
-        this->steps = 0;
-        this->global_time = 0.0;
-        
-        for (int i = 0; i < model->network.size; ++i)
-        {
-            this->models.store[i] = model->network.store[i];
-        }
-
-        for (int i = 0; i < model->variables.size; ++i)
-        {
-            this->variables.store[i] = model->variables.store[i];
-        }
-    }
+    CPU GPU void reset(const unsigned sim_id, const automata* model);
 };
 #endif

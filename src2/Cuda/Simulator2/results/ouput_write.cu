@@ -1,4 +1,4 @@
-﻿#include "outout_writer.h"
+﻿#include "output_writer.h"
 
 float output_writer::calc_percentage(const unsigned long long counter, const unsigned long long divisor)
 {
@@ -44,7 +44,7 @@ void output_writer::write_summary_to_stream(std::ostream& stream,
 {
     stream << "\naverage maximum value of each variable: \n";
     
-    for (int j = 0; j < this->variable_summaries_.size(); ++j)
+    for (int j = 0; j < this->variable_summaries_.size; ++j)
     {
         const variable_summary result = this->variable_summaries_.store[j];
         stream << "variable " << result.variable_id << " = " << result.avg_max_value << "\n";
@@ -60,7 +60,8 @@ void output_writer::write_summary_to_stream(std::ostream& stream,
             no_hit.cumulative(it.second);
 
         const float percentage = calc_percentage(it.second.reach_count, total_simulations_);
-        stream << print_node(it.first, it.second.reach_count, percentage, it.second.avg_steps);
+        stream << "Node: " << it.first << " reached " << it.second.reach_count << " times. ("
+            << percentage << ")%. avg step count: " << it.second.avg_steps << ".\n";
     }
     
     
@@ -70,7 +71,7 @@ void output_writer::write_summary_to_stream(std::ostream& stream,
          << percentage << ")%. avg step count: " << no_hit.avg_steps << ".\n";
 
     stream << "\nNr of simulations: " << total_simulations_ << "\n\n";
-    stream << "Simulation ran for: " << duration_cast<std::chrono::milliseconds>(sim_duration).count()
+    stream << "Simulation ran for: " << std::chrono::duration_cast<std::chrono::milliseconds>(sim_duration).count()
            << "[ms]" << "\n";
 }
 
@@ -80,7 +81,7 @@ void output_writer::write_lite(std::chrono::steady_clock::duration sim_duration)
     const std::string file_path = file_path_ + "_lite_summary.txt";
     lite.open(file_path);
 
-    lite << duration_cast<std::chrono::milliseconds>(sim_duration).count();
+    lite << std::chrono::duration_cast<std::chrono::milliseconds>(sim_duration).count();
 
     lite.flush();
     lite.close();
@@ -97,7 +98,7 @@ void output_writer::write_hit_file(std::chrono::steady_clock::duration sim_durat
 
         const float percentage = this->calc_percentage(pair.second.reach_count, total_simulations_);
         
-        file << percentage << "\t" << duration_cast<std::chrono::milliseconds>(sim_duration).count();
+        file << percentage << "\t" << std::chrono::duration_cast<std::chrono::milliseconds>(sim_duration).count();
     }  
 
     file.flush();
@@ -155,9 +156,9 @@ void output_writer::write(const result_store* sim_result, std::chrono::steady_cl
                             n, node_summary{ 1, static_cast<double>(x.steps) }));
             }
 
-            for (unsigned j = 0; j < this->variable_summaries_.size; ++j)
+            for (int j = 0; j < this->variable_summaries_.size; ++j)
             {
-                double v = pointers.variables[i*this->variable_summaries_.size + j];
+                const double v = pointers.variables[i*this->variable_summaries_.size + j];
                 this->variable_summaries_.store[i].update_count(v);
             }
         }
