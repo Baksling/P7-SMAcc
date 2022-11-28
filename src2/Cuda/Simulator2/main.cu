@@ -2,6 +2,7 @@
 #include <string>
 #include "macro.cu"
 #include "automata_engine.cu"
+#include "./results/outout_writer.h"
 
 #define CHECK(x)             \
 do{                          \

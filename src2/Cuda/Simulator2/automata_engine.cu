@@ -4,7 +4,7 @@
 
 //automata is included through this
 //Sim_config too
-#include "result_store.h" 
+#include "./results/result_store.cu" 
 #include "device_launch_parameters.h"
 
 

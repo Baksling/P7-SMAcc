@@ -1,7 +1,7 @@
 ﻿#pragma once
-#include "memory_allocator.h"
-#include "sim_config.cu"
-#include "Domain.cu"
+#include "../memory_allocator.h"
+#include "../sim_config.cu"
+#include "../Domain.cu"
 
 #define HAS_HIT_MAX_STEPS(x) ((x) >= 0)
 
@@ -51,13 +51,25 @@ private:
     sim_metadata* metadata_p_ = nullptr;
     double* variable_p_ = nullptr;
     int* node_p_ = nullptr;
+
+    size_t total_data_size() const
+    {
+        return sizeof(sim_metadata) * this->simulations_
+             + sizeof(double)       * this->simulations_ * this->variables_count_
+             + sizeof(int)          * this->simulations_ * this->models_count_;
+    }
 public:
-    explicit result_store(const sim_config& config, memory_allocator* helper)
+    explicit result_store(const unsigned blocks,
+                          const unsigned threads,
+                          const unsigned sim_amount,
+                          const unsigned variables,
+                          const unsigned network_size,
+                          memory_allocator* helper)
     {
         this->is_cuda_ = helper->use_cuda;
-        this->simulations_ = static_cast<int>(config.blocks * config.threads * config.simulation_amount);
-        this->models_count_ = static_cast<int>(config.network_size);
-        this->variables_count_ = static_cast<int>(config.tracked_variable_count);
+        this->simulations_ = static_cast<int>(blocks * threads * sim_amount);
+        this->models_count_ = static_cast<int>(network_size);
+        this->variables_count_ = static_cast<int>(variables);
 
         const size_t total_data = this->total_data_size();
 
@@ -71,13 +83,6 @@ public:
         store = static_cast<void*>(&this->variable_p_[(this->variables_count_ * this->simulations_)]);
         
         this->node_p_ = static_cast<int*>(store);
-    }
-
-    size_t total_data_size() const
-    {
-        return sizeof(sim_metadata) * this->simulations_
-             + sizeof(double)       * this->simulations_ * this->variables_count_
-             + sizeof(int)          * this->simulations_ * this->models_count_;
     }
 
     result_pointers load_results() const

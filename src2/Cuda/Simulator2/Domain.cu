@@ -50,8 +50,8 @@ struct expr
         conditional_ee
     } operand;
 
-    expr* left;
-    expr* right;
+    expr* left = nullptr;
+    expr* right = nullptr;
 
     union
     {
