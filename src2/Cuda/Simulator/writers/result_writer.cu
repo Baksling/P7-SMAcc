@@ -4,7 +4,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "../../UPPAALTreeParser/uppaal_tree_parser.h"
+#include "../../UPPAALTreeParser/uppaal_xml_parser.h"
 
 using namespace std::chrono;
 

@@ -4,7 +4,7 @@
 
 #include "Visitors/domain_analysis_visitor.h"
 #include "Visitors/pretty_visitor.h"
-#include "UPPAALTreeParser/uppaal_tree_parser.h"
+#include "UPPAALTreeParser/uppaal_xml_parser.h"
 #include "Simulator/simulation_strategy.h"
 #include "Simulator/stochastic_simulator.h"
 #include "common/argparser.h"
@@ -76,7 +76,7 @@ int main(int argc, const char* argv[])
     }
     else strategy.trace_settings.mode = trace_interval::disabled;
 
-    uppaal_tree_parser tree_parser = uppaal_tree_parser();
+    uppaal_xml_parser tree_parser = uppaal_xml_parser();
     stochastic_model_t model(array_t<node_t*>(0), array_t<clock_variable>(0), array_t<clock_variable>(0));
     
     if (parser.exists("m"))

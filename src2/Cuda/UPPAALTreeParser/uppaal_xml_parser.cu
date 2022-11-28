@@ -1,4 +1,4 @@
-﻿#include "uppaal_tree_parser.h"
+﻿#include "uppaal_xml_parser.h"
 
 
 /* 
@@ -75,7 +75,7 @@ constraint_t* get_constraint(const string& expr, const int timer_id_1, const int
     THROW_LINE("Operand in " + expr + " not found, sad..")
 }
 
-int uppaal_tree_parser::get_timer_id(const string& expr) const
+int uppaal_xml_parser::get_timer_id(const string& expr) const
 {
     const string expr_wout_spaces = replace_all(remove_whitespace(expr), "\n", "");
     int index = 0;
@@ -108,7 +108,7 @@ int uppaal_tree_parser::get_timer_id(const string& expr) const
 }
 
 template <typename T>
-void uppaal_tree_parser::fill_expressions(const list<string>& expressions, list<T>* t)
+void uppaal_xml_parser::fill_expressions(const list<string>& expressions, list<T>* t)
 {
     for(const auto& expr: expressions)
     {
@@ -132,7 +132,7 @@ void uppaal_tree_parser::fill_expressions(const list<string>& expressions, list<
 }
 
 
-void uppaal_tree_parser::init_global_clocks(const xml_document* doc)
+void uppaal_xml_parser::init_global_clocks(const xml_document* doc)
 {
     string global_decl = doc->child("nta").child("declaration").child_value();
     global_decl = remove_whitespace(global_decl);
@@ -160,7 +160,7 @@ void uppaal_tree_parser::init_global_clocks(const xml_document* doc)
     }
 }
 
-void uppaal_tree_parser::init_local_clocks(xml_node template_node)
+void uppaal_xml_parser::init_local_clocks(xml_node template_node)
 {
     string decl = template_node.child("declaration").child_value();
     decl = remove_whitespace(decl);
@@ -189,10 +189,10 @@ void uppaal_tree_parser::init_local_clocks(xml_node template_node)
     }
 }
 
-uppaal_tree_parser::uppaal_tree_parser()
+uppaal_xml_parser::uppaal_xml_parser()
 = default;
 
-node_t* uppaal_tree_parser::get_node(const int target_id, const list<node_t*>* arr) const
+node_t* uppaal_xml_parser::get_node(const int target_id, const list<node_t*>* arr) const
 {
     for(node_t* node: *arr)
     {
@@ -202,7 +202,7 @@ node_t* uppaal_tree_parser::get_node(const int target_id, const list<node_t*>* a
     return arr->front();
 }
 
-void uppaal_tree_parser::handle_locations(const xml_node locs)
+void uppaal_xml_parser::handle_locations(const xml_node locs)
 {
     const string string_id = locs.attribute("id").as_string();
     const string string_name = locs.child("name").child_value();
@@ -245,7 +245,7 @@ void uppaal_tree_parser::handle_locations(const xml_node locs)
     nodes_map_->emplace(node->get_id(), node_with_system_id(node, this->system_count_));
 }
 
-void uppaal_tree_parser::handle_transitions(const xml_node trans)
+void uppaal_xml_parser::handle_transitions(const xml_node trans)
 {
     const string source = trans.child("source").attribute("ref").as_string();
     const string target = trans.child("target").attribute("ref").as_string();
@@ -294,12 +294,12 @@ void uppaal_tree_parser::handle_transitions(const xml_node trans)
     node_edge_map.at(source_id).push_back(result_edge);
 }
 
-bool uppaal_tree_parser::is_if_statement(const string& expr)
+bool uppaal_xml_parser::is_if_statement(const string& expr)
 {
     return expr.find("?")!=std::string::npos && expr.find(":")!=std::string::npos;
 }
 
-expression* uppaal_tree_parser::handle_if_statement(const string& input)
+expression* uppaal_xml_parser::handle_if_statement(const string& input)
 {
     const extract_if_statement extracted_if_statement = string_extractor::extract(extract_if_statement(input));
     const extract_condition extracted_condition = string_extractor::extract(extract_condition(extracted_if_statement.condition));
@@ -315,7 +315,7 @@ expression* uppaal_tree_parser::handle_if_statement(const string& input)
     return expression::conditional_expression(condition_e, if_true_e, if_false_e);
 }
 
-list<update_t> uppaal_tree_parser::handle_assignment(const string& input)
+list<update_t> uppaal_xml_parser::handle_assignment(const string& input)
 {
     const list<string> expressions = split_expr(input, ',');
     list<update_t> result;
@@ -353,7 +353,7 @@ list<update_t> uppaal_tree_parser::handle_assignment(const string& input)
     return result;
 }
 
-edge_channel* uppaal_tree_parser::handle_sync(const string& input) const
+edge_channel* uppaal_xml_parser::handle_sync(const string& input) const
 {
     const auto ec = new edge_channel();
 
@@ -375,7 +375,7 @@ edge_channel* uppaal_tree_parser::handle_sync(const string& input) const
     THROW_LINE(extracted_sync.keyword + " NOT IN LOCAL, NOR GLOBAL MAP, comeon dude..");
 }
 
-array_t<node_t*> uppaal_tree_parser::after_processing()
+array_t<node_t*> uppaal_xml_parser::after_processing()
 {
     for(node_t* node: *nodes_)
     {
@@ -396,7 +396,7 @@ array_t<node_t*> uppaal_tree_parser::after_processing()
 }
 
 
-__host__ stochastic_model_t uppaal_tree_parser::parse_xml(const char* file_path)
+__host__ stochastic_model_t uppaal_xml_parser::parse_xml(const char* file_path)
 {
     string path = file_path;
     xml_document doc;
@@ -444,7 +444,7 @@ __host__ stochastic_model_t uppaal_tree_parser::parse_xml(const char* file_path)
     return stochastic_model_t(start_nodes, to_array(timer_list_), to_array(var_list_));
 }
 
-__host__ stochastic_model_t uppaal_tree_parser::parse(string file_path)
+__host__ stochastic_model_t uppaal_xml_parser::parse(string file_path)
 {
     try
     {
