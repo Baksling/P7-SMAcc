@@ -1,7 +1,7 @@
 ﻿#pragma once
 
-#ifndef UPAALXMLParser_H
-#define UPAALXMLParser_H
+#ifndef UPAALTREEParser_H
+#define UPAALTREEParser_H
 
 #include <list>
 #include "pugixml.hpp"
@@ -94,7 +94,7 @@ private:
 public:
     unordered_map<int, string>* get_nodes_with_name() const {return this->node_names_;}
     unordered_map<int, node_with_system_id>* get_subsystems() const {return this->nodes_map_;}
-    uppaal_tree_parser();
+    uppaal_xml_parser();
     __host__ stochastic_model_t parse(string file_path);
 };
 #endif
