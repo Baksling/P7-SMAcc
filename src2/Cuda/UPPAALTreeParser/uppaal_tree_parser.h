@@ -26,8 +26,9 @@
 #include <utility>
 #include "variable_expression_evaluator.h"
 
-#define GPU __device__
-#define CPU __host__
+#include "../common/macro.h"
+// #define GPU __device__
+// #define CPU __host__
 
 using namespace std;
 using namespace pugi;

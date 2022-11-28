@@ -5,6 +5,7 @@
 #include "simulation_strategy.h"
 #include "writers/result_manager.h"
 
+
 class stochastic_engine
 {
 private:

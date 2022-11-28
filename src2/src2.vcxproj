@@ -386,6 +386,11 @@
       <SDLCheck>true</SDLCheck>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
+    <ClCompile Include="Cuda\Simulator2\automata_engine.cu" />
+    <ClCompile Include="Cuda\Simulator2\main.cu" />
+    <ClCompile Include="Cuda\Simulator2\my_stack.cu" />
+    <ClCompile Include="Cuda\Simulator2\Domain.cu" />
+    <ClCompile Include="Cuda\Simulator2\sim_config.cu" />
     <ClCompile Include="Cuda\Simulator\stochastic_engine.cu" />
     <ClCompile Include="Cuda\Simulator\stochastic_simulator.cu" />
     <ClCompile Include="Cuda\Simulator\writers\result_manager.cu" />
@@ -841,6 +846,9 @@
     <ClCompile Include="Cuda\Domain\clock_variable.h" />
     <ClCompile Include="Cuda\Domain\update_t.h" />
     <ClInclude Include="Cuda\Domain\stochastic_model_t.h" />
+    <ClInclude Include="Cuda\Simulator2\memory_allocator.h" />
+    <ClCompile Include="Cuda\Simulator2\macro.cu" />
+    <ClInclude Include="Cuda\Simulator2\result_store.h" />
     <ClInclude Include="Cuda\Simulator\stochastic_engine.h" />
     <ClInclude Include="Cuda\Simulator\stochastic_simulator.h" />
     <ClInclude Include="Cuda\Simulator\writers\result_manager.h" />
