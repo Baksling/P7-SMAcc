@@ -51,16 +51,16 @@ struct expr
 
         //conditional types
         conditional_ee
-    } operand;
+    } operand = literal_ee;
 
-    expr* left;
-    expr* right;
+    expr* left = nullptr;
+    expr* right = nullptr;
 
     union
     {
-        expr* conditional_else;
-        double value;
+        double value = 1.0;
         int variable_id;
+        expr* conditional_else;
     };
 
     CPU GPU double evaluate_expression(state* state);

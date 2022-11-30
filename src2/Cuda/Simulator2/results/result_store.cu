@@ -17,8 +17,8 @@ void result_pointers::free_internals() const
 size_t result_store::total_data_size() const
 {
     return sizeof(sim_metadata) * this->simulations_
-        + sizeof(double)       * this->simulations_ * this->variables_count_
-        + sizeof(int)          * this->simulations_ * this->models_count_;
+         + sizeof(double)       * this->simulations_ * this->variables_count_
+         + sizeof(int)          * this->simulations_ * this->models_count_;
 }
 
 result_store::result_store(const unsigned blocks, const unsigned threads, const unsigned sim_amount,
@@ -32,7 +32,7 @@ result_store::result_store(const unsigned blocks, const unsigned threads, const 
     const size_t total_data = this->total_data_size();
 
     void* store;
-    helper->allocate(&store, total_data);
+    CUDA_CHECK(helper->allocate(&store, total_data));
 
     this->metadata_p_ = static_cast<sim_metadata*>(store);
     store = static_cast<void*>(&this->metadata_p_[this->simulations_]);
@@ -54,20 +54,21 @@ result_pointers result_store::load_results() const
     };
 
     const size_t size = this->total_data_size();
-    const void* source = this->metadata_p_; //this is the source of the array. nodes and variables are just offsets from here
-    void* store = malloc(size);
-    cudaMemcpy(store, source , size, cudaMemcpyDeviceToHost);
+    const void* source = static_cast<void*>(this->metadata_p_); //this is the source of the array. nodes and variables are just offsets from here
+    void* init_store = malloc(size);
+    void* store = init_store;
+    CUDA_CHECK(cudaMemcpy(store, source , size, cudaMemcpyDeviceToHost));
 
     sim_metadata* meta = static_cast<sim_metadata*>(store);
-    store = static_cast<void*>(&this->metadata_p_[this->simulations_]);
+    store = static_cast<void*>(&meta[this->simulations_]);
         
     double* vars = static_cast<double*>(store);
-    store = static_cast<void*>(&this->variable_p_[(this->variables_count_ * this->simulations_)]);
+    store = static_cast<void*>(&vars[(this->variables_count_ * this->simulations_)]);
         
     int* nodes = static_cast<int*>(store);
     return result_pointers{
         true,
-        store,
+        init_store,
         meta,
         nodes,
         vars

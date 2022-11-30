@@ -112,7 +112,8 @@ CPU GPU double expr::evaluate_expression(state* state)
 
     if(state->value_stack.count() == 0)
     {
-        printf("Expression evaluation ended in no values! PANIC!\n");
+        // printf("Expression evaluation ended in no values! PANIC!\n");
+        return 0.0;
     }
     
     return state->value_stack.pop();
@@ -141,7 +142,9 @@ CPU GPU double node::max_progression(state* state, bool* is_finite) const
 
 CPU GPU bool constraint::evaluate_constraint(state* state) const
 {
-    const double left = state->variables.store[this->variable_id].value;
+    const double left =  this->uses_variable
+        ? state->variables.store[this->variable_id].value
+        : this->value->evaluate_expression(state);
     const double right = this->expression->evaluate_expression(state);
 
     switch (this->operand)

@@ -462,11 +462,15 @@
     <ClCompile Include="Cuda\Simulator2\allocations\memory_allocator.cpp" />
     <ClCompile Include="Cuda\Simulator2\automata_engine.cu" />
     <ClCompile Include="Cuda\Simulator2\main.cu" />
+    <ClInclude Include="Cuda\Simulator2\allocations\argparser.h" />
     <ClInclude Include="Cuda\Simulator2\my_stack.h" />
     <ClCompile Include="Cuda\Simulator2\Domain.cu" />
     <ClCompile Include="Cuda\Simulator2\results\ouput_write.cu" />
     <ClCompile Include="Cuda\Simulator2\results\result_store.cu" />
     <ClInclude Include="Cuda\Simulator2\sim_config.h" />
+    <ClCompile Include="Cuda\Simulator2\visitors\domain_optimization_visitor.cpp" />
+    <ClCompile Include="Cuda\Simulator2\visitors\pretty_print_visitor.cpp" />
+    <ClCompile Include="Cuda\Simulator2\visitors\visitor.cpp" />
     <ClCompile Include="Cuda\Simulator\stochastic_engine.cu" />
     <ClCompile Include="Cuda\Simulator\stochastic_simulator.cu" />
     <ClCompile Include="Cuda\Simulator\writers\result_manager.cu" />
@@ -1372,6 +1376,9 @@
     <ClInclude Include="Cuda\Simulator2\macro.h" />
     <ClInclude Include="Cuda\Simulator2\results\output_writer.h" />
     <ClInclude Include="Cuda\Simulator2\results\result_store.h" />
+    <ClInclude Include="Cuda\Simulator2\visitors\domain_optimization_visitor.h" />
+    <ClInclude Include="Cuda\Simulator2\visitors\pretty_print_visitor.h" />
+    <ClInclude Include="Cuda\Simulator2\visitors\visitor.h" />
     <ClInclude Include="Cuda\Simulator\stochastic_engine.h" />
     <ClInclude Include="Cuda\Simulator\stochastic_simulator.h" />
     <ClInclude Include="Cuda\Simulator\writers\result_manager.h" />

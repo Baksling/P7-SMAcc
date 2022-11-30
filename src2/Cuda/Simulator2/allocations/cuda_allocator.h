@@ -1,14 +1,18 @@
 ﻿#pragma once
+#include <unordered_map>
+
 #include "memory_allocator.h"
 #include "../Domain.h"
 
 class cuda_allocator
 {
     memory_allocator* allocator_;
+    std::unordered_map<const node*, node*> circular_ref_{};
 public:
     explicit cuda_allocator(memory_allocator* allocator)
     {
         this->allocator_ = allocator;
+        this->circular_ref_ = std::unordered_map<const node*, node*>();
     }
 
     //The one to rule them all!

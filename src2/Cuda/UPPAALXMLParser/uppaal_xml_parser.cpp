@@ -268,12 +268,14 @@ void uppaal_xml_parser::handle_locations(const xml_node locs)
     const string string_name = locs.child("name").child_value();
     const int node_id = string_extractor::extract(extract_node_id(string_id));
     list<constraint> invariants;
-    expr* expo_rate = nullptr;
+    expr* expo_rate = new expr;
+    expo_rate->operand = expr::literal_ee;
+    expo_rate->value = 1.0;
     bool is_goal = false;
 
     insert_to_map(&node_edge_map, node_id, list<edge>());
             
-    if (string_name != "")
+    if (!string_name.empty())
     {
         is_goal = string_name == "Goal" ? true : false;
         node_names_->emplace(node_id, string_name);
@@ -288,7 +290,8 @@ void uppaal_xml_parser::handle_locations(const xml_node locs)
         //TODO make string trimmer
         const string line_wo_ws = remove_whitespace(expr_string);
         const string nums = take_after(line_wo_ws, "=");
-                
+
+        delete expo_rate;
         expo_rate = variable_expression_evaluator::evaluate_variable_expression(nums,&vars_map_, &global_vars_map_);
     }
             
@@ -460,10 +463,11 @@ arr<node*> uppaal_xml_parser::after_processing()
     int number_of_start_nodes = 0;
     for (const int i : start_nodes_)
     {
-        auto n_front = nodes_->begin();
+        list<node*>::iterator n_front = nodes_->begin();
         std::advance(n_front, i);
         start_nodes.store[number_of_start_nodes++] = *n_front;
     }
+    printf("SIZE %d\n", start_nodes.size);
     
     return start_nodes;
 }
@@ -549,4 +553,42 @@ __host__ automata uppaal_xml_parser::parse(string file_path)
     {
         throw runtime_error("parse error");
     }
+}
+
+bool uppaal_xml_parser::try_parse_block_threads(const std::string& str, unsigned* out_blocks, unsigned* out_threads)
+{
+    list<string> split = helper::split_all(str, ",");
+    if(split.size() != 2) return false;
+    const string blocks = split.front();
+    const string threads = split.back();
+
+    try
+    {
+        *out_blocks  = static_cast<unsigned>(stoi(blocks));
+        *out_threads = static_cast<unsigned>(stoi(threads));
+    }
+    catch(invalid_argument&)
+    {
+        return false;
+    }
+    return true;
+}
+
+bool uppaal_xml_parser::try_parse_units(const std::string& str, bool* is_time, double* value)
+{
+    const char unit = str.back();
+    if(unit != 's' && unit != 't') return false;
+    *is_time = unit == 't';
+
+    const string val = str.substr(0, str.size() - 1);
+
+    try
+    {
+        *value = stod(val);
+    }
+    catch(invalid_argument&)
+    {
+        return false;
+    }
+    return true;
 }

@@ -1,7 +1,7 @@
 ﻿
 #include "macro.h"
 #include "sim_config.h"
-#include "Domain.cu"
+#include "Domain.cu"    
 #include "./results/result_store.h" 
 #include "device_launch_parameters.h"
 
@@ -32,17 +32,16 @@ CPU GPU double determine_progress(const node* node, state* state)
     }
     else
     {
-        return lambda >= 0 ? (-log(random_val) / lambda) : lambda;
+        return lambda > 0 ? (-log(random_val) / lambda) : lambda;
     }
 }
 
 CPU GPU inline bool can_progress(const node* n)
 {
+    //#No brackets gang!
     for (int i = 0; i < n->edges.size; ++i)
-    {
-        if(IS_LISTENER(n->edges.store[i].channel)) continue;
-        return true;
-    }
+        if(!IS_LISTENER(n->edges.store[i].channel))
+            return true;
     return false;
 } 
 
@@ -71,22 +70,20 @@ CPU GPU node** progress_sim(state* sim_state, const sim_config* config)
         
         //if goal is reached, dont bother
         if(current->is_goal) continue;
-
         
         //If all channels that are left is listeners, then dont bother
         //This also ensures that current_node has edges
         if(!can_progress(current)) continue;
         
-        
         //if it is not in a valid state, then it is disabled 
         if(!constraint::evaluate_constraint_set(current->invariants, sim_state)) continue;
 
+        
         //determine current models progress
         const double local_progress = determine_progress(current, sim_state);
 
         //If negative progression, skip. Represents NO_PROGRESS
         if(local_progress < 0) continue;
-
         //Set current as winner, if it is the earliest active model.
         if(local_progress < min_progress_time)
         {
@@ -120,6 +117,7 @@ CPU GPU edge* pick_next_edge(const arr<edge>& edges, state* state)
     
     for (int i = 0; i < edges.size; ++i)
     {
+        
         edge* e = &edges.store[i];
         if(IS_LISTENER(e->channel)) continue;
         if(!constraint::evaluate_constraint_set(e->guards, state)) continue;
@@ -190,7 +188,6 @@ CPU GPU void simulate_automata(
             
             } while ((*state)->is_branch_point);
         }
-        
         output->write_output(&sim_state);
     }
 }

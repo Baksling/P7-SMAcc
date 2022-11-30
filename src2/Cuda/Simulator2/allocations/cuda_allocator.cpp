@@ -4,9 +4,9 @@ automata* cuda_allocator::allocate_automata(const automata* source)
 {
     const size_t network_size = sizeof(void*)*source->network.size;
     node* node_store = nullptr;
-    CUDA_CHECK(this->allocator_->allocate(&node_store, network_size));
+    CUDA_CHECK(this->allocator_->allocate(&node_store, sizeof(node)*source->network.size));
     node** local_network = static_cast<node**>(malloc(network_size));
-
+    
     for (int i = 0; i < source->network.size; ++i)
     {
         this->allocate_node(source->network.store[i], &node_store[i]);
@@ -19,7 +19,7 @@ automata* cuda_allocator::allocate_automata(const automata* source)
 
     clock_var* var_store = nullptr;
     CUDA_CHECK(this->allocator_->allocate(&var_store, sizeof(clock_var)*source->variables.size));
-
+    
     for (int i = 0; i < source->variables.size; ++i)
     {
         allocate_clock(&source->variables.store[i], &var_store[i]);
@@ -31,7 +31,7 @@ automata* cuda_allocator::allocate_automata(const automata* source)
     };
 
     automata* dest = nullptr;
-    CUDA_CHECK(cudaMalloc(&dest, sizeof(automata)));
+    CUDA_CHECK(this->allocator_->allocate(&dest, sizeof(automata)));
     CUDA_CHECK(cudaMemcpy(dest, &temp, sizeof(automata), cudaMemcpyHostToDevice));
 
     return dest;
@@ -39,6 +39,9 @@ automata* cuda_allocator::allocate_automata(const automata* source)
 
 void cuda_allocator::allocate_node(const node* source, node* dest)
 {
+    if(this->circular_ref_.count(source)) return;
+    this->circular_ref_.insert(std::pair<const node*, node*>(source, dest));
+    
     edge* edge_store = nullptr;
     CUDA_CHECK(this->allocator_->allocate(&edge_store, sizeof(edge)*source->edges.size));
     for (int i = 0; i < source->edges.size; ++i)
@@ -65,15 +68,23 @@ void cuda_allocator::allocate_node(const node* source, node* dest)
         source->is_branch_point,
         source->is_goal
     };
-    
+
     CUDA_CHECK(cudaMemcpy(dest, &temp, sizeof(node), cudaMemcpyHostToDevice));
 }
 
 void cuda_allocator::allocate_edge(const edge* source, edge* dest)
 {
+    //Handle node circular reference.
     node* node_dest = nullptr;
-    CUDA_CHECK(this->allocator_->allocate(&node_dest, sizeof(node)));
-    this->allocate_node(source->dest, node_dest);
+    if(this->circular_ref_.count(source->dest) == 0)
+    {
+        CUDA_CHECK(this->allocator_->allocate(&node_dest, sizeof(node)));
+        this->allocate_node(source->dest, node_dest);
+    }
+    else
+    {
+        node_dest = this->circular_ref_[source->dest];
+    }
 
     constraint* guard_store = nullptr;
     CUDA_CHECK(this->allocator_->allocate(&guard_store, sizeof(constraint)*source->guards.size));
@@ -110,7 +121,7 @@ void cuda_allocator::allocate_constraint(const constraint* source, constraint* d
     constraint temp{};
     temp.operand = source->operand;
     temp.uses_variable = source->uses_variable;
-    
+
     if(source->uses_variable)
     {
         temp.variable_id = source->variable_id;
@@ -154,14 +165,14 @@ void cuda_allocator::allocate_expr(const expr* source, expr* dest)
 {
     if(IS_LEAF(source->operand))
     {
-        CUDA_CHECK(cudaMemcpy(dest, source,sizeof(expr), cudaMemcpyHostToDevice));
+        CUDA_CHECK(cudaMemcpy(dest, source, sizeof(expr), cudaMemcpyHostToDevice));
         return;
     }
 
     expr* left = nullptr;
     if(source->left != nullptr)
     {
-        this->allocator_->allocate(&left, sizeof(expr));
+        CUDA_CHECK(this->allocator_->allocate(&left, sizeof(expr)));
         this->allocate_expr(source->left, left);
     }
 
@@ -185,9 +196,9 @@ void cuda_allocator::allocate_expr(const expr* source, expr* dest)
     temp.operand = source->operand;
 
     //this shouldn't be necessary, but safety is nr. 1 priority.
-    if(source->operand == expr::literal_ee)             temp.value = source->value;
-    else if(source->operand == expr::clock_variable_ee) temp.variable_id = source->variable_id;
-    else if(source->operand == expr::clock_variable_ee) temp.conditional_else = else_branch;
+    if     (source->operand == expr::literal_ee)        temp.value            = source->value;
+    else if(source->operand == expr::clock_variable_ee) temp.variable_id      = source->variable_id;
+    else if(source->operand == expr::conditional_ee)    temp.conditional_else = else_branch;
 
     CUDA_CHECK(cudaMemcpy(dest, &temp, sizeof(expr), cudaMemcpyHostToDevice));
 }

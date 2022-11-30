@@ -6,28 +6,44 @@
 
 struct sim_config
 {
-    //parallelism
-    unsigned int blocks{};
-    unsigned int threads{};
-    unsigned int cpu_threads{};
-    unsigned int simulation_amount{};
-
-    //sim configurations
-    unsigned long seed{};
+    //simulation setup
+    unsigned int blocks = 1;
+    unsigned int threads = 1;
+    unsigned int cpu_threads = 1;
+    unsigned int simulation_amount = 1;
+    unsigned int simulation_repetitions = 1;
+    unsigned long long seed = 1;
+    int write_mode = 0;
     bool use_max_steps = true;
-    const unsigned int max_steps_pr_sim{};
-    const double max_global_progression{};
+    unsigned int max_steps_pr_sim = 1;
+    double max_global_progression = 1;
+    bool verbose = false;
+    
+    enum device_opt
+    {
+        device,
+        host,
+        both
+    } sim_location;
+    
+    //model parameters (setup using function)
+    unsigned int max_expression_depth = 1;
+    unsigned tracked_variable_count = 1;
+    unsigned variable_count = 1;
+    unsigned network_size = 1;
 
-    //cache lookup
-    int tracked_variable_count{};
-    int variable_count{};
-    int network_size{};
+    //paths
+    std::string model_path{};
+    std::string out_path{};
     
-    void* cache{};
-    curandState* random_state_arr{};
+    //pointers
+    void* cache = nullptr;
+    curandState* random_state_arr = nullptr;
     
-    //Allocation variables
-    unsigned int max_expression_depth{};
+    size_t total_simulations() const
+    {
+        return static_cast<size_t>(blocks) * threads * simulation_amount;
+    }
 };
 
 #endif
