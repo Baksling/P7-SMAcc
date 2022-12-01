@@ -48,7 +48,7 @@ private:
     int init_node_id_{};
     list<clock_var>* vars_list_ = new list<clock_var>();
     int vars_id_ = 0;
-    int chan_id_ = 0;
+    int chan_id_ = 1;
     int system_count_ = 0;
     int update_id_ = 0;
     int edge_id_ = 0;
