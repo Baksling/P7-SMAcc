@@ -1,15 +1,15 @@
 ﻿#include "visitor.h"
 
-bool visitor::check_visit(const void* p)
+bool visitor::has_visited(const void* p)
 {
-    if(visited_.count(p)) return true;
-    visited_.insert(p);
+    if(visit_set_.count(p)) return true;
+    visit_set_.insert(p);
     return false;
 }
 
 void visitor::accept(const automata* a, visitor* v)
 {
-    if(v->check_visit(a)) return;
+    v->visit_set_.clear();
     for (int i = 0; i < a->network.size; ++i)
     {
         v->visit(a->network.store[i]);
@@ -23,7 +23,7 @@ void visitor::accept(const automata* a, visitor* v)
 
 void visitor::accept(const node* n, visitor* v)
 {
-    if(v->check_visit(n)) return;
+    // if(v->has_visited(n)) return;
     
     for (int i = 0; i < n->edges.size; ++i)
     {
@@ -45,7 +45,7 @@ void visitor::accept(const node* n, visitor* v)
 
 void visitor::accept(const edge* e, visitor* v)
 {
-    if(v->check_visit(e)) return;
+    // if(v->has_visited(e)) return;
 
     //This is handled by nodes accept method.
     // v->visit(e->dest);
@@ -65,7 +65,7 @@ void visitor::accept(const edge* e, visitor* v)
 
 void visitor::accept(const constraint* c, visitor* v)
 {
-    if(v->check_visit(c)) return;
+    // if(v->has_visited(c)) return;
 
     if(!c->uses_variable)
     {
@@ -76,21 +76,19 @@ void visitor::accept(const constraint* c, visitor* v)
 
 void visitor::accept(const clock_var* c, visitor* v)
 {
-    if(v->check_visit(c)) return;
+    // if(v->has_visited(c)) return;
     return;
 }
 
 void visitor::accept(const update* u, visitor* v)
 {
-    if(v->check_visit(u)) return;
+    // if(v->has_visited(u)) return;
     v->visit(u->expression);
 }
 
 void visitor::accept(const expr* ex, visitor* v)
 {
-    if(v->check_visit(ex)) return;
-
-    printf("EXPR00\n");
+    // if(v->has_visited(ex)) return;
 
     if(ex->left != nullptr)
     {
@@ -106,7 +104,6 @@ void visitor::accept(const expr* ex, visitor* v)
     {
         v->visit(ex->conditional_else);
     }
-    printf("EXPR01\n");
 }
 
 

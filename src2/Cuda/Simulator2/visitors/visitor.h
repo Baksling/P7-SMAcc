@@ -6,11 +6,18 @@
 
 class visitor
 {
-private:
-    std::unordered_set<const void*> visited_;
+protected:
+    std::unordered_set<const void*> visit_set_;
+    bool has_visited(const void* p);
 
-    bool check_visit(const void* p);
-
+    static void accept(const automata* a, visitor* v);
+    static void accept(const node* n, visitor* v);
+    static void accept(const edge* e, visitor* v);
+    static void accept(const constraint* c, visitor* v);
+    static void accept(const clock_var* c, visitor* v);
+    static void accept(const update* u, visitor* v);
+    static void accept(const expr* ex, visitor* v);
+    
 public:
     virtual ~visitor() = default;
     virtual void visit(automata* a) = 0;
@@ -21,12 +28,4 @@ public:
     virtual void visit(update* u) = 0;
     virtual void visit(expr* u) = 0;
     
-    static void accept(const automata* a, visitor* v);
-    static void accept(const node* n, visitor* v);
-    static void accept(const edge* e, visitor* v);
-    static void accept(const constraint* c, visitor* v);
-    static void accept(const clock_var* c, visitor* v);
-    static void accept(const update* u, visitor* v);
-    static void accept(const expr* ex, visitor* v);
-
 };

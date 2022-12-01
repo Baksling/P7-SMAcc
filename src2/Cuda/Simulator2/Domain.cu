@@ -238,15 +238,15 @@ CPU GPU void inline state::broadcast_channel(const int channel, const node* sour
         const unsigned offset = curand(this->random) % current->edges.size;
         for (int j = 0; j < current->edges.size; ++j)
         {
-            const edge* current_e = &current->edges.store[(i + offset) % current->edges.size];
-            if(!IS_LISTENER(current_e->channel)) continue;
-            if(!CAN_SYNC(channel, current_e->channel)) continue;
+            const edge current_e = current->edges.store[(j + offset) % current->edges.size];
+            if(!IS_LISTENER(current_e.channel)) continue;
+            if(!CAN_SYNC(channel, current_e.channel)) continue;
 
-            node* dest = current_e->dest;
+            node* dest = current_e.dest;
             
             this->models.store[i] = dest;
 
-            current_e->apply_updates(this);
+            current_e.apply_updates(this);
             break;
         }
     }

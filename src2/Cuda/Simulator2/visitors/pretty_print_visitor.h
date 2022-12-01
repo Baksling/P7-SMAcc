@@ -13,6 +13,9 @@ private:
           for (unsigned j = 0; j < this->scope_; ++j)
                *this->stream_ << "  ";
      }
+     static std::string constraint_type_to_string(const constraint* c);
+     static std::string expr_type_to_string(const expr* ex);
+     static std::string pretty_expr(const expr* ex);
 public:
      explicit pretty_print_visitor(std::ostream* stream);
 
@@ -23,8 +26,4 @@ public:
      void visit(clock_var* cv) override ;
      void visit(update* u) override;
      void visit(expr* u) override;
-     static std::string constraint_type_to_string(const constraint* c);
-
-     static std::string expr_type_to_string(const expr* ex);
-     static std::string pretty_expr(const expr* ex);
 };

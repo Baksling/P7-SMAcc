@@ -110,23 +110,24 @@ output_writer::output_writer(const std::string* path, unsigned sim_count, int wr
     this->file_path_ = *path;
     this->write_mode_ = write_mode;
     this->total_simulations_ = sim_count;
-
     unsigned var_count = 0;
     for (int i = 0; i < model->variables.size; ++i)
-        if(model->variables.store[i].should_track)
-            var_count += 1;
+        if(model->variables.store[i].should_track) var_count ++;
 
     this->variable_summaries_ = arr<variable_summary>{
         static_cast<variable_summary*>(malloc(sizeof(variable_summary)*var_count)),
         static_cast<int>(var_count)
     };
 
+    int j = 0;
     for (int i = 0; i < model->variables.size; ++i)
         if(model->variables.store[i].should_track)
-            this->variable_summaries_.store[i] = variable_summary{
+        {
+            this->variable_summaries_.store[j] = variable_summary{
                 static_cast<unsigned>(i), 0.0, 0
             };
-    
+            j++;
+        }
     
     this->model_count_ = model->network.size;
     this->node_summary_map_ = std::unordered_map<int, node_summary>();
@@ -160,7 +161,7 @@ void output_writer::write(const result_store* sim_result, std::chrono::steady_cl
             for (int j = 0; j < this->variable_summaries_.size; ++j)
             {
                 const double v = pointers.variables[i*this->variable_summaries_.size + j];
-                this->variable_summaries_.store[i].update_count(v);
+                this->variable_summaries_.store[j].update_count(v);
             }
         }
         if(this->write_mode_ & file_data) write_to_file(&pointers, sim_duration);

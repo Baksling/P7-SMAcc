@@ -32,7 +32,7 @@ CPU GPU double determine_progress(const node* node, state* state)
     }
     else
     {
-        return lambda > 0 ? (-log(random_val) / lambda) : lambda;
+        return lambda > 0 ? (-log2(random_val) / lambda) : lambda;
     }
 }
 
@@ -58,10 +58,12 @@ CPU GPU node** progress_sim(state* sim_state, const sim_config* config)
 
     //progress number of steps
     sim_state->steps++;
+
+    const double max_progression_time = config->use_max_steps
+                                            ? HUGE_VAL
+                                            : config->max_global_progression - sim_state->global_time;
     
-    double min_progress_time = HUGE_VAL;
-    if(!config->use_max_steps)
-        min_progress_time = config->max_global_progression - sim_state->global_time;
+    double min_progression_time = max_progression_time;
     
     node** winning_model = nullptr;
     for (int i = 0; i < sim_state->models.size; ++i)
@@ -85,21 +87,24 @@ CPU GPU node** progress_sim(state* sim_state, const sim_config* config)
         //If negative progression, skip. Represents NO_PROGRESS
         if(local_progress < 0) continue;
         //Set current as winner, if it is the earliest active model.
-        if(local_progress < min_progress_time)
+        if(local_progress < min_progression_time)
         {
-            min_progress_time = local_progress;
+            min_progression_time = local_progress;
             winning_model = &sim_state->models.store[i];
         }
     }
     // printf(" I WON! Node: %d \n", winning_model->current_node->get_id());
-    if(!isinf(min_progress_time))
+    if(min_progression_time < max_progression_time)
     {
         for (int i = 0; i < sim_state->variables.size; ++i)
         {
-            sim_state->variables.store[i].add_time(min_progress_time);
+            sim_state->variables.store[i].add_time(min_progression_time);
         }
-        sim_state->global_time += min_progress_time;
+        sim_state->global_time += min_progression_time;
+
+        // printf("sim_id: %d | step: %d | time: %lf | next: %p\n", sim_state->simulation_id, sim_state->steps, sim_state->global_time,  winning_model);
     }
+
     
     return winning_model;
 }
@@ -117,7 +122,6 @@ CPU GPU edge* pick_next_edge(const arr<edge>& edges, state* state)
     
     for (int i = 0; i < edges.size; ++i)
     {
-        
         edge* e = &edges.store[i];
         if(IS_LISTENER(e->channel)) continue;
         if(!constraint::evaluate_constraint_set(e->guards, state)) continue;
@@ -125,7 +129,7 @@ CPU GPU edge* pick_next_edge(const arr<edge>& edges, state* state)
         const double weight = e->weight->evaluate_expression(state);
         //only consider edge if it its weight is positive.
         //Negative edge value is semantically equivalent to disabled.
-        if(weight < 0.0) continue;
+        if(weight <= 0.0) continue;
         SET_BIT(valid_edges_bitarray, i);
         valid_edge = e;
         valid_count++;
@@ -146,7 +150,7 @@ CPU GPU edge* pick_next_edge(const arr<edge>& edges, state* state)
     {
         if(!BIT_IS_SET(valid_edges_bitarray, i)) continue;
         const double weight = edges.store[i].weight->evaluate_expression(state);
-        if(weight <= 0) continue;
+        if(weight <= 0.0) continue;
         
         valid_edge = &edges.store[i];
         r_acc += weight;
@@ -176,7 +180,14 @@ CPU GPU void simulate_automata(
         while (true)
         {
             node** state = progress_sim(&sim_state, config);
-            if(state == nullptr || (*state)->is_goal) break;
+            if(state == nullptr || (*state)->is_goal)
+            {
+                // printf("steps %d, sim_id %d | ", sim_state.steps, sim_state.simulation_id);
+                // if(state == nullptr) printf("NULL 0th: %d | 1th: %d\n", sim_state.models.store[0]->id, sim_state.models.store[1]->id);
+                // else printf("GOAL: %d\n", (*state)->id);
+                break;
+            }
+            // printf("id: %d\n", (*state)->id);
             do
             {
                 const edge* e = pick_next_edge((*state)->edges, &sim_state);

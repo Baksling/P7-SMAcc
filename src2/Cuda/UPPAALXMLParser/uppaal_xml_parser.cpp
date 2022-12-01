@@ -200,8 +200,8 @@ void uppaal_xml_parser::init_global_clocks(const xml_document* doc)
             c_v.value = d.get_value();
             c_v.max_value = c_v.value;
             c_v.temp_value = c_v.value;
-            c_v.rate = 1;
-            c_v.should_track = false;
+            c_v.rate = 0;
+            c_v.should_track = true;
             vars_list_->push_back(c_v);
 
         }
@@ -244,7 +244,6 @@ void uppaal_xml_parser::init_local_clocks(xml_node template_node)
             c_v.rate = 0;
             c_v.should_track = true;
             vars_list_->push_back(c_v);
-
         }
     }
 }

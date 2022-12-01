@@ -43,9 +43,7 @@ private:
 
     size_t total_data_size() const;
 public:
-    explicit result_store(const unsigned blocks,
-                          const unsigned threads,
-                          const unsigned sim_amount,
+    explicit result_store(const unsigned total_sim,
                           const unsigned variables,
                           const unsigned network_size,
                           memory_allocator* helper);
@@ -59,11 +57,11 @@ public:
 
         this->metadata_p_[sim_id].steps = sim->steps; 
         this->metadata_p_[sim_id].global_time = sim->global_time;
-
-        for (int i = 0; i < sim->variables.size; ++i)
+        
+        for (int i = 0, j = 0; i < sim->variables.size; ++i)
         {
             if(!sim->variables.store[i].should_track) continue;
-            this->variable_p_[sim_id*this->variables_count_ + i] = sim->variables.store[i].value;
+            this->variable_p_[sim_id*this->variables_count_ + j++] = sim->variables.store[i].value;
         }
 
         for (int i = 0; i < sim->models.size; ++i)
@@ -71,10 +69,9 @@ public:
             // sim->models.store[i]->is_goal
             // ? sim->models.store[i]->id
             // : -sim->models.store[i]->id;
-            
-            this->node_p_[sim_id*this->models_count_ + i] =
-                sim->models.store[i]->id
-             *(!sim->models.store[i]->is_goal * (-1));
+
+            // this->node_p_[sim_id*sim->models.size + i] = sim->models.store[i]->is_goal ? sim->models.store[i]->id : -sim->models.store[i]->id;
+            this->node_p_[sim_id*sim->models.size + i] = sim->models.store[i]->id * ((sim->models.store[i]->is_goal*2) + (-1));
         }
     } 
 };

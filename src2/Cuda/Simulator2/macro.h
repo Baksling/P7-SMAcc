@@ -26,7 +26,7 @@
 #define CUDA_CHECK(x)             \
 do{                          \
 if ((x) != cudaSuccess) {    \
-throw std::runtime_error(std::string("Allocation error on line ") +  std::to_string(__LINE__));\
+    throw std::runtime_error(std::string("cuda error ") + std::to_string(x) + " in file '" + __FILE__ + "' on line "+  std::to_string(__LINE__)); \
 }                             \
 }while(0)
 

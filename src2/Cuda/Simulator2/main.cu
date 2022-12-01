@@ -135,7 +135,7 @@ sim_config parse_configs(int argc, const char* argv[])
     return config;
 }
 
-void setup_config(sim_config* config, const automata* model, unsigned max_expr_depth)
+void setup_config(sim_config* config, const automata* model, const unsigned max_expr_depth)
 {
     unsigned track_count = 0;
     for (int i = 0; i < model->variables.size; ++i)
@@ -157,10 +157,10 @@ int main(int argc, const char* argv[])
     
     uppaal_xml_parser xml_parser;
     automata model = xml_parser.parse(config.model_path);
-
+    
     domain_optimization_visitor optimizer = domain_optimization_visitor();
     optimizer.visit(&model);
-    
+
     setup_config(&config, &model, optimizer.get_max_expr_depth());
     
     pretty_print_visitor pretty_visitor = pretty_print_visitor(&std::cout);
@@ -169,13 +169,14 @@ int main(int argc, const char* argv[])
     cuda_allocator av = cuda_allocator(&helper);
     const automata* model_d = av.allocate_automata(&model);
 
-    const result_store store = result_store(config.blocks, config.threads, config.simulation_amount,
-                                            config.tracked_variable_count,  config.network_size, &helper);
+    
+    const result_store store = result_store(static_cast<unsigned>(config.total_simulations()),
+                                                config.tracked_variable_count,  config.network_size, &helper);
     
     output_writer writer = output_writer(
         &config.out_path,
         config.blocks*config.threads*config.simulation_amount,
-        output_writer::parse_mode("c"),
+        config.write_mode,
         &model        
         );
 
@@ -190,16 +191,18 @@ int main(int argc, const char* argv[])
     CUDA_CHECK(cudaMalloc(&config_d, sizeof(sim_config)));
     CUDA_CHECK(cudaMemcpy(config_d, &config, sizeof(sim_config), cudaMemcpyHostToDevice));
 
+    printf("config: %d, %d, %d\n", config.blocks, config.threads, config.simulation_amount);
+    
     printf("pre: %d\n", cudaPeekAtLastError());
     const std::chrono::steady_clock::time_point global_start = std::chrono::steady_clock::now();
 
-    
-    
     simulator_gpu_kernel<<<config.blocks, config.threads>>>(model_d, store_d, config_d);
     cudaDeviceSynchronize();
     
-    printf("post: %d\n", cudaPeekAtLastError());
     const std::chrono::steady_clock::duration sim_duration = std::chrono::steady_clock::now() - global_start;
+    printf("post: %d\n", cudaPeekAtLastError());
+    
+    std::cout << "TIME: " << chrono::duration_cast<chrono::milliseconds>(sim_duration).count() << "ms" << std::endl; 
 
     writer.write(&store, sim_duration);
     writer.write_summary(sim_duration);

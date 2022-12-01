@@ -3,6 +3,7 @@
 pretty_print_visitor::pretty_print_visitor(std::ostream* stream)
 {
     this->stream_ = stream;
+    visit_set_.clear();
 }
 
 void pretty_print_visitor::visit(automata* a)
@@ -16,6 +17,7 @@ void pretty_print_visitor::visit(automata* a)
 
 void pretty_print_visitor::visit(node* n)
 {
+    if(this->has_visited(n)) return;
     this->scope_ = 1;
     *this->stream_ << "NODE = id: " << n->id
                    << " | is branch: " << (n->is_branch_point ? "True" : "False")
@@ -33,6 +35,8 @@ void pretty_print_visitor::visit(node* n)
 
 void pretty_print_visitor::visit(edge* e)
 {
+    if(this->has_visited(e)) return;
+
     print_indent();
     
     *this->stream_ << "EDGE = dest: " << e->dest->id
@@ -47,6 +51,7 @@ void pretty_print_visitor::visit(edge* e)
 
 void pretty_print_visitor::visit(constraint* c)
 {
+    if(this->has_visited(c)) return;
     print_indent();
 
     *this->stream_ << "CONSTRAINT = " << (c->uses_variable ? "var" + std::to_string(c->variable_id) : pretty_expr(c->value))
@@ -59,6 +64,7 @@ void pretty_print_visitor::visit(constraint* c)
 
 void pretty_print_visitor::visit(clock_var* cv)
 {
+    if(this->has_visited(cv)) return;
     print_indent();
     *this->stream_ << "COCK = id: " << cv->id
                    << " | value: " << cv->value
@@ -73,6 +79,7 @@ void pretty_print_visitor::visit(clock_var* cv)
 
 void pretty_print_visitor::visit(update* u)
 {
+    if(this->has_visited(u)) return;
     print_indent();
     *this->stream_ << "UPDATE = var " << u->variable_id << ": " << pretty_expr(u->expression) << '\n';
 
@@ -83,6 +90,7 @@ void pretty_print_visitor::visit(update* u)
 
 void pretty_print_visitor::visit(expr* u)
 {
+    if(this->has_visited(u)) return;
     //Handled by each individual method, to make it prettier.
     // *this->stream_ << pretty_expr(u) << '\n';
     
