@@ -63,7 +63,7 @@ extract_probability string_extractor::extract(const extract_probability& extract
 int string_extractor::extract(const extract_node_id& extract)
 {
     string result = extract.input;
-    return stoi(result.replace(0,2,""));
+    return stoi(result.replace(0,2,""))+1;
 }
 
 extract_declaration string_extractor::extract(const extract_declaration& extract)
