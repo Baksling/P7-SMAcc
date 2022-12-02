@@ -92,14 +92,18 @@ void output_writer::write_hit_file(std::chrono::steady_clock::duration sim_durat
     if (this->node_summary_map_.empty()) return;
     std::ofstream file = std::ofstream(this->file_path_ + "_results.tsv", std::ofstream::out|std::ofstream::trunc);
     
+    bool any = false;
     for (const auto& pair : this->node_summary_map_)
     {
         if (HAS_HIT_MAX_STEPS(pair.first)) continue;
-
         const float percentage = this->calc_percentage(pair.second.reach_count, total_simulations_);
-        
         file << percentage << "\t" << std::chrono::duration_cast<std::chrono::milliseconds>(sim_duration).count();
-    }  
+        any = true;
+    }
+    if(!any)
+    {
+        file << "0.0\t" << std::chrono::duration_cast<std::chrono::milliseconds>(sim_duration).count();
+    }
 
     file.flush();
     file.close();

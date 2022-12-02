@@ -163,8 +163,8 @@ CPU GPU bool constraint::evaluate_constraint(state* state) const
     case constraint::greater_c: return left > right;
     case constraint::equal_c: return left == right;  // NOLINT(clang-diagnostic-float-equal)
     case constraint::not_equal_c: return left != right;  // NOLINT(clang-diagnostic-float-equal)
-    default: return false;
     }
+    return false;
 }
 
 
