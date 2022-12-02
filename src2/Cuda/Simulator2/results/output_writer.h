@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include <array>
 #include <string>
-#include <unordered_map>
+#include <map>
 #include "result_store.h"
 #include <chrono>
 #include <iostream>
@@ -20,12 +20,14 @@ enum write_modes //values must be powers of 2.
 
 struct node_summary
 {
-    unsigned int reach_count;
-    double avg_steps;
+    unsigned int reach_count = 0;
+    double avg_steps = 0;
+    double avg_time = 0;
 
-    void update_count(const unsigned int avg_step)
+    void add_reach(const unsigned int steps, const double time)
     {
-        avg_steps = ((avg_steps * reach_count) + static_cast<double>(avg_step)) / (reach_count+1);
+        avg_steps = ((avg_steps * reach_count) + static_cast<double>(steps)) / (reach_count+1);
+        avg_time = ((avg_time * reach_count) + time) / (reach_count+1);
         reach_count++;
     }
 
@@ -57,7 +59,7 @@ private:
     unsigned output_counter_{};
     unsigned total_simulations_;
     unsigned model_count_;
-    std::unordered_map<int, node_summary> node_summary_map_{};
+    std::map<int, node_summary> node_summary_map_{};
     arr<variable_summary> variable_summaries_ = arr<variable_summary>::empty();
 
     static float calc_percentage(const unsigned long long counter, const unsigned long long divisor);

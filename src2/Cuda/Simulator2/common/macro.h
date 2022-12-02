@@ -20,6 +20,8 @@
 #define GLOBAL __global__
 #define IS_GPU __CUDACC__
 
+#define DBL_MAX          1.7976931348623158e+308 //max 64 bit double value
+
 
 //While loop done to enfore ; after macro call. See: 
 //https://stackoverflow.com/a/61363791/17430854

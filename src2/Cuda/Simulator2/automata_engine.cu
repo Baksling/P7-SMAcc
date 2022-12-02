@@ -1,6 +1,6 @@
 ﻿
-#include "macro.h"
-#include "sim_config.h"
+#include "common/macro.h"
+#include "common/sim_config.h"
 #include "Domain.cu"    
 #include "./results/result_store.h" 
 #include "device_launch_parameters.h"
@@ -22,8 +22,8 @@ CPU GPU size_t thread_heap_size(const sim_config* config)
 CPU GPU double determine_progress(const node* node, state* state)
 {
     bool is_finite = true;
-    const double max = node->max_progression(state, &is_finite);
     const double random_val = curand_uniform_double(state->random);
+    const double max = node->max_progression(state, &is_finite);
     const double lambda = node->lamda->evaluate_expression(state);
 
     if(is_finite)
@@ -32,7 +32,8 @@ CPU GPU double determine_progress(const node* node, state* state)
     }
     else
     {
-        return lambda > 0 ? (-log2(random_val) / lambda) : lambda;
+        // return lambda > 0 ? -log2(random_val) / (lambda) : lambda;
+        return -log(random_val) / (lambda - (lambda == 0.0));
     }
 }
 
@@ -51,7 +52,7 @@ CPU GPU node** progress_sim(state* sim_state, const sim_config* config)
 
     // if(config->use_max_steps * sim_state->steps  >= config->max_steps_pr_sim
     //     + !config->use_max_steps * sim_state->global_time >= config->max_global_progression)
-    
+
     if((config->use_max_steps && sim_state->steps  >= config->max_steps_pr_sim)
         || (!config->use_max_steps && sim_state->global_time >= config->max_global_progression) )
             return nullptr;
@@ -59,10 +60,13 @@ CPU GPU node** progress_sim(state* sim_state, const sim_config* config)
     //progress number of steps
     sim_state->steps++;
 
-    const double max_progression_time = config->use_max_steps
-                                            ? HUGE_VAL
-                                            : config->max_global_progression - sim_state->global_time;
-    
+    // const double max_progression_time = config->use_max_steps
+    //                                         ? DBL_MAX
+    //                                         : config->max_global_progression - sim_state->global_time;
+
+    const double max_progression_time = ((config->use_max_steps) * DBL_MAX)
+                + ((!config->use_max_steps) * (config->max_global_progression - sim_state->global_time));
+
     double min_progression_time = max_progression_time;
     
     node** winning_model = nullptr;
@@ -85,9 +89,8 @@ CPU GPU node** progress_sim(state* sim_state, const sim_config* config)
         const double local_progress = determine_progress(current, sim_state);
 
         //If negative progression, skip. Represents NO_PROGRESS
-        if(local_progress < 0) continue;
         //Set current as winner, if it is the earliest active model.
-        if(local_progress < min_progression_time)
+        if(local_progress >= 0.0 && local_progress < min_progression_time)
         {
             min_progression_time = local_progress;
             winning_model = &sim_state->models.store[i];
@@ -105,7 +108,6 @@ CPU GPU node** progress_sim(state* sim_state, const sim_config* config)
         // printf("sim_id: %d | step: %d | time: %lf | next: %p\n", sim_state->simulation_id, sim_state->steps, sim_state->global_time,  winning_model);
     }
 
-    
     return winning_model;
 }
 #define BIT_IS_SET(n, i) ((n) & (1UL << (i)))
@@ -168,7 +170,6 @@ CPU GPU void simulate_automata(
     void* cache = static_cast<void*>(&static_cast<char*>(config->cache)[(idx*thread_heap_size(config)) / sizeof(char)]);
     curandState* r_state = &config->random_state_arr[idx];
     curand_init(config->seed, idx, idx, r_state);
-    
     state sim_state = state::init(cache, r_state, model, config->max_expression_depth);
     
     for (unsigned i = 0; i < config->simulation_amount; ++i)
@@ -180,14 +181,9 @@ CPU GPU void simulate_automata(
         while (true)
         {
             node** state = progress_sim(&sim_state, config);
-            if(state == nullptr || (*state)->is_goal)
-            {
-                // printf("steps %d, sim_id %d | ", sim_state.steps, sim_state.simulation_id);
-                // if(state == nullptr) printf("NULL 0th: %d | 1th: %d\n", sim_state.models.store[0]->id, sim_state.models.store[1]->id);
-                // else printf("GOAL: %d\n", (*state)->id);
-                break;
-            }
-            // printf("id: %d\n", (*state)->id);
+
+            if(state == nullptr || (*state)->is_goal) break;
+            
             do
             {
                 const edge* e = pick_next_edge((*state)->edges, &sim_state);

@@ -1,16 +1,15 @@
 ﻿
 #include <string>
+#include "simulation_runner.h"
 
-#include "./allocations/memory_allocator.h"
-#include "./allocations/cuda_allocator.h"
-#include "macro.h"
-#include "automata_engine.cu"
 #include "../UPPAALXMLParser/uppaal_xml_parser.h"
+
 #include "./results/output_writer.h"
-#include "sim_config.h"
-#include "visitors/pretty_print_visitor.h"
 #include "./allocations/argparser.h"
+
 #include "visitors/domain_optimization_visitor.h"
+#include "visitors/pretty_print_visitor.h"
+
 
 
 class arg_exception : public std::runtime_error
@@ -64,6 +63,14 @@ sim_config parse_configs(int argc, const char* argv[])
     //other
     parser.add_argument("-v", "--verbose", "Enable pretty print of model (print model (0) / silent(1))", false);
     parser.enable_help();
+
+
+    if(parser.exists("h"))
+    {
+        parser.print_help();
+        throw std::runtime_error("Help was requested");
+    }
+    
     auto err = parser.parse(argc, argv);
     
     sim_config config = {};
@@ -151,7 +158,6 @@ void setup_config(sim_config* config, const automata* model, const unsigned max_
 int main(int argc, const char* argv[])
 {
     CUDA_CHECK(cudaFree(nullptr));
-    memory_allocator helper = memory_allocator(true);
 
     sim_config config = parse_configs(argc, argv);
     
@@ -162,51 +168,19 @@ int main(int argc, const char* argv[])
     optimizer.visit(&model);
 
     setup_config(&config, &model, optimizer.get_max_expr_depth());
-    
-    pretty_print_visitor pretty_visitor = pretty_print_visitor(&std::cout);
-    pretty_visitor.visit(&model);
-    
-    cuda_allocator av = cuda_allocator(&helper);
-    const automata* model_d = av.allocate_automata(&model);
 
-    
-    const result_store store = result_store(static_cast<unsigned>(config.total_simulations()),
-                                                config.tracked_variable_count,  config.network_size, &helper);
-    
-    output_writer writer = output_writer(
-        &config.out_path,
-        config.blocks*config.threads*config.simulation_amount,
-        config.write_mode,
-        &model        
-        );
+    if(config.verbose)
+        pretty_print_visitor(&std::cout).visit(&model);
 
-    result_store* store_d = nullptr;
-    CUDA_CHECK(cudaMalloc(&store_d, sizeof(result_store)));
-    CUDA_CHECK(cudaMemcpy(store_d, &store, sizeof(result_store), cudaMemcpyHostToDevice));
+    //run simulation
+    if(config.sim_location == sim_config::device || config.sim_location == sim_config::both)
+    {
+        simulation_runner::simulate_gpu(&model, &config);
+    }
+    if(config.sim_location == sim_config::host || config.sim_location == sim_config::both)
+    {
+        simulation_runner::simulate_cpu(&model, &config);
+    }
     
-    CUDA_CHECK(helper.allocate(&config.cache, static_cast<size_t>(config.blocks*config.threads)*thread_heap_size(&config)));
-    CUDA_CHECK(helper.allocate(&config.random_state_arr, static_cast<size_t>(config.blocks*config.threads)*sizeof(curandState)));
-
-    sim_config* config_d = nullptr;
-    CUDA_CHECK(cudaMalloc(&config_d, sizeof(sim_config)));
-    CUDA_CHECK(cudaMemcpy(config_d, &config, sizeof(sim_config), cudaMemcpyHostToDevice));
-
-    printf("config: %d, %d, %d\n", config.blocks, config.threads, config.simulation_amount);
-    
-    printf("pre: %d\n", cudaPeekAtLastError());
-    const std::chrono::steady_clock::time_point global_start = std::chrono::steady_clock::now();
-
-    simulator_gpu_kernel<<<config.blocks, config.threads>>>(model_d, store_d, config_d);
-    cudaDeviceSynchronize();
-    
-    const std::chrono::steady_clock::duration sim_duration = std::chrono::steady_clock::now() - global_start;
-    printf("post: %d\n", cudaPeekAtLastError());
-    
-    std::cout << "TIME: " << chrono::duration_cast<chrono::milliseconds>(sim_duration).count() << "ms" << std::endl; 
-
-    writer.write(&store, sim_duration);
-    writer.write_summary(sim_duration);
-
-    helper.free_allocations();
     printf("PULLY PORKY\n");
 }

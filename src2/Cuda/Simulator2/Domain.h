@@ -5,8 +5,8 @@ struct state;
 struct edge;
 struct node;
 
-#include "macro.h"
-#include "my_stack.h"
+#include "common/macro.h"
+#include "common/my_stack.h"
 
 #define HAS_HIT_MAX_STEPS(x) ((x) < 0)
 
@@ -20,7 +20,7 @@ struct arr
 };
 
 #define IS_LEAF(x) ((x) <= 2)
-struct expr
+struct expr  // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
     enum operators
     {
@@ -125,12 +125,12 @@ struct clock_var
 
 struct node
 {
-    int id;
-    expr* lamda;
-    arr<edge> edges;
-    arr<constraint> invariants;
-    bool is_branch_point;
-    bool is_goal;
+    int id{};
+    expr* lamda{};
+    arr<edge> edges = arr<edge>::empty();
+    arr<constraint> invariants = arr<constraint>::empty();
+    bool is_branch_point{};
+    bool is_goal{};
     CPU GPU double max_progression(state* state, bool* is_finite) const;
 };
 
@@ -152,9 +152,9 @@ struct update
 
 struct edge
 {
-    int channel;
-    expr* weight;
-    node* dest;
+    int channel{};
+    expr* weight{};
+    node* dest{};
     arr<constraint> guards;
     arr<update> updates;
     CPU GPU void apply_updates(state* state) const;

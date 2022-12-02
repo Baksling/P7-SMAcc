@@ -6,6 +6,11 @@ pretty_print_visitor::pretty_print_visitor(std::ostream* stream)
     visit_set_.clear();
 }
 
+void automata_accept()
+{
+    
+}
+
 void pretty_print_visitor::visit(automata* a)
 {
     *this->stream_ << "MODEL START\n";

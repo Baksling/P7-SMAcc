@@ -60,15 +60,15 @@ void output_writer::write_summary_to_stream(std::ostream& stream,
             no_hit.cumulative(it.second);
 
         const float percentage = calc_percentage(it.second.reach_count, total_simulations_);
-        stream << "Node: " << it.first << " reached " << it.second.reach_count << " times. ("
-            << percentage << ")%. avg step count: " << it.second.avg_steps << ".\n";
+        stream << "Node: " << it.first << " reach count " << it.second.reach_count << " ("
+            << percentage << ")%. avg steps|time: " << it.second.avg_steps << "|" << it.second.avg_time << "s.\n";
     }
     
     
     const float percentage = calc_percentage(no_hit.reach_count, total_simulations_);
 
-    stream << "No goal node was reached "<< no_hit.reach_count << " times. ("
-         << percentage << ")%. avg step count: " << no_hit.avg_steps << ".\n";
+    stream << "No goal was reached "<< no_hit.reach_count << " times. ("
+         << percentage << ")%. avg steps|time: " << no_hit.avg_steps << "|" << no_hit.avg_time << ".\n";
 
     stream << "\nNr of simulations: " << total_simulations_ << "\n\n";
     stream << "Simulation ran for: " << std::chrono::duration_cast<std::chrono::milliseconds>(sim_duration).count()
@@ -130,7 +130,7 @@ output_writer::output_writer(const std::string* path, unsigned sim_count, int wr
         }
     
     this->model_count_ = model->network.size;
-    this->node_summary_map_ = std::unordered_map<int, node_summary>();
+    this->node_summary_map_ = std::map<int, node_summary>();
 }
 
 void output_writer::write(const result_store* sim_result, std::chrono::steady_clock::duration sim_duration)
@@ -151,11 +151,11 @@ void output_writer::write(const result_store* sim_result, std::chrono::steady_cl
             {
                 int n = pointers.nodes[i*model_count_ + j];
                 if(this->node_summary_map_.count(n)) //exists
-                    this->node_summary_map_[n].update_count(x.steps);
+                    this->node_summary_map_[n].add_reach(x.steps, x.global_time);
                 else
                     this->node_summary_map_.insert(
                         std::pair<int, node_summary>(
-                            n, node_summary{ 1, static_cast<double>(x.steps) }
+                            n, node_summary{ 1, static_cast<double>(x.steps), x.global_time }
                             ));
             }
             for (int j = 0; j < this->variable_summaries_.size; ++j)

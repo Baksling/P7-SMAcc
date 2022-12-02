@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include <cstdlib>
-#include "../macro.h"
+#include "../common/macro.h"
 #include "../allocations/memory_allocator.h"
 #include "../Domain.h"
 

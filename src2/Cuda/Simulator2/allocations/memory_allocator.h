@@ -1,7 +1,7 @@
 #ifndef MEMORY_ALLOCATOR_CU
 #define MEMORY_ALLOCATOR_CU
 
-#include "../macro.h"
+#include "../common/macro.h"
 #include <list>
 class memory_allocator
 {
@@ -26,7 +26,7 @@ public:
     cudaError allocate_host(T** p, const size_t size);
 
     template<typename T>
-    cudaError allocate_and_copy(T** dest, T* source, const unsigned amount);
+    cudaError allocate_and_copy(T** dest, const T* source, const unsigned amount);
 
     size_t get_cuda_memory_usage() const
     {
@@ -71,7 +71,7 @@ cudaError memory_allocator::allocate_host(T** p, const size_t size)
 }
 
 template <typename T>
-cudaError memory_allocator::allocate_and_copy(T** dest, T* source, const unsigned amount)
+cudaError memory_allocator::allocate_and_copy(T** dest, const T* source, const unsigned amount)
 {
     const size_t size = sizeof(T)*amount;
     const cudaMemcpyKind kind = use_cuda ? cudaMemcpyHostToDevice : cudaMemcpyHostToHost;

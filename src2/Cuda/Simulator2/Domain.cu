@@ -76,6 +76,15 @@ CPU GPU double evaluate_expression_node(const expr* expr, state* state)
 
 CPU GPU double expr::evaluate_expression(state* state)
 {
+    if(this->operand == literal_ee)
+    {
+        return this->value;
+    }
+    if(this->operand == clock_variable_ee)
+    {
+        return state->variables.store[this->variable_id].value;
+    }
+
     state->expr_stack.clear();
     state->value_stack.clear();
     expr* current = this;
@@ -122,21 +131,20 @@ CPU GPU double expr::evaluate_expression(state* state)
 
 CPU GPU double node::max_progression(state* state, bool* is_finite) const
 {
-    double max_bound = INFINITY;
+    double max_bound = HUGE_VAL;
 
     for (int i = 0; i < this->invariants.size; ++i)
     {
-        const constraint* con = &this->invariants.store[i];
-        if(!IS_INVARIANT(con->operand)) continue;
-        if(!con->uses_variable) continue;
-        const clock_var var = state->variables.store[con->variable_id];
+        const constraint con = this->invariants.store[i];
+        if(!IS_INVARIANT(con.operand)) continue;
+        if(!con.uses_variable) continue;
+        const clock_var var = state->variables.store[con.variable_id];
         if(var.rate == 0) continue;
-        const double time = state->variables.store[con->variable_id].value;
-        const double expr_value = con->expression->evaluate_expression(state);
+        const double expr_value = con.expression->evaluate_expression(state);
         
-        max_bound = fmin(max_bound,  (expr_value - time) / var.rate); //rate is >0.
+        max_bound = fmin(max_bound,  (expr_value -  var.value) / var.rate); //rate is >0.
     }
-    *is_finite = isfinite(max_bound);
+    *is_finite = !isinf(max_bound);
     return max_bound;
 }
 
