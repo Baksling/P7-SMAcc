@@ -205,31 +205,7 @@ CPU GPU inline bool edge::edge_enabled(state* state) const
         if(!this->guards.store[i].evaluate_constraint(state))
             return false;
     }
-
-    for (int i = 0; i < this->updates.size; ++i)
-    {
-        this->updates.store[i].apply_temp_update(state);
-    }
-
-    bool is_valid = true;
-        
-    for (int i = 0; i < this->dest->invariants.size; ++i)
-    {
-        if(this->dest->invariants.store[i].evaluate_constraint(state))
-        {
-            is_valid = false;
-            break;
-        }
-    }
-
-    //this is always <= state.variables.size
-    for (int i = 0; i < this->updates.size; ++i)
-    {
-        const int id = this->updates.store[i].variable_id;
-        state->variables.store[id].reset_temp();
-    }
-
-    return is_valid;
+    return true;
 }
 
 CPU GPU void inline state::broadcast_channel(const int channel, const node* source)

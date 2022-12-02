@@ -163,9 +163,13 @@ int main(int argc, const char* argv[])
     
     uppaal_xml_parser xml_parser;
     automata model = xml_parser.parse(config.model_path);
-    
+
+    if(config.verbose) printf("Optimizing...");
     domain_optimization_visitor optimizer = domain_optimization_visitor();
-    optimizer.visit(&model);
+    optimizer.optimize(&model);
+
+    if(optimizer.invalid_constraint())
+        throw std::runtime_error("Model contains an invalid invariant, where a clock is compared to a clock");
 
     setup_config(&config, &model, optimizer.get_max_expr_depth());
 

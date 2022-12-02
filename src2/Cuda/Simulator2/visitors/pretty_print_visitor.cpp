@@ -145,6 +145,16 @@ std::string pretty_print_visitor::expr_type_to_string(const expr* ex)
 std::string pretty_print_visitor::pretty_expr(const expr* ex)
 {
     if(IS_LEAF(ex->operand)) return expr_type_to_string(ex);
+
+    if(ex->operand == expr::conditional_ee)
+    {
+        const std::string left = pretty_expr(ex->left);
+        const std::string right = pretty_expr(ex->right);
+        const std::string cond_else = pretty_expr(ex->conditional_else);
+
+        return "(if" + left + " then " + right + "else " + cond_else + ")" ;
+    }
+    
     std::string left;
     std::string right;
     if (ex->left != nullptr) left = pretty_expr(ex->left);

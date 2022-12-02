@@ -87,7 +87,7 @@ void output_writer::write_lite(std::chrono::steady_clock::duration sim_duration)
     lite.close();
 }
 
-void output_writer::write_hit_file(std::chrono::steady_clock::duration sim_duration) const
+void output_writer::write_hit_file(const std::chrono::steady_clock::duration sim_duration) const
 {
     if (this->node_summary_map_.empty()) return;
     std::ofstream file = std::ofstream(this->file_path_ + "_results.tsv", std::ofstream::out|std::ofstream::trunc);
@@ -109,7 +109,7 @@ void output_writer::write_hit_file(std::chrono::steady_clock::duration sim_durat
     file.close();
 }
 
-output_writer::output_writer(const std::string* path, unsigned sim_count, int write_mode, const automata* model)
+output_writer::output_writer(const std::string* path, const unsigned sim_count, const int write_mode, const automata* model)
 {
     this->file_path_ = *path;
     this->write_mode_ = write_mode;
