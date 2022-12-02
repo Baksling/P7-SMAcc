@@ -466,8 +466,6 @@ arr<node*> uppaal_xml_parser::after_processing()
         std::advance(n_front, i);
         start_nodes.store[number_of_start_nodes++] = *n_front;
     }
-    printf("SIZE %d\n", start_nodes.size);
-    
     return start_nodes;
 }
 

@@ -181,6 +181,5 @@ int main(int argc, const char* argv[])
     {
         simulation_runner::simulate_cpu(&model, &config);
     }
-    
-    printf("PULLY PORKY\n");
+
 }

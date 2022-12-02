@@ -41,8 +41,8 @@ void simulation_runner::simulate_gpu(const automata* model, sim_config* config)
         config->write_mode,
         model        
         );
-    
-    std::cout << "GPU simulation started\n";
+
+    if(config->verbose)  std::cout << "GPU simulation started\n";
     const steady_clock::time_point global_start = steady_clock::now();
     for (unsigned r = 0; r < config->simulation_repetitions; ++r)
     {
@@ -56,7 +56,7 @@ void simulation_runner::simulate_gpu(const automata* model, sim_config* config)
             &store,
             std::chrono::duration_cast<milliseconds>(steady_clock::now() - local_start));
     }
-    std::cout << "GPU simulation finished\n";
+    if(config->verbose) std::cout << "GPU simulation finished\n";
     writer.write_summary(std::chrono::duration_cast<milliseconds>(steady_clock::now() - global_start));
 
     allocator.free_allocations();
