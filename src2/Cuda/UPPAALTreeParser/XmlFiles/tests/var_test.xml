@@ -82,7 +82,7 @@ system M1, M2;
     </system>
 	<queries>
 		<query>
-			<formula>Pr[&lt;=60; 100000](&lt;&gt; M1.Goal)</formula>
+			<formula>Pr[&lt;=100; 100000](&lt;&gt; M1.Goal)</formula>
 			<comment></comment>
 		</query>
 		<query>

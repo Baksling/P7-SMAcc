@@ -4,7 +4,7 @@ import subprocess
 from os import listdir
 from os.path import isfile, join, exists
 from math import ceil
-from typing import Dict
+from typing import Dict, Tuple, Set, List
 
 TEMP_FOLDER_NAME = './tmp_results'
 POST_FIX_TMP_NAME = '_results.tsv'
@@ -110,7 +110,7 @@ def __parse_args():
     return args
 
 
-def run_simulations(args_) -> set[str]:
+def run_simulations(args_) -> tuple[set[str], list[str]]:
     not_run_set = set()
     simulator_path = args_.simulation_path
     folder_path = args_.folder_path
@@ -120,28 +120,26 @@ def run_simulations(args_) -> set[str]:
     for file in only_files:
         print("RUNNING", file)
         file_path = join(folder_path, file)
-        amount = int(ceil(float(args_.amount) / float(32 * 512)))
+        #print(f' m: {file_path}\n n: {args_.amount}\n o: {join(TEMP_FOLDER_NAME, file.replace(".xml", ""))}\n x: {args_.max_progression}{"t" if args_.use_time else "s"}')
+        #amount = int(ceil(float(args_.amount) / float(32 * 512)))
         subprocess.run([
             simulator_path,
             '-m', file_path,
-            '-b', str(32),
-            '-t', str(512),
-            '-a', str(amount),
+            '-b', '40,256',
+            '-n', f'{args_.amount}',
             '-c', '1',
             '-d', '0',
             '-w', 'r',
             '-o', f'{join(TEMP_FOLDER_NAME, file.replace(".xml", ""))}',
-            '-y', str(args_.use_time),
-            '-s', str(args_.max_progression),
-            '-p', str(args_.max_progression),
-            '-v', '1'
+            '-x', f'{args_.max_progression}{"t" if args_.use_time else "s"}',
+            '-v', '0'
         ])
 
         new_file_name = f'{file.replace(".xml", "")}_results.tsv'
         if not exists(join(TEMP_FOLDER_NAME, new_file_name)):
             not_run_set.add(new_file_name)
 
-    return (not_run_set, only_files)
+    return not_run_set, only_files
 
 
 def check_simulation_results(args_, _expected_results, not_run_set, all_files) -> None:
