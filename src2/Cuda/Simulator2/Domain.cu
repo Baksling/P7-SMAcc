@@ -150,7 +150,7 @@ CPU GPU double node::max_progression(state* state, bool* is_finite) const
 
 CPU GPU bool constraint::evaluate_constraint(state* state) const
 {
-    const double left =  this->uses_variable
+    const double left = this->uses_variable
         ? state->variables.store[this->variable_id].value
         : this->value->evaluate_expression(state);
     const double right = this->expression->evaluate_expression(state);
@@ -160,7 +160,7 @@ CPU GPU bool constraint::evaluate_constraint(state* state) const
     case constraint::less_equal_c: return left <= right;
     case constraint::less_c: return left < right;
     case constraint::greater_equal_c: return left >= right;
-    case constraint::greater_c: return left < right;
+    case constraint::greater_c: return left > right;
     case constraint::equal_c: return left == right;  // NOLINT(clang-diagnostic-float-equal)
     case constraint::not_equal_c: return left != right;  // NOLINT(clang-diagnostic-float-equal)
     default: return false;
