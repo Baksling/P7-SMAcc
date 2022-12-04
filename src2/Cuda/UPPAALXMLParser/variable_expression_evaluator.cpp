@@ -164,9 +164,10 @@ expr* variable_expression_evaluator::eval_exp6()
     if (*token_ == '(') 
     {
         get_token();
-        auto result = eval_exp2();
-        expr* ex = new expr();
+        const auto result = eval_exp2();
+        const auto ex = new expr();
         ex->left = result;
+        
         if (*token_ != ')')
         {
             THROW_LINE("Unbalanced Parentheses");
@@ -176,12 +177,10 @@ expr* variable_expression_evaluator::eval_exp6()
             if (!strcmp(temp_token, "random"))
             {
                 ex->operand = expr::random_ee;
-                result = ex;
             }
             else if (!strcmp(temp_token, "sqrt"))
             {
                 ex->operand = expr::sqrt_ee;
-                result = ex;
             }
             else
             {
@@ -189,7 +188,7 @@ expr* variable_expression_evaluator::eval_exp6()
             }
         }
         get_token();
-        return result;
+        return ex;
     }
     else
         switch (tok_type_)
