@@ -10,6 +10,7 @@ using namespace std::chrono;
 
 void simulation_runner::simulate_oracle(const model_oracle* oracle, sim_config* config)
 {
+    printf("YEET :( %d %d %lu\n", config->tracked_variable_count, config->network_size, config->total_simulations());
     memory_allocator allocator = memory_allocator(true);
 
     const size_t n_parallelism = static_cast<size_t>(config->blocks)*config->threads;
@@ -53,7 +54,7 @@ void simulation_runner::simulate_oracle(const model_oracle* oracle, sim_config* 
         simulator_gpu_kernel_oracle<<<config->blocks, config->threads, fast_memory>>>(oracle_d, store_d, config_d);
         cudaDeviceSynchronize();
         if(cudaPeekAtLastError() != cudaSuccess)
-            throw std::runtime_error("An error was encountered while running simulation. Error: " + std::to_string(cudaPeekAtLastError()) + ".\n" );
+            throw std::runtime_error("An error was encountered while running simulation. Errorcode: " + std::to_string(cudaPeekAtLastError()) + ".\n" );
 
         writer.write(
             &store,
@@ -68,6 +69,7 @@ void simulation_runner::simulate_oracle(const model_oracle* oracle, sim_config* 
 
 void simulation_runner::simulate_gpu(const network* model, sim_config* config)
 {
+    printf("YEET %d %d %lu\n", config->tracked_variable_count, config->network_size, config->total_simulations());
     memory_allocator allocator = memory_allocator(true);
     
     const size_t n_parallelism = static_cast<size_t>(config->blocks)*config->threads;
@@ -82,6 +84,7 @@ void simulation_runner::simulate_gpu(const network* model, sim_config* config)
     sim_config* config_d = nullptr;
     CUDA_CHECK(allocator.allocate(&config_d, sizeof(sim_config)));
     CUDA_CHECK(cudaMemcpy(config_d, config, sizeof(sim_config), cudaMemcpyHostToDevice));
+
     
     const result_store store = result_store(
         static_cast<unsigned>(config->total_simulations()),
@@ -151,11 +154,12 @@ void simulation_runner::simulate_cpu(const network* model, sim_config* config)
         const steady_clock::time_point local_start = steady_clock::now();
         thread_pool pool = {config->cpu_threads};
     
-        for (int i = 0; i < n_parallelism; ++i)
+        for (size_t i = 0; i < n_parallelism; ++i)
         {
-            pool.queue_job([model, &store, config, i]()
+            int idx = static_cast<int>(i);
+            pool.queue_job([model, &store, config, idx]()
             {
-                simulate_automata(i, model, &store, config);
+                simulate_automata(idx, model, &store, config);
             });
         }
         pool.await_run();

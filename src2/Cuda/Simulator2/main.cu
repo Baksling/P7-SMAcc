@@ -13,12 +13,13 @@
 
 
 
-class arg_exception : public std::runtime_error
+class arg_exception final : public std::runtime_error
 {
-public:
+private:
     std::string msg_;
+public:
 
-    arg_exception(const arg_exception& ex) : runtime_error(ex.msg_) { msg_ = ex.msg_; }
+    // arg_exception(const arg_exception& ex) : runtime_error(ex.msg_) { msg_ = ex.msg_; }
 
     explicit arg_exception(const char arg_name, const std::string& msg) :  runtime_error(msg)
     {
@@ -27,13 +28,20 @@ public:
         msg_ = o.str();
     }
 
-    ~arg_exception() throw() {}
-    const char* what() const throw() {
+    const char* what() const noexcept override
+    {
         return msg_.c_str();
     }
 };
 
-sim_config parse_configs(int argc, const char* argv[])
+enum parser_state
+{
+    parsed,
+    error,
+    help
+};
+
+parser_state parse_configs(int argc, const char* argv[], sim_config* out_config)
 {
 
     argparse::ArgumentParser parser("Cuda stochastic system simulator", "Argument parser example");
@@ -60,19 +68,22 @@ sim_config parse_configs(int argc, const char* argv[])
 
     //simulation options
     parser.add_argument("-x", "--units", "Maximum number of steps or time to simulate. e.g. 100t for 100 time units or 100s for 100 steps", false);
-
+    parser.add_argument("-s", "--shared", "Attempt to use shared memory in cuda simulation. Will only enable if (threads * 32 > model size)", false);
+    
     //other
     parser.add_argument("-v", "--verbose", "Enable pretty print of model (print model (0) / silent(1))", false);
     parser.enable_help();
 
-
-    if(parser.exists("h"))
-    {
-        parser.print_help();
-        throw std::runtime_error("Help was requested");
-    }
-    
     auto err = parser.parse(argc, argv);
+    if (err) {
+        std::cout << err << std::endl;
+        return parser_state::error;
+    }
+
+    if (parser.exists("help")) {
+        parser.print_help();
+        return parser_state::help;
+    }
     
     sim_config config = {};
     config.seed = static_cast<unsigned long long>(time(nullptr));
@@ -116,6 +127,8 @@ sim_config parse_configs(int argc, const char* argv[])
     if(parser.exists("c")) config.cpu_threads = parser.get<unsigned>("c");
     else config.cpu_threads = 1;
 
+    config.use_shared_memory = parser.exists("s");
+    
     if(parser.exists("x"))
     {
         bool is_timer;
@@ -139,8 +152,9 @@ sim_config parse_configs(int argc, const char* argv[])
     config.simulation_amount = static_cast<unsigned>(ceil(
             static_cast<double>(total_simulations) /
             static_cast<double>((config.blocks * config.threads))));
-    
-    return config;
+
+    *out_config = config;
+    return parser_state::parsed;
 }
 
 void setup_config(sim_config* config, const network* model, const unsigned max_expr_depth)
@@ -160,7 +174,11 @@ int main(int argc, const char* argv[])
 {
     CUDA_CHECK(cudaFree(nullptr));
 
-    sim_config config = parse_configs(argc, argv);
+    sim_config config = {};
+    parser_state state = parse_configs(argc, argv, &config);
+    if(state == error) return -1;
+    if(state == help) return 0;
+    
     memory_allocator allocator = memory_allocator(
         config.sim_location == sim_config::device || config.sim_location == sim_config::both
         );
@@ -168,37 +186,43 @@ int main(int argc, const char* argv[])
     
     uppaal_xml_parser xml_parser;
     network model = xml_parser.parse(config.model_path);
-    network* model_p = &model; 
 
     if(config.verbose)
-        pretty_print_visitor(&std::cout).visit(model_p);
+        pretty_print_visitor(&std::cout).visit(&model);
 
     if(config.verbose) printf("Optimizing...\n");
     domain_optimization_visitor optimizer = domain_optimization_visitor();
     optimizer.optimize(&model);
 
-    config.use_shared_memory = config.can_use_cuda_shared_memory(optimizer.get_model_size().total_memory_size());
-
-    if(optimizer.invalid_constraint())
-        throw std::runtime_error("Model contains an invalid invariant, where a clock is compared to a clock");
-
-    memory_alignment_visitor alignment_visitor = memory_alignment_visitor();
-    model_oracle oracle = alignment_visitor.align(model_p, optimizer.get_model_size(), &allocator);
     setup_config(&config, &model, optimizer.get_max_expr_depth());
-    optimizer.clear();
     
+    if(config.use_shared_memory)
+        config.use_shared_memory = config.can_use_cuda_shared_memory(optimizer.get_model_size().total_memory_size());
+    
+    const bool run_device = (config.sim_location == sim_config::device || config.sim_location == sim_config::both);
+    const bool run_host = config.sim_location == sim_config::host || config.sim_location == sim_config::both;
     
     //run simulation
-    if(config.sim_location == sim_config::device || config.sim_location == sim_config::both)
+    if(config.use_shared_memory && run_device)
     {
+        if(optimizer.invalid_constraint())
+            throw std::runtime_error("Model contains an invalid invariant, where a clock is compared to a clock");
+
+        memory_alignment_visitor alignment_visitor = memory_alignment_visitor();
+        model_oracle oracle = alignment_visitor.align(&model, optimizer.get_model_size(), &allocator);
+        
         simulation_runner::simulate_oracle(&oracle, &config);
-        // simulation_runner::simulate_gpu(&model, &config);
     }
-    if(config.sim_location == sim_config::host || config.sim_location == sim_config::both)
+    if(!config.use_shared_memory && run_device)
+    {
+        simulation_runner::simulate_gpu(&model, &config);
+    }
+    if(run_host)
     {
         simulation_runner::simulate_cpu(&model, &config);
     }
-    
-    allocator.free_allocations();
 
+    optimizer.clear();
+    allocator.free_allocations();
+    return 0;
 }
