@@ -17,8 +17,9 @@ public:
     }
 
     //The one to rule them all!
-    network* allocate_network(const network* source);
+    model_oracle* allocate_model(const network* model);
     
+    void allocate_network(const network* source, network* dest);
     void allocate_node(const node* source, node* dest);
     void allocate_edge(const edge* source, edge* dest);
     void allocate_constraint(const constraint* source, constraint* dest);

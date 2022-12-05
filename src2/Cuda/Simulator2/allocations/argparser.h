@@ -22,6 +22,26 @@
 #include <vector>
 
 namespace argparse {
+  class arg_exception final : public std::runtime_error
+  {
+  private:
+    std::string msg_;
+  public:
+
+    // arg_exception(const arg_exception& ex) : runtime_error(ex.msg_) { msg_ = ex.msg_; }
+
+    explicit arg_exception(const char arg_name, const std::string& msg) :  runtime_error(msg)
+    {
+      std::ostringstream o;
+      o << "error on arg '" << arg_name << "', message: " << msg;
+      msg_ = o.str();
+    }
+
+    const char* what() const noexcept override
+    {
+      return msg_.c_str();
+    }
+  };
 namespace detail {
 static inline bool _not_space(int ch) { return !std::isspace(ch); }
 static inline void _ltrim(std::string &s, bool (*f)(int) = _not_space) {

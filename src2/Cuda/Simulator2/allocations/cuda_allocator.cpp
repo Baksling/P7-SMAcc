@@ -1,6 +1,21 @@
 ﻿#include "cuda_allocator.h"
 
-network* cuda_allocator::allocate_network(const network* source)
+model_oracle* cuda_allocator::allocate_model(const network* model)
+{
+    network* dest = nullptr;
+    CUDA_CHECK(this->allocator_->allocate(&dest, sizeof(network)));
+
+    this->allocate_network(model, dest);
+
+    model_oracle* oracle_d = nullptr;
+    const model_oracle oracle = model_oracle(dest, {});
+    this->allocator_->allocate(&oracle_d, sizeof(model_oracle));
+    CUDA_CHECK(cudaMemcpy(oracle_d, &oracle, sizeof(model_oracle), cudaMemcpyHostToDevice));
+
+    return oracle_d;
+}
+
+void cuda_allocator::allocate_network(const network* source, network* dest)
 {
     const size_t network_size = sizeof(void*)*source->automatas.size;
     node* node_store = nullptr;
@@ -30,11 +45,7 @@ network* cuda_allocator::allocate_network(const network* source)
         arr<clock_var>{ var_store, source->variables.size },
     };
 
-    network* dest = nullptr;
-    CUDA_CHECK(this->allocator_->allocate(&dest, sizeof(network)));
     CUDA_CHECK(cudaMemcpy(dest, &temp, sizeof(network), cudaMemcpyHostToDevice));
-
-    return dest;
 }
 
 void cuda_allocator::allocate_node(const node* source, node* dest)

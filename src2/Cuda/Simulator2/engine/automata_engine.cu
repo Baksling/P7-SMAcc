@@ -53,7 +53,7 @@ CPU GPU node** progress_sim(state* sim_state, const sim_config* config)
 
     // if(config->use_max_steps * sim_state->steps  >= config->max_steps_pr_sim
     //     + !config->use_max_steps * sim_state->global_time >= config->max_global_progression)
-
+    
     if((config->use_max_steps && sim_state->steps  >= config->max_steps_pr_sim)
         || (!config->use_max_steps && sim_state->global_time >= config->max_global_progression) )
             return nullptr;
@@ -197,11 +197,12 @@ CPU GPU void simulate_automata(
     }
 }
 
-__global__ void simulator_gpu_kernel_oracle(
+__global__ void simulator_gpu_kernel(
     const model_oracle* oracle,
     const result_store* output,
     const sim_config* config)
 {
+    // ReSharper disable once CppTooWideScope
     extern __shared__ char shared_mem[];
     const unsigned long idx = threadIdx.x + blockDim.x * blockIdx.x;
     
@@ -219,11 +220,11 @@ __global__ void simulator_gpu_kernel_oracle(
     simulate_automata(idx, model, output, config);
 }
 
-__global__ void simulator_gpu_kernel(
-    const network* model,
-    const result_store* output,
-    const sim_config* config)
-{
-    const unsigned long idx = threadIdx.x + blockDim.x * blockIdx.x;
-    simulate_automata(idx, model, output, config);
-}
+// __global__ void simulator_gpu_kernel(
+//     const network* model,
+//     const result_store* output,
+//     const sim_config* config)
+// {
+//     const unsigned long idx = threadIdx.x + blockDim.x * blockIdx.x;
+//     simulate_automata(idx, model, output, config);
+// }

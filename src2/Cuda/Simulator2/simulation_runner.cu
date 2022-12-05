@@ -10,7 +10,6 @@ using namespace std::chrono;
 
 void simulation_runner::simulate_oracle(const model_oracle* oracle, sim_config* config)
 {
-    printf("YEET :( %d %d %lu\n", config->tracked_variable_count, config->network_size, config->total_simulations());
     memory_allocator allocator = memory_allocator(true);
 
     const size_t n_parallelism = static_cast<size_t>(config->blocks)*config->threads;
@@ -51,7 +50,7 @@ void simulation_runner::simulate_oracle(const model_oracle* oracle, sim_config* 
     for (unsigned r = 0; r < config->simulation_repetitions; ++r)
     {
         const steady_clock::time_point local_start = steady_clock::now();
-        simulator_gpu_kernel_oracle<<<config->blocks, config->threads, fast_memory>>>(oracle_d, store_d, config_d);
+        simulator_gpu_kernel<<<config->blocks, config->threads, fast_memory>>>(oracle_d, store_d, config_d);
         cudaDeviceSynchronize();
         if(cudaPeekAtLastError() != cudaSuccess)
             throw std::runtime_error("An error was encountered while running simulation. Errorcode: " + std::to_string(cudaPeekAtLastError()) + ".\n" );
@@ -69,14 +68,13 @@ void simulation_runner::simulate_oracle(const model_oracle* oracle, sim_config* 
 
 void simulation_runner::simulate_gpu(const network* model, sim_config* config)
 {
-    printf("YEET %d %d %lu\n", config->tracked_variable_count, config->network_size, config->total_simulations());
     memory_allocator allocator = memory_allocator(true);
     
     const size_t n_parallelism = static_cast<size_t>(config->blocks)*config->threads;
     const size_t total_simulations = config->total_simulations();
 
     cuda_allocator av = cuda_allocator(&allocator);
-    network* model_d = av.allocate_network(model);
+    model_oracle* oracle_d = av.allocate_model(model);
     
     CUDA_CHECK(allocator.allocate_cuda(&config->cache, n_parallelism*thread_heap_size(config)));
     CUDA_CHECK(allocator.allocate_cuda(&config->random_state_arr, n_parallelism*sizeof(curandState)));
@@ -103,12 +101,14 @@ void simulation_runner::simulate_gpu(const network* model, sim_config* config)
         model        
         );
 
+    CUDA_CHECK(cudaDeviceSetCacheConfig(cudaFuncCachePreferL1));
+
     if(config->verbose)  std::cout << "GPU simulation started\n";
     const steady_clock::time_point global_start = steady_clock::now();
     for (unsigned r = 0; r < config->simulation_repetitions; ++r)
     {
         const steady_clock::time_point local_start = steady_clock::now();
-        simulator_gpu_kernel<<<config->blocks, config->threads>>>(model_d, store_d, config_d);
+        simulator_gpu_kernel<<<config->blocks, config->threads>>>(oracle_d, store_d, config_d);
         cudaDeviceSynchronize();
         if(cudaPeekAtLastError() != cudaSuccess)
             throw std::runtime_error("An error was encountered while running simulation. Error: " + std::to_string(cudaPeekAtLastError()) + ".\n" );

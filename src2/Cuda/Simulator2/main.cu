@@ -1,5 +1,4 @@
-﻿
-#include <string>
+﻿#include <string>
 #include "simulation_runner.h"
 
 #include "../UPPAALXMLParser/uppaal_xml_parser.h"
@@ -11,28 +10,6 @@
 #include "visitors/memory_alignment_visitor.h"
 #include "visitors/pretty_print_visitor.h"
 
-
-
-class arg_exception final : public std::runtime_error
-{
-private:
-    std::string msg_;
-public:
-
-    // arg_exception(const arg_exception& ex) : runtime_error(ex.msg_) { msg_ = ex.msg_; }
-
-    explicit arg_exception(const char arg_name, const std::string& msg) :  runtime_error(msg)
-    {
-        std::ostringstream o;
-        o << "error on arg '" << arg_name << "', message: " << msg;
-        msg_ = o.str();
-    }
-
-    const char* what() const noexcept override
-    {
-        return msg_.c_str();
-    }
-};
 
 enum parser_state
 {
@@ -90,7 +67,7 @@ parser_state parse_configs(int argc, const char* argv[], sim_config* out_config)
     size_t total_simulations = 1;
     
     if(parser.exists("m")) config.model_path = parser.get<std::string>("m");
-    else throw arg_exception('m', "No model argument supplied");
+    else throw argparse::arg_exception('m', "No model argument supplied");
 
     if(parser.exists("o")) config.out_path = parser.get<std::string>("o");
     else config.out_path = "./output";
@@ -105,9 +82,9 @@ parser_state parse_configs(int argc, const char* argv[], sim_config* out_config)
             &config.blocks,
             &config.threads
             ))
-                throw arg_exception('b', "could not parse block/threads. format: 'blocks,threads'. e.g. '32,512'");
+                throw argparse::arg_exception('b', "could not parse block/threads. format: 'blocks,threads'. e.g. '32,512'");
     }
-    else throw arg_exception('b', "no block arg supplied");
+    else throw argparse::arg_exception('b', "no block arg supplied");
 
     if(parser.exists("n")) total_simulations = parser.get<size_t>("n");
     else if(parser.exists("e") && parser.exists("a"))
@@ -116,7 +93,7 @@ parser_state parse_configs(int argc, const char* argv[], sim_config* out_config)
         double alpha = parser.get<double>("a");
         total_simulations = static_cast<size_t>(ceil((log(2.0) - log(alpha)) / (2*pow(epsilon, 2))));
     }
-    else throw arg_exception('n', "no simulation amount supplied. ");
+    else throw argparse::arg_exception('n', "no simulation amount supplied. ");
 
     if(parser.exists("r")) config.simulation_repetitions = parser.get<unsigned>("r");
     else config.simulation_repetitions = 1;
@@ -134,7 +111,7 @@ parser_state parse_configs(int argc, const char* argv[], sim_config* out_config)
         bool is_timer;
         double unit_value = 0.0;
         bool success = uppaal_xml_parser::try_parse_units(parser.get<std::string>("x"), &is_timer, &unit_value);
-        if(!success) throw arg_exception('x', "could not parse unit format. e.g. 100t or 100s");
+        if(!success) throw argparse::arg_exception('x', "could not parse unit format. e.g. 100t or 100s");
         config.use_max_steps = !is_timer;
         config.max_steps_pr_sim = static_cast<unsigned>(floor(unit_value));
         config.max_global_progression = unit_value;
@@ -170,6 +147,23 @@ void setup_config(sim_config* config, const network* model, const unsigned max_e
     config->max_expression_depth = max_expr_depth;
 }
 
+void print_config(const sim_config* config, const size_t model_size)
+{
+    printf("simulation configuration:\n");
+    printf("simulating on model %s\n", config->model_path.c_str());
+    printf("running %llu simulations on %d repetitions using parallelism of %d.\n",
+        static_cast<unsigned long long>(config->total_simulations()),
+        config->simulation_repetitions,
+        config->blocks*config->threads);
+    printf("Model size: %llu bytes\n", static_cast<unsigned long long>(model_size));
+    printf("attempt to use shared memory: %s (possible: %s)\n",
+        (config->use_shared_memory ? "Yes" : "No" ),
+        (config->can_use_cuda_shared_memory(model_size) ? "Yes" : "No"));
+    printf("End criteria: %lf %s\n",
+        (config->use_max_steps ? static_cast<double>(config->max_steps_pr_sim) : config->max_global_progression),
+        (config->use_max_steps ? "steps" : "time units"));
+}
+
 int main(int argc, const char* argv[])
 {
     CUDA_CHECK(cudaFree(nullptr));
@@ -194,10 +188,12 @@ int main(int argc, const char* argv[])
     domain_optimization_visitor optimizer = domain_optimization_visitor();
     optimizer.optimize(&model);
 
+    size_t model_size = optimizer.get_model_size().total_memory_size();
     setup_config(&config, &model, optimizer.get_max_expr_depth());
+    if(config.verbose) print_config(&config, model_size);
     
     if(config.use_shared_memory)
-        config.use_shared_memory = config.can_use_cuda_shared_memory(optimizer.get_model_size().total_memory_size());
+        config.use_shared_memory = config.can_use_cuda_shared_memory(model_size);
     
     const bool run_device = (config.sim_location == sim_config::device || config.sim_location == sim_config::both);
     const bool run_host = config.sim_location == sim_config::host || config.sim_location == sim_config::both;
