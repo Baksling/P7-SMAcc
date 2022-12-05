@@ -138,18 +138,29 @@ def parse_arguments():
         default=1,
         required=True
     )
+    
+    option_parser.add_argument(
+        '-sm',
+        '--shared_memory',
+        dest='use_shared',
+        help='Use shared Memory',
+        type=int,
+        default=0,
+        required=False
+    )
 
     args = parser.parse_args()
     return args
 
 
 def analyse_performance(args) -> None:
-    min_blocks, blocks= args.min_block, args.max_block
+    min_blocks, blocks = args.min_block, args.max_block
     min_threads, block_threads = args.min_threads, args.max_threads
-    min_cpu_count, cpu_count= args.min_cpu_threads, args.cpu_threads
-    max_gpu_compute: int = args.max_gpu_compute 
+    min_cpu_count, cpu_count = args.min_cpu_threads, args.cpu_threads
+    max_gpu_compute: int = args.max_gpu_compute
 
-    generator = ((block, thread) for block in range(min_blocks, blocks + 1) for thread in range(min_threads, block_threads + 1) if
+    generator = ((block, thread) for block in range(min_blocks, blocks + 1) for thread in
+                 range(min_threads, block_threads + 1, 32) if
                  (block * thread <= max_gpu_compute))
 
     if args.mode == 0 or args.mode == 2:
@@ -157,19 +168,47 @@ def analyse_performance(args) -> None:
             file_path = f'{args.output_file}_GPU_{block}_{thread}'
             amount = math.ceil((args.simulation_amount / (block * thread)))
 
-            subprocess.run([
-                args.simulation_file,
-                '-m', args.model_file,
-                '-b', str(block),
-                '-t', str(thread),
-                '-a', str(amount),
-                '-c', '1',
-                '-d', '0',
-                '-w', 'l',
-                '-o', file_path,
-                '-y', '0',
-                '-v', '1'
-            ])
+            # subprocess.run([
+            #     args.simulation_file,
+            #     '-m', args.model_file,
+            #     '-b', str(block),
+            #     '-t', str(thread),
+            #     '-a', str(amount),
+            #     '-c', '1',
+            #     '-d', '0',
+            #     '-w', 'l',
+            #     '-o', file_path,
+            #     '-y', '0',
+            #     '-v', '1'
+            # ])
+
+            if args.use_shared == 1:
+                subprocess.run([
+                    args.simulation_file,
+                    '-m', args.model_file,
+                    '-b', f'{block},{1 if thread == 0 else thread}',
+                    '-n', f'{args.simulation_amount}',
+                    '-c', '1',
+                    '-d', '0',
+                    '-w', 'l',
+                    '-o', file_path,
+                    '-x', '100t',
+                    '-v', '0',
+                    '-s'
+                ])
+            else:
+                subprocess.run([
+                    args.simulation_file,
+                    '-m', args.model_file,
+                    '-b', f'{block},{1 if thread == 0 else thread}',
+                    '-n', f'{args.simulation_amount}',
+                    '-c', '1',
+                    '-d', '0',
+                    '-w', 'l',
+                    '-o', file_path,
+                    '-x', '100t',
+                    '-v', '0'
+                ])
 
     if args.mode == 1 or args.mode == 2:
         for cpu_core in range(min_cpu_count, cpu_count + 1):
@@ -177,19 +216,32 @@ def analyse_performance(args) -> None:
 
             amount = math.ceil((args.simulation_amount / cpu_core))
 
+            # subprocess.run([
+            #     args.simulation_file,
+            #     '-m', args.model_file,
+            #     '-b', str(1),
+            #     '-t', str(cpu_core),
+            #     '-a', str(amount),
+            #     '-c', '1',
+            #     '-d', '1',
+            #     '-w', 'l',
+            #     '-o', file_path,
+            #     '-y', '0',
+            #     '-v', '1',
+            #     '-u', str(cpu_core)
+            # ])
+
             subprocess.run([
                 args.simulation_file,
                 '-m', args.model_file,
-                '-b', str(1),
-                '-t', str(cpu_core),
-                '-a', str(amount),
-                '-c', '1',
+                '-b', f'1,{cpu_core}',
+                '-n', f'{args.simulation_amount}',
+                '-c', f'{cpu_core}',
                 '-d', '1',
                 '-w', 'l',
                 '-o', file_path,
-                '-y', '0',
-                '-v', '1',
-                '-u', str(cpu_core)
+                '-x', '100t',
+                '-v', '0'
             ])
 
 
