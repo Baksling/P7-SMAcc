@@ -396,5 +396,13 @@ system coin, die_sim;
 			<formula>Pr[&lt;=100;100000](&lt;&gt;die_sim.Goal)</formula>
 			<comment></comment>
 		</query>
+		<query>
+			<formula>simulate[&lt;=100; 100000]{val}</formula>
+			<comment></comment>
+		</query>
+		<query>
+			<formula>E[&lt;=100; 100000](max: val)</formula>
+			<comment></comment>
+		</query>
 	</queries>
 </nta>

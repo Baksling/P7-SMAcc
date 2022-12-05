@@ -105,6 +105,16 @@ def __parse_args():
         default=50,
         required=False
     )
+    
+    general_options.add_argument(
+        '-sm',
+        '--shared_memory',
+        dest='use_shared',
+        help='Use shared Memory',
+        type=int,
+        default=0,
+        required=False
+    )
 
     args = parser.parse_args()
     return args
@@ -122,18 +132,34 @@ def run_simulations(args_) -> tuple[set[str], list[str]]:
         file_path = join(folder_path, file)
         #print(f' m: {file_path}\n n: {args_.amount}\n o: {join(TEMP_FOLDER_NAME, file.replace(".xml", ""))}\n x: {args_.max_progression}{"t" if args_.use_time else "s"}')
         #amount = int(ceil(float(args_.amount) / float(32 * 512)))
-        subprocess.run([
-            simulator_path,
-            '-m', file_path,
-            '-b', '40,256',
-            '-n', f'{args_.amount}',
-            '-c', '1',
-            '-d', '0',
-            '-w', 'r',
-            '-o', f'{join(TEMP_FOLDER_NAME, file.replace(".xml", ""))}',
-            '-x', f'{args_.max_progression}{"t" if args_.use_time else "s"}',
-            '-v', '0'
-        ])
+        
+        if args.use_shared == 1:
+            subprocess.run([
+                simulator_path,
+                '-m', file_path,
+                '-b', '40,256',
+                '-n', f'{args_.amount}',
+                '-c', '1',
+                '-d', '0',
+                '-w', 'r',
+                '-o', f'{join(TEMP_FOLDER_NAME, file.replace(".xml", ""))}',
+                '-x', f'{args_.max_progression}{"t" if args_.use_time else "s"}',
+                '-v', '0',
+                '-s'
+            ])
+        else:
+            subprocess.run([
+                simulator_path,
+                '-m', file_path,
+                '-b', '40,256',
+                '-n', f'{args_.amount}',
+                '-c', '1',
+                '-d', '0',
+                '-w', 'r',
+                '-o', f'{join(TEMP_FOLDER_NAME, file.replace(".xml", ""))}',
+                '-x', f'{args_.max_progression}{"t" if args_.use_time else "s"}',
+                '-v', '0'
+            ])
 
         new_file_name = f'{file.replace(".xml", "")}_results.tsv'
         if not exists(join(TEMP_FOLDER_NAME, new_file_name)):
@@ -213,6 +239,7 @@ def get_expected_simulation_results() -> dict[str, value_checker]:
         'update_6': value_checker(50.0, 0),
         'update_7': value_checker(30.0, 0),
         'update_8': value_checker(30.0, 0),
+        'update_var_inv_1': value_checker(50.0, 0),
         'invariant_1': value_checker(25.0, 0),
         'invariant_2': value_checker(50.0, 0),
         'invariant_3': value_checker(50.0, 0),

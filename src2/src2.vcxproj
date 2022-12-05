@@ -1646,6 +1646,7 @@
     <ClInclude Include="Cuda\Domain\simulator_state.h" />
     <ClInclude Include="Cuda\UPPAALTreeParser\parser_exception.h" />
     <Content Include="Analysis\analysis_plotter.py" />
+    <Content Include="Analysis\file_assembler.py" />
     <Content Include="Analysis\integration_test.py" />
     <Content Include="Analysis\performance_analysis.py" />
     <Content Include="Analysis\trace_analyser.py" />
