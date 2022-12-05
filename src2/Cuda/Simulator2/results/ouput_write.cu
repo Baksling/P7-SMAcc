@@ -109,7 +109,7 @@ void output_writer::write_hit_file(const std::chrono::steady_clock::duration sim
     file.close();
 }
 
-output_writer::output_writer(const std::string* path, const unsigned sim_count, const int write_mode, const automata* model)
+output_writer::output_writer(const std::string* path, const unsigned sim_count, const int write_mode, const network* model)
 {
     this->file_path_ = *path;
     this->write_mode_ = write_mode;
@@ -133,7 +133,7 @@ output_writer::output_writer(const std::string* path, const unsigned sim_count, 
             j++;
         }
     
-    this->model_count_ = model->network.size;
+    this->model_count_ = model->automatas.size;
     this->node_summary_map_ = std::map<int, node_summary>();
 }
 

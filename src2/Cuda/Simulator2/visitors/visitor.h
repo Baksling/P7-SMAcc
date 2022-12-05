@@ -2,7 +2,7 @@
 
 #include <unordered_set>
 
-#include "../Domain.h"
+#include "../engine/Domain.h"
 
 class visitor
 {
@@ -10,7 +10,7 @@ protected:
     std::unordered_set<const void*> visit_set_;
     bool has_visited(const void* p);
 
-    static void accept(const automata* a, visitor* v);
+    static void accept(const network* a, visitor* v);
     static void accept(const node* n, visitor* v);
     static void accept(const edge* e, visitor* v);
     static void accept(const constraint* c, visitor* v);
@@ -19,8 +19,7 @@ protected:
     static void accept(const expr* ex, visitor* v);
     
 public:
-    virtual ~visitor() = default;
-    virtual void visit(automata* a) = 0;
+    virtual void visit(network* a) = 0;
     virtual void visit(node* n) = 0;
     virtual void visit(edge* e) = 0;
     virtual void visit(constraint* c) = 0;

@@ -11,7 +11,7 @@
 #include <cstring>
 #include <iostream>
 #include <map>
-#include "../Simulator2/Domain.h"
+#include "../Simulator2/engine/Domain.h"
 #include <unordered_map>
 
 #include "parser_exception.h"

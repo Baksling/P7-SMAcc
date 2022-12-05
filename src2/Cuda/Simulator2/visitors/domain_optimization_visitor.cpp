@@ -1,7 +1,7 @@
 ﻿#include "domain_optimization_visitor.h"
 #include <list>
 
-void domain_optimization_visitor::visit(automata* a)
+void domain_optimization_visitor::visit(network* a)
 {
     if(has_visited(a)) return;
 
@@ -10,6 +10,7 @@ void domain_optimization_visitor::visit(automata* a)
         clock_var* var = &a->variables.store[i];
         variables_clock_map_.insert(std::pair<int, bool>(var->id, var->rate > 0));
     }
+    model_counter_.network_size = a->automatas.size;
     
     accept(a, this);
 }
@@ -17,13 +18,14 @@ void domain_optimization_visitor::visit(automata* a)
 void domain_optimization_visitor::visit(node* n)
 {
     if(has_visited(n)) return;
-
+    model_counter_.nodes++;
+    
     for (int i = 0; i < n->invariants.size; ++i)
     {
         const constraint con = n->invariants.store[i];
         if(con.uses_variable)
         {
-            this->contains_invalid_constraint = this->contains_invalid_constraint || expr_contains_clock(con.expression);
+            this->contains_invalid_constraint_ = this->contains_invalid_constraint_ || expr_contains_clock(con.expression);
         }
     }
     
@@ -33,6 +35,7 @@ void domain_optimization_visitor::visit(node* n)
 void domain_optimization_visitor::visit(edge* e)
 {
     if(has_visited(e)) return;
+    model_counter_.edges++;
     
     compound_optimize_constraints(e);
     
@@ -42,12 +45,15 @@ void domain_optimization_visitor::visit(edge* e)
 void domain_optimization_visitor::visit(constraint* c)
 {
     if(has_visited(c)) return;
+    model_counter_.constraints++;
+    
     accept(c, this);
 }
 
 void domain_optimization_visitor::visit(clock_var* cv)
 {
     if(has_visited(cv)) return;
+    model_counter_.variables++;
 
     accept(cv, this);
 }
@@ -55,36 +61,39 @@ void domain_optimization_visitor::visit(clock_var* cv)
 void domain_optimization_visitor::visit(update* u)
 {
     if(has_visited(u)) return;
+    model_counter_.updates++;
+    
     accept(u, this);
 }
 
 void domain_optimization_visitor::visit(expr* ex)
 {
     if(has_visited(ex)) return;
+    model_counter_.expressions++;
+    
     bool has_lock = false;
-    if(check_depth_lock)
+    if(check_depth_lock_)
     {
         has_lock = true;
-        check_depth_lock = false;
+        check_depth_lock_ = false;
         const unsigned max_depth = count_expr_depth(ex);
         this->max_expr_depth_ = max_depth > this->max_expr_depth_ ? max_depth : this->max_expr_depth_;
     }
     
     accept(ex, this);
 
-    if(has_lock) check_depth_lock = true;
+    if(has_lock) check_depth_lock_ = true;
 }
 
 void domain_optimization_visitor::clear()
 {
     this->max_expr_depth_ = 0;
-    this->check_depth_lock = true;
+    this->check_depth_lock_ = true;
     this->variables_clock_map_.clear();
-    this->model_counter_.total_memory_size = 0;
     this->model_counter_.nodes = 0;
     this->model_counter_.edges = 0;
-    this->model_counter_.constraint = 0;
-    this->model_counter_.clocks = 0;
+    this->model_counter_.constraints = 0;
+    this->model_counter_.variables = 0;
     this->model_counter_.updates = 0;
     this->model_counter_.expressions = 0;
 }
@@ -96,7 +105,7 @@ unsigned domain_optimization_visitor::get_max_expr_depth() const
 
 bool domain_optimization_visitor::invalid_constraint() const
 {
-    return this->contains_invalid_constraint;
+    return this->contains_invalid_constraint_;
 }
 
 unsigned domain_optimization_visitor::count_expr_depth(const expr* ex)

@@ -1,21 +1,21 @@
 ﻿#include "cuda_allocator.h"
 
-automata* cuda_allocator::allocate_automata(const automata* source)
+network* cuda_allocator::allocate_network(const network* source)
 {
-    const size_t network_size = sizeof(void*)*source->network.size;
+    const size_t network_size = sizeof(void*)*source->automatas.size;
     node* node_store = nullptr;
-    CUDA_CHECK(this->allocator_->allocate(&node_store, sizeof(node)*source->network.size));
+    CUDA_CHECK(this->allocator_->allocate(&node_store, sizeof(node)*source->automatas.size));
     node** local_network = static_cast<node**>(malloc(network_size));
     
-    for (int i = 0; i < source->network.size; ++i)
+    for (int i = 0; i < source->automatas.size; ++i)
     {
-        this->allocate_node(source->network.store[i], &node_store[i]);
+        this->allocate_node(source->automatas.store[i], &node_store[i]);
         local_network[i] = &node_store[i];
     }
 
-    node** network = nullptr;
-    CUDA_CHECK(this->allocator_->allocate(&network, network_size));
-    CUDA_CHECK(cudaMemcpy(network, local_network, network_size, cudaMemcpyHostToDevice));
+    node** network_store = nullptr;
+    CUDA_CHECK(this->allocator_->allocate(&network_store, network_size));
+    CUDA_CHECK(cudaMemcpy(network_store, local_network, network_size, cudaMemcpyHostToDevice));
 
     clock_var* var_store = nullptr;
     CUDA_CHECK(this->allocator_->allocate(&var_store, sizeof(clock_var)*source->variables.size));
@@ -25,14 +25,14 @@ automata* cuda_allocator::allocate_automata(const automata* source)
         allocate_clock(&source->variables.store[i], &var_store[i]);
     }
 
-    const automata temp = {
-        arr<node*>{ network, source->network.size },
+    const network temp = {
+        arr<node*>{ network_store, source->automatas.size },
         arr<clock_var>{ var_store, source->variables.size },
     };
 
-    automata* dest = nullptr;
-    CUDA_CHECK(this->allocator_->allocate(&dest, sizeof(automata)));
-    CUDA_CHECK(cudaMemcpy(dest, &temp, sizeof(automata), cudaMemcpyHostToDevice));
+    network* dest = nullptr;
+    CUDA_CHECK(this->allocator_->allocate(&dest, sizeof(network)));
+    CUDA_CHECK(cudaMemcpy(dest, &temp, sizeof(network), cudaMemcpyHostToDevice));
 
     return dest;
 }
@@ -201,4 +201,21 @@ void cuda_allocator::allocate_expr(const expr* source, expr* dest)
     else if(source->operand == expr::conditional_ee)    temp.conditional_else = else_branch;
 
     CUDA_CHECK(cudaMemcpy(dest, &temp, sizeof(expr), cudaMemcpyHostToDevice));
+}
+
+model_oracle* cuda_allocator::allocate_oracle(const model_oracle* oracle) const
+{
+    void* point = nullptr;
+    const size_t size = oracle->model_counter.total_memory_size();
+    CUDA_CHECK(this->allocator_->allocate_cuda(&point, size));
+    CUDA_CHECK(cudaMemcpy(point, oracle->point, size, cudaMemcpyHostToDevice));
+
+    model_oracle temp = model_oracle(point, oracle->model_counter);
+    temp.initial_point = oracle->initial_point;
+    
+    model_oracle* oracle_d = nullptr; 
+    CUDA_CHECK(this->allocator_->allocate_cuda(&oracle_d, sizeof(model_oracle)));
+    CUDA_CHECK(cudaMemcpy(oracle_d, &temp, sizeof(model_oracle), cudaMemcpyHostToDevice));
+
+    return oracle_d;
 }

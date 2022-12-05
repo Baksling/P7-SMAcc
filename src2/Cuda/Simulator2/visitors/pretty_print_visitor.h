@@ -19,7 +19,7 @@ private:
 public:
      explicit pretty_print_visitor(std::ostream* stream);
 
-     void visit(automata* a) override;
+     void visit(network* a) override;
      void visit(node* n) override;
      void visit(edge* e) override;
      void visit(constraint* c) override;

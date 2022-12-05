@@ -5,8 +5,8 @@ struct state;
 struct edge;
 struct node;
 
-#include "common/macro.h"
-#include "common/my_stack.h"
+#include "../common/macro.h"
+#include "../common/my_stack.h"
 
 #define HAS_HIT_MAX_STEPS(x) ((x) < 0)
 
@@ -102,23 +102,16 @@ struct clock_var
     unsigned rate;
     double value;
     double max_value;
-    double temp_value;
 
     CPU GPU void add_time(const double time)
     {
         this->value += time*this->rate;
-        this->temp_value = this->value;
         this->max_value = fmax(this->max_value, this->value);
     }
     CPU GPU void set_value(const double val)
     {
         this->value = val;
-        this->temp_value = val;
         this->max_value = fmax(this->max_value, this->value);
-    }
-    CPU GPU void reset_temp()
-    {
-        this->temp_value = this->value;
     }
 };
 
@@ -138,7 +131,6 @@ struct update
 {
     int variable_id;
     expr* expression;
-    CPU GPU void apply_temp_update(state* state) const;
     CPU GPU void apply_update(state* state) const;
 };
 
@@ -161,9 +153,9 @@ struct edge
     CPU GPU bool edge_enabled(state* state) const;
 };
 
-struct automata
+struct network
 {
-    arr<node*> network;
+    arr<node*> automatas;
     arr<clock_var> variables;
 };
 
@@ -182,8 +174,8 @@ struct state
 
     CPU GPU void broadcast_channel(int channel, const node* source);
 
-    CPU GPU static state init(void* cache, curandState* random,  const automata* model, const unsigned expr_depth);
+    CPU GPU static state init(void* cache, curandState* random,  const network* model, const unsigned expr_depth);
 
-    CPU GPU void reset(const unsigned sim_id, const automata* model);
+    CPU GPU void reset(const unsigned sim_id, const network* model);
 };
 #endif

@@ -182,7 +182,6 @@ void uppaal_xml_parser::init_global_clocks(const xml_document* doc)
             c_v.id = vars_id_++;
             c_v.value = d.get_value();
             c_v.max_value = c_v.value;
-            c_v.temp_value = c_v.value;
             c_v.rate = 1;
             c_v.should_track = false;
             vars_list_->push_back(c_v);
@@ -199,7 +198,6 @@ void uppaal_xml_parser::init_global_clocks(const xml_document* doc)
             c_v.id = vars_id_++;
             c_v.value = d.get_value();
             c_v.max_value = c_v.value;
-            c_v.temp_value = c_v.value;
             c_v.rate = 0;
             c_v.should_track = true;
             vars_list_->push_back(c_v);
@@ -224,7 +222,6 @@ void uppaal_xml_parser::init_local_clocks(xml_node template_node)
             c_v.id = vars_id_++;
             c_v.value = d.get_value();
             c_v.max_value = c_v.value;
-            c_v.temp_value = c_v.value;
             c_v.rate = 1;
             c_v.should_track = false;
             vars_list_->push_back(c_v);
@@ -240,7 +237,6 @@ void uppaal_xml_parser::init_local_clocks(xml_node template_node)
             c_v.id = vars_id_++;
             c_v.value = d.get_value();
             c_v.max_value = c_v.value;
-            c_v.temp_value = c_v.value;
             c_v.rate = 0;
             c_v.should_track = true;
             vars_list_->push_back(c_v);
@@ -470,7 +466,7 @@ arr<node*> uppaal_xml_parser::after_processing()
 }
 
 
-__host__ automata uppaal_xml_parser::parse_xml(const char* file_path)
+__host__ network uppaal_xml_parser::parse_xml(const char* file_path)
 {
     string path = file_path;
     xml_document doc;
@@ -532,10 +528,10 @@ __host__ automata uppaal_xml_parser::parse_xml(const char* file_path)
     }
     
     const auto start_nodes = after_processing();
-    return automata{start_nodes, to_array(vars_list_)};
+    return network{start_nodes, to_array(vars_list_)};
 }
 
-__host__ automata uppaal_xml_parser::parse(string file_path)
+__host__ network uppaal_xml_parser::parse(string file_path)
 {
     try
     {

@@ -2,6 +2,8 @@
 #ifndef SIM_CONFIG_H
 #define SIM_CONFIG_H
 
+#define SHARED_MEMORY_PR_THREAD 32
+
 #include "macro.h"
 
 struct sim_config
@@ -27,6 +29,7 @@ struct sim_config
     } sim_location;
     
     //model parameters (setup using function)
+    bool use_shared_memory = false;
     unsigned int max_expression_depth = 1;
     unsigned tracked_variable_count = 1;
     unsigned variable_count = 1;
@@ -43,6 +46,11 @@ struct sim_config
     size_t total_simulations() const
     {
         return static_cast<size_t>(blocks) * threads * simulation_amount;
+    }
+
+    bool can_use_cuda_shared_memory(const size_t model_size) const
+    {
+        return (static_cast<size_t>(this->threads) * SHARED_MEMORY_PR_THREAD) > (model_size);
     }
 };
 

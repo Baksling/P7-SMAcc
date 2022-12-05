@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include "../common/macro.h"
 #include "../allocations/memory_allocator.h"
-#include "../Domain.h"
+#include "../engine/Domain.h"
 
 
 struct sim_metadata

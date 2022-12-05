@@ -6,18 +6,13 @@ pretty_print_visitor::pretty_print_visitor(std::ostream* stream)
     visit_set_.clear();
 }
 
-void automata_accept()
-{
-    
-}
 
-void pretty_print_visitor::visit(automata* a)
+void pretty_print_visitor::visit(network* a)
 {
     *this->stream_ << "MODEL START\n";
     
     visitor::accept(a, this);
     *this->stream_ << "MODEL END\n";
-    *this->stream_ << "pully porky\n";
 }
 
 void pretty_print_visitor::visit(node* n)
@@ -26,14 +21,10 @@ void pretty_print_visitor::visit(node* n)
     this->scope_ = 1;
     *this->stream_ << "NODE = id: " << n->id
                    << " | is branch: " << (n->is_branch_point ? "True" : "False")
-                   << " | is goal: " << (n->is_goal ? "True" : "False");
+                   << " | is goal: " << (n->is_goal ? "True" : "False")
+                   << " | lambda: " << pretty_expr(n->lamda) << '\n';
 
     this->scope_++;
-    print_indent();
-    
-    *this->stream_ << "lambda: " << pretty_expr(n->lamda)
-                   << '\n';
-    
     accept(n, this);
     if(this->scope_ > 0) this->scope_--;
 }
@@ -152,7 +143,7 @@ std::string pretty_print_visitor::pretty_expr(const expr* ex)
         const std::string right = pretty_expr(ex->right);
         const std::string cond_else = pretty_expr(ex->conditional_else);
 
-        return "(if" + left + " then " + right + "else " + cond_else + ")" ;
+        return "(if " + left + " then " + right + " else " + cond_else + ")" ;
     }
     
     std::string left;

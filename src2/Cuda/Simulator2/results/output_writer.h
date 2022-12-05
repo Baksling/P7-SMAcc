@@ -72,7 +72,7 @@ private:
     void write_hit_file(std::chrono::steady_clock::duration sim_duration) const;
 
 public:
-    explicit output_writer(const std::string* path, unsigned sim_count, int write_mode, const automata* model);
+    explicit output_writer(const std::string* path, unsigned sim_count, int write_mode, const network* model);
     void write(const result_store* sim_result, std::chrono::steady_clock::duration sim_duration);
     void write_summary(std::chrono::steady_clock::duration sim_duration) const;
     void clear();

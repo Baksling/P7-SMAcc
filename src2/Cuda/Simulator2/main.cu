@@ -8,6 +8,7 @@
 #include "./allocations/argparser.h"
 
 #include "visitors/domain_optimization_visitor.h"
+#include "visitors/memory_alignment_visitor.h"
 #include "visitors/pretty_print_visitor.h"
 
 
@@ -142,7 +143,7 @@ sim_config parse_configs(int argc, const char* argv[])
     return config;
 }
 
-void setup_config(sim_config* config, const automata* model, const unsigned max_expr_depth)
+void setup_config(sim_config* config, const network* model, const unsigned max_expr_depth)
 {
     unsigned track_count = 0;
     for (int i = 0; i < model->variables.size; ++i)
@@ -150,7 +151,7 @@ void setup_config(sim_config* config, const automata* model, const unsigned max_
             track_count++;
 
     config->tracked_variable_count = track_count;
-    config->network_size = model->network.size;
+    config->network_size = model->automatas.size;
     config->variable_count = model->variables.size;
     config->max_expression_depth = max_expr_depth;
 }
@@ -160,30 +161,44 @@ int main(int argc, const char* argv[])
     CUDA_CHECK(cudaFree(nullptr));
 
     sim_config config = parse_configs(argc, argv);
+    memory_allocator allocator = memory_allocator(
+        config.sim_location == sim_config::device || config.sim_location == sim_config::both
+        );
+
     
     uppaal_xml_parser xml_parser;
-    automata model = xml_parser.parse(config.model_path);
+    network model = xml_parser.parse(config.model_path);
+    network* model_p = &model; 
 
-    if(config.verbose) printf("Optimizing...");
+    if(config.verbose)
+        pretty_print_visitor(&std::cout).visit(model_p);
+
+    if(config.verbose) printf("Optimizing...\n");
     domain_optimization_visitor optimizer = domain_optimization_visitor();
     optimizer.optimize(&model);
+
+    config.use_shared_memory = config.can_use_cuda_shared_memory(optimizer.get_model_size().total_memory_size());
 
     if(optimizer.invalid_constraint())
         throw std::runtime_error("Model contains an invalid invariant, where a clock is compared to a clock");
 
+    memory_alignment_visitor alignment_visitor = memory_alignment_visitor();
+    model_oracle oracle = alignment_visitor.align(model_p, optimizer.get_model_size(), &allocator);
     setup_config(&config, &model, optimizer.get_max_expr_depth());
-
-    if(config.verbose)
-        pretty_print_visitor(&std::cout).visit(&model);
-
+    optimizer.clear();
+    
+    
     //run simulation
     if(config.sim_location == sim_config::device || config.sim_location == sim_config::both)
     {
-        simulation_runner::simulate_gpu(&model, &config);
+        simulation_runner::simulate_oracle(&oracle, &config);
+        // simulation_runner::simulate_gpu(&model, &config);
     }
     if(config.sim_location == sim_config::host || config.sim_location == sim_config::both)
     {
         simulation_runner::simulate_cpu(&model, &config);
     }
+    
+    allocator.free_allocations();
 
 }

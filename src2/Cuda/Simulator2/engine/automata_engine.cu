@@ -1,8 +1,9 @@
 ﻿
-#include "common/macro.h"
-#include "common/sim_config.h"
-#include "Domain.cu"    
-#include "./results/result_store.h" 
+#include "../common/macro.h"
+#include "Domain.cu"
+#include "model_oracle.cu"
+#include "../common/sim_config.h"
+#include "../results/result_store.h" 
 #include "device_launch_parameters.h"
 
 
@@ -104,8 +105,6 @@ CPU GPU node** progress_sim(state* sim_state, const sim_config* config)
             sim_state->variables.store[i].add_time(min_progression_time);
         }
         sim_state->global_time += min_progression_time;
-
-        // printf("sim_id: %d | step: %d | time: %lf | next: %p\n", sim_state->simulation_id, sim_state->steps, sim_state->global_time,  winning_model);
     }
 
     return winning_model;
@@ -163,7 +162,7 @@ CPU GPU edge* pick_next_edge(const arr<edge>& edges, state* state)
 
 CPU GPU void simulate_automata(
     const unsigned idx,
-    const automata* model,
+    const network* model,
     const result_store* output,
     const sim_config* config)
 {
@@ -176,12 +175,12 @@ CPU GPU void simulate_automata(
     {
         const unsigned int sim_id = i + config->simulation_amount * static_cast<unsigned int>(idx);
         sim_state.reset(sim_id, model);
-
+        
         //run simulation
         while (true)
         {
             node** state = progress_sim(&sim_state, config);
-
+            
             if(state == nullptr || (*state)->is_goal) break;
             
             do
@@ -192,15 +191,36 @@ CPU GPU void simulate_automata(
                 *state = e->dest;
                 e->apply_updates(&sim_state);
                 sim_state.broadcast_channel(e->channel, *state);
-            
             } while ((*state)->is_branch_point);
         }
         output->write_output(&sim_state);
     }
 }
 
+__global__ void simulator_gpu_kernel_oracle(
+    const model_oracle* oracle,
+    const result_store* output,
+    const sim_config* config)
+{
+    extern __shared__ char shared_mem[];
+    const unsigned long idx = threadIdx.x + blockDim.x * blockIdx.x;
+    
+    network* model;
+    if(config->use_shared_memory)
+    {
+        model = oracle->move_to_shared_memory(shared_mem, static_cast<int>(config->threads));
+    }
+    else
+    {
+        model = oracle->network_point();
+    }
+    cuda_SYNCTHREADS();
+
+    simulate_automata(idx, model, output, config);
+}
+
 __global__ void simulator_gpu_kernel(
-    const automata* model,
+    const network* model,
     const result_store* output,
     const sim_config* config)
 {

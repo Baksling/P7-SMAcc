@@ -9,7 +9,7 @@ CPU GPU double evaluate_expression_node(const expr* expr, state* state)
     case expr::literal_ee:
         return expr->value;
     case expr::clock_variable_ee:
-        return state->variables.store[expr->variable_id].temp_value;
+        return state->variables.store[expr->variable_id].value;
     case expr::random_ee:
         v1 = state->value_stack.pop();
         return (1.0 - curand_uniform_double(state->random)) * v1;
@@ -70,8 +70,8 @@ CPU GPU double evaluate_expression_node(const expr* expr, state* state)
         v1 = state->value_stack.pop();
         state->value_stack.pop();
         return v1;
-    default: return 0.0;
     }
+    return 0.0;
 }
 
 CPU GPU double expr::evaluate_expression(state* state)
@@ -178,12 +178,6 @@ CPU GPU bool constraint::evaluate_constraint_set(const arr<constraint>& con_arr,
     return true;
 }
 
-CPU GPU inline void update::apply_temp_update(state* state) const
-{
-    const double value = this->expression->evaluate_expression(state);
-    state->variables.store[this->variable_id].temp_value = value;
-}
-
 CPU GPU inline void update::apply_update(state* state) const
 {
     const double value = this->expression->evaluate_expression(state);
@@ -211,23 +205,25 @@ CPU GPU inline bool edge::edge_enabled(state* state) const
 CPU GPU void inline state::broadcast_channel(const int channel, const node* source)
 {
     if(!IS_BROADCASTER(channel)) return;
-
+    
     for (int i = 0; i < this->models.size; ++i)
     {
         const node* current = this->models.store[i];
+        
         if(current->id == source->id) continue;
         if(current->is_goal) continue;
         if(!constraint::evaluate_constraint_set(current->invariants, this)) continue;
         
         const unsigned offset = curand(this->random) % current->edges.size;
+        
         for (int j = 0; j < current->edges.size; ++j)
         {
             const edge current_e = current->edges.store[(j + offset) % current->edges.size];
             if(!IS_LISTENER(current_e.channel)) continue;
             if(!CAN_SYNC(channel, current_e.channel)) continue;
-
-            node* dest = current_e.dest;
             
+            node* dest = current_e.dest;
+
             this->models.store[i] = dest;
 
             current_e.apply_updates(this);
@@ -236,10 +232,10 @@ CPU GPU void inline state::broadcast_channel(const int channel, const node* sour
     }
 }
 
-state state::init(void* cache, curandState* random, const automata* model, const unsigned expr_depth)
+state state::init(void* cache, curandState* random, const network* model, const unsigned expr_depth)
 {
     node** nodes = static_cast<node**>(cache);
-    cache = static_cast<void*>(&nodes[model->network.size]);
+    cache = static_cast<void*>(&nodes[model->automatas.size]);
         
     clock_var* vars = static_cast<clock_var*>(cache);
     cache = static_cast<void*>(&vars[model->variables.size]);
@@ -248,13 +244,13 @@ state state::init(void* cache, curandState* random, const automata* model, const
     cache = static_cast<void*>(&exp[expr_depth*2+1]);
         
     double* val_store = static_cast<double*>(cache);
-    cache = static_cast<void*>(&val_store[expr_depth]);
+    // cache = static_cast<void*>(&val_store[expr_depth]);
         
     return state{
         0,
         0,
         0.0,
-        arr<node*>{ nodes, model->network.size },
+        arr<node*>{ nodes, model->automatas.size },
         arr<clock_var>{ vars, model->variables.size },
         random,
         my_stack<expr*>(exp, static_cast<int>(expr_depth*2+1)),
@@ -262,15 +258,14 @@ state state::init(void* cache, curandState* random, const automata* model, const
     };
 }
 
-void state::reset(const unsigned sim_id, const automata* model)
+void state::reset(const unsigned sim_id, const network* model)
 {
     this->simulation_id = sim_id;
     this->steps = 0;
     this->global_time = 0.0;
-        
-    for (int i = 0; i < model->network.size; ++i)
+    for (int i = 0; i < model->automatas.size; ++i)
     {
-        this->models.store[i] = model->network.store[i];
+        this->models.store[i] = model->automatas.store[i];
     }
 
     for (int i = 0; i < model->variables.size; ++i)
