@@ -113,15 +113,13 @@ def parse_args():
 
 def run_simulations(args):
     for run_idx in range(1, args.max_amount + 1, args.interval):
-
         if args.device == 0:
             blocks = int(args.blocks)
             threads = int(args.threads)
 
             amount = ceil(float(run_idx) / float(blocks * threads))
 
-            file_path = f'{amount*blocks*threads}_GPU_{run_idx}'
-
+            file_path = f'{args.output_path}{amount*blocks*threads}_GPU_{run_idx}'
             subprocess.run([
                 args.simulation_file,
                 '-m', args.model_file,
@@ -140,7 +138,7 @@ def run_simulations(args):
             cpu_core = args.cpu_cores
             amount = ceil((float(run_idx) / float(cpu_core)))
 
-            file_path = f'{cpu_core*amount}_CPU_{run_idx}'
+            file_path = f'{args.output_path}{cpu_core*amount}_CPU_{run_idx}'
 
             subprocess.run([
                 args.simulation_file,
