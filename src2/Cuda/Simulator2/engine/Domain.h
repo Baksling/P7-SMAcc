@@ -19,7 +19,7 @@ struct arr
     static arr<T> empty(){ return arr<T>{nullptr, 0}; }
 };
 
-#define IS_LEAF(x) ((x) <= 2)
+#define IS_LEAF(x) ((x) < 2)
 struct expr  // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
     enum operators

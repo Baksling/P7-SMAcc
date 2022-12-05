@@ -389,6 +389,7 @@ expr* uppaal_xml_parser::handle_if_statement(const string& input)
     whole_expr->left = condition_e;
     whole_expr->right = if_true_e;
     whole_expr->conditional_else = if_false_e;
+    whole_expr->operand = expr::conditional_ee;
     
     return whole_expr;
 }
