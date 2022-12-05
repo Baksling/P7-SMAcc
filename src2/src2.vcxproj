@@ -1649,6 +1649,7 @@
     <Content Include="Analysis\file_assembler.py" />
     <Content Include="Analysis\integration_test.py" />
     <Content Include="Analysis\performance_analysis.py" />
+    <Content Include="Analysis\simulation_amount_analysis.py" />
     <Content Include="Analysis\trace_analyser.py" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\and_guy.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\bigusdickuslmao.xml" />

@@ -165,8 +165,8 @@ def analyse_performance(args) -> None:
 
     if args.mode == 0 or args.mode == 2:
         for block, thread in generator:
-            file_path = f'{args.output_file}_GPU_{block}_{thread}'
-            amount = math.ceil((args.simulation_amount / (block * thread)))
+            file_path = f'{args.output_file}_GPU_{1 if block == 0 else block}_{thread}'
+            # amount = math.ceil((args.simulation_amount / (block * thread)))
 
             # subprocess.run([
             #     args.simulation_file,
@@ -214,7 +214,7 @@ def analyse_performance(args) -> None:
         for cpu_core in range(min_cpu_count, cpu_count + 1):
             file_path = f'{args.output_file}_CPU_{cpu_core}'
 
-            amount = math.ceil((args.simulation_amount / cpu_core))
+            # amount = math.ceil((args.simulation_amount / cpu_core))
 
             # subprocess.run([
             #     args.simulation_file,
