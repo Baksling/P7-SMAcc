@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>// Fischer's mutual exclusion protocol.
+
+int id;</declaration>
+	<template>
+		<name x="16" y="-8">P1</name>
+		<declaration>clock x;
+const int k = 2;</declaration>
+		<location id="id0" x="216" y="176">
+			<name x="216" y="192">wait</name>
+			<label kind="exponentialrate" x="232" y="168">1</label>
+		</location>
+		<location id="id1" x="216" y="48">
+			<name x="216" y="16">req</name>
+			<label kind="invariant" x="240" y="32">x&lt;=k</label>
+		</location>
+		<location id="id2" x="64" y="48">
+			<name x="54" y="18">A</name>
+			<label kind="exponentialrate" x="40" y="40">1</label>
+		</location>
+		<location id="id3" x="64" y="176">
+			<name x="56" y="192">cs</name>
+			<label kind="exponentialrate" x="40" y="168">1</label>
+		</location>
+		<init ref="id2"/>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id1"/>
+			<label kind="guard" x="88" y="24">id== 0</label>
+			<label kind="assignment" x="160" y="24">x = 0</label>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id0"/>
+			<label kind="guard" x="144" y="72">x&lt;=k</label>
+			<label kind="assignment" x="144" y="104">x = 0,
+id = 1</label>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="guard" x="264" y="120">id== 0</label>
+			<label kind="assignment" x="264" y="88">x = 0</label>
+			<nail x="251" y="146"/>
+			<nail x="251" y="82"/>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id3"/>
+			<label kind="guard" x="96" y="184">x&gt;k &amp;&amp; id==1</label>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id2"/>
+			<label kind="assignment" x="8" y="80">id = 0</label>
+		</transition>
+	</template>
+	<template>
+		<name x="16" y="-8">P2</name>
+		<declaration>clock x;
+const int k = 2;</declaration>
+		<location id="id4" x="216" y="176">
+			<name x="216" y="192">wait</name>
+			<label kind="exponentialrate" x="232" y="168">1</label>
+		</location>
+		<location id="id5" x="216" y="48">
+			<name x="216" y="16">req</name>
+			<label kind="invariant" x="240" y="32">x&lt;=k</label>
+		</location>
+		<location id="id6" x="64" y="48">
+			<name x="54" y="18">A</name>
+			<label kind="exponentialrate" x="40" y="40">1</label>
+		</location>
+		<location id="id7" x="64" y="176">
+			<name x="56" y="192">cs</name>
+			<label kind="exponentialrate" x="40" y="168">1</label>
+		</location>
+		<init ref="id6"/>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id5"/>
+			<label kind="guard" x="88" y="24">id== 0</label>
+			<label kind="assignment" x="160" y="24">x = 0</label>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id4"/>
+			<label kind="guard" x="144" y="72">x&lt;=k</label>
+			<label kind="assignment" x="144" y="104">x = 0,
+id = 2</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id5"/>
+			<label kind="guard" x="264" y="120">id== 0</label>
+			<label kind="assignment" x="264" y="88">x = 0</label>
+			<nail x="251" y="146"/>
+			<nail x="251" y="82"/>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id7"/>
+			<label kind="guard" x="96" y="184">x&gt;k &amp;&amp; id==2</label>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id6"/>
+			<label kind="assignment" x="8" y="80">id = 0</label>
+		</transition>
+	</template>
+	<template>
+		<name x="16" y="-8">P3</name>
+		<declaration>clock x;
+const int k = 2;</declaration>
+		<location id="id8" x="216" y="176">
+			<name x="216" y="192">wait</name>
+			<label kind="exponentialrate" x="232" y="168">1</label>
+		</location>
+		<location id="id9" x="216" y="48">
+			<name x="216" y="16">req</name>
+			<label kind="invariant" x="240" y="32">x&lt;=k</label>
+		</location>
+		<location id="id10" x="64" y="48">
+			<name x="54" y="18">A</name>
+			<label kind="exponentialrate" x="40" y="40">1</label>
+		</location>
+		<location id="id11" x="64" y="176">
+			<name x="56" y="192">cs</name>
+			<label kind="exponentialrate" x="40" y="168">1</label>
+		</location>
+		<init ref="id10"/>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id9"/>
+			<label kind="guard" x="88" y="24">id== 0</label>
+			<label kind="assignment" x="160" y="24">x = 0</label>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id8"/>
+			<label kind="guard" x="144" y="72">x&lt;=k</label>
+			<label kind="assignment" x="144" y="104">x = 0,
+id = 3</label>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id9"/>
+			<label kind="guard" x="264" y="120">id== 0</label>
+			<label kind="assignment" x="264" y="88">x = 0</label>
+			<nail x="251" y="146"/>
+			<nail x="251" y="82"/>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id11"/>
+			<label kind="guard" x="96" y="184">x&gt;k &amp;&amp; id==3</label>
+		</transition>
+		<transition>
+			<source ref="id11"/>
+			<target ref="id10"/>
+			<label kind="assignment" x="8" y="80">id = 0</label>
+		</transition>
+	</template>
+	<template>
+		<name x="16" y="-8">P4</name>
+		<declaration>clock x;
+const int k = 2;</declaration>
+		<location id="id12" x="216" y="176">
+			<name x="216" y="192">wait</name>
+			<label kind="exponentialrate" x="232" y="168">1</label>
+		</location>
+		<location id="id13" x="216" y="48">
+			<name x="216" y="16">req</name>
+			<label kind="invariant" x="240" y="32">x&lt;=k</label>
+		</location>
+		<location id="id14" x="64" y="48">
+			<name x="54" y="18">A</name>
+			<label kind="exponentialrate" x="40" y="40">1</label>
+		</location>
+		<location id="id15" x="64" y="176">
+			<name x="56" y="192">cs</name>
+			<label kind="exponentialrate" x="40" y="168">1</label>
+		</location>
+		<init ref="id14"/>
+		<transition>
+			<source ref="id14"/>
+			<target ref="id13"/>
+			<label kind="guard" x="88" y="24">id== 0</label>
+			<label kind="assignment" x="160" y="24">x = 0</label>
+		</transition>
+		<transition>
+			<source ref="id13"/>
+			<target ref="id12"/>
+			<label kind="guard" x="144" y="72">x&lt;=k</label>
+			<label kind="assignment" x="144" y="102">x = 0,
+id = 4</label>
+		</transition>
+		<transition>
+			<source ref="id12"/>
+			<target ref="id13"/>
+			<label kind="guard" x="264" y="120">id== 0</label>
+			<label kind="assignment" x="264" y="88">x = 0</label>
+			<nail x="251" y="146"/>
+			<nail x="251" y="82"/>
+		</transition>
+		<transition>
+			<source ref="id12"/>
+			<target ref="id15"/>
+			<label kind="guard" x="96" y="184">x&gt;k &amp;&amp; id==4</label>
+		</transition>
+		<transition>
+			<source ref="id15"/>
+			<target ref="id14"/>
+			<label kind="assignment" x="8" y="80">id = 0</label>
+		</transition>
+	</template>
+	<template>
+		<name x="16" y="-8">P5</name>
+		<declaration>clock x;
+const int k = 2;</declaration>
+		<location id="id16" x="216" y="176">
+			<name x="216" y="192">wait</name>
+			<label kind="exponentialrate" x="232" y="168">1</label>
+		</location>
+		<location id="id17" x="216" y="48">
+			<name x="216" y="16">req</name>
+			<label kind="invariant" x="240" y="32">x&lt;=k</label>
+		</location>
+		<location id="id18" x="64" y="48">
+			<name x="54" y="18">A</name>
+			<label kind="exponentialrate" x="40" y="40">1</label>
+		</location>
+		<location id="id19" x="64" y="176">
+			<name x="56" y="192">cs</name>
+			<label kind="exponentialrate" x="40" y="168">1</label>
+		</location>
+		<init ref="id18"/>
+		<transition>
+			<source ref="id18"/>
+			<target ref="id17"/>
+			<label kind="guard" x="88" y="24">id== 0</label>
+			<label kind="assignment" x="160" y="24">x = 0</label>
+		</transition>
+		<transition>
+			<source ref="id17"/>
+			<target ref="id16"/>
+			<label kind="guard" x="144" y="72">x&lt;=k</label>
+			<label kind="assignment" x="144" y="104">x = 0,
+id = 5</label>
+		</transition>
+		<transition>
+			<source ref="id16"/>
+			<target ref="id17"/>
+			<label kind="guard" x="264" y="120">id== 0</label>
+			<label kind="assignment" x="264" y="88">x = 0</label>
+			<nail x="251" y="146"/>
+			<nail x="251" y="82"/>
+		</transition>
+		<transition>
+			<source ref="id16"/>
+			<target ref="id19"/>
+			<label kind="guard" x="96" y="184">x&gt;k &amp;&amp; id==5</label>
+		</transition>
+		<transition>
+			<source ref="id19"/>
+			<target ref="id18"/>
+			<label kind="assignment" x="8" y="80">id = 0</label>
+		</transition>
+	</template>
+	<template>
+		<name x="16" y="-8">P6</name>
+		<declaration>clock x;
+const int k = 2;</declaration>
+		<location id="id20" x="216" y="176">
+			<name x="216" y="192">wait</name>
+			<label kind="exponentialrate" x="232" y="168">1</label>
+		</location>
+		<location id="id21" x="216" y="48">
+			<name x="216" y="16">req</name>
+			<label kind="invariant" x="240" y="32">x&lt;=k</label>
+		</location>
+		<location id="id22" x="64" y="48">
+			<name x="54" y="18">A</name>
+			<label kind="exponentialrate" x="40" y="40">1</label>
+		</location>
+		<location id="id23" x="64" y="176">
+			<name x="56" y="192">cs</name>
+			<label kind="exponentialrate" x="40" y="168">1</label>
+		</location>
+		<init ref="id22"/>
+		<transition>
+			<source ref="id22"/>
+			<target ref="id21"/>
+			<label kind="guard" x="88" y="24">id== 0</label>
+			<label kind="assignment" x="160" y="24">x = 0</label>
+		</transition>
+		<transition>
+			<source ref="id21"/>
+			<target ref="id20"/>
+			<label kind="guard" x="144" y="72">x&lt;=k</label>
+			<label kind="assignment" x="144" y="104">x = 0,
+id = 6</label>
+		</transition>
+		<transition>
+			<source ref="id20"/>
+			<target ref="id21"/>
+			<label kind="guard" x="264" y="120">id== 0</label>
+			<label kind="assignment" x="264" y="88">x = 0</label>
+			<nail x="251" y="146"/>
+			<nail x="251" y="82"/>
+		</transition>
+		<transition>
+			<source ref="id20"/>
+			<target ref="id23"/>
+			<label kind="guard" x="96" y="184">x&gt;k &amp;&amp; id==6</label>
+		</transition>
+		<transition>
+			<source ref="id23"/>
+			<target ref="id22"/>
+			<label kind="assignment" x="8" y="80">id = 0</label>
+		</transition>
+	</template>
+	<system>system P1,P2,P3,P4,P5,P6;</system>
+	<queries>
+		<query>
+			<formula>Pr[ &lt;= 300](&lt;&gt; P1.cs)
+			</formula>
+			<comment>Fischer's mutual exclusion protocol.
+			</comment>
+		</query>
+		<query>
+			<formula>A[] forall (i:id_t) forall (j:id_t) P(i).cs &amp;&amp; P(j).cs imply i == j
+			</formula>
+			<comment>Mutex requirement.
+			</comment>
+		</query>
+		<query>
+			<formula>A[] not deadlock
+			</formula>
+			<comment>The system is deadlock free.
+			</comment>
+		</query>
+		<query>
+			<formula>P(1).req --&gt; P(1).wait
+			</formula>
+			<comment>Whenever P(1) requests access to the critical section it will eventually enter the wait state.
+			</comment>
+		</query>
+	</queries>
+</nta>
