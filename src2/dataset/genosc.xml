@@ -187,7 +187,7 @@ int DA=1, D_A=0, DR=1, D_R=0, MA=0, MR=0, A=0, R=0, C=0;
 		<declaration>// Place local declarations here.
 </declaration>
 		<location id="id10" x="0" y="0">
-			<label kind="exponentialrate" x="-20" y="30">R*2/10</label>
+			<label kind="exponentialrate" x="-20" y="30">(R*2)/10</label>
 		</location>
 		<init ref="id10"/>
 		<transition>
@@ -221,7 +221,7 @@ int DA=1, D_A=0, DR=1, D_R=0, MA=0, MR=0, A=0, R=0, C=0;
 		<declaration>// Place local declarations here.
 </declaration>
 		<location id="id12" x="0" y="0">
-			<label kind="exponentialrate" x="-20" y="30">MR*5/10</label>
+			<label kind="exponentialrate" x="-20" y="30">(MR*5)/10</label>
 		</location>
 		<init ref="id12"/>
 		<transition>
