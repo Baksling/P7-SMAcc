@@ -684,15 +684,19 @@
     <ClInclude Include="Cuda\Simulator2\allocations\argparser.h" />
     <ClCompile Include="Cuda\Simulator2\results\ouput_write.cu" />
     <ClCompile Include="Cuda\Simulator2\results\result_store.cu" />
+    <ClInclude Include="Cuda\Simulator2\common\io_path.h" />
     <ClInclude Include="Cuda\Simulator2\common\macro.h" />
     <ClInclude Include="Cuda\Simulator2\common\my_stack.h" />
     <ClInclude Include="Cuda\Simulator2\common\sim_config.h" />
     <ClInclude Include="Cuda\Simulator2\common\thread_pool.h" />
     <ClInclude Include="Cuda\Simulator2\engine\Domain.h" />
     <ClInclude Include="Cuda\Simulator2\engine\model_oracle.h" />
+    <ClInclude Include="Cuda\Simulator2\JIT\jitify.hpp" />
+    <ClInclude Include="Cuda\Simulator2\JIT\jit_compiler.hpp" />
     <ClInclude Include="Cuda\Simulator2\simulation_runner.h" />
     <ClCompile Include="Cuda\Simulator2\simulation_runner.cu" />
     <ClCompile Include="Cuda\Simulator2\visitors\domain_optimization_visitor.cpp" />
+    <ClCompile Include="Cuda\Simulator2\visitors\expr_compiler_visitor.cpp" />
     <ClCompile Include="Cuda\Simulator2\visitors\memory_alignment_visitor.cpp" />
     <ClCompile Include="Cuda\Simulator2\visitors\pretty_print_visitor.cpp" />
     <ClCompile Include="Cuda\Simulator2\visitors\visitor.cpp" />
@@ -1600,6 +1604,7 @@
     <ClInclude Include="Cuda\Simulator2\results\output_writer.h" />
     <ClInclude Include="Cuda\Simulator2\results\result_store.h" />
     <ClInclude Include="Cuda\Simulator2\visitors\domain_optimization_visitor.h" />
+    <ClInclude Include="Cuda\Simulator2\visitors\expr_compiler_visitor.h" />
     <ClInclude Include="Cuda\Simulator2\visitors\memory_alignment_visitor.h" />
     <ClInclude Include="Cuda\Simulator2\visitors\pretty_print_visitor.h" />
     <ClInclude Include="Cuda\Simulator2\visitors\visitor.h" />

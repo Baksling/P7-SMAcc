@@ -1,4 +1,6 @@
 ﻿#include "result_store.h"
+#include <iostream>
+#include <string>
 
 result_pointers::result_pointers(const bool owns_pointers, void* free_p, sim_metadata* results, int* nodes,
     double* variables): owns_pointers_(owns_pointers), source_p_(free_p)

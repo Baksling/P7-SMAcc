@@ -30,6 +30,6 @@ public:
     void clear();
     
     unsigned get_max_expr_depth() const;
-    bool invalid_constraint() const;
+    bool has_invalid_constraint() const;
     model_size get_model_size() const{ return model_counter_; }
 };

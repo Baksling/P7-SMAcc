@@ -62,13 +62,14 @@ CPU GPU clock_var* model_oracle::variable_point() const
 
 GPU network* model_oracle::move_to_shared_memory(char* shared_mem, const int threads) const
 {
-    const size_t size = this->model_counter.total_memory_size() / sizeof(char);
+    size_t* wide_shared_memory = static_cast<size_t*>(static_cast<void*>(shared_mem));
+    const size_t size = this->model_counter.total_memory_size() / sizeof(size_t);
 
     for (size_t i = 0; i < size; i += threads)
     {
         const size_t idx = i + threadIdx.x;
         if(!(idx < size)) continue;
-        shared_mem[idx] = static_cast<char*>(this->point)[idx];
+        wide_shared_memory[idx] = static_cast<size_t*>(this->point)[idx];
     }
     cuda_SYNCTHREADS();
 

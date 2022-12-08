@@ -50,9 +50,11 @@ struct expr  // NOLINT(cppcoreguidelines-pro-type-member-init)
         not_ee,
 
         //conditional types
-        conditional_ee
+        conditional_ee,
+        compiled_ee
+        
     } operand = literal_ee;
-
+    
     expr* left = nullptr;
     expr* right = nullptr;
 
@@ -61,6 +63,7 @@ struct expr  // NOLINT(cppcoreguidelines-pro-type-member-init)
         double value = 1.0;
         int variable_id;
         expr* conditional_else;
+        int compile_id;
     };
 
     CPU GPU double evaluate_expression(state* state);
@@ -81,7 +84,8 @@ struct constraint
         greater_equal_c = 2,
         greater_c = 3,
         equal_c = 4,
-        not_equal_c = 5
+        not_equal_c = 5,
+        compiled_c
     } operand;
 
     bool uses_variable;

@@ -1,6 +1,23 @@
 ﻿#include "Domain.h"
 
-#define DBL_EPSILON 2.2204460492503131e-016 // smallest such that 1.0+DBL_EPSILON != 1.0
+// #ifdef HUGE_VAL
+// #define DBL_INF HUGE_VAL
+// #else
+// #define DBL_INF ((double)(1e+300*1e+300))
+// #endif
+
+
+CPU GPU double evaluate_compiled_expression(const expr* ex, state* state)
+{
+    //If this is marked const, JIT will not work.
+    // ReSharper disable once CppLocalVariableMayBeConst
+    double v0 = 0.0;
+
+    //DO NOT REMOVE FOLLOWING COMMENT! IT IS USED AS SEARCH TARGET FOR JIT COMPILATION!!!
+    //__SEARCH_TEXT_FOR_JIT__
+    
+    return v0;
+}
 
 CPU GPU double evaluate_expression_node(const expr* expr, state* state)
 {
@@ -70,6 +87,7 @@ CPU GPU double evaluate_expression_node(const expr* expr, state* state)
         v1 = state->value_stack.pop();
         state->value_stack.pop();
         return v1;
+    case expr::compiled_ee: return 0.0; break;
     }
     return 0.0;
 }
@@ -77,13 +95,11 @@ CPU GPU double evaluate_expression_node(const expr* expr, state* state)
 CPU GPU double expr::evaluate_expression(state* state)
 {
     if(this->operand == literal_ee)
-    {
         return this->value;
-    }
     if(this->operand == clock_variable_ee)
-    {
         return state->variables.store[this->variable_id].value;
-    }
+    if(this->operand == compiled_ee)
+        return evaluate_compiled_expression(this, state);
 
     state->expr_stack.clear();
     state->value_stack.clear();
@@ -131,7 +147,7 @@ CPU GPU double expr::evaluate_expression(state* state)
 
 CPU GPU double node::max_progression(state* state, bool* is_finite) const
 {
-    double max_bound = HUGE_VAL;
+    double max_bound = DBL_MAX;
 
     for (int i = 0; i < this->invariants.size; ++i)
     {
@@ -144,7 +160,7 @@ CPU GPU double node::max_progression(state* state, bool* is_finite) const
         
         max_bound = fmin(max_bound,  (expr_value -  var.value) / var.rate); //rate is >0.
     }
-    *is_finite = !isinf(max_bound);
+    *is_finite = max_bound < DBL_MAX;
     return max_bound;
 }
 
@@ -157,12 +173,13 @@ CPU GPU bool constraint::evaluate_constraint(state* state) const
 
     switch (this->operand)
     {
-    case constraint::less_equal_c: return left <= right;
-    case constraint::less_c: return left < right;
-    case constraint::greater_equal_c: return left >= right;
-    case constraint::greater_c: return left > right;
-    case constraint::equal_c: return left == right;  // NOLINT(clang-diagnostic-float-equal)
-    case constraint::not_equal_c: return left != right;  // NOLINT(clang-diagnostic-float-equal)
+    case less_equal_c: return left <= right;
+    case less_c: return left < right;
+    case greater_equal_c: return left >= right;
+    case greater_c: return left > right;
+    case equal_c: return left == right;  // NOLINT(clang-diagnostic-float-equal)
+    case not_equal_c: return left != right;  // NOLINT(clang-diagnostic-float-equal)
+    case compiled_c: return false;
     }
     return false;
 }

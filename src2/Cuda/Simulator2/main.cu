@@ -5,8 +5,10 @@
 
 #include "./results/output_writer.h"
 #include "./allocations/argparser.h"
+#include "common/io_path.h"
 
 #include "visitors/domain_optimization_visitor.h"
+#include "visitors/expr_compiler_visitor.h"
 #include "visitors/memory_alignment_visitor.h"
 #include "visitors/pretty_print_visitor.h"
 
@@ -18,7 +20,7 @@ enum parser_state
     help
 };
 
-parser_state parse_configs(int argc, const char* argv[], sim_config* out_config)
+parser_state parse_configs(int argc, const char* argv[], sim_config* out_config, io_path* paths)
 {
 
     argparse::ArgumentParser parser("Cuda stochastic system simulator", "Argument parser example");
@@ -46,6 +48,8 @@ parser_state parse_configs(int argc, const char* argv[], sim_config* out_config)
     //simulation options
     parser.add_argument("-x", "--units", "Maximum number of steps or time to simulate. e.g. 100t for 100 time units or 100s for 100 steps", false);
     parser.add_argument("-s", "--shared", "Attempt to use shared memory in cuda simulation. Will only enable if (threads * 32 > model size)", false);
+    parser.add_argument("-j", "--jit", "JIT compile the expressions. Only works for GPU, mutually exclusive with --shared.", false);
+    
     
     //other
     parser.add_argument("-v", "--verbose", "Enable pretty print of model (print model (0) / silent(1))", false);
@@ -66,11 +70,11 @@ parser_state parse_configs(int argc, const char* argv[], sim_config* out_config)
     config.seed = static_cast<unsigned long long>(time(nullptr));
     size_t total_simulations = 1;
     
-    if(parser.exists("m")) config.model_path = parser.get<std::string>("m");
+    if(parser.exists("m")) paths->model_path = parser.get<std::string>("m");
     else throw argparse::arg_exception('m', "No model argument supplied");
 
-    if(parser.exists("o")) config.out_path = parser.get<std::string>("o");
-    else config.out_path = "./output";
+    if(parser.exists("o")) paths->output = parser.get<std::string>("o");
+    else paths->output = "./output";
 
     if(parser.exists("w")) config.write_mode = output_writer::parse_mode(parser.get<std::string>("w"));
     else config.write_mode = 0;
@@ -89,8 +93,8 @@ parser_state parse_configs(int argc, const char* argv[], sim_config* out_config)
     if(parser.exists("n")) total_simulations = parser.get<size_t>("n");
     else if(parser.exists("e") && parser.exists("a"))
     {
-        double epsilon = parser.get<double>("e");
-        double alpha = parser.get<double>("a");
+        const double epsilon = parser.get<double>("e");
+        const double alpha = parser.get<double>("a");
         total_simulations = static_cast<size_t>(ceil((log(2.0) - log(alpha)) / (2*pow(epsilon, 2))));
     }
     else throw argparse::arg_exception('n', "no simulation amount supplied. ");
@@ -105,6 +109,7 @@ parser_state parse_configs(int argc, const char* argv[], sim_config* out_config)
     else config.cpu_threads = 1;
 
     config.use_shared_memory = parser.exists("s");
+    config.use_jit = parser.exists("j");
     
     if(parser.exists("x"))
     {
@@ -147,10 +152,10 @@ void setup_config(sim_config* config, const network* model, const unsigned max_e
     config->max_expression_depth = max_expr_depth;
 }
 
-void print_config(const sim_config* config, const size_t model_size)
+void print_config(const sim_config* config, const io_path* paths, const size_t model_size)
 {
     printf("simulation configuration:\n");
-    printf("simulating on model %s\n", config->model_path.c_str());
+    printf("simulating on model %s\n", paths->model_path.c_str());
     printf("running %llu simulations on %d repetitions using parallelism of %d.\n",
         static_cast<unsigned long long>(config->total_simulations()),
         config->simulation_repetitions,
@@ -169,7 +174,8 @@ int main(int argc, const char* argv[])
     CUDA_CHECK(cudaFree(nullptr));
 
     sim_config config = {};
-    parser_state state = parse_configs(argc, argv, &config);
+    io_path paths = {};
+    parser_state state = parse_configs(argc, argv, &config, &paths);
     if(state == error) return -1;
     if(state == help) return 0;
     
@@ -179,43 +185,57 @@ int main(int argc, const char* argv[])
 
     
     uppaal_xml_parser xml_parser;
-    network model = xml_parser.parse(config.model_path);
+    network model = xml_parser.parse(paths.model_path);
 
     if(config.verbose)
         pretty_print_visitor(&std::cout).visit(&model);
 
+    expr_compiler_visitor* expression_compiler = nullptr;
+    if(config.use_jit)
+    {
+        expression_compiler = new expr_compiler_visitor;
+        expression_compiler->visit(&model);
+    }
+    
+    
     if(config.verbose) printf("Optimizing...\n");
     domain_optimization_visitor optimizer = domain_optimization_visitor();
     optimizer.optimize(&model);
 
     size_t model_size = optimizer.get_model_size().total_memory_size();
     setup_config(&config, &model, optimizer.get_max_expr_depth());
-    if(config.verbose) print_config(&config, model_size);
+    if(config.verbose) print_config(&config, &paths, model_size);
     
     if(config.use_shared_memory)
         config.use_shared_memory = config.can_use_cuda_shared_memory(model_size);
     
     const bool run_device = (config.sim_location == sim_config::device || config.sim_location == sim_config::both);
     const bool run_host = config.sim_location == sim_config::host || config.sim_location == sim_config::both;
-    
+
     //run simulation
-    if(config.use_shared_memory && run_device)
+    if(config.use_jit && run_device)
     {
-        if(optimizer.invalid_constraint())
+        if(expression_compiler == nullptr ) throw std::runtime_error("expression compiler is null.");
+        simulation_runner::simulate_gpu_jit(&model, expression_compiler, &config, &paths);
+    }
+    if(config.use_shared_memory && !config.use_jit && run_device)
+    {
+        if(optimizer.has_invalid_constraint())
             throw std::runtime_error("Model contains an invalid invariant, where a clock is compared to a clock");
 
         memory_alignment_visitor alignment_visitor = memory_alignment_visitor();
         model_oracle oracle = alignment_visitor.align(&model, optimizer.get_model_size(), &allocator);
         
-        simulation_runner::simulate_oracle(&oracle, &config);
+        simulation_runner::simulate_gpu_aligned(&oracle, &config, &paths);
     }
-    if(!config.use_shared_memory && run_device)
+    if(!config.use_shared_memory && !config.use_jit && run_device)
     {
-        simulation_runner::simulate_gpu(&model, &config);
+        simulation_runner::simulate_gpu(&model, &config, &paths);
     }
     if(run_host)
     {
-        simulation_runner::simulate_cpu(&model, &config);
+        if(config.use_jit) throw std::runtime_error("Cannot run simulation on host, when JIT is enabled. Please disable jit(-j) and try again.");
+        simulation_runner::simulate_cpu(&model, &config, &paths);
     }
 
     optimizer.clear();

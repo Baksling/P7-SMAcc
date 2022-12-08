@@ -6,7 +6,6 @@
 #include "../results/result_store.h" 
 #include "device_launch_parameters.h"
 
-
 CPU GPU size_t thread_heap_size(const sim_config* config)
 {
     const size_t size =
@@ -33,8 +32,8 @@ CPU GPU double determine_progress(const node* node, state* state)
     }
     else
     {
-        // return lambda > 0 ? -log2(random_val) / (lambda) : lambda;
-        return -log(random_val) / (lambda - (lambda == 0.0));
+        // return lambda > 0.0 ? -log(random_val) / (lambda) : lambda;
+        return (-log(random_val)) / (lambda - (lambda == 0.0));
     }
 }
 
@@ -89,6 +88,7 @@ CPU GPU node** progress_sim(state* sim_state, const sim_config* config)
         //determine current models progress
         const double local_progress = determine_progress(current, sim_state);
 
+        // printf("progress %lf\n", local_progress);
         //If negative progression, skip. Represents NO_PROGRESS
         //Set current as winner, if it is the earliest active model.
         if(local_progress >= 0.0 && local_progress < min_progression_time)
@@ -114,7 +114,7 @@ CPU GPU node** progress_sim(state* sim_state, const sim_config* config)
 
 CPU GPU edge* pick_next_edge(const arr<edge>& edges, state* state)
 {
-    //TODO set max nr. of outgoing edges to 64
+    //TODO set max nr. of outgoing edges to 64 - done, it is ignored, by takign the last valid, if > 64 edges exists.
     // const int edge_amount = umin(edges->size, sizeof(unsigned long long)*8);
     unsigned long long valid_edges_bitarray = 0UL;
     unsigned int valid_count = 0;
@@ -139,6 +139,7 @@ CPU GPU edge* pick_next_edge(const arr<edge>& edges, state* state)
 
     if(valid_count == 0) return nullptr;
     if(valid_count == 1 && valid_edge != nullptr) return valid_edge;
+    if(static_cast<size_t>(edges.size) > sizeof(size_t)*8) return valid_edge;
 
     //curand_uniform return ]0.0f, 1.0f], but we require [0.0f, 1.0f[
     //conversion from float to int is floored, such that a array of 10 (index 0..9) will return valid index.
@@ -219,12 +220,3 @@ __global__ void simulator_gpu_kernel(
 
     simulate_automata(idx, model, output, config);
 }
-
-// __global__ void simulator_gpu_kernel(
-//     const network* model,
-//     const result_store* output,
-//     const sim_config* config)
-// {
-//     const unsigned long idx = threadIdx.x + blockDim.x * blockIdx.x;
-//     simulate_automata(idx, model, output, config);
-// }

@@ -70,7 +70,7 @@ void domain_optimization_visitor::visit(expr* ex)
 {
     if(has_visited(ex)) return;
     model_counter_.expressions++;
-    
+
     bool has_lock = false;
     if(check_depth_lock_)
     {
@@ -103,10 +103,11 @@ unsigned domain_optimization_visitor::get_max_expr_depth() const
     return max_expr_depth_;
 }
 
-bool domain_optimization_visitor::invalid_constraint() const
+bool domain_optimization_visitor::has_invalid_constraint() const
 {
     return this->contains_invalid_constraint_;
 }
+
 
 unsigned domain_optimization_visitor::count_expr_depth(const expr* ex)
 {
@@ -183,3 +184,5 @@ bool domain_optimization_visitor::expr_contains_clock(const expr* ex)
 
     return left || right ||cond_else;
 }
+
+

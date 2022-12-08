@@ -1,7 +1,8 @@
 ﻿#pragma once
 
 #include "visitor.h"
-#include "ostream"
+#include <ostream>
+#include <string>
 
 class pretty_print_visitor : public visitor
 {
