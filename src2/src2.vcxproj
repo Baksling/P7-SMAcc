@@ -1701,6 +1701,7 @@
     <Content Include="Cuda\UPPAALXMLParser\XmlFiles\tests\dicebase.xml" />
     <Content Include="Cuda\UPPAALXMLParser\XmlFiles\tests\dicebaseUnfair.xml" />
     <Content Include="Cuda\UPPAALXMLParser\XmlFiles\tests\ifelse_test.xml" />
+    <Content Include="Cuda\UPPAALXMLParser\XmlFiles\tests\not_test.xml" />
     <Content Include="Cuda\UPPAALXMLParser\XmlFiles\tests\random_test.xml" />
     <Content Include="Cuda\UPPAALXMLParser\XmlFiles\tests\rare_events.xml" />
     <Content Include="Cuda\UPPAALXMLParser\XmlFiles\tests\rate_test.xml" />

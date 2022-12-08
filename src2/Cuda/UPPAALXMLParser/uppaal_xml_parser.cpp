@@ -7,9 +7,8 @@
  * TODO Clean up, e.g. add trimmer for whitespace AND TABS! --flueben
  */
 
-constraint* get_constraint(const string& exprs, const int timer_id, expr* value)
+void get_constraint_operand(constraint* cons, const string& exprs)
 {
-    constraint* cons = new constraint();
     if(exprs.find("<=") != std::string::npos)
         cons->operand = constraint::less_equal_c;
     else if(exprs.find(">=") != std::string::npos)
@@ -26,6 +25,12 @@ constraint* get_constraint(const string& exprs, const int timer_id, expr* value)
     {
         THROW_LINE("Operand in " + exprs + " not found, sad..");
     }
+}
+
+constraint* get_constraint(const string& exprs, const int timer_id, expr* value)
+{
+    constraint* cons = new constraint();
+    get_constraint_operand(cons, exprs);
 
     cons->uses_variable = true;
     cons->expression = value;
@@ -37,22 +42,8 @@ constraint* get_constraint(const string& exprs, const int timer_id, expr* value)
 constraint* get_constraint(const string& exprs, expr* v_one, expr* v_two)
 {
     constraint* cons = new constraint();
-    if(exprs.find("<=") != std::string::npos)
-        cons->operand = constraint::less_equal_c;
-    else if(exprs.find(">=") != std::string::npos)
-        cons->operand = constraint::greater_equal_c;
-    else if(exprs.find("==") != std::string::npos)
-        cons->operand = constraint::equal_c;
-    else if(exprs.find("!=") != std::string::npos)
-        cons->operand = constraint::not_equal_c;
-    else if(exprs.find('<') != std::string::npos)
-        cons->operand = constraint::less_c;
-    else if(exprs.find('>') != std::string::npos)
-        cons->operand = constraint::greater_c;
-    else
-    {
-        THROW_LINE("Operand in " + exprs + " not found, sad..");
-    }
+    get_constraint_operand(cons, exprs);
+    
     cons->uses_variable = false;
     cons->value = v_one;
     cons->expression = v_two;
@@ -75,6 +66,8 @@ expr* get_expression_con(const string& exprs, expr* left, expr* right)
         expr_p->operand = expr::less_ee;
     else if(exprs.find('>') != std::string::npos)
         expr_p->operand = expr::greater_ee;
+    else if(exprs.find('>') != std::string::npos)
+        expr_p->operand = expr::not_ee;
     else
     {
         THROW_LINE("Operand in " + exprs + " not found, sad..");
@@ -85,7 +78,7 @@ expr* get_expression_con(const string& exprs, expr* left, expr* right)
 
     return expr_p;
 }
-
+    
 template<typename T>
 arr<T> to_array(std::list<T>* list)
 {
@@ -156,11 +149,14 @@ void uppaal_xml_parser::fill_expressions(const list<string>& expressions, list<T
         if (timers_map_.count(extracted_condition.left) || global_timers_map_.count(extracted_condition.left))
             t->push_back(*get_constraint(extracted_condition.input,
                 get_timer_id(extracted_condition.input),
-                variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right, &vars_map_, &global_vars_map_)));
+                variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right,
+                    &vars_map_, &global_vars_map_, &const_local_vars, &const_global_vars)));
         else
             t->push_back(*get_constraint(extracted_condition.input,
-                variable_expression_evaluator::evaluate_variable_expression(extracted_condition.left, &vars_map_, &global_vars_map_),
-                variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right, &vars_map_, &global_vars_map_)));
+                variable_expression_evaluator::evaluate_variable_expression(extracted_condition.left,
+                    &vars_map_, &global_vars_map_,&const_local_vars, &const_global_vars),
+                variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right,
+                    &vars_map_, &global_vars_map_,&const_local_vars, &const_global_vars)));
     }
 }
 
@@ -169,7 +165,7 @@ void uppaal_xml_parser::init_global_clocks(const xml_document* doc)
 {
     string global_decl = doc->child("nta").child("declaration").child_value();
     global_decl = remove_whitespace(global_decl);
-    const list<declaration> decls = dp_.parse(global_decl);
+    const list<declaration> decls = dp_.parse(global_decl, &const_global_vars);
     for (declaration d : decls)
     {
         //global declarations
@@ -191,6 +187,10 @@ void uppaal_xml_parser::init_global_clocks(const xml_document* doc)
         {
             insert_to_map(&this->global_vars_map_, d.get_name(), chan_id_++);
         }
+        else if (d.get_type() == const_double_type || d.get_type() == const_int_type)
+        {
+            insert_to_map(&this->const_global_vars, d.get_name(), d.get_value());
+        }
         else
         {
             insert_to_map(&this->global_vars_map_, d.get_name(), vars_id_);
@@ -211,7 +211,7 @@ void uppaal_xml_parser::init_local_clocks(xml_node template_node)
     string decl = template_node.child("declaration").child_value();
     decl = remove_whitespace(decl);
     
-    for (declaration d : dp_.parse(decl))
+    for (declaration d : dp_.parse(decl, &const_global_vars))
     {
         //local declarations
         if(d.get_type() == clock_type)
@@ -229,6 +229,10 @@ void uppaal_xml_parser::init_local_clocks(xml_node template_node)
         else if(d.get_type() == chan_type)
         {
             insert_to_map(&this->vars_map_, d.get_name(), chan_id_++);
+        }
+        else if (d.get_type() == const_double_type || d.get_type() == const_int_type)
+        {
+            insert_to_map(&this->const_local_vars, d.get_name(), d.get_value());
         }
         else
         {
@@ -287,7 +291,9 @@ void uppaal_xml_parser::handle_locations(const xml_node locs)
         const string nums = take_after(line_wo_ws, "=");
 
         delete expo_rate;
-        expo_rate = variable_expression_evaluator::evaluate_variable_expression(nums,&vars_map_, &global_vars_map_);
+        expo_rate = variable_expression_evaluator::evaluate_variable_expression(nums,
+            &vars_map_, &global_vars_map_,
+            &const_local_vars, &const_global_vars);
     }
             
     if (kind == "invariant")
@@ -344,7 +350,8 @@ void uppaal_xml_parser::handle_transitions(const xml_node trans)
         else if (kind == "probability")
         {
             extract_probability extracted_probability = string_extractor::extract(extract_probability(expr_string));
-            probability = variable_expression_evaluator::evaluate_variable_expression(extracted_probability.value,&vars_map_, &global_vars_map_);
+            probability = variable_expression_evaluator::evaluate_variable_expression(extracted_probability.value,
+                &vars_map_, &global_vars_map_,&const_local_vars, &const_global_vars);
         }
     }
     
@@ -378,12 +385,16 @@ expr* uppaal_xml_parser::handle_if_statement(const string& input)
     const extract_condition extracted_condition = string_extractor::extract(extract_condition(extracted_if_statement.condition));
 
     //Build the condition
-    expr* right_side_con_expr = variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right,&this->vars_map_, &this->global_vars_map_);
-    expr* left_side_con_expr = variable_expression_evaluator::evaluate_variable_expression(extracted_condition.left,&this->vars_map_, &this->global_vars_map_);
+    expr* right_side_con_expr = variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right,
+        &this->vars_map_, &this->global_vars_map_,&const_local_vars, &const_global_vars);
+    expr* left_side_con_expr = variable_expression_evaluator::evaluate_variable_expression(extracted_condition.left,
+        &this->vars_map_, &this->global_vars_map_,&const_local_vars, &const_global_vars);
     expr* condition_e = get_expression_con(extracted_if_statement.condition, left_side_con_expr, right_side_con_expr);
     
-    expr* if_true_e = variable_expression_evaluator::evaluate_variable_expression(extracted_if_statement.if_true,&this->vars_map_, &this->global_vars_map_);
-    expr* if_false_e = variable_expression_evaluator::evaluate_variable_expression(extracted_if_statement.if_false,&this->vars_map_, &this->global_vars_map_);
+    expr* if_true_e = variable_expression_evaluator::evaluate_variable_expression(extracted_if_statement.if_true,
+        &this->vars_map_, &this->global_vars_map_,&const_local_vars, &const_global_vars);
+    expr* if_false_e = variable_expression_evaluator::evaluate_variable_expression(extracted_if_statement.if_false,
+        &this->vars_map_, &this->global_vars_map_,&const_local_vars, &const_global_vars);
 
     expr* whole_expr = new expr();
     whole_expr->left = condition_e;
@@ -416,7 +427,8 @@ list<update> uppaal_xml_parser::handle_assignment(const string& input)
         else
         {
             //Is normal assignment
-            right_side = variable_expression_evaluator::evaluate_variable_expression(extracted_assignment.right,&this->vars_map_, &this->global_vars_map_);
+            right_side = variable_expression_evaluator::evaluate_variable_expression(extracted_assignment.right,
+                &this->vars_map_, &this->global_vars_map_,&const_local_vars, &const_global_vars);
         }
 
         update upd;
@@ -545,7 +557,7 @@ __host__ network uppaal_xml_parser::parse(string file_path)
     }
     catch (const std::runtime_error &ex)
     {
-        throw runtime_error("parse error");
+        throw runtime_error(ex.what());
     }
 }
 
