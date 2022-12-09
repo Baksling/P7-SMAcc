@@ -249,7 +249,8 @@ def get_expected_simulation_results() -> dict[str, value_checker]:
         'rates_4': value_checker(50.0, 0),
         'rates_5': value_checker(31.0, 0),
         'rates_6': value_checker(50.0, 0),
-        'rates_7': value_checker(50.0, 0)
+        'rates_7': value_checker(50.0, 0),
+        'not_test': value_checker(50.0, 0),
     }
 
 

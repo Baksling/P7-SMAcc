@@ -12,7 +12,7 @@
             <label kind="exponentialrate" x="-214" y="0">1</label>
         </location>
         <location id="id1" x="-85" y="-85">
-            <name x="-95" y="-119">Node1</name>
+            <name x="-95" y="-119">Goal</name>
         </location>
         <location id="id2" x="-85" y="8">
             <name x="-95" y="-26">Node2</name>
