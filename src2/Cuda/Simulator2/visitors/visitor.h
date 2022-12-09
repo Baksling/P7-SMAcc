@@ -26,5 +26,6 @@ public:
     virtual void visit(clock_var* cv) = 0 ;
     virtual void visit(update* u) = 0;
     virtual void visit(expr* u) = 0;
-    
+
+    virtual void clear();
 };

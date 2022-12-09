@@ -32,7 +32,9 @@ std::cerr << "\nerror: " #x " failed with error "           \
 exit(1);                                                    \
 }                                                             \
 } while(0)
-#define JIT_EXPR_LOCATION "//__SEARCH_TEXT_FOR_JIT__"
+#define JIT_EXPRESSION_LOCATION "//__SEARCH_MARKER_FOR_JIT_EXPRESSION__"
+#define JIT_CONSTRAINT_LOCATION "//__SEARCH_MARKER_FOR_JIT_CONSTRAINT__"
+#define JIT_INVARIANT_LOCATION "//__SEARCH_MARKER_FOR_JIT_INVARIANTS__"
 
 
 #ifndef CUDA_INC_DIR
@@ -49,24 +51,36 @@ inline std::istream* fallback(const std::string filename, std::iostream& tmp_str
     return &tmp_stream;
 }
 
+inline std::string replace(std::string& content, const std::string& marker, const std::stringstream& new_content)
+{
+    const size_t start_pos = content.find(marker);
+    if(start_pos == std::string::npos)
+        throw std::runtime_error("Could not find the JIT EXPR LOCATION marker in source");
+
+    return content.replace(start_pos, marker.length(), new_content.str());
+}
+
 class jit_compiler
 {
 public:
-    static jitify::KernelInstantiation compile(expr_compiler_visitor* expr_compiler)
+    static jitify::KernelInstantiation compile(jit_compile_visitor* expr_compiler)
     {
-        if(expr_compiler == nullptr) throw std::runtime_error("expr visitor is nullptr"); 
+        if(expr_compiler == nullptr) throw std::runtime_error("expr visitor is nullptr");
+        expr_compiler->finalize();
+
+        
         std::ifstream file("kernal.cu");
         if(file.fail()) throw std::runtime_error(KERNAL404);
         std::stringstream buffer;
         buffer << "kernal.cu\n" << file.rdbuf();
         file.close();
+        
         std::string jit_content = buffer.str();
-        std::string jit_marker = JIT_EXPR_LOCATION;
-        size_t start_pos = jit_content.find(jit_marker);
-        if(start_pos == std::string::npos)
-            throw std::runtime_error("Could not find the JIT EXPR LOCATION marker in source");
-        std::stringstream& compiled_expr = expr_compiler->get_compiled_expressions();
-        jit_content = jit_content.replace(start_pos, jit_marker.length(), compiled_expr.str());
+
+        //replace content
+        jit_content = replace(jit_content, JIT_EXPRESSION_LOCATION, expr_compiler->get_expr_compilation());
+        jit_content = replace(jit_content, JIT_CONSTRAINT_LOCATION, expr_compiler->get_constraint_compilation());
+        jit_content = replace(jit_content, JIT_INVARIANT_LOCATION, expr_compiler->get_invariant_compilation());
 
         {
             std::ofstream outfile("./JIT.cu", std::ofstream::out);
@@ -74,7 +88,7 @@ public:
             outfile.flush();
             outfile.close();
         }
-        
+
         try
         {
             static jitify::JitCache kernel_cache;
@@ -83,8 +97,8 @@ public:
                 {"--use_fast_math", "-I " CUDA_INC_DIR, "--dopt=on" },
                 fallback);
             return program
-            .kernel("simulator_gpu_kernel")
-            .instantiate();
+                .kernel("simulator_gpu_kernel")
+                .instantiate();
         }
         catch(std::runtime_error&)
         {

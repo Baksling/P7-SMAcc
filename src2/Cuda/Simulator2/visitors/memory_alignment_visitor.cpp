@@ -132,3 +132,11 @@ void memory_alignment_visitor::visit(expr* ex)
     if(ex->operand == expr::conditional_ee && ex->conditional_else != nullptr)
         exp->conditional_else = static_cast<expr*>(this->location_mapper_.at(ex->conditional_else));
 }
+
+void memory_alignment_visitor::clear()
+{
+    visitor::clear();
+    location_mapper_.clear();
+    oracle_ = {nullptr, {}};
+    move_state_ = {};
+}

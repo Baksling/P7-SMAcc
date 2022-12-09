@@ -5,6 +5,8 @@
 #define SHARED_MEMORY_PR_THREAD 32
 
 #include "macro.h"
+struct io_paths;
+#include "io_paths.h"
 
 struct sim_config
 {
@@ -37,8 +39,9 @@ struct sim_config
     unsigned network_size = 1;
 
     //paths
-    std::string model_path;
-    std::string output;
+    io_paths* paths;
+    // std::string model_path;
+    // std::string output;
     
     //pointers
     void* cache = nullptr;

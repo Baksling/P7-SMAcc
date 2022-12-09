@@ -1,21 +1,32 @@
 ﻿#include "Domain.h"
 
-// #ifdef HUGE_VAL
-// #define DBL_INF HUGE_VAL
-// #else
-// #define DBL_INF ((double)(1e+300*1e+300))
-// #endif
-
 
 CPU GPU double evaluate_compiled_expression(const expr* ex, state* state)
 {
-    //If this is marked const, JIT will not work.
-    // ReSharper disable once CppLocalVariableMayBeConst
-    double v0 = 0.0;
-
     //DO NOT REMOVE FOLLOWING COMMENT! IT IS USED AS SEARCH TARGET FOR JIT COMPILATION!!!
-    //__SEARCH_TEXT_FOR_JIT__
+    //__SEARCH_MARKER_FOR_JIT_EXPRESSION__
     
+    return 0.0;
+}
+
+CPU GPU bool evaluate_compiled_constraint(const constraint* con, state* state)
+{
+    //DO NOT REMOVE FOLLOWING COMMENT! IT IS USED AS SEARCH TARGET FOR JIT COMPILATION!!!
+    //__SEARCH_MARKER_FOR_JIT_CONSTRAINT__
+    
+    return false;
+}
+
+CPU GPU double evaluate_compiled_constraint_upper_bound(const constraint* con, state* state, bool* is_finite)
+{
+    //If this variable is marked const, then JIT compilation will not work.
+    // ReSharper disable once CppLocalVariableMayBeConst
+    double v0 = DBL_MAX;
+    
+    //DO NOT REMOVE FOLLOWING COMMENT! IT IS USED AS SEARCH TARGET FOR JIT COMPILATION!!!
+    //__SEARCH_MARKER_FOR_JIT_INVARIANTS__
+
+    *is_finite = v0 < DBL_MAX; 
     return v0;
 }
 
@@ -152,13 +163,24 @@ CPU GPU double node::max_progression(state* state, bool* is_finite) const
     for (int i = 0; i < this->invariants.size; ++i)
     {
         const constraint con = this->invariants.store[i];
-        if(!IS_INVARIANT(con.operand)) continue;
-        if(!con.uses_variable) continue;
-        const clock_var var = state->variables.store[con.variable_id];
-        if(var.rate == 0) continue;
-        const double expr_value = con.expression->evaluate_expression(state);
+        double limit;
         
-        max_bound = fmin(max_bound,  (expr_value -  var.value) / var.rate); //rate is >0.
+        if(IS_INVARIANT(con.operand))
+        {
+            if(!con.uses_variable) continue;
+            const clock_var var = state->variables.store[con.variable_id];
+            if(var.rate == 0) continue;
+            limit = (con.expression->evaluate_expression(state) - var.value) / var.rate;
+        }
+        else if(con.operand == constraint::compiled_c)
+        {
+            bool finite = false;
+            limit = evaluate_compiled_constraint_upper_bound(&con, state, &finite);
+
+            if(!finite) continue;
+        }
+        else continue;
+        max_bound = fmin(max_bound,  limit); //rate is >0.
     }
     *is_finite = max_bound < DBL_MAX;
     return max_bound;
@@ -166,6 +188,8 @@ CPU GPU double node::max_progression(state* state, bool* is_finite) const
 
 CPU GPU bool constraint::evaluate_constraint(state* state) const
 {
+    if(this->operand == compiled_c)
+        return evaluate_compiled_constraint(this, state);
     const double left = this->uses_variable
         ? state->variables.store[this->variable_id].value
         : this->value->evaluate_expression(state);
@@ -193,6 +217,18 @@ CPU GPU bool constraint::evaluate_constraint_set(const arr<constraint>& con_arr,
             return false;
     }
     return true;
+}
+
+void clock_var::add_time(const double time)
+{
+    this->value += time*this->rate;
+    this->max_value = fmax(this->max_value, this->value);
+}
+
+void clock_var::set_value(const double val)
+{
+    this->value = val;
+    this->max_value = fmax(this->max_value, this->value);
 }
 
 CPU GPU inline void update::apply_update(state* state) const

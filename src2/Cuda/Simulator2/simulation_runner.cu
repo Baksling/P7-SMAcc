@@ -9,10 +9,7 @@
 
 using namespace std::chrono;
 
-
-
-
-void simulation_runner::simulate_gpu_aligned(const model_oracle* oracle, sim_config* config, const io_path* paths)
+void simulation_runner::simulate_gpu_aligned(const model_oracle* oracle, sim_config* config)
 {
     memory_allocator allocator = memory_allocator(true);
 
@@ -41,7 +38,7 @@ void simulation_runner::simulate_gpu_aligned(const model_oracle* oracle, sim_con
     CUDA_CHECK(cudaMemcpy(store_d, &store, sizeof(result_store), cudaMemcpyHostToDevice));
     
     output_writer writer = output_writer(
-        &paths->output,
+        &config->paths->output_path,
         static_cast<unsigned>(total_simulations),
         config->write_mode,
         oracle->network_point()        
@@ -70,7 +67,7 @@ void simulation_runner::simulate_gpu_aligned(const model_oracle* oracle, sim_con
     allocator.free_allocations();
 }
 
-void simulation_runner::simulate_gpu(const network* model, sim_config* config, const io_path* paths)
+void simulation_runner::simulate_gpu(const network* model, sim_config* config)
 {
     memory_allocator allocator = memory_allocator(true);
     
@@ -99,7 +96,7 @@ void simulation_runner::simulate_gpu(const network* model, sim_config* config, c
     CUDA_CHECK(cudaMemcpy(store_d, &store, sizeof(result_store), cudaMemcpyHostToDevice));
     
     output_writer writer = output_writer(
-        &paths->output,
+        &config->paths->output_path,
         static_cast<unsigned>(total_simulations),
         config->write_mode,
         model        
@@ -128,7 +125,7 @@ void simulation_runner::simulate_gpu(const network* model, sim_config* config, c
 }
 
 
-void simulation_runner::simulate_cpu(const network* model, sim_config* config, const io_path* paths)
+void simulation_runner::simulate_cpu(const network* model, sim_config* config)
 {
     memory_allocator allocator = memory_allocator(false);
     
@@ -142,7 +139,7 @@ void simulation_runner::simulate_cpu(const network* model, sim_config* config, c
     &allocator);
 
     output_writer writer = output_writer(
-        &paths->output,
+        &config->paths->output_path,
         static_cast<unsigned>(total_simulations),
         config->write_mode,
         model        
@@ -179,8 +176,8 @@ void simulation_runner::simulate_cpu(const network* model, sim_config* config, c
 
 
 
-void simulation_runner::simulate_gpu_jit(const network* model, expr_compiler_visitor* optimizer,
-    sim_config* config, io_path* paths)
+void simulation_runner::simulate_gpu_jit(const network* model, jit_compile_visitor* optimizer,
+    sim_config* config)
 {
     memory_allocator allocator = memory_allocator(true);
     
@@ -209,7 +206,7 @@ void simulation_runner::simulate_gpu_jit(const network* model, expr_compiler_vis
     CUDA_CHECK(cudaMemcpy(store_d, &store, sizeof(result_store), cudaMemcpyHostToDevice));
     
     output_writer writer = output_writer(
-        &paths->output,
+        &config->paths->output_path,
         static_cast<unsigned>(total_simulations),
         config->write_mode,
         model        

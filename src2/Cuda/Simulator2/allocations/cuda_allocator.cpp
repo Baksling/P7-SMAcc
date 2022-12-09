@@ -133,7 +133,11 @@ void cuda_allocator::allocate_constraint(const constraint* source, constraint* d
     temp.operand = source->operand;
     temp.uses_variable = source->uses_variable;
 
-    if(source->uses_variable)
+    if(source->operand == constraint::compiled_c)
+    {
+        temp.compile_id = source->compile_id;
+    }
+    else if(source->uses_variable)
     {
         temp.variable_id = source->variable_id;
     }

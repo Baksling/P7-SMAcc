@@ -93,6 +93,7 @@ struct constraint
     {
         expr* value;
         int variable_id;
+        int compile_id;
     };
     expr* expression; //right hand side
     CPU GPU bool evaluate_constraint(state* state) const;
@@ -107,16 +108,8 @@ struct clock_var
     double value;
     double max_value;
 
-    CPU GPU void add_time(const double time)
-    {
-        this->value += time*this->rate;
-        this->max_value = fmax(this->max_value, this->value);
-    }
-    CPU GPU void set_value(const double val)
-    {
-        this->value = val;
-        this->max_value = fmax(this->max_value, this->value);
-    }
+    CPU GPU void add_time(const double time);
+    CPU GPU void set_value(const double val);
 };
 
 

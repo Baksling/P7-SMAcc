@@ -61,7 +61,7 @@ void visitor::accept(const edge* e, visitor* v)
 
 void visitor::accept(const constraint* c, visitor* v)
 {
-    if(!c->uses_variable)
+    if(!c->uses_variable && c->operand != constraint::compiled_c)
     {
         v->visit(c->value);
     }
@@ -94,6 +94,11 @@ void visitor::accept(const expr* ex, visitor* v)
     {
         v->visit(ex->conditional_else);
     }
+}
+
+void visitor::clear()
+{
+    this->visit_set_.clear();
 }
 
 

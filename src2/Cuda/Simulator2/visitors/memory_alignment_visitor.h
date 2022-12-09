@@ -23,4 +23,6 @@ public:
     void visit(clock_var* cv) override ;
     void visit(update* u) override;
     void visit(expr* ex) override;
+
+    void clear() override;
 };
