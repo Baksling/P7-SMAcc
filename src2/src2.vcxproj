@@ -1654,6 +1654,7 @@
     <Content Include="Analysis\file_assembler.py" />
     <Content Include="Analysis\integration_test.py" />
     <Content Include="Analysis\performance_analysis.py" />
+    <Content Include="Analysis\simulation_amount_analysis.py" />
     <Content Include="Analysis\trace_analyser.py" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\and_guy.xml" />
     <Content Include="Cuda\UPPAALTreeParser\XmlFiles\bigusdickuslmao.xml" />
@@ -1705,6 +1706,7 @@
     <Content Include="Cuda\UPPAALXMLParser\XmlFiles\tests\dicebase.xml" />
     <Content Include="Cuda\UPPAALXMLParser\XmlFiles\tests\dicebaseUnfair.xml" />
     <Content Include="Cuda\UPPAALXMLParser\XmlFiles\tests\ifelse_test.xml" />
+    <Content Include="Cuda\UPPAALXMLParser\XmlFiles\tests\not_test.xml" />
     <Content Include="Cuda\UPPAALXMLParser\XmlFiles\tests\random_test.xml" />
     <Content Include="Cuda\UPPAALXMLParser\XmlFiles\tests\rare_events.xml" />
     <Content Include="Cuda\UPPAALXMLParser\XmlFiles\tests\rate_test.xml" />

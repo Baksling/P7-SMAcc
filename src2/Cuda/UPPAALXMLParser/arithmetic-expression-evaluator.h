@@ -9,6 +9,7 @@
 #include <cctype>
 #include <cstring>
 #include <iostream>
+#include <unordered_map>
 
 #define PI 3.14159265358979323846 
  
@@ -28,19 +29,24 @@ class parser {
     void eval_exp5(double &result);
     void eval_exp6(double &result);
     void get_token();
+    unordered_map<string, double>* local_vars_;
+    unordered_map<string, double>* global_vars_;
 public:
-    parser();
+    parser(unordered_map<string,double>* local_vars, unordered_map<string,double>* global_vars);
     double eval_exp(char *exp);
     char errormsg[64];
 };
 // Parser constructor.
-parser::parser()
+parser::parser(unordered_map<string,double>* local_vars, unordered_map<string,double>* global_vars)
 {
     int i;
     exp_ptr = NULL;
     for (i = 0; i < NUMVARS; i++)
         vars[i] = 0.0;
     errormsg[0] = '\0';
+    
+    this->local_vars_ = local_vars;
+    this->global_vars_ = global_vars;
 }
 // Parser entry point.
 double parser::eval_exp(char *exp)
@@ -221,6 +227,19 @@ void parser::eval_exp6(double &result)
         {
         case VARIABLE:
             result = vars[*token - 'A'];
+
+            if (local_vars_->count(token))
+            {
+                result = local_vars_->at(token);
+            }
+            else if (global_vars_->count(token))
+            {
+                result = global_vars_->at(token);
+            }
+            else
+            {
+                THROW_LINE("VAR NOT DECLARED")
+            }
             get_token();
             return;
         case NUMBER:
@@ -250,7 +269,7 @@ void parser::get_token()
     else if (isalpha(*exp_ptr)) 
     {
         while (!strchr(" +-/*%^=()\t\r", *exp_ptr) && (*exp_ptr))
-            *temp++ = toupper(*exp_ptr++);
+            *temp++ = *exp_ptr++;
         while (isspace(*exp_ptr))  // skip over white space
             ++exp_ptr;
         tok_type = (*exp_ptr == '(') ? FUNCTION : VARIABLE;
@@ -258,7 +277,7 @@ void parser::get_token()
     else if (isdigit(*exp_ptr) || *exp_ptr == '.')
     {
         while (!strchr(" +-/*%^=()\t\r", *exp_ptr) && (*exp_ptr))
-            *temp++ = toupper(*exp_ptr++);
+            *temp++ = *exp_ptr++;
         tok_type = NUMBER;
     }
     *temp = '\0';
@@ -269,9 +288,9 @@ void parser::get_token()
 
 namespace evalguy
 {
-    float eval_expr(string input)
+    float eval_expr(string input, unordered_map<string,double>* local_vars, unordered_map<string,double>* global_vars)
     {
-        parser ob;
+        parser ob(local_vars, global_vars);
         float ans = ob.eval_exp((char*)input.substr(0,input.length()).c_str());
         return ans;
     }

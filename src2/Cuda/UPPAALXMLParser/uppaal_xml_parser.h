@@ -54,6 +54,8 @@ private:
     int edge_id_ = 0;
     declaration_parser dp_;
     template <typename T> void fill_expressions(const list<string>& expressions, list<T>* t);
+    unordered_map<string, double> const_local_vars{};
+    unordered_map<string, double> const_global_vars{};
     unordered_map<string, int> timers_map_{};
     unordered_map<string, int> global_timers_map_{};
     unordered_map<string, int> vars_map_{};

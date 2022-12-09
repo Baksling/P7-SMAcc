@@ -15,7 +15,7 @@ list<declaration> declaration_parser::parse_keyword(const string& lines, declara
     {
         const extract_declaration extracted_declaration = string_extractor::extract(extract_declaration(line, keyword));
 
-        const string expr = extracted_declaration.right.empty() ? "" : to_string(eval_expr(extracted_declaration.right));
+        const string expr = extracted_declaration.right.empty() ? "" : to_string(eval_expr(extracted_declaration.right, &local_vars_, const_global_vars_));
     
         for (const string& extracted_keyword : extracted_declaration.keywords)
         {
@@ -29,6 +29,8 @@ list<declaration> declaration_parser::parse_keyword(const string& lines, declara
                 result.emplace_back(type, extracted_keyword, expr, 1);
             else
                 result.emplace_back(type, extracted_keyword, "0", 1);
+
+            local_vars_.emplace(extracted_keyword, !expr.empty() ? stof(expr) : 0);
         }
     }
     
@@ -41,23 +43,25 @@ bool is_this_keyword(const string& expr, const string& keyword)
 }
 
 
-void declaration_parser::number_parser(const string& input_string, list<declaration>* result)
+void declaration_parser::number_parser(const string& input_string, list<declaration>* result, bool is_const = false)
 {
     if (is_this_keyword(input_string,"double"))
     {
-        list<declaration> cloc_decls = parse_keyword(input_string, double_type);
+        list<declaration> cloc_decls = parse_keyword(input_string, is_const ? const_double_type : double_type);
         result->insert(result->end(), cloc_decls.begin(), cloc_decls.end());
     }
     if (is_this_keyword(input_string,"int"))
     {
-        list<declaration> cloc_decls = parse_keyword(input_string, int_type);
+        list<declaration> cloc_decls = parse_keyword(input_string, is_const ? const_int_type : int_type);
         result->insert(result->end(), cloc_decls.begin(), cloc_decls.end());
     }
 }
 
 
-list<declaration> declaration_parser::parse(const string& decl)
+list<declaration> declaration_parser::parse(const string& decl, unordered_map<string,double>* const_global_vars)
 {
+    this->const_global_vars_ = const_global_vars;
+    
     const list<string> lines = split_expr(decl, '\n');
     list<declaration> result;
 
@@ -81,7 +85,7 @@ list<declaration> declaration_parser::parse(const string& decl)
         else if (is_this_keyword(line_trimmed,"const"))
         {   
             string const_string = remove_while(line_trimmed.substr(5), ' ');
-            number_parser(const_string, &result);
+            number_parser(const_string, &result, true);
         }
         else if (is_this_keyword(line_trimmed, "broadcastchan"))
         {

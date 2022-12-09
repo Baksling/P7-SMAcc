@@ -118,43 +118,41 @@ def run_simulations(args):
             blocks = int(args.blocks)
             threads = int(args.threads)
 
-            amount = ceil(float(run_idx) / float(blocks * threads))
+            #amount = ceil(float(run_idx) / float(blocks * threads))
 
-            file_path = f'{amount*blocks*threads}_GPU_{run_idx}'
+            file_path = f'{args.output_path}_GPU_{run_idx}'
 
             subprocess.run([
                 args.simulation_file,
                 '-m', args.model_file,
-                '-b', str(blocks),
-                '-t', str(threads),
-                '-a', str(amount),
+                '-b', f'{blocks},{1 if threads == 0 else threads}',
+                '-n', f'{run_idx}',
                 '-c', '1',
                 '-d', '0',
                 '-w', 'l',
                 '-o', file_path,
-                '-y', '0',
-                '-v', '1'
+                '-x', '100t',
+                '-v', '0',
+                '-s'
             ])
         
         if args.device == 1:
             cpu_core = args.cpu_cores
-            amount = ceil((float(run_idx) / float(cpu_core)))
+            #amount = ceil((float(run_idx) / float(cpu_core)))
 
-            file_path = f'{cpu_core*amount}_CPU_{cpu_core}'
+            file_path = f'{args.output_path}_CPU_{run_idx}'
 
             subprocess.run([
                 args.simulation_file,
                 '-m', args.model_file,
-                '-b', str(1),
-                '-t', str(cpu_core),
-                '-a', str(amount),
-                '-c', '1',
+                '-b', f'1,{cpu_core}',
+                '-n', f'{run_idx}',
+                '-c', f'{cpu_core}',
                 '-d', '1',
                 '-w', 'l',
                 '-o', file_path,
-                '-y', '0',
-                '-v', '1',
-                '-u', str(cpu_core)
+                '-x', '100t',
+                '-v', '0'
             ])
 
 
