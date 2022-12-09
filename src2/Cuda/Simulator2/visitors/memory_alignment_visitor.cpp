@@ -1,14 +1,30 @@
 ﻿#include "memory_alignment_visitor.h"
 
+#include <iostream>
+
+#define EXISTS(x)       \
+    if(this->location_mapper_.count(x) == 0)                                      \
+        throw std::runtime_error("Cannot find item at line: " + __LINE__) \
+
 void memory_alignment_visitor::post_process() const
 {
     edge* e_point = this->oracle_.edge_point();
     for (unsigned i = 0; i < this->oracle_.model_counter.edges; ++i)
     {
         edge* e = &e_point[i];
+        EXISTS(e->dest);
         e->dest = static_cast<node*>(this->location_mapper_.at(e->dest));
     }
 }
+
+#define MATCH(x,y, name) \
+    do{ \
+    if((x) != (y)){   \
+        std::cout << "mismatch " << (x) << ' ' << (y) << std::endl; \
+        throw std::out_of_range(name); \
+        } \
+    } while(0) 
+
 
 model_oracle memory_alignment_visitor::align(network* n, const model_size& model_m, memory_allocator* allocator)
 {
@@ -20,6 +36,14 @@ model_oracle memory_alignment_visitor::align(network* n, const model_size& model
 
     visit(n);
 
+    MATCH(model_m.network_size, move_state_.network_size, "network");
+    MATCH(model_m.nodes, move_state_.nodes, "nodes");
+    MATCH(model_m.edges, move_state_.edges, "edges");
+    MATCH(model_m.constraints, move_state_.constraints, "cosntraints");
+    MATCH(model_m.updates, move_state_.updates, "updates");
+    MATCH(model_m.expressions, move_state_.expressions, "expressions");
+    MATCH(model_m.variables, move_state_.variables, "variables");
+    
     post_process();
     
     return this->oracle_;
@@ -36,10 +60,12 @@ void memory_alignment_visitor::visit(network* nn)
 
     net->automatas.store = this->oracle_.network_nodes_point();
     net->variables.store = this->oracle_.variable_point();
+
     accept(nn, this);
 
     for (int i = 0; i < net->automatas.size; ++i)
     {
+        EXISTS(nn->automatas.store[i]);
         net->automatas.store[i] = static_cast<node*>(this->location_mapper_.at(nn->automatas.store[i]));
     }
 }
@@ -57,6 +83,7 @@ void memory_alignment_visitor::visit(node* n)
     no->edges.store = &this->oracle_.edge_point()[this->move_state_.edges];
     accept(n, this);
 
+    EXISTS(n->lamda);
     no->lamda = static_cast<expr*>(this->location_mapper_.at(n->lamda));
 }
 
@@ -73,6 +100,7 @@ void memory_alignment_visitor::visit(edge* e)
     
     accept(e, this);
 
+    EXISTS(ed->weight);
     ed->weight = static_cast<expr*>(this->location_mapper_.at(e->weight));
 }
 
@@ -86,8 +114,12 @@ void memory_alignment_visitor::visit(constraint* c)
 
     accept(c, this);
 
-    if(!c->uses_variable)
+    if(!c->uses_variable && c->operand != constraint::compiled_c)
+    {
+        EXISTS(c->value);
         co->value = static_cast<expr*>(this->location_mapper_.at(c->value));
+    }
+    EXISTS(c->expression);
     co->expression = static_cast<expr*>(this->location_mapper_.at(c->expression));
 }
 
@@ -113,6 +145,7 @@ void memory_alignment_visitor::visit(update* u)
     
     accept(u, this);
 
+    EXISTS(u->expression);
     up->expression = static_cast<expr*>(this->location_mapper_.at(u->expression));
 }
 
@@ -126,11 +159,22 @@ void memory_alignment_visitor::visit(expr* ex)
 
     accept(ex, this);
 
-    if(ex->left  != nullptr) exp->left  = static_cast<expr*>(this->location_mapper_.at(ex->left)); 
-    if(ex->right != nullptr) exp->right = static_cast<expr*>(this->location_mapper_.at(ex->right));
+    if(ex->left  != nullptr)
+    {
+        EXISTS(ex->left);
+        exp->left  = static_cast<expr*>(this->location_mapper_.at(ex->left));
+    }
+    if(ex->right != nullptr)
+    {
+        EXISTS(ex->right);
+        exp->right = static_cast<expr*>(this->location_mapper_.at(ex->right));
+    }
 
     if(ex->operand == expr::conditional_ee && ex->conditional_else != nullptr)
+    {
+        EXISTS(ex->conditional_else);
         exp->conditional_else = static_cast<expr*>(this->location_mapper_.at(ex->conditional_else));
+    }
 }
 
 void memory_alignment_visitor::clear()

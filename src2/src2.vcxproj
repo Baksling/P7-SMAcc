@@ -698,6 +698,7 @@
     <ClCompile Include="Cuda\Simulator2\visitors\domain_optimization_visitor.cpp" />
     <ClCompile Include="Cuda\Simulator2\visitors\jit_compile_visitor.cpp" />
     <ClCompile Include="Cuda\Simulator2\visitors\memory_alignment_visitor.cpp" />
+    <ClCompile Include="Cuda\Simulator2\visitors\model_count_visitor.cpp" />
     <ClCompile Include="Cuda\Simulator2\visitors\pretty_print_visitor.cpp" />
     <ClCompile Include="Cuda\Simulator2\visitors\visitor.cpp" />
     <ClCompile Include="Cuda\Simulator\stochastic_engine.cu" />
@@ -1606,6 +1607,7 @@
     <ClInclude Include="Cuda\Simulator2\visitors\domain_optimization_visitor.h" />
     <ClInclude Include="Cuda\Simulator2\visitors\jit_compile_visitor.h" />
     <ClInclude Include="Cuda\Simulator2\visitors\memory_alignment_visitor.h" />
+    <ClInclude Include="Cuda\Simulator2\visitors\model_count_visitor.h" />
     <ClInclude Include="Cuda\Simulator2\visitors\pretty_print_visitor.h" />
     <ClInclude Include="Cuda\Simulator2\visitors\visitor.h" />
     <ClInclude Include="Cuda\Simulator\stochastic_engine.h" />

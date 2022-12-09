@@ -110,7 +110,7 @@ GPU network* model_oracle::move_to_shared_memory(char* shared_mem, const int thr
         constraint* con = get_diff<constraint>(this->point, &this->constraint_point()[idx], shared_mem);
 
         con->expression = get_diff<expr>(this->initial_point, con->expression, shared_mem);
-        if(!con->uses_variable)
+        if(!con->uses_variable && con->operand != constraint::compiled_c)
             con->value = get_diff<expr>(this->initial_point, con->value, shared_mem);
     }
     cuda_SYNCTHREADS();

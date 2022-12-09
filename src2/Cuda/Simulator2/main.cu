@@ -8,8 +8,7 @@
 #include "common/io_paths.h"
 
 #include "visitors/domain_optimization_visitor.h"
-#include "visitors/jit_compile_visitor.h"
-#include "visitors/memory_alignment_visitor.h"
+#include "visitors/model_count_visitor.h"
 #include "visitors/pretty_print_visitor.h"
 
 
@@ -188,45 +187,31 @@ int main(int argc, const char* argv[])
     if(config.verbose)
         pretty_print_visitor(&std::cout).visit(&model);
 
-    jit_compile_visitor* expression_compiler = nullptr;
-    if(config.use_jit)
-    {
-        expression_compiler = new jit_compile_visitor;
-        expression_compiler->visit(&model);
-    }
-    
     if(config.verbose) printf("Optimizing...\n");
     domain_optimization_visitor optimizer = domain_optimization_visitor();
     optimizer.optimize(&model);
 
-    size_t model_size = optimizer.get_model_size().total_memory_size();
+    model_count_visitor count_visitor = model_count_visitor();
+    count_visitor.visit(&model);
+    
+    model_size size_of_model = count_visitor.get_model_size();
     setup_config(&config, &model, optimizer.get_max_expr_depth());
-    if(config.verbose) print_config(&config, model_size);
+    optimizer.clear();
+    if(config.verbose) print_config(&config, size_of_model.total_memory_size());
     
     if(config.use_shared_memory)
-        config.use_shared_memory = config.can_use_cuda_shared_memory(model_size);
+        config.use_shared_memory = config.can_use_cuda_shared_memory(size_of_model.total_memory_size());
 
     const bool run_device = (config.sim_location == sim_config::device || config.sim_location == sim_config::both);
-    const bool run_host = config.sim_location == sim_config::host || config.sim_location == sim_config::both;
-    //run simulation
-    if(config.use_jit && run_device)
-    {
-        if(expression_compiler == nullptr ) throw std::runtime_error("expression compiler is null.");
-        simulation_runner::simulate_gpu_jit(&model, expression_compiler, &config);
-    }
-    if(config.use_shared_memory && !config.use_jit && run_device)
-    {
-        if(optimizer.has_invalid_constraint())
-            throw std::runtime_error("Model contains an invalid invariant, where a clock is compared to a clock");
+    const bool run_host   = (config.sim_location == sim_config::host   || config.sim_location == sim_config::both);
 
-        memory_alignment_visitor alignment_visitor = memory_alignment_visitor();
-        model_oracle oracle = alignment_visitor.align(&model, optimizer.get_model_size(), &allocator);
-        
-        simulation_runner::simulate_gpu_aligned(&oracle, &config);
-    }
-    if(!config.use_shared_memory && !config.use_jit && run_device)
+    //run simulation
+    if(run_device)
     {
-        simulation_runner::simulate_gpu(&model, &config);
+        if(config.use_jit)
+            simulation_runner::simulate_gpu_jit(&model, &config);
+        else
+            simulation_runner::simulate_gpu(&model, &config);
     }
     if(run_host)
     {
@@ -234,12 +219,6 @@ int main(int argc, const char* argv[])
         simulation_runner::simulate_cpu(&model, &config);
     }
 
-    optimizer.clear();
     allocator.free_allocations();
-    if(expression_compiler != nullptr)
-    {
-        expression_compiler->clear();
-        delete expression_compiler;
-    }
     return 0;
 }

@@ -65,7 +65,6 @@ class jit_compiler
 public:
     static jitify::KernelInstantiation compile(jit_compile_visitor* expr_compiler)
     {
-        if(expr_compiler == nullptr) throw std::runtime_error("expr visitor is nullptr");
         expr_compiler->finalize();
 
         

@@ -328,21 +328,21 @@ CPU GPU double evaluate_compiled_expression(const expr* ex, state* state)
 {
     //DO NOT REMOVE FOLLOWING COMMENT! IT IS USED AS SEARCH TARGET FOR JIT COMPILATION!!!
     switch(ex->compile_id){
-case 0: return((state->variables.store[9].value)-(1));
-case 1: return((state->variables.store[10].value)+(1));
-case 2: return((((state->variables.store[5].value)*(state->variables.store[9].value))*(state->variables.store[11].value))/(state->variables.store[0].value));
-case 3: return((state->variables.store[10].value)-(1));
-case 4: return((state->variables.store[11].value)+(1));
-case 5: return((state->variables.store[3].value)*(state->variables.store[10].value));
-case 6: return((state->variables.store[11].value)-(1));
-case 7: return((state->variables.store[12].value)+(1));
-case 8: return((state->variables.store[7].value)*(state->variables.store[11].value));
-case 9: return((state->variables.store[12].value)-(1));
-case 10: return((state->variables.store[13].value)+(1));
-case 11: return((state->variables.store[8].value)*(state->variables.store[12].value));
-case 12: return((state->variables.store[11].value)-(1));
-case 13: return((state->variables.store[13].value)+(1));
-case 14: return((state->variables.store[4].value)*(state->variables.store[11].value));
+case 0: return((state->variables.store[0].value)-(1));
+case 1: return((state->variables.store[1].value)+(1));
+case 2: return((((0.705882)*(state->variables.store[0].value))*(state->variables.store[2].value))/(10000));
+case 3: return((state->variables.store[1].value)-(1));
+case 4: return((state->variables.store[2].value)+(1));
+case 5: return((0.196078)*(state->variables.store[1].value));
+case 6: return((state->variables.store[2].value)-(1));
+case 7: return((state->variables.store[3].value)+(1));
+case 8: return((0.000265)*(state->variables.store[2].value));
+case 9: return((state->variables.store[3].value)-(1));
+case 10: return((state->variables.store[4].value)+(1));
+case 11: return((0.098814)*(state->variables.store[3].value));
+case 12: return((state->variables.store[2].value)-(1));
+case 13: return((state->variables.store[4].value)+(1));
+case 14: return((0.294118)*(state->variables.store[2].value));
 
 }
 
@@ -354,12 +354,12 @@ CPU GPU bool evaluate_compiled_constraint(const constraint* con, state* state)
 {
     //DO NOT REMOVE FOLLOWING COMMENT! IT IS USED AS SEARCH TARGET FOR JIT COMPILATION!!!
     switch(con->compile_id){
-case 0: return (state->variables.store[9].value)<(0); break;
-case 1: return (state->variables.store[11].value)<(0); break;
-case 2: return (state->variables.store[10].value)<(0); break;
-case 3: return (state->variables.store[11].value)<(0); break;
-case 4: return (state->variables.store[12].value)<(0); break;
-case 5: return (state->variables.store[11].value)<(0); break;
+case 0: return (state->variables.store[0].value)>(0); break;
+case 1: return (state->variables.store[2].value)>(0); break;
+case 2: return (state->variables.store[1].value)>(0); break;
+case 3: return (state->variables.store[2].value)>(0); break;
+case 4: return (state->variables.store[3].value)>(0); break;
+case 5: return (state->variables.store[2].value)>(0); break;
 
 }
 

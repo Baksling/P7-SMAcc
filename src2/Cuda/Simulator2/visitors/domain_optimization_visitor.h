@@ -12,7 +12,6 @@ class domain_optimization_visitor : public visitor
     bool check_depth_lock_ = true;
     bool contains_invalid_constraint_ = false;
     std::unordered_map<int, bool> variables_clock_map_;
-    model_size model_counter_;
     
     static unsigned count_expr_depth(const expr* ex);
     static void compound_optimize_constraints(edge* e);
@@ -27,9 +26,8 @@ public:
     void visit(update* u) override;
     void visit(expr* ex) override;
 
-    void clear();
+    void clear() override;
     
     unsigned get_max_expr_depth() const;
     bool has_invalid_constraint() const;
-    model_size get_model_size() const{ return model_counter_; }
 };
