@@ -102,15 +102,25 @@ def __parse_args():
         dest='time_variance',
         help='How much the time results may variate form the facts [In ms default = 50] [0 to ignore]',
         type=int,
-        default=50,
+        default=0,
         required=False
     )
-    
+
     general_options.add_argument(
         '-sm',
         '--shared_memory',
         dest='use_shared',
         help='Use shared Memory',
+        type=int,
+        default=0,
+        required=False
+    )
+
+    general_options.add_argument(
+        '-j',
+        '--jit',
+        dest='use_jit',
+        help='Use Jit',
         type=int,
         default=0,
         required=False
@@ -130,36 +140,30 @@ def run_simulations(args_) -> tuple[set[str], list[str]]:
     for file in only_files:
         print("RUNNING", file)
         file_path = join(folder_path, file)
-        #print(f' m: {file_path}\n n: {args_.amount}\n o: {join(TEMP_FOLDER_NAME, file.replace(".xml", ""))}\n x: {args_.max_progression}{"t" if args_.use_time else "s"}')
-        #amount = int(ceil(float(args_.amount) / float(32 * 512)))
-        
+        # print(f' m: {file_path}\n n: {args_.amount}\n o: {join(TEMP_FOLDER_NAME, file.replace(".xml", ""))}\n x: {args_.max_progression}{"t" if args_.use_time else "s"}')
+        # amount = int(ceil(float(args_.amount) / float(32 * 512)))
+
+        parameters = [
+            simulator_path,
+            '-m', file_path,
+            '-b', '40,256',
+            '-n', f'{args_.amount}',
+            '-c', '1',
+            '-d', '0',
+            '-w', 'r',
+            '-o', f'{join(TEMP_FOLDER_NAME, file.replace(".xml", ""))}',
+            '-x', f'{args_.max_progression}{"t" if args_.use_time else "s"}',
+            '-v', '0',
+            '-s'
+        ]
+
         if args.use_shared == 1:
-            subprocess.run([
-                simulator_path,
-                '-m', file_path,
-                '-b', '40,256',
-                '-n', f'{args_.amount}',
-                '-c', '1',
-                '-d', '0',
-                '-w', 'r',
-                '-o', f'{join(TEMP_FOLDER_NAME, file.replace(".xml", ""))}',
-                '-x', f'{args_.max_progression}{"t" if args_.use_time else "s"}',
-                '-v', '0',
-                '-s'
-            ])
-        else:
-            subprocess.run([
-                simulator_path,
-                '-m', file_path,
-                '-b', '40,256',
-                '-n', f'{args_.amount}',
-                '-c', '1',
-                '-d', '0',
-                '-w', 'r',
-                '-o', f'{join(TEMP_FOLDER_NAME, file.replace(".xml", ""))}',
-                '-x', f'{args_.max_progression}{"t" if args_.use_time else "s"}',
-                '-v', '0'
-            ])
+            parameters.append('-s')
+
+        if args.use_jit == 1:
+            parameters.append('-j')
+
+        subprocess.run(parameters)
 
         new_file_name = f'{file.replace(".xml", "")}_results.tsv'
         if not exists(join(TEMP_FOLDER_NAME, new_file_name)):
@@ -201,7 +205,8 @@ def check_simulation_results(args_, _expected_results, not_run_set, all_files) -
                 print(output_str)
             except:
                 print(file, f'{FAILED}FAILED{ENDC} - EXCEPT')
-        else: print(file, f"{WARNING}FAILED{ENDC} - DID NOT FINISH SIMULATION!")
+        else:
+            print(file, f"{WARNING}FAILED{ENDC} - DID NOT FINISH SIMULATION!")
 
 
 def get_expected_simulation_results() -> dict[str, value_checker]:
@@ -249,7 +254,8 @@ def get_expected_simulation_results() -> dict[str, value_checker]:
         'rates_4': value_checker(50.0, 0),
         'rates_5': value_checker(31.0, 0),
         'rates_6': value_checker(50.0, 0),
-        'rates_7': value_checker(50.0, 0)
+        'rates_7': value_checker(50.0, 0),
+        'not_test': value_checker(50.0, 0)
     }
 
 

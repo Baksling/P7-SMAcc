@@ -48,45 +48,29 @@ def plot_lines(p_list: List[Tuple[int, int, int]], dims: Tuple[int, int, int], a
     block_dim, thread_dim, time_dim = dims[0] - args_.min_blocks, dims[1] - args_.min_threads, dims[2]
 
     v_lst = [[] for i in range(block_dim + 1)]
-
+    
     for p in range(len(p_list)):
         block, thread, time = p_list[p]
-
-        block_idx = block - args_.min_blocks
-        v_lst[block_idx].append((thread, time))
+        v_lst[block].append((thread, time))
 
     for lst_idx in range(len(v_lst)):
         lst = v_lst[lst_idx]
         v_lst[lst_idx] = sorted(lst, key=lambda t: t[0])
-
-    lines = [[] for i in range(thread_dim + 1)]
-
-    labels_start = ["CPU"] if args_.min_blocks <= 0 else []
-    labels = labels_start + [f"#Block {block + args_.interval}" for block in range(args_.min_blocks, block_dim) if (args_.interval > 0 and (block % args_.interval == 0) and block + args_.interval <= block_dim)]
-
-    if labels_start[0] == "CPU":
-        for tmp in range(args_.min_threads):
-            lines[tmp].append(0)
-
-    for tmp in range(block_dim - 1):
-        for idx in range(len(lines)):
-            if tmp % args_.interval != 0: continue
-            if idx < args_.min_threads: lines[idx].append(0)
-
-    for thread_idx in range(thread_dim):
-        for block_idx in range(block_dim + 1):
-            if (block_idx % args_.interval != 0): continue
-            if thread_idx < args_.min_threads - 1: continue
-            data = v_lst[block_idx][thread_idx][1]
-            lines[thread_idx + 1].append(data)
-
-    for x in lines:
-        print(x)
-    for x in labels:
-        print(x)
-
-    if args_.show_label > 0: plt.plot(lines, label=labels)
-    else:                    plt.plot(lines)
+    for lst_idx in range(len(v_lst)):
+        XL = [t[0] for t in v_lst[lst_idx]]
+        YL = [t[1] for t in v_lst[lst_idx]]
+        
+        if len(XL) == 0: continue
+        
+        with open(f'test{lst_idx}.tsv', 'w') as f:
+            for idx in range(len(XL)):
+                x = XL[idx]
+                y = YL[idx]
+                
+                f.write(f'{x}\t{y}\n')
+                
+        plt.plot(XL, YL, label=[("CPU" if lst_idx == 0 else f'BLOCK #{lst_idx}')])
+        
 
     # Make legend, set axes limits and labels
     plt.legend()
@@ -108,9 +92,11 @@ def get_data(folder_path: str, args_, dims, filter_str: str = None) -> Tuple[int
 
     for file in only_files:
         tmp = file.split('_')
-        tmp_len = len(tmp)
-        is_gpu = tmp[tmp_len - 5] == "GPU"
-        block, thread, time = int(tmp[tmp_len - 4]) if is_gpu else 0, int(tmp[tmp_len - 3].split('.')[0]), 0
+        tmp_len = len(tmp)                          # output_GPU_1_0_lite_summary.txt
+        is_gpu = tmp[tmp_len - 5] == "GPU"          #   -6   -5 -4 -3 -2     -1
+        block, thread, time = int(tmp[tmp_len - 4]) if is_gpu else 0, int(tmp[tmp_len - 3]), 0
+
+        thread = (1 if thread == 0 and is_gpu else thread)
 
         if block > block_dim or block < args_.min_blocks: continue
         if thread > thread_dim or thread < args_.min_threads: continue
@@ -259,7 +245,7 @@ if __name__ == "__main__":
     args = get_args()
     dims = (args.block_dim, args.thread_dim, args.max_time)
     max_time, data = get_data(args.folder_path, args, dims, '.txt')
-    dims = (dims[0], dims[1], max_time)
+    dims = (dims[0], dims[1], min(max_time, args.max_time))
     # test_dims = (args.block_dim, args.thread_dim, 15)
 
     plot_points(data, dims, args)

@@ -148,6 +148,16 @@ def parse_arguments():
         default=0,
         required=False
     )
+    
+    option_parser.add_argument(
+        '-j',
+        '--jit',
+        dest='use_jit',
+        help='Use Jit',
+        type=int,
+        default=0,
+        required=False
+    )
 
     args = parser.parse_args()
     return args
@@ -182,33 +192,27 @@ def analyse_performance(args) -> None:
             #     '-v', '1'
             # ])
 
+            parameters = [
+                args.simulation_file,
+                '-m', args.model_file,
+                '-b', f'{block},{1 if thread == 0 else thread}',
+                '-n', f'{args.simulation_amount}',
+                '-c', '1',
+                '-d', '0',
+                '-w', 'l',
+                '-o', file_path,
+                '-x', '100t',
+                '-v', '0'
+            ]
+            
             if args.use_shared == 1:
-                subprocess.run([
-                    args.simulation_file,
-                    '-m', args.model_file,
-                    '-b', f'{block},{1 if thread == 0 else thread}',
-                    '-n', f'{args.simulation_amount}',
-                    '-c', '1',
-                    '-d', '0',
-                    '-w', 'l',
-                    '-o', file_path,
-                    '-x', '100t',
-                    '-v', '0',
-                    '-s'
-                ])
-            else:
-                subprocess.run([
-                    args.simulation_file,
-                    '-m', args.model_file,
-                    '-b', f'{block},{1 if thread == 0 else thread}',
-                    '-n', f'{args.simulation_amount}',
-                    '-c', '1',
-                    '-d', '0',
-                    '-w', 'l',
-                    '-o', file_path,
-                    '-x', '100t',
-                    '-v', '0'
-                ])
+                parameters.append('-s')
+            
+            if args.use_jit == 1:
+                parameters.append('-j')
+
+            if args.use_shared == 1:
+                subprocess.run(parameters)
 
     if args.mode == 1 or args.mode == 2:
         for cpu_core in range(min_cpu_count, cpu_count + 1):
