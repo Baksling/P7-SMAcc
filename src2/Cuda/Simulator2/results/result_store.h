@@ -61,7 +61,7 @@ public:
         for (int i = 0, j = 0; i < sim->variables.size; ++i)
         {
             if(!sim->variables.store[i].should_track) continue;
-            this->variable_p_[sim_id*this->variables_count_ + j++] = sim->variables.store[i].value;
+            this->variable_p_[sim_id*this->variables_count_ + j++] = sim->variables.store[i].max_value;
         }
 
         for (int i = 0; i < sim->models.size; ++i)

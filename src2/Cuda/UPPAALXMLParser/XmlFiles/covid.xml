@@ -19,18 +19,18 @@
     <template>
         <name x="5" y="5">Template</name>
         <declaration>// Place local declarations here.</declaration>
-        <location id="id0" x="0" y="0">
-            <label kind="exponentialrate" x="-10" y="34">beta0*S*I/N</label>
+        <location id="id0" x="2" y="0">
+            <label kind="exponentialrate" x="-34" y="25">beta0*S*I/N</label>
         </location>
         <init ref="id0"/>
         <transition>
             <source ref="id0"/>
             <target ref="id0"/>
-            <label kind="guard" x="-33" y="-102">S&gt;0&amp;&amp;I&gt;0</label>
-            <label kind="assignment" x="-33" y="-68">S=S-1, E=E+1</label>
-            <nail x="-51" y="-68"/>
-            <nail x="25" y="-68"/>
-            <nail x="42" y="-68"/>
+            <label kind="guard" x="-31" y="-102">S&gt;0&amp;&amp;I&gt;0</label>
+            <label kind="assignment" x="-31" y="-68">S=S-1, E=E+1</label>
+            <nail x="-49" y="-68"/>
+            <nail x="27" y="-68"/>
+            <nail x="44" y="-68"/>
         </transition>
     </template>
     <template>
@@ -104,23 +104,27 @@
     </system>
     <queries>
         <query>
-            <formula>Pr[&lt;=500;1000](&lt;&gt;Process1.Goal)</formula>
-            <comment></comment>
-        </query>
-        <query>
-            <formula>Pr[&lt;=5000](&lt;&gt;Process2.Goal)</formula>
-            <comment></comment>
-        </query>
-        <query>
             <formula>simulate[&lt;=100; 1]{S,E,I,H*1000,R}</formula>
             <comment></comment>
         </query>
         <query>
-            <formula>E[&lt;=100; 100] (max: H)</formula>
+            <formula>E[&lt;=100; 100] (max: S)</formula>
             <comment></comment>
         </query>
         <query>
-            <formula>E[&lt;=100; 10] (max: I)</formula>
+            <formula>E[&lt;=100; 101] (max: E)</formula>
+            <comment></comment>
+        </query>
+        <query>
+            <formula>E[&lt;=100; 101] (max: I)</formula>
+            <comment></comment>
+        </query>
+        <query>
+            <formula>E[&lt;=100; 101] (max: H)</formula>
+            <comment></comment>
+        </query>
+        <query>
+            <formula>E[&lt;=100; 101] (max: R)</formula>
             <comment></comment>
         </query>
     </queries>

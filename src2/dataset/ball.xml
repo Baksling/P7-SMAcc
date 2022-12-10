@@ -19,7 +19,7 @@ clock time;
 	<template>
 		<name>Piston</name>
 		<location id="id0" x="0" y="0">
-			<label kind="exponentialrate" x="-8" y="-32">5:2</label>
+			<label kind="exponentialrate" x="-8" y="-32">5/2</label>
 		</location>
 		<init ref="id0"/>
 		<transition>
@@ -35,8 +35,10 @@ clock time;
 		<declaration>clock vx;</declaration>
 		<location id="id1" x="96" y="-32">
 			<label kind="invariant" x="72" y="-64">x'==1*vx</label>
+			<label kind="exponentialrate" x="86" y="2">1</label>
 		</location>
 		<location id="id2" x="0" y="-32">
+			<label kind="exponentialrate" x="-10" y="2">1</label>
 		</location>
 		<init ref="id2"/>
 		<transition>
@@ -62,8 +64,10 @@ vx=-10+random(0.5)</label>
 		<location id="id3" x="96" y="-32">
 			<label kind="invariant" x="48" y="-96">v'==-9.81 &amp;&amp;
 p'==1*v</label>
+			<label kind="exponentialrate" x="86" y="2">1</label>
 		</location>
 		<location id="id4" x="0" y="-32">
+			<label kind="exponentialrate" x="-10" y="2">1</label>
 		</location>
 		<init ref="id4"/>
 		<transition>

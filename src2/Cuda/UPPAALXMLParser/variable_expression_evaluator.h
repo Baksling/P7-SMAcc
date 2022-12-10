@@ -27,6 +27,8 @@ class variable_expression_evaluator {
     char *exp_ptr_; // points to the expression
     char token_[256]; // holds current token
     char tok_type_; // holds token's type
+    unordered_map<string, double>* const_local_vars_;
+    unordered_map<string, double>* const_global_vars_;
     unordered_map<string, int>* local_vars_;
     unordered_map<string, int>* global_vars_;
     expr* eval_exp1();
@@ -38,8 +40,12 @@ class variable_expression_evaluator {
     expr* eval_exp(char *exp);
     void get_token();
 public:
-    variable_expression_evaluator(unordered_map<string,int>* local_vars, unordered_map<string,int>* global_vars);
-    static expr* evaluate_variable_expression(const string& input, unordered_map<string, int>* local_vars, unordered_map<string, int>* global_vars);
+    variable_expression_evaluator(
+        unordered_map<string,int>* local_vars, unordered_map<string,int>* global_vars,
+        unordered_map<string, double>* const_local_vars,unordered_map<string, double>* const_global_vars);
+    static expr* evaluate_variable_expression(
+        const string& input, unordered_map<string, int>* local_vars, unordered_map<string, int>* global_vars,
+        unordered_map<string, double>* const_local_vars,unordered_map<string, double>* const_global_vars);
     
     char errormsg[64];
 };

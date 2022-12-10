@@ -3,9 +3,13 @@
 #include "helper_methods.h"
 
 // Parser constructor.
-variable_expression_evaluator::variable_expression_evaluator(unordered_map<string,int>* local_vars, unordered_map<string,int>* global_vars)
+variable_expression_evaluator::variable_expression_evaluator(
+    unordered_map<string,int>* local_vars, unordered_map<string,int>* global_vars,
+    unordered_map<string, double>* const_local_vars,unordered_map<string, double>* const_global_vars)
 {
     exp_ptr_ = nullptr;
+    const_local_vars_ = const_local_vars;
+    const_global_vars_ = const_global_vars; 
     local_vars_ = local_vars;
     global_vars_ = global_vars;
 }
@@ -64,7 +68,9 @@ expr* variable_expression_evaluator::eval_exp1()
  expr* variable_expression_evaluator::eval_exp2()
 {
     char op;
+    
     expr* result = eval_exp3();
+    
     
     while ((op = *token_) == '+' || op == '-')
     {
@@ -92,7 +98,9 @@ expr* variable_expression_evaluator::eval_exp3()
 {
     char op;
     double temp;
+    
     expr* result = eval_exp4();
+    
     while ((op = *token_) == '*' || op == '/')
     {
         get_token();
@@ -117,7 +125,9 @@ expr* variable_expression_evaluator::eval_exp3()
 // Process an exponent.
 expr* variable_expression_evaluator::eval_exp4()
 {
+    
     expr* result = eval_exp5();
+    
     while (*token_ == '^')
     {
         get_token();
@@ -134,7 +144,7 @@ expr* variable_expression_evaluator::eval_exp4()
 expr* variable_expression_evaluator::eval_exp5()
 {
     char op = 0;
-    if ((tok_type_ == UPDATEDELIMITER) && *token_ == '+' || *token_ == '-')
+    if ((tok_type_ == UPDATEDELIMITER) && *token_ == '!' || *token_ == '-')
     {
         op = *token_;
         get_token();
@@ -146,6 +156,12 @@ expr* variable_expression_evaluator::eval_exp5()
     if (op == '-')
     {
         ex->operand = expr::negation_ee;
+        result = ex;
+    }
+    
+    if (op == '!')
+    {
+        ex->operand = expr::not_ee;
         result = ex;
     }
     
@@ -198,8 +214,18 @@ expr* variable_expression_evaluator::eval_exp6()
                 {
                     const string var = token_;
                     expr* result = new expr();
-                    
-                    if (local_vars_->count(var))
+
+                    if (const_local_vars_->count(var))
+                    {
+                        result->value = const_local_vars_->at(var);
+                        result->operand = expr::literal_ee;
+                    }
+                    else if (const_global_vars_->count(var))
+                    {
+                        result->value = const_global_vars_->at(var);
+                        result->operand = expr::literal_ee;
+                    }
+                    else if (local_vars_->count(var))
                     {
                         result->variable_id = local_vars_->at(var);
                         result->operand = expr::clock_variable_ee;
@@ -211,7 +237,10 @@ expr* variable_expression_evaluator::eval_exp6()
                     }
                     else
                     {
-                        THROW_LINE("VAR NOT DECLARED")
+                        string err = "VAR NOT DECLARED. VAR:";
+                        err.append(var);
+                        err.append(":");
+                        THROW_LINE(err)
                     }
                     
                     get_token();
@@ -229,7 +258,10 @@ expr* variable_expression_evaluator::eval_exp6()
                 }
             default:
                 {
-                    THROW_LINE("Syntax Error")
+                    string err = "Syntax Error, not known token:";
+                    err.append(token_);
+                    err.append(":");
+                    THROW_LINE(err)
                 }
         }
 }
@@ -243,14 +275,14 @@ void variable_expression_evaluator::get_token()
         return;
     while (isspace(*exp_ptr_))  // skip over white space
         ++exp_ptr_; 
-    if (strchr("+-*/%^=()", *exp_ptr_)) 
+    if (strchr("+-*/%^=()!", *exp_ptr_)) 
     {
         tok_type_ = UPDATEDELIMITER;
         *temp++ = *exp_ptr_++;  // advance to next char
     }
     else if (isalpha(*exp_ptr_)) 
     {
-        while (!strchr(" +-/*%^=()\t\r", *exp_ptr_) && (*exp_ptr_))
+        while (!strchr(" +-/*%^=()!\t\r", *exp_ptr_) && (*exp_ptr_))
             *temp++ = *exp_ptr_++;
         while (isspace(*exp_ptr_))  // skip over white space
             ++exp_ptr_;
@@ -258,16 +290,18 @@ void variable_expression_evaluator::get_token()
     }
     else if (isdigit(*exp_ptr_) || *exp_ptr_ == '.')
     {
-        while (!strchr(" +-/*%^=()\t\r", *exp_ptr_) && (*exp_ptr_))
+        while (!strchr(" +-/*%^=()!\t\r", *exp_ptr_) && (*exp_ptr_))
             *temp++ = *exp_ptr_++;
         tok_type_ = UPDATENUMBER;
     }
     *temp = '\0';
 }
 
-expr* variable_expression_evaluator::evaluate_variable_expression(const string& input, unordered_map<string, int>* local_vars, unordered_map<string, int>* global_vars)
+expr* variable_expression_evaluator::evaluate_variable_expression(
+    const string& input, unordered_map<string, int>* local_vars, unordered_map<string, int>* global_vars,
+    unordered_map<string, double>* const_local_vars,unordered_map<string, double>* const_global_vars)
 {
-    variable_expression_evaluator ob(local_vars, global_vars);
+    variable_expression_evaluator ob(local_vars, global_vars, const_local_vars, const_global_vars);
     expr* ans = ob.eval_exp(const_cast<char*>(input.substr(0, input.length()).c_str()));
     return ans;
 }
