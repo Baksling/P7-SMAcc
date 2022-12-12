@@ -136,7 +136,7 @@ parser_state parse_configs(const int argc, const char* argv[], sim_config* confi
     return parser_state::parsed;
 }
 
-void setup_config(sim_config* config, const network* model, const unsigned max_expr_depth)
+void setup_config(sim_config* config, const network* model, const unsigned max_expr_depth, const unsigned max_fanout)
 {
     unsigned track_count = 0;
     for (int i = 0; i < model->variables.size; ++i)
@@ -147,6 +147,7 @@ void setup_config(sim_config* config, const network* model, const unsigned max_e
     config->network_size = model->automatas.size;
     config->variable_count = model->variables.size;
     config->max_expression_depth = max_expr_depth;
+    config->max_edge_fanout = max_fanout;
 }
 
 void print_config(const sim_config* config, const size_t model_size)
@@ -195,7 +196,10 @@ int main(int argc, const char* argv[])
     count_visitor.visit(&model);
     
     model_size size_of_model = count_visitor.get_model_size();
-    setup_config(&config, &model, optimizer.get_max_expr_depth());
+    setup_config(&config, &model,
+        optimizer.get_max_expr_depth(),
+        optimizer.get_max_fanout());
+    
     optimizer.clear();
     if(config.verbose) print_config(&config, size_of_model.total_memory_size());
     

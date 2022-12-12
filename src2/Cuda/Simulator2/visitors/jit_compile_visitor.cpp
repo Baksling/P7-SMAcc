@@ -1,5 +1,7 @@
 ﻿#include "jit_compile_visitor.h"
 
+#include <iostream>
+
 jit_compile_visitor::jit_compile_visitor() : clocks_(arr<clock_var>::empty())
 {
     this->init_store();
@@ -49,13 +51,13 @@ void jit_compile_visitor::visit(constraint* c)
     const int id = this->con_compile_id_enumerator_++;
 
     this->con_store_ << "case " << id << ": return ";
-    compile_con(this->con_store_, c);
+    compile_con(this->con_store_, this->expr_map_cache_, c);
     this->con_store_ << "; break;\n";
     
     if(c->uses_variable && IS_INVARIANT(c->operand))
     {
-        this->invariant_store_ << "case " << id << ": return ";
-        const bool is_invariant = compile_invariant(this->invariant_store_, this->clocks_, c);
+        this->invariant_store_ << "case " << id << ": v0 = ";
+        const bool is_invariant = compile_invariant(this->invariant_store_, this->clocks_, c, this->expr_map_cache_);
         this->invariant_store_ << "; break;\n";
         if(!is_invariant) throw std::runtime_error("invariant cannot be compiled as invariant.");
     }
@@ -85,14 +87,20 @@ void jit_compile_visitor::visit(expr* ex)
 {
     if(has_visited(ex)) return;
     if(this->finalized_)
-        throw std::runtime_error("Cannot add expression to compiled expression collection, as it is already marked as finalied.");
+        throw std::runtime_error("Cannot add expression to compiled expression collection, as it is already marked as finalized.");
 
+    if(ex->operand == expr::compiled_ee) return;
     if(!IS_LEAF(ex->operand))
     {
         const int id = this->expr_compile_id_enumerator_++;
-
+        std::stringstream ss;
+        
         this->expr_store_ << "case " << id << ": return";
-        compile_expr(this->expr_store_, ex, true);
+        compile_expr(ss, ex, true);
+        
+        this->expr_map_cache_.insert(std::pair<expr*, std::string>( ex, ss.str() ));
+        this->expr_store_ << ss.rdbuf();
+        
         this->expr_store_ << ";\n";
         
         ex->operand = expr::compiled_ee;
@@ -145,6 +153,7 @@ void jit_compile_visitor::clear()
     this->expr_store_.clear();
     this->con_store_.clear();
     this->invariant_store_.clear();
+    this->expr_map_cache_.clear();
     this->expr_compile_id_enumerator_ = 0;
     this->con_compile_id_enumerator_ = 0;
     init_store();
@@ -159,7 +168,7 @@ void jit_compile_visitor::compile_expr(std::stringstream& ss, const expr* e, con
     {
     case expr::literal_ee: ss << e->value; break;
     case expr::clock_variable_ee: ss << "state->variables.store[" << e->variable_id << "].value"; break;
-    case expr::random_ee: ss << "(1.0 - curand_uniform_double())*"; compile_expr(ss, e->left);  break;
+    case expr::random_ee: ss << "(1.0 - curand_uniform_double(state->random))*"; compile_expr(ss, e->left);  break;
     case expr::plus_ee:  compile_expr(ss, e->left); ss << '+'; compile_expr(ss, e->right); break;
     case expr::minus_ee: compile_expr(ss, e->left); ss << '-'; compile_expr(ss, e->right); break;
     case expr::multiply_ee: compile_expr(ss, e->left); ss << '*'; compile_expr(ss, e->right); break;
@@ -183,11 +192,17 @@ void jit_compile_visitor::compile_expr(std::stringstream& ss, const expr* e, con
     ss << ')';
 }
 
-void jit_compile_visitor::compile_con(std::stringstream& ss, const constraint* con)
+void jit_compile_visitor::compile_con(std::stringstream& ss,
+    std::unordered_map<const expr*, std::string>& compile_map,
+    const constraint* con)
 {
     if(con->uses_variable)
     {
         ss << "(state->variables.store[" << con->variable_id << "].value)";
+    }
+    else if(con->value->operand == expr::compiled_ee)
+    {
+        ss << compile_map[con->value];
     }
     else
     {
@@ -206,23 +221,42 @@ void jit_compile_visitor::compile_con(std::stringstream& ss, const constraint* c
     // default: throw std::out_of_range("constraint operand not recognized");
     }
 
-    compile_expr(ss, con->expression);
+    if(con->expression->operand == expr::compiled_ee)
+    {
+        ss << compile_map[con->expression];
+    }
+    else
+    {
+        compile_expr(ss, con->expression);
+    }
 }
 
 bool jit_compile_visitor::compile_invariant(std::stringstream& ss,
                                               const arr<clock_var>& clocks,
-                                              const constraint* con)
+                                              const constraint* con,
+                                              std::unordered_map<const expr*, std::string>& expr_cache)
 {
     // if(IS_INVARIANT(con->operand) && con->uses_variable)
     if(!IS_INVARIANT(con->operand) || !con->uses_variable) return false;
-
-    if(con->variable_id < 0 || clocks.size >= con->variable_id) throw std::runtime_error("Could not find constraint variable while compiling constraint.");
+    
+    if(con->variable_id < 0 || clocks.size <= con->variable_id)
+    {
+        std::cout << "variable ID: " << con->variable_id << " | clock size: " << clocks.size << std::endl; 
+        throw std::runtime_error("Could not find constraint variable while compiling constraint.");
+    }
 
     const clock_var* var = &clocks.store[con->variable_id];
     if(var->rate == 0) return false;
     
     ss << '(';
-    compile_expr(ss, con->expression);
+    if(con->expression->operand == expr::compiled_ee)
+    {
+        ss << expr_cache[con->expression];
+    }
+    else
+    {
+        compile_expr(ss, con->expression);
+    }
 
 
     switch(con->operand)

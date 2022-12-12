@@ -285,7 +285,7 @@ CPU GPU void inline state::broadcast_channel(const int channel, const node* sour
     }
 }
 
-state state::init(void* cache, curandState* random, const network* model, const unsigned expr_depth)
+state state::init(void* cache, curandState* random, const network* model, const unsigned expr_depth, const unsigned fanout)
 {
     node** nodes = static_cast<node**>(cache);
     cache = static_cast<void*>(&nodes[model->automatas.size]);
@@ -297,8 +297,12 @@ state state::init(void* cache, curandState* random, const network* model, const 
     cache = static_cast<void*>(&exp[expr_depth*2+1]);
         
     double* val_store = static_cast<double*>(cache);
-    // cache = static_cast<void*>(&val_store[expr_depth]);
-        
+    cache = static_cast<void*>(&val_store[expr_depth]);
+
+    state::w_edge* fanout_store = static_cast<state::w_edge*>(cache);
+    // cache = static_cast<void*>(&cache[fanout]);
+    
+    
     return state{
         0,
         0,
@@ -307,7 +311,8 @@ state state::init(void* cache, curandState* random, const network* model, const 
         arr<clock_var>{ vars, model->variables.size },
         random,
         my_stack<expr*>(exp, static_cast<int>(expr_depth*2+1)),
-        my_stack<double>(val_store, static_cast<int>(expr_depth))
+        my_stack<double>(val_store, static_cast<int>(expr_depth)),
+        my_stack<state::w_edge>(fanout_store, static_cast<int>(fanout))
     };
 }
 

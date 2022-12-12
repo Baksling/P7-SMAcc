@@ -33,7 +33,8 @@ struct sim_config
     //model parameters (setup using function)
     bool use_shared_memory = false;
     bool use_jit = false;
-    unsigned int max_expression_depth = 1;
+    unsigned max_expression_depth = 1;
+    unsigned max_edge_fanout = 0;
     unsigned tracked_variable_count = 1;
     unsigned variable_count = 1;
     unsigned network_size = 1;

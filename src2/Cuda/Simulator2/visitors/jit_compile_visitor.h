@@ -1,12 +1,15 @@
 ﻿#pragma once
+#include <map>
 #include <sstream>
 #include <unordered_map>
+
 #include "visitor.h"
 
 class jit_compile_visitor : public visitor
 {
 private:
     arr<clock_var> clocks_;
+    std::unordered_map<const expr*, std::string> expr_map_cache_;
     std::stringstream expr_store_;
     std::stringstream con_store_;
     std::stringstream invariant_store_;
@@ -15,9 +18,9 @@ private:
     int con_compile_id_enumerator_ = 0;
 
     static void compile_expr(std::stringstream& ss, const expr* e, bool is_root);
-    static void compile_con(std::stringstream& ss, const constraint* con);
+    static void compile_con(std::stringstream& ss, std::unordered_map<const expr*, std::string>& compile_map, const constraint* con);
     static bool compile_invariant(std::stringstream& ss, const arr<clock_var>& clocks,
-                                  const constraint* con);
+                                  const constraint* con, std::unordered_map<const expr*, std::string>& expr_cache);
     void init_store();
 public:
     explicit jit_compile_visitor();

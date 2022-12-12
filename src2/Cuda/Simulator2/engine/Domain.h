@@ -156,6 +156,8 @@ struct network
     arr<clock_var> variables;
 };
 
+
+
 struct state
 {
     unsigned simulation_id;
@@ -164,14 +166,21 @@ struct state
 
     arr<node*> models;
     arr<clock_var> variables;
+
+    struct w_edge
+    {
+        edge* e;
+        double w;
+    };
     
     curandState* random;
     my_stack<expr*> expr_stack;
     my_stack<double> value_stack;
+    my_stack<w_edge> edge_stack;
 
     CPU GPU void broadcast_channel(int channel, const node* source);
 
-    CPU GPU static state init(void* cache, curandState* random,  const network* model, const unsigned expr_depth);
+    CPU GPU static state init(void* cache, curandState* random, const network* model, const unsigned expr_depth, const unsigned fanout);
 
     CPU GPU void reset(const unsigned sim_id, const network* model);
 };

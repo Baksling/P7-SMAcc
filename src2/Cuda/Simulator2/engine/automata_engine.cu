@@ -12,7 +12,8 @@ CPU GPU size_t thread_heap_size(const sim_config* config)
           static_cast<size_t>(config->max_expression_depth*2+1) * sizeof(void*) + //this is a expression*, but it doesnt like sizeof(expression*)
           config->max_expression_depth * sizeof(double) +
           config->network_size * sizeof(node) +
-          config->variable_count * sizeof(clock_var);
+          config->variable_count * sizeof(clock_var) +
+          config->max_edge_fanout * sizeof(state::w_edge);
 
     const unsigned long long int padding = (8 - (size % 8));
 
@@ -161,6 +162,47 @@ CPU GPU edge* pick_next_edge(const arr<edge>& edges, state* state)
     return valid_edge;
 }
 
+CPU GPU edge* pick_next_edge_stack(const arr<edge>& edges, state* state)
+{
+    state->edge_stack.clear();
+    int valid_count = 0;
+    state::w_edge valid_edge = {nullptr, 0.0};
+    double weight_sum = 0.0;
+    
+    for (int i = 0; i < edges.size; ++i)
+    {
+        edge* e = &edges.store[i];
+        if(IS_LISTENER(e->channel)) continue;
+        if(!constraint::evaluate_constraint_set(e->guards, state)) continue;
+        
+        const double weight = e->weight->evaluate_expression(state);
+        //only consider edge if it its weight is positive.
+        //Negative edge value is semantically equivalent to disabled.
+        if(weight <= 0.0) continue;
+        valid_edge = state::w_edge{ e, weight };
+        valid_count++;
+        weight_sum += weight;
+        state->edge_stack.push(valid_edge);
+    }
+
+    if(valid_count == 0) return nullptr;
+    if(valid_count == 1) return valid_edge.e;
+
+    const double r_val = (1.0 - curand_uniform_double(state->random)) * weight_sum;
+    double r_acc = 0.0;
+
+    //pick the weighted random value.
+    valid_edge = { nullptr, 0.0 }; //reset valid edge !IMPORTANT
+    for (int i = 0; i < valid_count; ++i)
+    {
+        valid_edge = state->edge_stack.pop();
+        r_acc += valid_edge.w;
+        if(r_val < r_acc) break;
+    }
+
+    return valid_edge.e;
+}
+
 CPU GPU void simulate_automata(
     const unsigned idx,
     const network* model,
@@ -170,7 +212,7 @@ CPU GPU void simulate_automata(
     void* cache = static_cast<void*>(&static_cast<char*>(config->cache)[(idx*thread_heap_size(config)) / sizeof(char)]);
     curandState* r_state = &config->random_state_arr[idx];
     curand_init(config->seed, idx, idx, r_state);
-    state sim_state = state::init(cache, r_state, model, config->max_expression_depth);
+    state sim_state = state::init(cache, r_state, model, config->max_expression_depth, config->max_edge_fanout);
     
     for (unsigned i = 0; i < config->simulation_amount; ++i)
     {
@@ -186,7 +228,7 @@ CPU GPU void simulate_automata(
             
             do
             {
-                const edge* e = pick_next_edge((*state)->edges, &sim_state);
+                const edge* e = pick_next_edge_stack((*state)->edges, &sim_state);
                 if(e == nullptr) break;
 
                 *state = e->dest;

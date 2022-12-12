@@ -78,7 +78,8 @@ struct sim_config
     //model parameters (setup using function)
     bool use_shared_memory = false;
     bool use_jit = false;
-    unsigned int max_expression_depth = 1;
+    unsigned max_expression_depth = 1;
+    unsigned max_edge_fanout = 0;
     unsigned tracked_variable_count = 1;
     unsigned variable_count = 1;
     unsigned network_size = 1;
@@ -302,6 +303,8 @@ struct network
     arr<clock_var> variables;
 };
 
+
+
 struct state
 {
     unsigned simulation_id;
@@ -310,14 +313,21 @@ struct state
 
     arr<node*> models;
     arr<clock_var> variables;
+
+    struct w_edge
+    {
+        edge* e;
+        double w;
+    };
     
     curandState* random;
     my_stack<expr*> expr_stack;
     my_stack<double> value_stack;
+    my_stack<w_edge> edge_stack;
 
     CPU GPU void broadcast_channel(int channel, const node* source);
 
-    CPU GPU static state init(void* cache, curandState* random,  const network* model, const unsigned expr_depth);
+    CPU GPU static state init(void* cache, curandState* random, const network* model, const unsigned expr_depth, const unsigned fanout);
 
     CPU GPU void reset(const unsigned sim_id, const network* model);
 };
@@ -328,21 +338,6 @@ CPU GPU double evaluate_compiled_expression(const expr* ex, state* state)
 {
     //DO NOT REMOVE FOLLOWING COMMENT! IT IS USED AS SEARCH TARGET FOR JIT COMPILATION!!!
     switch(ex->compile_id){
-case 0: return((state->variables.store[0].value)-(1));
-case 1: return((state->variables.store[1].value)+(1));
-case 2: return((((0.705882)*(state->variables.store[0].value))*(state->variables.store[2].value))/(10000));
-case 3: return((state->variables.store[1].value)-(1));
-case 4: return((state->variables.store[2].value)+(1));
-case 5: return((0.196078)*(state->variables.store[1].value));
-case 6: return((state->variables.store[2].value)-(1));
-case 7: return((state->variables.store[3].value)+(1));
-case 8: return((0.000265)*(state->variables.store[2].value));
-case 9: return((state->variables.store[3].value)-(1));
-case 10: return((state->variables.store[4].value)+(1));
-case 11: return((0.098814)*(state->variables.store[3].value));
-case 12: return((state->variables.store[2].value)-(1));
-case 13: return((state->variables.store[4].value)+(1));
-case 14: return((0.294118)*(state->variables.store[2].value));
 
 }
 
@@ -354,12 +349,10 @@ CPU GPU bool evaluate_compiled_constraint(const constraint* con, state* state)
 {
     //DO NOT REMOVE FOLLOWING COMMENT! IT IS USED AS SEARCH TARGET FOR JIT COMPILATION!!!
     switch(con->compile_id){
-case 0: return (state->variables.store[0].value)>(0); break;
-case 1: return (state->variables.store[2].value)>(0); break;
-case 2: return (state->variables.store[1].value)>(0); break;
-case 3: return (state->variables.store[2].value)>(0); break;
-case 4: return (state->variables.store[3].value)>(0); break;
-case 5: return (state->variables.store[2].value)>(0); break;
+case 0: return (state->variables.store[0].value)<(10); break;
+case 1: return (state->variables.store[0].value)<(5); break;
+case 2: return (state->variables.store[0].value)<(5); break;
+case 3: return (state->variables.store[0].value)<(5); break;
 
 }
 
@@ -375,6 +368,10 @@ CPU GPU double evaluate_compiled_constraint_upper_bound(const constraint* con, s
     
     //DO NOT REMOVE FOLLOWING COMMENT! IT IS USED AS SEARCH TARGET FOR JIT COMPILATION!!!
     switch(con->compile_id){
+case 0: v0 = ((10)-(state->variables.store[0].value))/ (1); break;
+case 1: v0 = ((5)-(state->variables.store[0].value))/ (1); break;
+case 2: v0 = ((5)-(state->variables.store[0].value))/ (1); break;
+case 3: v0 = ((5)-(state->variables.store[0].value))/ (1); break;
 
 }
 
@@ -638,7 +635,7 @@ CPU GPU void inline state::broadcast_channel(const int channel, const node* sour
     }
 }
 
-state state::init(void* cache, curandState* random, const network* model, const unsigned expr_depth)
+state state::init(void* cache, curandState* random, const network* model, const unsigned expr_depth, const unsigned fanout)
 {
     node** nodes = static_cast<node**>(cache);
     cache = static_cast<void*>(&nodes[model->automatas.size]);
@@ -650,8 +647,12 @@ state state::init(void* cache, curandState* random, const network* model, const 
     cache = static_cast<void*>(&exp[expr_depth*2+1]);
         
     double* val_store = static_cast<double*>(cache);
-    // cache = static_cast<void*>(&val_store[expr_depth]);
-        
+    cache = static_cast<void*>(&val_store[expr_depth]);
+
+    state::w_edge* fanout_store = static_cast<state::w_edge*>(cache);
+    // cache = static_cast<void*>(&cache[fanout]);
+    
+    
     return state{
         0,
         0,
@@ -660,7 +661,8 @@ state state::init(void* cache, curandState* random, const network* model, const 
         arr<clock_var>{ vars, model->variables.size },
         random,
         my_stack<expr*>(exp, static_cast<int>(expr_depth*2+1)),
-        my_stack<double>(val_store, static_cast<int>(expr_depth))
+        my_stack<double>(val_store, static_cast<int>(expr_depth)),
+        my_stack<state::w_edge>(fanout_store, static_cast<int>(fanout))
     };
 }
 
@@ -852,7 +854,7 @@ GPU network* model_oracle::move_to_shared_memory(char* shared_mem, const int thr
         constraint* con = get_diff<constraint>(this->point, &this->constraint_point()[idx], shared_mem);
 
         con->expression = get_diff<expr>(this->initial_point, con->expression, shared_mem);
-        if(!con->uses_variable)
+        if(!con->uses_variable && con->operand != constraint::compiled_c)
             con->value = get_diff<expr>(this->initial_point, con->value, shared_mem);
     }
     cuda_SYNCTHREADS();
@@ -988,7 +990,8 @@ CPU GPU size_t thread_heap_size(const sim_config* config)
           static_cast<size_t>(config->max_expression_depth*2+1) * sizeof(void*) + //this is a expression*, but it doesnt like sizeof(expression*)
           config->max_expression_depth * sizeof(double) +
           config->network_size * sizeof(node) +
-          config->variable_count * sizeof(clock_var);
+          config->variable_count * sizeof(clock_var) +
+          config->max_edge_fanout * sizeof(state::w_edge);
 
     const unsigned long long int padding = (8 - (size % 8));
 
@@ -1137,6 +1140,47 @@ CPU GPU edge* pick_next_edge(const arr<edge>& edges, state* state)
     return valid_edge;
 }
 
+CPU GPU edge* pick_next_edge_stack(const arr<edge>& edges, state* state)
+{
+    state->edge_stack.clear();
+    int valid_count = 0;
+    state::w_edge valid_edge = {nullptr, 0.0};
+    double weight_sum = 0.0;
+    
+    for (int i = 0; i < edges.size; ++i)
+    {
+        edge* e = &edges.store[i];
+        if(IS_LISTENER(e->channel)) continue;
+        if(!constraint::evaluate_constraint_set(e->guards, state)) continue;
+        
+        const double weight = e->weight->evaluate_expression(state);
+        //only consider edge if it its weight is positive.
+        //Negative edge value is semantically equivalent to disabled.
+        if(weight <= 0.0) continue;
+        valid_edge = state::w_edge{ e, weight };
+        valid_count++;
+        weight_sum += weight;
+        state->edge_stack.push(valid_edge);
+    }
+
+    if(valid_count == 0) return nullptr;
+    if(valid_count == 1) return valid_edge.e;
+
+    const double r_val = (1.0 - curand_uniform_double(state->random)) * weight_sum;
+    double r_acc = 0.0;
+
+    //pick the weighted random value.
+    valid_edge = { nullptr, 0.0 }; //reset valid edge !IMPORTANT
+    for (int i = 0; i < valid_count; ++i)
+    {
+        valid_edge = state->edge_stack.pop();
+        r_acc += valid_edge.w;
+        if(r_val < r_acc) break;
+    }
+
+    return valid_edge.e;
+}
+
 CPU GPU void simulate_automata(
     const unsigned idx,
     const network* model,
@@ -1146,7 +1190,7 @@ CPU GPU void simulate_automata(
     void* cache = static_cast<void*>(&static_cast<char*>(config->cache)[(idx*thread_heap_size(config)) / sizeof(char)]);
     curandState* r_state = &config->random_state_arr[idx];
     curand_init(config->seed, idx, idx, r_state);
-    state sim_state = state::init(cache, r_state, model, config->max_expression_depth);
+    state sim_state = state::init(cache, r_state, model, config->max_expression_depth, config->max_edge_fanout);
     
     for (unsigned i = 0; i < config->simulation_amount; ++i)
     {
@@ -1162,7 +1206,7 @@ CPU GPU void simulate_automata(
             
             do
             {
-                const edge* e = pick_next_edge((*state)->edges, &sim_state);
+                const edge* e = pick_next_edge_stack((*state)->edges, &sim_state);
                 if(e == nullptr) break;
 
                 *state = e->dest;
