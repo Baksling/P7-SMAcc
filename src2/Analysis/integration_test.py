@@ -115,6 +115,16 @@ def __parse_args():
         default=0,
         required=False
     )
+    
+    general_options.add_argument(
+        '-j',
+        '--jit',
+        dest='use_jit',
+        help='Set it to 1 if you want to use jit',
+        type=int,
+        default=0,
+        required=False
+    )
 
     general_options.add_argument(
         '-j',
@@ -140,9 +150,9 @@ def run_simulations(args_) -> tuple[set[str], list[str]]:
     for file in only_files:
         print("RUNNING", file)
         file_path = join(folder_path, file)
-        # print(f' m: {file_path}\n n: {args_.amount}\n o: {join(TEMP_FOLDER_NAME, file.replace(".xml", ""))}\n x: {args_.max_progression}{"t" if args_.use_time else "s"}')
-        # amount = int(ceil(float(args_.amount) / float(32 * 512)))
-
+        #print(f' m: {file_path}\n n: {args_.amount}\n o: {join(TEMP_FOLDER_NAME, file.replace(".xml", ""))}\n x: {args_.max_progression}{"t" if args_.use_time else "s"}')
+        #amount = int(ceil(float(args_.amount) / float(32 * 512)))
+        
         parameters = [
             simulator_path,
             '-m', file_path,
@@ -153,8 +163,7 @@ def run_simulations(args_) -> tuple[set[str], list[str]]:
             '-w', 'r',
             '-o', f'{join(TEMP_FOLDER_NAME, file.replace(".xml", ""))}',
             '-x', f'{args_.max_progression}{"t" if args_.use_time else "s"}',
-            '-v', '0',
-            '-s'
+            '-v', '0'
         ]
 
         if args.use_shared == 1:
@@ -201,7 +210,7 @@ def check_simulation_results(args_, _expected_results, not_run_set, all_files) -
                     output_str += f'{PASSED}PASSED{ENDC}'
                 else:
                     output_str += f'{FAILED}FAILED{ENDC}'
-                output_str += f' - Value variance: {expected_value - actual_result} percent | Time variance {expected_time - actual_time} [ms]'
+                output_str += f' - Got: {actual_result} | Value variance: {expected_value - actual_result} percent | Time variance {expected_time - actual_time} [ms]'
                 print(output_str)
             except:
                 print(file, f'{FAILED}FAILED{ENDC} - EXCEPT')
