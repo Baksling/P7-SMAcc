@@ -8,6 +8,12 @@ memory_allocator::memory_allocator(const bool use_cuda): use_cuda(use_cuda)
     this->host_allocation_size_ = 0;
 }
 
+void memory_allocator::add_to_host_freelist(void* p, size_t size)
+{
+    this->free_list_.push_back(p);
+    this->host_allocation_size_ += size;
+}
+
 void memory_allocator::free_allocations()
 {
     this->cuda_allocation_size_ = 0;

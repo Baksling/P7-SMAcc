@@ -27,6 +27,8 @@ public:
     void free_internals() const;
 };
 
+class memory_allocator;
+
 class result_store
 {
     friend struct state;

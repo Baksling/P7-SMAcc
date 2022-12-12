@@ -50,9 +50,11 @@ struct expr  // NOLINT(cppcoreguidelines-pro-type-member-init)
         not_ee,
 
         //conditional types
-        conditional_ee
+        conditional_ee,
+        compiled_ee
+        
     } operand = literal_ee;
-
+    
     expr* left = nullptr;
     expr* right = nullptr;
 
@@ -61,6 +63,7 @@ struct expr  // NOLINT(cppcoreguidelines-pro-type-member-init)
         double value = 1.0;
         int variable_id;
         expr* conditional_else;
+        int compile_id;
     };
 
     CPU GPU double evaluate_expression(state* state);
@@ -81,7 +84,8 @@ struct constraint
         greater_equal_c = 2,
         greater_c = 3,
         equal_c = 4,
-        not_equal_c = 5
+        not_equal_c = 5,
+        compiled_c
     } operand;
 
     bool uses_variable;
@@ -89,6 +93,7 @@ struct constraint
     {
         expr* value;
         int variable_id;
+        int compile_id;
     };
     expr* expression; //right hand side
     CPU GPU bool evaluate_constraint(state* state) const;
@@ -103,16 +108,8 @@ struct clock_var
     double value;
     double max_value;
 
-    CPU GPU void add_time(const double time)
-    {
-        this->value += time*this->rate;
-        this->max_value = fmax(this->max_value, this->value);
-    }
-    CPU GPU void set_value(const double val)
-    {
-        this->value = val;
-        this->max_value = fmax(this->max_value, this->value);
-    }
+    CPU GPU void add_time(const double time);
+    CPU GPU void set_value(const double val);
 };
 
 
@@ -159,6 +156,8 @@ struct network
     arr<clock_var> variables;
 };
 
+
+
 struct state
 {
     unsigned simulation_id;
@@ -167,14 +166,21 @@ struct state
 
     arr<node*> models;
     arr<clock_var> variables;
+
+    struct w_edge
+    {
+        edge* e;
+        double w;
+    };
     
     curandState* random;
     my_stack<expr*> expr_stack;
     my_stack<double> value_stack;
+    my_stack<w_edge> edge_stack;
 
     CPU GPU void broadcast_channel(int channel, const node* source);
 
-    CPU GPU static state init(void* cache, curandState* random,  const network* model, const unsigned expr_depth);
+    CPU GPU static state init(void* cache, curandState* random, const network* model, const unsigned expr_depth, const unsigned fanout);
 
     CPU GPU void reset(const unsigned sim_id, const network* model);
 };

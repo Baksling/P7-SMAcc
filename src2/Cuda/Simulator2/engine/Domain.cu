@@ -1,6 +1,34 @@
 ﻿#include "Domain.h"
 
-#define DBL_EPSILON 2.2204460492503131e-016 // smallest such that 1.0+DBL_EPSILON != 1.0
+
+CPU GPU double evaluate_compiled_expression(const expr* ex, state* state)
+{
+    //DO NOT REMOVE FOLLOWING COMMENT! IT IS USED AS SEARCH TARGET FOR JIT COMPILATION!!!
+    //__SEARCH_MARKER_FOR_JIT_EXPRESSION__
+    
+    return 0.0;
+}
+
+CPU GPU bool evaluate_compiled_constraint(const constraint* con, state* state)
+{
+    //DO NOT REMOVE FOLLOWING COMMENT! IT IS USED AS SEARCH TARGET FOR JIT COMPILATION!!!
+    //__SEARCH_MARKER_FOR_JIT_CONSTRAINT__
+    
+    return false;
+}
+
+CPU GPU double evaluate_compiled_constraint_upper_bound(const constraint* con, state* state, bool* is_finite)
+{
+    //If this variable is marked const, then JIT compilation will not work.
+    // ReSharper disable once CppLocalVariableMayBeConst
+    double v0 = DBL_MAX;
+    
+    //DO NOT REMOVE FOLLOWING COMMENT! IT IS USED AS SEARCH TARGET FOR JIT COMPILATION!!!
+    //__SEARCH_MARKER_FOR_JIT_INVARIANTS__
+
+    *is_finite = v0 < DBL_MAX; 
+    return v0;
+}
 
 CPU GPU double evaluate_expression_node(const expr* expr, state* state)
 {
@@ -70,6 +98,7 @@ CPU GPU double evaluate_expression_node(const expr* expr, state* state)
         v1 = state->value_stack.pop();
         state->value_stack.pop();
         return v1;
+    case expr::compiled_ee: return 0.0; break;
     }
     return 0.0;
 }
@@ -77,13 +106,11 @@ CPU GPU double evaluate_expression_node(const expr* expr, state* state)
 CPU GPU double expr::evaluate_expression(state* state)
 {
     if(this->operand == literal_ee)
-    {
         return this->value;
-    }
     if(this->operand == clock_variable_ee)
-    {
         return state->variables.store[this->variable_id].value;
-    }
+    if(this->operand == compiled_ee)
+        return evaluate_compiled_expression(this, state);
 
     state->expr_stack.clear();
     state->value_stack.clear();
@@ -131,25 +158,38 @@ CPU GPU double expr::evaluate_expression(state* state)
 
 CPU GPU double node::max_progression(state* state, bool* is_finite) const
 {
-    double max_bound = HUGE_VAL;
+    double max_bound = DBL_MAX;
 
     for (int i = 0; i < this->invariants.size; ++i)
     {
         const constraint con = this->invariants.store[i];
-        if(!IS_INVARIANT(con.operand)) continue;
-        if(!con.uses_variable) continue;
-        const clock_var var = state->variables.store[con.variable_id];
-        if(var.rate == 0) continue;
-        const double expr_value = con.expression->evaluate_expression(state);
+        double limit;
         
-        max_bound = fmin(max_bound,  (expr_value -  var.value) / var.rate); //rate is >0.
+        if(IS_INVARIANT(con.operand))
+        {
+            if(!con.uses_variable) continue;
+            const clock_var var = state->variables.store[con.variable_id];
+            if(var.rate == 0) continue;
+            limit = (con.expression->evaluate_expression(state) - var.value) / var.rate;
+        }
+        else if(con.operand == constraint::compiled_c)
+        {
+            bool finite = false;
+            limit = evaluate_compiled_constraint_upper_bound(&con, state, &finite);
+
+            if(!finite) continue;
+        }
+        else continue;
+        max_bound = fmin(max_bound,  limit); //rate is >0.
     }
-    *is_finite = !isinf(max_bound);
+    *is_finite = max_bound < DBL_MAX;
     return max_bound;
 }
 
 CPU GPU bool constraint::evaluate_constraint(state* state) const
 {
+    if(this->operand == compiled_c)
+        return evaluate_compiled_constraint(this, state);
     const double left = this->uses_variable
         ? state->variables.store[this->variable_id].value
         : this->value->evaluate_expression(state);
@@ -157,12 +197,13 @@ CPU GPU bool constraint::evaluate_constraint(state* state) const
 
     switch (this->operand)
     {
-    case constraint::less_equal_c: return left <= right;
-    case constraint::less_c: return left < right;
-    case constraint::greater_equal_c: return left >= right;
-    case constraint::greater_c: return left > right;
-    case constraint::equal_c: return left == right;  // NOLINT(clang-diagnostic-float-equal)
-    case constraint::not_equal_c: return left != right;  // NOLINT(clang-diagnostic-float-equal)
+    case less_equal_c: return left <= right;
+    case less_c: return left < right;
+    case greater_equal_c: return left >= right;
+    case greater_c: return left > right;
+    case equal_c: return left == right;  // NOLINT(clang-diagnostic-float-equal)
+    case not_equal_c: return left != right;  // NOLINT(clang-diagnostic-float-equal)
+    case compiled_c: return false;
     }
     return false;
 }
@@ -176,6 +217,18 @@ CPU GPU bool constraint::evaluate_constraint_set(const arr<constraint>& con_arr,
             return false;
     }
     return true;
+}
+
+void clock_var::add_time(const double time)
+{
+    this->value += time*this->rate;
+    this->max_value = fmax(this->max_value, this->value);
+}
+
+void clock_var::set_value(const double val)
+{
+    this->value = val;
+    this->max_value = fmax(this->max_value, this->value);
 }
 
 CPU GPU inline void update::apply_update(state* state) const
@@ -232,7 +285,7 @@ CPU GPU void inline state::broadcast_channel(const int channel, const node* sour
     }
 }
 
-state state::init(void* cache, curandState* random, const network* model, const unsigned expr_depth)
+state state::init(void* cache, curandState* random, const network* model, const unsigned expr_depth, const unsigned fanout)
 {
     node** nodes = static_cast<node**>(cache);
     cache = static_cast<void*>(&nodes[model->automatas.size]);
@@ -244,8 +297,12 @@ state state::init(void* cache, curandState* random, const network* model, const 
     cache = static_cast<void*>(&exp[expr_depth*2+1]);
         
     double* val_store = static_cast<double*>(cache);
-    // cache = static_cast<void*>(&val_store[expr_depth]);
-        
+    cache = static_cast<void*>(&val_store[expr_depth]);
+
+    state::w_edge* fanout_store = static_cast<state::w_edge*>(cache);
+    // cache = static_cast<void*>(&cache[fanout]);
+    
+    
     return state{
         0,
         0,
@@ -254,7 +311,8 @@ state state::init(void* cache, curandState* random, const network* model, const 
         arr<clock_var>{ vars, model->variables.size },
         random,
         my_stack<expr*>(exp, static_cast<int>(expr_depth*2+1)),
-        my_stack<double>(val_store, static_cast<int>(expr_depth))
+        my_stack<double>(val_store, static_cast<int>(expr_depth)),
+        my_stack<state::w_edge>(fanout_store, static_cast<int>(fanout))
     };
 }
 

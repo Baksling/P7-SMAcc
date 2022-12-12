@@ -128,7 +128,8 @@ std::string pretty_print_visitor::expr_type_to_string(const expr* ex)
     case expr::equal_ee: return "=="; 
     case expr::not_equal_ee: return "!="; 
     case expr::not_ee: return "!"; 
-    case expr::conditional_ee: return "if"; 
+    case expr::conditional_ee: return "if";
+    case expr::compiled_ee: return "expr_id_" + std::to_string(ex->compile_id) ;
     default: return "unknown";
     }
 }

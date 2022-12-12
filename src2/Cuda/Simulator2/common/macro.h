@@ -2,12 +2,11 @@
 #define MACRO_H
 
 
-#include <iostream>
-
+#include <string>
+#include <stdexcept>
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <curand.h>
-#include <string>
 
 //HACK TO MAKE CPU WORK!
 #define QUALIFIERS static __forceinline__ __host__ __device__
@@ -20,7 +19,8 @@
 #define GLOBAL __global__
 #define IS_GPU __CUDACC__
 
-#define DBL_MAX          1.7976931348623158e+308 //max 64 bit double value
+#define DBL_MAX 1.7976931348623158e+308 //max 64 bit double value
+#define DBL_EPSILON 2.2204460492503131e-016 // smallest such that 1.0+DBL_EPSILON != 1.0
 
 
 //While loop done to enfore ; after macro call. See: 

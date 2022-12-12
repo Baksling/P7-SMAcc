@@ -5,6 +5,8 @@
 #define SHARED_MEMORY_PR_THREAD 32
 
 #include "macro.h"
+struct io_paths;
+#include "io_paths.h"
 
 struct sim_config
 {
@@ -26,18 +28,21 @@ struct sim_config
         device,
         host,
         both
-    } sim_location;
+    } sim_location = device;
     
     //model parameters (setup using function)
     bool use_shared_memory = false;
-    unsigned int max_expression_depth = 1;
+    bool use_jit = false;
+    unsigned max_expression_depth = 1;
+    unsigned max_edge_fanout = 0;
     unsigned tracked_variable_count = 1;
     unsigned variable_count = 1;
     unsigned network_size = 1;
 
     //paths
-    std::string model_path{};
-    std::string out_path{};
+    io_paths* paths;
+    // std::string model_path;
+    // std::string output;
     
     //pointers
     void* cache = nullptr;

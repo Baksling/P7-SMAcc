@@ -28,6 +28,8 @@ public:
     template<typename T>
     cudaError allocate_and_copy(T** dest, const T* source, const unsigned amount);
 
+    void add_to_host_freelist(void* p, size_t size = 0);
+    
     size_t get_cuda_memory_usage() const
     {
         return this->cuda_allocation_size_;

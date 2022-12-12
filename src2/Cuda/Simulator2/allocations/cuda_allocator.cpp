@@ -133,7 +133,11 @@ void cuda_allocator::allocate_constraint(const constraint* source, constraint* d
     temp.operand = source->operand;
     temp.uses_variable = source->uses_variable;
 
-    if(source->uses_variable)
+    if(source->operand == constraint::compiled_c)
+    {
+        temp.compile_id = source->compile_id;
+    }
+    else if(source->uses_variable)
     {
         temp.variable_id = source->variable_id;
     }
@@ -174,7 +178,7 @@ void cuda_allocator::allocate_clock(const clock_var* source, clock_var* dest) co
 
 void cuda_allocator::allocate_expr(const expr* source, expr* dest)
 {
-    if(IS_LEAF(source->operand))
+    if(IS_LEAF(source->operand) || source->operand == expr::compiled_ee)
     {
         CUDA_CHECK(cudaMemcpy(dest, source, sizeof(expr), cudaMemcpyHostToDevice));
         return;
@@ -205,6 +209,7 @@ void cuda_allocator::allocate_expr(const expr* source, expr* dest)
     temp.left = left;
     temp.right = right;
     temp.operand = source->operand;
+    temp.value = source->value; //biggest bit repressentation, so just move this.
 
     //this shouldn't be necessary, but safety is nr. 1 priority.
     if     (source->operand == expr::literal_ee)        temp.value            = source->value;
