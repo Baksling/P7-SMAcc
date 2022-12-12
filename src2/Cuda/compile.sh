@@ -1,5 +1,5 @@
 #!/bin/bash
 # nvcc script
-cd ../Cuda/; nvcc ./Simulator2/main.cu ./Simulator2/simulation_runner.cu ./Simulator2/common/thread_pool.cu ./Simulator2/allocations/*.cpp ./UPPAALXMLParser/*.cpp ./Simulator2/results/*.cu ./Simulator2/visitors/*.cpp -O3 --dopt=on --use_fast_math -Xptxas -O3 -o c.out -lcuda -lnvrtc
-python3 ../Analysis/file_assembler.py ./Simulator2/
-mv ./Simulator2/kernal.cu ./
+#This script is the bane of my fucking existens. This project is developed on windows, and run and tested on linux. Every time i transfer this script to linux, \r characters are added at the end.
+#I do not wanna deal with this shit anymore, so now its just one line. Have fun understanding it!
+cd ../Cuda/; nvcc ./Simulator2/main.cu ./Simulator2/simulation_runner.cu ./Simulator2/common/thread_pool.cu ./Simulator2/allocations/*.cpp ./UPPAALXMLParser/*.cpp ./Simulator2/results/*.cu ./Simulator2/visitors/*.cpp -O3 --dopt=on --use_fast_math -Xptxas -O3 -o c.out -lcuda -lnvrtc; python3 ../Analysis/kernal_assembler.py ./Simulator2/; mv ./Simulator2/kernal.cu ./; echo "Please make sure 'kernal.cu' is in the same folder as 'c.out' when running."; echo "Use -h to open help menu."; echo "GLHF"

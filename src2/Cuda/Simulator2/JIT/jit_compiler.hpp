@@ -10,7 +10,7 @@
 #include "../results/result_store.h"
 
 
-#define KERNAL404 "kernal.cu file not found. Please run file_assembler.py from analysis folder and place the 'kernal.cu' file in the same folder as executable." 
+#define KERNAL404 "kernal.cu file not found. Please run kernal_assembler.py from analysis folder and place the 'kernal.cu' file in the same folder as executable." 
 #define NVRTC_SAFE_CALL(x)                                        \
 do {                                                            \
 nvrtcResult result = x;                                       \
