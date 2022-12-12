@@ -228,7 +228,7 @@ def get_expected_simulation_results() -> dict[str, value_checker]:
         'rate_test': value_checker(33.45, 155),
         'var_test': value_checker(47.4, 10300),
         'ifelse_test': value_checker(50.0, 225),
-        'random_test_1': value_checker(36.7, 0),
+        'random_test_1': value_checker(37.45, 0),
         'clock_assign_1': value_checker(80.9, 0),
         'clock_assign_2': value_checker(68.9, 0),
         'clock_assign_3': value_checker(81.8, 0),
