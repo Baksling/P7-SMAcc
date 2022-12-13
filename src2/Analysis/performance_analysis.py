@@ -138,7 +138,7 @@ def parse_arguments():
         default=1,
         required=True
     )
-    
+
     option_parser.add_argument(
         '-sm',
         '--shared_memory',
@@ -154,6 +154,16 @@ def parse_arguments():
         '--jit',
         dest='use_jit',
         help='Use Jit',
+        type=int,
+        default=0,
+        required=False
+    )
+
+    option_parser.add_argument(
+        '-j',
+        '--jit',
+        dest='use_jit',
+        help='Set it to 1 if you want to use jit',
         type=int,
         default=0,
         required=False
@@ -204,15 +214,13 @@ def analyse_performance(args) -> None:
                 '-x', '100t',
                 '-v', '0'
             ]
-            
             if args.use_shared == 1:
                 parameters.append('-s')
-            
+
             if args.use_jit == 1:
                 parameters.append('-j')
 
-            if args.use_shared == 1:
-                subprocess.run(parameters)
+            subprocess.run(parameters)
 
     if args.mode == 1 or args.mode == 2:
         for cpu_core in range(min_cpu_count, cpu_count + 1):
