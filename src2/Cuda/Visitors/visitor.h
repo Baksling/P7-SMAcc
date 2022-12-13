@@ -1,28 +1,31 @@
 ﻿#pragma once
 
-#ifndef VISITOR_H
-#define VISITOR_H
+#include <unordered_set>
 
-
-class constraint_t;
-class edge_t;
-class node_t;
-class stochastic_model_t;
-class clock_variable;
-class update_t;
-class expression;
+#include "../engine/Domain.h"
 
 class visitor
 {
-public:
-    virtual ~visitor() = default;
-    virtual void visit(constraint_t* constraint) = 0;
-    virtual void visit(edge_t* edge) = 0;
-    virtual void visit(node_t* node) = 0;
-    virtual void visit(stochastic_model_t* model) = 0;
-    virtual void visit(clock_variable* timer) = 0;
-    virtual void visit(update_t* update) = 0;
-    virtual void visit(expression* expression) = 0;
-};
+protected:
+    std::unordered_set<const void*> visit_set_;
+    bool has_visited(const void* p);
 
-#endif
+    static void accept(const network* a, visitor* v);
+    static void accept(const node* n, visitor* v);
+    static void accept(const edge* e, visitor* v);
+    static void accept(const constraint* c, visitor* v);
+    static void accept(const clock_var* c, visitor* v);
+    static void accept(const update* u, visitor* v);
+    static void accept(const expr* ex, visitor* v);
+    
+public:
+    virtual void visit(network* a) = 0;
+    virtual void visit(node* n) = 0;
+    virtual void visit(edge* e) = 0;
+    virtual void visit(constraint* c) = 0;
+    virtual void visit(clock_var* cv) = 0 ;
+    virtual void visit(update* u) = 0;
+    virtual void visit(expr* u) = 0;
+
+    virtual void clear();
+};

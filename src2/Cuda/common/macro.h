@@ -2,8 +2,8 @@
 #define MACRO_H
 
 
-#include <iostream>
-
+#include <string>
+#include <stdexcept>
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <curand.h>
@@ -14,12 +14,24 @@
 #undef QUALIFIERS
 //HACK SLUT
 
-#define GPU __device__
+#define GPU __device__ 
 #define CPU __host__
 #define GLOBAL __global__
 #define IS_GPU __CUDACC__
 
-// #define MY_SYNC() ##ifdef __CUDACC__ ##define cuda_SYNCTHREADS() __syncthreads() ##else ##define cuda_SYNCTHREADS() ##endif
+#define DBL_MAX 1.7976931348623158e+308 //max 64 bit double value
+#define DBL_EPSILON 2.2204460492503131e-016 // smallest such that 1.0+DBL_EPSILON != 1.0
+
+
+//While loop done to enfore ; after macro call. See: 
+//https://stackoverflow.com/a/61363791/17430854
+#define CUDA_CHECK(x)             \
+do{                          \
+if ((x) != cudaSuccess) {    \
+    throw std::runtime_error(std::string("cuda error ") + std::to_string(x) + " in file '" + __FILE__ + "' on line "+  std::to_string(__LINE__)); \
+}                             \
+}while(0)
+
 
 __host__ __device__ __forceinline__ void cuda_syncthreads_()
 {
