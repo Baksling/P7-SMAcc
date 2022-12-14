@@ -126,15 +126,6 @@ def __parse_args():
         required=False
     )
 
-    general_options.add_argument(
-        '-j',
-        '--jit',
-        dest='use_jit',
-        help='Use Jit',
-        type=int,
-        default=0,
-        required=False
-    )
 
     args = parser.parse_args()
     return args

@@ -1,5 +1,6 @@
 workspace.xml
 src2/Cuda/test_results/
+covid_results/
 test_results/
 *.db
 src2/.vs/src2/v17/.suo

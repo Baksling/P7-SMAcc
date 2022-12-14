@@ -5,6 +5,7 @@ from tqdm import tqdm
 
 BUFFER_SIZE = 10
 
+
 def parse_args():
     parser = argparse.ArgumentParser(
         prog="Data Performance Analysis",
@@ -31,10 +32,30 @@ def parse_args():
     )
 
     general_parser.add_argument(
+        '-mb',
+        '--min_blocks',
+        dest='blocks_start',
+        help='Number of blocks to start from',
+        type=int,
+        default=1,
+        required=False
+    )
+
+    general_parser.add_argument(
         '-b',
         '--blocks',
-        dest='blocks',
-        help='Number of blocks to start from',
+        dest='blocks_end',
+        help='Upperbound of blocks to analyse',
+        type=int,
+        default=1024,
+        required=False
+    )
+
+    general_parser.add_argument(
+        '-mt',
+        '--min_threads',
+        dest='threads_start',
+        help='Number of threads to start from',
         type=int,
         default=1,
         required=False
@@ -43,15 +64,16 @@ def parse_args():
     general_parser.add_argument(
         '-t',
         '--threads',
-        dest='threads',
-        help='Number of threads to start from',
+        dest='threads_end',
+        help='Upperbound of threads to analyse',
         type=int,
-        default=1,
+        default=1024,
         required=False
     )
 
     args = parser.parse_args()
     return args
+
 
 class data_wrapper():
     def __init__(self):
@@ -70,11 +92,11 @@ class data_wrapper():
         for i in range(BUFFER_SIZE):
             buffer_str += f'{i}: {self.min_time_arr_str[i]}\n'
         return f'Minimum time: {self.min_time_file} | Minimum Average Block: {self.lowest_average_block} \n{buffer_str}'
-        
+
 
 def analyse_data(args):
     result = data_wrapper()
-    only_files = [f for f in listdir(args.folder_path) if isfile(join(args.folder_path, f)) ]
+    only_files = [f for f in listdir(args.folder_path) if isfile(join(args.folder_path, f))]
 
     for file in tqdm(only_files):
 
@@ -83,8 +105,8 @@ def analyse_data(args):
         thread = file_split[len(file_split) - 3]
         block = file_split[len(file_split) - 4]
 
-        if block != 'CPU' and int (block) < args.blocks: continue
-        if int (thread) < args.threads: continue
+        if block != 'CPU' and (int(block) < args.blocks_start or int(block) > args.blocks_end): continue
+        if int(thread) < args.threads_start or int(thread) > args.threads_end: continue
 
         path = join(args.folder_path, file)
         with open(path, 'r') as f:
@@ -93,7 +115,7 @@ def analyse_data(args):
             if data < result.min_time:
                 result.min_time = data
                 result.min_time_file = block_str
-            
+
             result.average_dict[block] = result.average_dict.get(block, []) + [data]
 
             for i in range(BUFFER_SIZE):

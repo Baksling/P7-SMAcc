@@ -108,6 +108,26 @@ def parse_args():
         required=False
     )
 
+    general_options.add_argument(
+        '-sm',
+        '--shared_memory',
+        dest='use_shared',
+        help='Use shared Memory',
+        type=int,
+        default=0,
+        required=False
+    )
+
+    general_options.add_argument(
+        '-j',
+        '--jit',
+        dest='use_jit',
+        help='Set it to 1 if you want to use jit',
+        type=int,
+        default=0,
+        required=False
+    )
+
     args = parser.parse_args()
     return args
 
@@ -118,11 +138,11 @@ def run_simulations(args):
             blocks = int(args.blocks)
             threads = int(args.threads)
 
-            #amount = ceil(float(run_idx) / float(blocks * threads))
+            amount = ceil(float(run_idx) / float(blocks * threads))
 
-            file_path = f'{args.output_path}_GPU_{run_idx}'
-
-            subprocess.run([
+            file_path = f'{args.output_path}_GPU_{threads * blocks * amount}'
+            
+            parameters = [
                 args.simulation_file,
                 '-m', args.model_file,
                 '-b', f'{blocks},{1 if threads == 0 else threads}',
@@ -132,9 +152,16 @@ def run_simulations(args):
                 '-w', 'l',
                 '-o', file_path,
                 '-x', '100t',
-                '-v', '0',
-                '-s'
-            ])
+                '-v', '0'
+            ]
+            
+            if args.use_shared == 1:
+                parameters.append('-s')
+                
+            if args.use_jit == 1:
+                parameters.append('-j')
+
+            subprocess.run(parameters)
         
         if args.device == 1:
             cpu_core = args.cpu_cores
