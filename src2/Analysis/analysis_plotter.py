@@ -103,6 +103,7 @@ def get_data(folder_path: str, args_, dims, filter_str: str = None) -> Tuple[int
         if time > time_dim or time < args_.min_time: continue
         
         if block % args_.interval != 0: continue
+        
 
         with open(join(folder_path, file)) as f:
             lines = f.readlines()
