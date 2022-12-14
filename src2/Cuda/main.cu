@@ -169,7 +169,7 @@ void print_config(const sim_config* config, const size_t model_size)
 
 int main(int argc, const char* argv[])
 {
-    CUDA_CHECK(cudaFree(nullptr));
+    //cudaFree(nullptr);
 
     io_paths paths = {};
     sim_config config = {};
@@ -212,10 +212,6 @@ int main(int argc, const char* argv[])
     //run simulation
     if(run_device)
     {
-        if(config.use_jit)
-            simulation_runner::simulate_gpu_jit(&model, &config);
-        else
-            simulation_runner::simulate_gpu(&model, &config);
     }
     if(run_host)
     {
