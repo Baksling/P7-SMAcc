@@ -148,16 +148,6 @@ def parse_arguments():
         default=0,
         required=False
     )
-    
-    option_parser.add_argument(
-        '-j',
-        '--jit',
-        dest='use_jit',
-        help='Use Jit',
-        type=int,
-        default=0,
-        required=False
-    )
 
     option_parser.add_argument(
         '-j',
