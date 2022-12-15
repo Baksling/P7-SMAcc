@@ -6,6 +6,9 @@
 #include <chrono>
 #include <iostream>
 #include <fstream>
+#include <unordered_map>
+
+#include "../common/sim_config.h"
 
 enum write_modes //values must be powers of 2.
 {
@@ -51,6 +54,14 @@ struct variable_summary
     }
 };
 
+
+struct output_properties
+{
+    std::unordered_map<int, std::string>* node_names;
+    std::unordered_map<int, int>* node_network;
+};
+
+
 class output_writer
 {
 private:
@@ -61,7 +72,11 @@ private:
     unsigned model_count_;
     std::map<int, node_summary> node_summary_map_{};
     arr<variable_summary> variable_summaries_ = arr<variable_summary>::empty();
-
+    double epsilon_;
+    double alpha_;
+    std::unordered_map<int, std::string> node_names_;
+    std::unordered_map<int, int> node_network_;
+    
     static float calc_percentage(const unsigned long long counter, const unsigned long long divisor);
 
     void write_to_file(const result_pointers* results,
@@ -72,7 +87,7 @@ private:
     void write_hit_file(std::chrono::steady_clock::duration sim_duration) const;
 
 public:
-    explicit output_writer(const std::string* path, unsigned sim_count, int write_mode, const network* model);
+    explicit output_writer(const sim_config* config, const network* model);
     void write(const result_store* sim_result, std::chrono::steady_clock::duration sim_duration);
     void write_summary(std::chrono::steady_clock::duration sim_duration) const;
     void clear();

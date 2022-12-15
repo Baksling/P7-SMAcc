@@ -70,12 +70,7 @@ void simulation_runner::simulate_gpu_jit(network* model, sim_config* config)
     CUDA_CHECK(allocator.allocate(&store_d, sizeof(result_store)));
     CUDA_CHECK(cudaMemcpy(store_d, &store, sizeof(result_store), cudaMemcpyHostToDevice));
     
-    output_writer writer = output_writer(
-        &config->paths->output_path,
-        static_cast<unsigned>(total_simulations),
-        config->write_mode,
-        model
-        );
+    output_writer writer = output_writer(config, model);
     
     CUDA_CHECK(cudaDeviceSetCacheConfig(sm_cache));
 
@@ -136,12 +131,7 @@ void simulation_runner::simulate_gpu(network* model, sim_config* config)
     CUDA_CHECK(allocator.allocate(&store_d, sizeof(result_store)));
     CUDA_CHECK(cudaMemcpy(store_d, &store, sizeof(result_store), cudaMemcpyHostToDevice));
     
-    output_writer writer = output_writer(
-        &config->paths->output_path,
-        static_cast<unsigned>(total_simulations),
-        config->write_mode,
-        model        
-        );
+    output_writer writer = output_writer(config, model);
 
     CUDA_CHECK(cudaDeviceSetCacheConfig(sm_cache));
 
@@ -178,13 +168,8 @@ void simulation_runner::simulate_cpu(const network* model, sim_config* config)
     config->tracked_variable_count,
     config->network_size,
     &allocator);
-
-    output_writer writer = output_writer(
-        &config->paths->output_path,
-        static_cast<unsigned>(total_simulations),
-        config->write_mode,
-        model        
-        );
+    
+    output_writer writer = output_writer(config, model);
     
     CUDA_CHECK(allocator.allocate_host(&config->cache, n_parallelism*thread_heap_size(config)));
     CUDA_CHECK(allocator.allocate_host(&config->random_state_arr, n_parallelism*sizeof(curandState)));

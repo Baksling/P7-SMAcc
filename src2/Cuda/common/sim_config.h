@@ -6,6 +6,7 @@
 
 #include "macro.h"
 struct io_paths;
+struct output_properties;
 #include "io_paths.h"
 
 struct sim_config
@@ -41,8 +42,10 @@ struct sim_config
 
     //paths
     io_paths* paths;
-    // std::string model_path;
-    // std::string output;
+
+    output_properties* properties;
+    double alpha = 0.005;
+    double epsilon = 0.005;
     
     //pointers
     void* cache = nullptr;

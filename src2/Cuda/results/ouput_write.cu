@@ -39,10 +39,24 @@ void output_writer::write_to_file(const result_pointers* results,
     file_variable.close();
 }
 
+void insert_name(const int id, const std::unordered_map<int, std::string>& name_map, std::ostream& stream)
+{
+    stream << abs(id) << ": ";
+    if(name_map.count(abs(id)))
+    {
+        stream << name_map.at(abs(id));
+    }
+    else
+    {
+        stream << '_';
+    }
+    stream << (HAS_HIT_MAX_STEPS(id) ? " (not goal)" : "");
+}
+
 void output_writer::write_summary_to_stream(std::ostream& stream,
                                             std::chrono::steady_clock::duration sim_duration) const
 {
-    stream << "\naverage maximum value of each variable: \n";
+    stream << "\nAverage maximum value of each variable: \n";
     
     for (int j = 0; j < this->variable_summaries_.size; ++j)
     {
@@ -50,27 +64,57 @@ void output_writer::write_summary_to_stream(std::ostream& stream,
         stream << "variable " << result.variable_id << " = " << result.avg_max_value << "\n";
     }
     
-    stream << "\n\ngoal: \n";
-
-    node_summary no_hit = node_summary{0, 0};
+    stream << "\n\nReachability: \n";
+    bool has_seen_hit = false;
+    
+    // node_summary no_hit = node_summary{0, 0};
+    std::map<int, node_summary> no_hit_map{};
+    stream << "Not reached:\n";
     
     for (const std::pair<const int, node_summary>& it : this->node_summary_map_)
     {
         if(HAS_HIT_MAX_STEPS(it.first))
-            no_hit.cumulative(it.second);
-
+        {
+            // no_hit.cumulative(it.second);
+            int network = this->node_network_.count(abs(it.first))
+            ? this->node_network_.at(abs(it.first))
+            : 0;
+            
+            if(no_hit_map.count(network))
+                no_hit_map[network].cumulative(it.second);
+            else
+                no_hit_map[network] = it.second;
+        }
+        else  if(!has_seen_hit)
+        {
+            has_seen_hit = true;
+            stream << "Goals: \n";
+        }
+        
         const float percentage = calc_percentage(it.second.reach_count, total_simulations_);
-        stream << "Node: " << it.first << " reach count " << it.second.reach_count << " ("
-            << percentage << ")%. avg steps|time: " << it.second.avg_steps << "|" << it.second.avg_time << "s.\n";
+        insert_name(it.first, this->node_names_, stream);
+        stream << " reached " << it.second.reach_count << " times (" << percentage << "%)\n";
+        stream << "    " << " avg steps: " << it.second.avg_steps << " | avg sim time: " << it.second.avg_time << "t.\n";
     }
-    
-    
-    const float percentage = calc_percentage(no_hit.reach_count, total_simulations_);
 
-    stream << "No goal was reached "<< no_hit.reach_count << " times. ("
-         << percentage << ")%. avg steps|time: " << no_hit.avg_steps << "|" << no_hit.avg_time << ".\n";
+    stream << "\nPer process\n";
+    node_summary global_no_hit = {0,0,0};
+    for (int i = 0; i < static_cast<int>(this->model_count_); ++i)
+    {
+        const node_summary no_hit = no_hit_map.count(i)
+                                        ? no_hit_map[i]
+                                        : node_summary{0, 0, 0} ;
+        global_no_hit.cumulative(no_hit);
+        const float percentage = calc_percentage(no_hit.reach_count, total_simulations_);
 
-    stream << "\nNr of simulations: " << total_simulations_ << "\n\n";
+        stream << "Process " << i << " did not reach goal " << no_hit.reach_count << " times ("<< percentage <<"%)\n";
+        stream << "    " <<" avg steps: " << no_hit.avg_steps << " | avg sim time: " << no_hit.avg_time << "t.\n";
+    }
+
+    stream << '\n';
+    stream << "Probability of false negative results (alpha): " << this->alpha_*100 << "%\n";  
+    stream << "Probability uncertainty (-+epsilon) of results: " << this->epsilon_*100 << "%\n";  
+    stream << "Nr of simulations: " << total_simulations_ << "\n\n";
     stream << "Simulation ran for: " << std::chrono::duration_cast<std::chrono::milliseconds>(sim_duration).count()
            << "[ms]" << "\n";
 }
@@ -109,32 +153,29 @@ void output_writer::write_hit_file(const std::chrono::steady_clock::duration sim
     file.close();
 }
 
-output_writer::output_writer(const std::string* path, const unsigned sim_count, const int write_mode, const network* model)
+output_writer::output_writer(const sim_config* config, const network* model)
 {
-    this->file_path_ = *path;
-    this->write_mode_ = write_mode;
-    this->total_simulations_ = sim_count;
-    unsigned var_count = 0;
-    for (int i = 0; i < model->variables.size; ++i)
-        if(model->variables.store[i].should_track) var_count ++;
-
-    this->variable_summaries_ = arr<variable_summary>{
-        static_cast<variable_summary*>(malloc(sizeof(variable_summary)*var_count)),
-        static_cast<int>(var_count)
-    };
-
-    int j = 0;
-    for (int i = 0; i < model->variables.size; ++i)
-        if(model->variables.store[i].should_track)
-        {
-            this->variable_summaries_.store[j] = variable_summary{
-                static_cast<unsigned>(i), 0.0, 0
-            };
-            j++;
-        }
-    
-    this->model_count_ = model->automatas.size;
+    this->file_path_ = config->paths->output_path;
+    this->write_mode_ = config->write_mode;
     this->node_summary_map_ = std::map<int, node_summary>();
+    this->model_count_ = config->network_size;
+    this->total_simulations_ = static_cast<unsigned>(config->total_simulations()) * config->simulation_repetitions;
+    this->alpha_ = config->alpha;
+    this->epsilon_ = config->epsilon;
+    this->node_names_ = std::unordered_map<int, std::string>(*config->properties->node_names);
+    this->node_network_ = std::unordered_map<int, int>(*config->properties->node_network);
+    
+    this->variable_summaries_ = arr<variable_summary>{
+        static_cast<variable_summary*>(malloc(sizeof(variable_summary)*config->tracked_variable_count)),
+        static_cast<int>(config->tracked_variable_count)
+    };
+    
+    for (int i = 0, j = 0; i < model->variables.size; ++i)
+    {
+        if(!model->variables.store[i].should_track) continue;
+        this->variable_summaries_.store[j++] = variable_summary{static_cast<unsigned>(i), 0.0, 0};
+    }
+
 }
 
 void output_writer::write(const result_store* sim_result, std::chrono::steady_clock::duration sim_duration)

@@ -138,17 +138,15 @@ void domain_optimization_visitor::compound_optimize_constraints(edge* e)
         for (int j = 0; j < e->updates.size; ++j)
         {
             const update upd = e->updates.store[j];
-            if(upd.variable_id == inv.variable_id)
-            {
-                constraint compound = {};
-                compound.operand = inv.operand;
-                compound.value = upd.expression;
-                compound.uses_variable = false;
-                compound.expression = inv.expression;
-                
-                any = true;
-                con_lst.push_back(compound);
-            }
+            if(upd.variable_id != inv.variable_id) continue;
+            constraint compound = {};
+            compound.operand = inv.operand;
+            compound.value = upd.expression;
+            compound.uses_variable = false;
+            compound.expression = inv.expression;
+            
+            any = true;
+            con_lst.push_back(compound);
         }
         if(!any) con_lst.push_back(inv);
     }
@@ -169,9 +167,7 @@ bool domain_optimization_visitor::expr_contains_clock(const expr* ex)
 {
     if(ex->operand == expr::literal_ee) return false;
     if(ex->operand == expr::clock_variable_ee)
-    {
         return this->variables_clock_map_.at(ex->variable_id);
-    }
 
     const bool left = ex->left != nullptr ? expr_contains_clock(ex->left) : false;
     const bool right = ex->right != nullptr ? expr_contains_clock(ex->right) : false;

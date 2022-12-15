@@ -1,6 +1,7 @@
 ﻿#include <string>
 #include "simulation_runner.h"
 
+#include "cmath"
 #include "UPPAALXMLParser/uppaal_xml_parser.h"
 
 #include "./results/output_writer.h"
@@ -35,8 +36,8 @@ parser_state parse_configs(const int argc, const char* argv[], sim_config* confi
     parser.add_argument("-b", "--block", "Specify number of blocks/threads to use.\nIn the format 'blocks,threads' e.g. '32,512' for 32 blocks and 512 threads pr. block", false);
 
     //number of simulations to run.
-    parser.add_argument("-e", "--epsilon", "epsilon value to calculate number of simulations", false);
-    parser.add_argument("-a", "--alpha", "Specify number of blocks/threads to use.\nIn the format 'blocks,threads' e.g. '32,512' for 32 blocks and 512 threads pr. block", false);
+    parser.add_argument("-e", "--epsilon", "Probability uncertainty for the results. (default = 0.005)", false);
+    parser.add_argument("-a", "--alpha", "Probability of false negatives. Gives the total simulations in combination with epsilon.", false);
     parser.add_argument("-n", "--number", "Specify the total number of simulations to run .\nIf this parameter is specified, epsilon and alpha are ignored", false);
     parser.add_argument("-r", "--repeat", "number of times to repeat simulations. Concats results. default = 1", false);
 
@@ -66,7 +67,6 @@ parser_state parse_configs(const int argc, const char* argv[], sim_config* confi
     }
     
     config->seed = static_cast<unsigned long long>(time(nullptr));
-    size_t total_simulations;
     
     if(parser.exists("m")) config->paths->model_path = parser.get<std::string>("m");
     else throw argparse::arg_exception('m', "No model argument supplied");
@@ -88,17 +88,32 @@ parser_state parse_configs(const int argc, const char* argv[], sim_config* confi
     }
     else throw argparse::arg_exception('b', "no block arg supplied");
 
-    if(parser.exists("n")) total_simulations = parser.get<size_t>("n");
-    else if(parser.exists("e") && parser.exists("a"))
+    double epsilon, alpha;
+    size_t total_simulations;
+    if(parser.exists("e")) epsilon = parser.get<double>("e");
+    else epsilon = 0.005; //default value
+    
+    if(parser.exists("n"))
     {
-        const double epsilon = parser.get<double>("e");
-        const double alpha = parser.get<double>("a");
+        total_simulations = parser.get<size_t>("n");
+        alpha = 2 * exp((-2.0) * static_cast<double>(total_simulations) * pow(epsilon,2));
+    }
+    else if(parser.exists("a"))
+    {
+        alpha = parser.get<double>("a");
         total_simulations = static_cast<size_t>(ceil((log(2.0) - log(alpha)) / (2*pow(epsilon, 2))));
     }
     else throw argparse::arg_exception('n', "no simulation amount supplied. ");
 
     if(parser.exists("r")) config->simulation_repetitions = parser.get<unsigned>("r");
     else config->simulation_repetitions = 1;
+
+    //Insert into config object
+    config->simulation_amount = static_cast<unsigned>(ceil(
+            static_cast<double>(total_simulations) /
+            static_cast<double>((config->blocks * config->threads * config->simulation_repetitions))));
+    config->alpha = alpha;
+    config->epsilon = epsilon;
 
     if(parser.exists("d")) config->sim_location = static_cast<sim_config::device_opt>(parser.get<int>("d"));
     else config->sim_location = sim_config::device;
@@ -128,10 +143,6 @@ parser_state parse_configs(const int argc, const char* argv[], sim_config* confi
 
     if(parser.exists("v")) config->verbose = parser.get<int>("v");
     else config->verbose = true;
-    
-    config->simulation_amount = static_cast<unsigned>(ceil(
-            static_cast<double>(total_simulations) /
-            static_cast<double>((config->blocks * config->threads))));
     
     return parser_state::parsed;
 }
@@ -172,7 +183,9 @@ int main(int argc, const char* argv[])
     CUDA_CHECK(cudaFree(nullptr));
 
     io_paths paths = {};
+    output_properties properties = {};
     sim_config config = {};
+    config.properties = &properties;
     config.paths = &paths;
     parser_state state = parse_configs(argc, argv, &config);
     if(state == error) return -1;
@@ -181,10 +194,13 @@ int main(int argc, const char* argv[])
     memory_allocator allocator = memory_allocator(
         config.sim_location == sim_config::device || config.sim_location == sim_config::both
         );
-    
+
     uppaal_xml_parser xml_parser;
     network model = xml_parser.parse(config.paths->model_path);
 
+    properties.node_names = xml_parser.get_nodes_with_name();
+    properties.node_network = xml_parser.get_subsystems();
+    
     if(config.verbose)
         pretty_print_visitor(&std::cout).visit(&model);
 

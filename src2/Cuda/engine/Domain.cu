@@ -1,6 +1,7 @@
 ﻿#include "Domain.h"
 
 
+//Please do not change the argument names, they are required for JIT compilation 
 CPU GPU double evaluate_compiled_expression(const expr* ex, state* state)
 {
     //DO NOT REMOVE FOLLOWING COMMENT! IT IS USED AS SEARCH TARGET FOR JIT COMPILATION!!!
@@ -9,6 +10,7 @@ CPU GPU double evaluate_compiled_expression(const expr* ex, state* state)
     return 0.0;
 }
 
+//Please do not change the argument names, they are required for JIT compilation 
 CPU GPU bool evaluate_compiled_constraint(const constraint* con, state* state)
 {
     //DO NOT REMOVE FOLLOWING COMMENT! IT IS USED AS SEARCH TARGET FOR JIT COMPILATION!!!
@@ -17,6 +19,7 @@ CPU GPU bool evaluate_compiled_constraint(const constraint* con, state* state)
     return false;
 }
 
+//Please do not change the argument names, they are required for JIT compilation 
 CPU GPU double evaluate_compiled_constraint_upper_bound(const constraint* con, state* state, bool* is_finite)
 {
     //If this variable is marked const, then JIT compilation will not work.
@@ -93,7 +96,7 @@ CPU GPU double evaluate_expression_node(const expr* expr, state* state)
         return abs(v1 - v2) > DBL_EPSILON;
     case expr::not_ee:
         v1 = state->value_stack.pop();
-        return abs(v1) < DBL_EPSILON * 1.0;
+        return (abs(v1) < DBL_EPSILON);
     case expr::conditional_ee:
         v1 = state->value_stack.pop();
         state->value_stack.pop();
