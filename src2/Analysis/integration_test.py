@@ -115,7 +115,7 @@ def __parse_args():
         default=0,
         required=False
     )
-    
+
     general_options.add_argument(
         '-j',
         '--jit',
@@ -126,6 +126,24 @@ def __parse_args():
         required=False
     )
 
+    general_options.add_argument(
+        '-alp',
+        '--alpha',
+        dest='alpha',
+        help='Set value for alpha',
+        type=float,
+        default=0.0,
+        required=False
+    )
+
+    general_options.add_argument(
+        '-epi',
+        '--epsilon',
+        dest='epsilon',
+        help='Set the value for epsilon',
+        default=0.0,
+        required=False
+    )
 
     args = parser.parse_args()
     return args
@@ -141,14 +159,13 @@ def run_simulations(args_) -> tuple[set[str], list[str]]:
     for file in only_files:
         print("RUNNING", file)
         file_path = join(folder_path, file)
-        #print(f' m: {file_path}\n n: {args_.amount}\n o: {join(TEMP_FOLDER_NAME, file.replace(".xml", ""))}\n x: {args_.max_progression}{"t" if args_.use_time else "s"}')
-        #amount = int(ceil(float(args_.amount) / float(32 * 512)))
-        
+        # print(f' m: {file_path}\n n: {args_.amount}\n o: {join(TEMP_FOLDER_NAME, file.replace(".xml", ""))}\n x: {args_.max_progression}{"t" if args_.use_time else "s"}')
+        # amount = int(ceil(float(args_.amount) / float(32 * 512)))
+
         parameters = [
             simulator_path,
             '-m', file_path,
             '-b', '40,256',
-            '-n', f'{args_.amount}',
             '-c', '1',
             '-d', '0',
             '-w', 'r',
@@ -156,6 +173,16 @@ def run_simulations(args_) -> tuple[set[str], list[str]]:
             '-x', f'{args_.max_progression}{"t" if args_.use_time else "s"}',
             '-v', '0'
         ]
+        
+        if args_.alpha > 0.0 and args_.epsilon > 0.0:
+            parameters.append('-a')
+            parameters.append(f'{args_.alpha}')
+            
+            parameters.append('-e')
+            parameters.append(f'{args_.epsilon}')
+        else:
+            parameters.append('-n')
+            parameters.append(f'{args_.amount}')
 
         if args.use_shared == 1:
             parameters.append('-s')
