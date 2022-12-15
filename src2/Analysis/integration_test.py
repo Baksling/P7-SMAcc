@@ -186,12 +186,15 @@ def run_simulations(args_) -> tuple[set[str], list[str]]:
              
         ]
         
-        if args_.alpha > 0.0 and args_.epsilon > 0.0:
+        alpha = float(args_.alpha)
+        epsilon = float(args_.epsilon)
+        
+        if float(alpha) > 0.0 and float(epsilon) > 0.0:
             parameters.append('-a')
-            parameters.append(f'{args_.alpha}')
+            parameters.append(f'{alpha}')
             
             parameters.append('-e')
-            parameters.append(f'{args_.epsilon}')
+            parameters.append(f'{epsilon}')
         else:
             parameters.append('-n')
             parameters.append(f'{args_.amount}')
