@@ -51,6 +51,15 @@ def __parse_args():
         required=True
     )
 
+    io_options.add_argument(
+        '-op',
+        '--output',
+        dest='output_path',
+        help='filepath to folder to output results',
+        type=str,
+        required=True
+    )
+
     # General Options
     general_options = parser.add_argument_group(
         'General Options'
@@ -153,6 +162,7 @@ def run_simulations(args_) -> tuple[set[str], list[str]]:
     not_run_set = set()
     simulator_path = args_.simulation_path
     folder_path = args_.folder_path
+    output_path = args_.output_path
 
     only_files = [f for f in listdir(folder_path) if isfile(join(folder_path, f))]
 
@@ -172,6 +182,8 @@ def run_simulations(args_) -> tuple[set[str], list[str]]:
             '-o', f'{join(TEMP_FOLDER_NAME, file.replace(".xml", ""))}',
             '-x', f'{args_.max_progression}{"t" if args_.use_time else "s"}',
             '-v', '0'
+            '-op', output_path 
+             
         ]
         
         if args_.alpha > 0.0 and args_.epsilon > 0.0:
@@ -206,34 +218,36 @@ def check_simulation_results(args_, _expected_results, not_run_set, all_files) -
     only_files = [f'{file.replace(".xml", "")}_results.tsv' for file in all_files]
 
     # print(only_files)
-    for file in only_files:
-        file_path = join(TEMP_FOLDER_NAME, file)
-        file_results = _expected_results[f'{file.replace(POST_FIX_TMP_NAME, "")}']
-        expected_value = file_results.value
-        expected_time = file_results.time
-        actual_result = 0.0
-        actual_time = 0.0
-        if file not in not_run_set:
-            try:
-                with open(file_path, 'r') as f:
-                    data_line = f.readlines()[0].replace('\n', '')
-                    tmp_split = data_line.split('\t')
+    with open(args_.output_path, 'w') as op:
+        for file in only_files:
+            file_path = join(TEMP_FOLDER_NAME, file)
+            file_results = _expected_results[f'{file.replace(POST_FIX_TMP_NAME, "")}']
+            expected_value = file_results.value
+            expected_time = file_results.time
+            actual_result = 0.0
+            actual_time = 0.0
+            if file not in not_run_set:
+                try:
+                    with open(file_path, 'r') as f:
+                        data_line = f.readlines()[0].replace('\n', '')
+                        tmp_split = data_line.split('\t')
 
-                    actual_result = float(tmp_split[0])
-                    actual_time = int(tmp_split[1])
+                        actual_result = float(tmp_split[0])
+                        actual_time = int(tmp_split[1])
 
-                output_str = f'{file} '
-                if within_range(expected_value, actual_result, args_.variance) and \
-                        (args_.time_variance == 0 or within_range(expected_time, actual_time, args_.time_variance)):
-                    output_str += f'{PASSED}PASSED{ENDC}'
-                else:
-                    output_str += f'{FAILED}FAILED{ENDC}'
-                output_str += f' - Got: {actual_result} | Value variance: {expected_value - actual_result} percent | Time variance {expected_time - actual_time} [ms]'
-                print(output_str)
-            except:
-                print(file, f'{FAILED}FAILED{ENDC} - EXCEPT')
-        else:
-            print(file, f"{WARNING}FAILED{ENDC} - DID NOT FINISH SIMULATION!")
+                    output_str = f'{file} '
+                    if within_range(expected_value, actual_result, args_.variance) and \
+                            (args_.time_variance == 0 or within_range(expected_time, actual_time, args_.time_variance)):
+                        output_str += f'{PASSED}PASSED{ENDC}'
+                    else:
+                        output_str += f'{FAILED}FAILED{ENDC}'
+                    output_str += f' - Got: {actual_result} | Value variance: {expected_value - actual_result} percent | Time variance {expected_time - actual_time} [ms]'
+                    op.write(f'{file}\t{actual_result}\t{expected_value}\n')
+                    print(output_str)
+                except: 
+                    print(file, f'{FAILED}FAILED{ENDC} - EXCEPT')
+            else:
+                print(file, f"{WARNING}FAILED{ENDC} - DID NOT FINISH SIMULATION!")
 
 
 def get_expected_simulation_results() -> dict[str, value_checker]:
@@ -299,4 +313,4 @@ if __name__ == '__main__':
         not_run_set, all_files = run_simulations(args)
         check_simulation_results(args, expected_results, not_run_set, all_files)
     finally:
-        subprocess.run(['rm', '-r', TEMP_FOLDER_NAME])
+        pass #subprocess.run(['rm', '-r', TEMP_FOLDER_NAME])
