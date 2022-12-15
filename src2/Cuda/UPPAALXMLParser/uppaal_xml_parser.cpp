@@ -313,7 +313,7 @@ void uppaal_xml_parser::handle_locations(const xml_node locs)
     node_->edges = arr<edge>::empty();
     
     nodes_->push_back(node_);
-    nodes_map_->emplace(node_->id, node_with_system_id(node_, this->system_count_));
+    nodes_map_->emplace(node_->id, this->system_count_);
 }
 
 void uppaal_xml_parser::handle_transitions(const xml_node trans)
@@ -524,7 +524,7 @@ __host__ network uppaal_xml_parser::parse_xml(const char* file_path)
             node_->lamda = lamda;
             node_->edges = arr<edge>::empty();
             
-            nodes_map_->emplace(node_->id, node_with_system_id(node_, this->system_count_));
+            nodes_map_->emplace(node_->id, this->system_count_);
             nodes_->push_back(node_);
         }
 

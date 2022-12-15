@@ -29,18 +29,6 @@ using namespace std;
 using namespace pugi;
 using namespace helper;
 
-struct node_with_system_id
-{
-private:
-    node* node_;
-    int system_id_;
-public:
-    node_with_system_id(node* node, int system_id_) {this->node_ = node; this->system_id_ = system_id_;}
-    node* get_node() const {return this->node_;}
-    int get_system_id() const {return this->system_id_;}
-    bool is_in_system(int system_id) const {return system_id == system_id_;}
-};
-
 class uppaal_xml_parser
 {
    
@@ -62,7 +50,7 @@ private:
     unordered_map<string, int> global_vars_map_{};
     unordered_map<int, list<edge>> node_edge_map{};
     unordered_map<int, string>* node_names_ = new unordered_map<int, string>();
-    unordered_map<int, node_with_system_id>* nodes_map_= new unordered_map<int, node_with_system_id>();
+    unordered_map<int, int>* nodes_map_= new unordered_map<int, int>();
     list<node*>* nodes_ = new list<node*>();
     list<int> start_nodes_{};
     
@@ -88,7 +76,7 @@ private:
 
 public:
     unordered_map<int, string>* get_nodes_with_name() const {return this->node_names_;}
-    unordered_map<int, node_with_system_id>* get_subsystems() const {return this->nodes_map_;}
+    unordered_map<int, int>* get_subsystems() const {return this->nodes_map_;}
     uppaal_xml_parser();
     network parse(string file_path);
     static bool try_parse_block_threads(const std::string& str, unsigned* out_blocks, unsigned* out_threads);
