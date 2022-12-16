@@ -150,7 +150,28 @@ def __parse_args():
         '--epsilon',
         dest='epsilon',
         help='Set the value for epsilon',
+        type=float,
         default=0.0,
+        required=False
+    )
+
+    general_options.add_argument(
+        '-d',
+        '--device',
+        dest='device',
+        help='[0 GPU 1 CPU]',
+        type=int,
+        default=0,
+        required=False
+    )
+
+    general_options.add_argument(
+        '-c',
+        '--cores',
+        dest='cores',
+        help='How many cores to use',
+        type=int,
+        default=1,
         required=False
     )
 
@@ -175,35 +196,51 @@ def run_simulations(args_) -> tuple[set[str], list[str]]:
         parameters = [
             simulator_path,
             '-m', file_path,
-            '-b', '40,256',
-            '-c', '1',
-            '-d', '0',
             '-w', 'r',
             '-o', f'{join(TEMP_FOLDER_NAME, file.replace(".xml", ""))}',
             '-x', f'{args_.max_progression}{"t" if args_.use_time else "s"}',
-            '-v', '0'
-            '-op', output_path 
-             
+            '-op', output_path,
+            '-v', '0',
+            '-d', f'{args_.device}'
         ]
-        
+
         alpha = float(args_.alpha)
         epsilon = float(args_.epsilon)
-        
+
         if float(alpha) > 0.0 and float(epsilon) > 0.0:
             parameters.append('-a')
             parameters.append(f'{alpha}')
-            
+
             parameters.append('-e')
             parameters.append(f'{epsilon}')
         else:
             parameters.append('-n')
             parameters.append(f'{args_.amount}')
 
-        if args.use_shared == 1:
-            parameters.append('-s')
+        if args_.device == 0:
+            _para = [
+                '-b', '40,256',
+                '-c', '1',
+            ]
 
-        if args.use_jit == 1:
-            parameters.append('-j')
+            for para in _para:
+                parameters.append(para)
+
+            if args.use_shared == 1:
+                parameters.append('-s')
+
+            if args.use_jit == 1:
+                parameters.append('-j')
+
+        if args_.device == 1:
+            cores = args_.cores
+            _para = [
+                '-b', f'1,{cores}'
+                      '-c', f'{cores}'
+            ]
+            
+            for para in _para:
+                parameters.append(para)
 
         subprocess.run(parameters)
 
@@ -247,7 +284,7 @@ def check_simulation_results(args_, _expected_results, not_run_set, all_files) -
                     output_str += f' - Got: {actual_result} | Value variance: {expected_value - actual_result} percent | Time variance {expected_time - actual_time} [ms]'
                     op.write(f'{file}\t{actual_result}\t{expected_value}\n')
                     print(output_str)
-                except: 
+                except:
                     print(file, f'{FAILED}FAILED{ENDC} - EXCEPT')
             else:
                 print(file, f"{WARNING}FAILED{ENDC} - DID NOT FINISH SIMULATION!")
@@ -316,4 +353,4 @@ if __name__ == '__main__':
         not_run_set, all_files = run_simulations(args)
         check_simulation_results(args, expected_results, not_run_set, all_files)
     finally:
-        pass #subprocess.run(['rm', '-r', TEMP_FOLDER_NAME])
+        pass  # subprocess.run(['rm', '-r', TEMP_FOLDER_NAME])
