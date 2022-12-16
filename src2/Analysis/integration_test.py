@@ -199,10 +199,11 @@ def run_simulations(args_) -> tuple[set[str], list[str]]:
             '-w', 'r',
             '-o', f'{join(TEMP_FOLDER_NAME, file.replace(".xml", ""))}',
             '-x', f'{args_.max_progression}{"t" if args_.use_time else "s"}',
-            '-op', output_path,
+            #'-op', output_path,
             '-v', '0',
             '-d', f'{args_.device}'
         ]
+        
 
         alpha = float(args_.alpha)
         epsilon = float(args_.epsilon)
@@ -235,8 +236,8 @@ def run_simulations(args_) -> tuple[set[str], list[str]]:
         if args_.device == 1:
             cores = args_.cores
             _para = [
-                '-b', f'1,{cores}'
-                      '-c', f'{cores}'
+                '-b', f'1,{cores}',
+                '-c', f'{cores}'
             ]
             
             for para in _para:
