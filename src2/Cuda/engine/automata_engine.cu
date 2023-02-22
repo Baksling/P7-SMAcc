@@ -236,7 +236,7 @@ CPU GPU void simulate_automata(
                 sim_state.broadcast_channel(e->channel, *state);
             } while ((*state)->is_branch_point);
         }
-        output->write_output(&sim_state);
+        output->write_output(idx, &sim_state);
     }
 }
 

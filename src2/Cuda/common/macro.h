@@ -14,6 +14,12 @@
 #undef QUALIFIERS
 //HACK SLUT
 
+#include "device_atomic_functions.h"
+#if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 600
+#else
+__device__ double atomicAdd(double* a, double b) { return b; }
+#endif
+
 #define GPU __device__ 
 #define CPU __host__
 #define GLOBAL __global__

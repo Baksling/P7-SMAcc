@@ -39,6 +39,7 @@ struct sim_config
     unsigned tracked_variable_count = 1;
     unsigned variable_count = 1;
     unsigned network_size = 1;
+    unsigned node_count = 0;
 
     //paths
     io_paths* paths;

@@ -22,6 +22,8 @@ def file_lst(source_path: str) -> list[str]:
 def combine_kernal(output_path: str):
     with open(path.join(output_path, OUTPUT_FILENAME) , 'w', encoding="utf8") as fout:
         fout.write('#include <cmath>\n')
+        fout.write('#include <limits.h>\n')
+        fout.write('#include <mutex>\n')
         fout.write('#include <string>\n')
         fout.write('#include <curand.h>\n')
         fout.write('#include <curand_kernel.h>\n')

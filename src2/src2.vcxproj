@@ -727,7 +727,6 @@
   <ItemGroup>
     <Content Include="Analysis\analysis_plotter.py" />
     <Content Include="Analysis\data_performance_analyser.py" />
-    <Content Include="Analysis\file_assembler.py" />
     <Content Include="Analysis\integration_test.py" />
     <Content Include="Analysis\performance_analysis.py" />
     <Content Include="Analysis\simulation_amount_analysis.py" />

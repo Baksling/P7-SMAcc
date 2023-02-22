@@ -24,33 +24,48 @@ enum write_modes //values must be powers of 2.
 struct node_summary
 {
     unsigned int reach_count = 0;
-    double avg_steps = 0;
-    double avg_time = 0;
+    unsigned long total_steps = 0;
+    double total_time = 0.0;
+    // double avg_steps = 0;
+    // double avg_time = 0;
 
-    void add_reach(const unsigned int steps, const double time)
+    double avg_steps() const
     {
-        avg_steps = ((avg_steps * reach_count) + static_cast<double>(steps)) / (reach_count+1);
-        avg_time = ((avg_time * reach_count) + time) / (reach_count+1);
-        reach_count++;
+        if(reach_count == 0) return 0.0; 
+        return static_cast<double>(total_steps) / static_cast<double>(reach_count);
+    }
+
+    double avg_time() const
+    {
+        if(reach_count == 0) return 0.0;
+        return total_time / static_cast<double>(reach_count);
     }
 
     void cumulative(const node_summary& other)
     {
-        avg_steps = ((avg_steps * reach_count + other.avg_steps * other.reach_count)) / (reach_count + other.reach_count);
-        reach_count += other.reach_count;
+        this->total_steps += other.total_steps;
+        this->total_time += other.total_time;
+        this->reach_count += other.reach_count;
     }
 };
 
 struct variable_summary
 {
     unsigned int variable_id;
-    double avg_max_value;
+    double sum_max_values;
     unsigned long values_counted;
 
-    void update_count(const double max_value)
+    void combine(const variable_summary& other)
     {
-        avg_max_value = ((avg_max_value * values_counted) + max_value) / (values_counted+1);
-        values_counted++;
+        if(this->variable_id != other.variable_id)
+            throw std::runtime_error("VARIABLE ID mismatch when combining summaries");
+        this->sum_max_values += other.sum_max_values;
+        this->values_counted += other.values_counted;
+    }
+
+    double avg_max_value() const
+    {
+        return sum_max_values / static_cast<double>(values_counted);
     }
 };
 
@@ -59,6 +74,7 @@ struct output_properties
 {
     std::unordered_map<int, std::string>* node_names;
     std::unordered_map<int, int>* node_network;
+    std::unordered_map<int, node*> node_map;
 };
 
 
@@ -67,15 +83,17 @@ class output_writer
 private:
     std::string file_path_;
     int write_mode_;
-    unsigned output_counter_{};
-    unsigned total_simulations_;
-    unsigned model_count_;
+
+    int node_count_;
+    int variable_count_;
+    size_t total_simulations_;
+    unsigned output_counter_ = 0;
     std::map<int, node_summary> node_summary_map_{};
+    std::map<int, std::list<int>> network_groups_;
     arr<variable_summary> variable_summaries_ = arr<variable_summary>::empty();
     double epsilon_;
     double alpha_;
-    std::unordered_map<int, std::string> node_names_;
-    std::unordered_map<int, int> node_network_;
+    output_properties* eric_;
     
     static float calc_percentage(const unsigned long long counter, const unsigned long long divisor);
 
@@ -85,9 +103,12 @@ private:
     void write_summary_to_stream(std::ostream& stream, std::chrono::steady_clock::duration sim_duration) const;
     void write_lite(std::chrono::steady_clock::duration sim_duration) const;
     void write_hit_file(std::chrono::steady_clock::duration sim_duration) const;
+    void setup_network_groups(const sim_config* config);
 
 public:
     explicit output_writer(const sim_config* config, const network* model);
+    ~output_writer();
+    void analyse_batch(const result_pointers& pointers);
     void write(const result_store* sim_result, std::chrono::steady_clock::duration sim_duration);
     void write_summary(std::chrono::steady_clock::duration sim_duration) const;
     void clear();

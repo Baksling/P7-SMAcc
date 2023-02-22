@@ -27,6 +27,8 @@ public:
 
     template<typename T>
     cudaError allocate_and_copy(T** dest, const T* source, const unsigned amount);
+    template <class T>
+    cudaError memery_set(T* p, int memory_value, int size);
 
     void add_to_host_freelist(void* p, size_t size = 0);
     
@@ -88,6 +90,21 @@ cudaError memory_allocator::allocate_and_copy(T** dest, const T* source, const u
 
     e = cudaMemcpy(*dest, source, size, kind);
     return e;
+}
+
+template <typename T>
+cudaError memory_allocator::memery_set(T* p, int memory_value, int size)
+{
+    const size_t mem_size = sizeof(T)*size;
+    if(use_cuda)
+    {
+        return cudaMemset(p, memory_value, mem_size);
+    }
+    else
+    {
+        memset(p, memory_value, mem_size);
+        return cudaSuccess;
+    }
 }
 
 #endif

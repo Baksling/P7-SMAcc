@@ -93,7 +93,7 @@ public:
             static jitify::JitCache kernel_cache;
             jitify::Program program = kernel_cache.program(jit_content,
                 {},
-                {"--use_fast_math", "-I " CUDA_INC_DIR, "--dopt=on" },
+                {"--use_fast_math", "-I " CUDA_INC_DIR, "--dopt=on", "-D __JIT_COMPILING__"},
                 fallback);
             return program
                 .kernel("simulator_gpu_kernel")

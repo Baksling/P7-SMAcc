@@ -1,5 +1,10 @@
 ﻿#include "output_writer.h"
 
+bool is_goal_node_by_id(const std::unordered_map<int,node*>& node_map, const int id)
+{
+    return node_map.count(id) && node_map.at(id)->is_goal;
+}
+
 float output_writer::calc_percentage(const unsigned long long counter, const unsigned long long divisor)
 {
     return (static_cast<float>(counter) / static_cast<float>(divisor)) * 100.0f;
@@ -8,30 +13,46 @@ float output_writer::calc_percentage(const unsigned long long counter, const uns
 void output_writer::write_to_file(const result_pointers* results,
     std::chrono::steady_clock::duration sim_duration) const
 {
+    const unsigned sims_pr_thread = results->sim_per_thread();
     std::ofstream file_node, file_variable;
-    
     file_node.open(this->file_path_ + "_node_data_" + std::to_string(output_counter_) + ".csv" );
     file_variable.open(this->file_path_ + "_variable_data_" + std::to_string(output_counter_) + ".csv");
     
-    file_node << "Simulation,Model,Node,Steps,Time\n";
-    file_variable << "Simulation,Variable,Value\n";
-    
-    
-    for (unsigned i = 0; i < total_simulations_; ++i)
+    file_node << "node_id,name,thread,network_id,reach_count,avg_steps,avg_time\n";
+    file_variable << "variableID,thread,avg_max_value,max_value\n";
+
+    for (int t = 0; t < results->threads; ++t)
     {
-        const sim_metadata local_result = results->meta_results[i];
-        for (unsigned  j = 0; j < this->model_count_; ++j)
+        for (int i = 0; i < this->node_count_; ++i)
         {
-            file_node << i << "," << j << "," << results->nodes[this->model_count_ * i + j] << ","
-            << local_result.steps << "," << local_result.global_time << "\n";
+            const int index = t * this->node_count_ + i;
+            const int id = i + 1;
+            const int network_id = this->eric_->node_network->at(id);
+            std::string name = this->eric_->node_names->count(id)
+                ? this->eric_->node_names->at(id)
+                  : "_";
+
+            file_node
+                << id << ','
+                << name << ','
+                << t << ','
+                << network_id << ','
+                << results->nodes[index].reached << ','
+                << results->nodes[index].avg_steps() << ','
+                << results->nodes[index].avg_time() << '\n';
         }
-    
-        for (int k = 0; k < this->variable_summaries_.size; ++k)
+
+        for (int i = 0; i < this->variable_count_; ++i)
         {
-            file_variable << i << "," << k << "," << results->variables[this->variable_summaries_.size * i + k] << "\n";
+            const int index = t * this->variable_count_ + i;
+            file_variable
+                << i << ','
+                << t << ','
+                << results->variables[index].avg_max_value(sims_pr_thread) << ','
+                << results->variables[index].max_value << '\n';
         }
     }
-
+    
     file_node.flush();
     file_variable.flush();
      
@@ -39,18 +60,22 @@ void output_writer::write_to_file(const result_pointers* results,
     file_variable.close();
 }
 
-void insert_name(const int id, const std::unordered_map<int, std::string>& name_map, std::ostream& stream)
+void insert_name(const int id, const std::unordered_map<int, std::string>* name_map, std::ostream& stream)
 {
     stream << abs(id) << ": ";
-    if(name_map.count(abs(id)))
+    if(name_map->count(abs(id)))
     {
-        stream << name_map.at(abs(id));
+        stream << name_map->at(abs(id));
     }
     else
     {
         stream << '_';
     }
-    stream << (HAS_HIT_MAX_STEPS(id) ? " (not goal)" : "");
+}
+
+bool id_sorter(const int lhs, const int rhs)
+{
+    return lhs < rhs;
 }
 
 void output_writer::write_summary_to_stream(std::ostream& stream,
@@ -60,55 +85,35 @@ void output_writer::write_summary_to_stream(std::ostream& stream,
     
     for (int j = 0; j < this->variable_summaries_.size; ++j)
     {
-        const variable_summary result = this->variable_summaries_.store[j];
-        stream << "variable " << result.variable_id << " = " << result.avg_max_value << "\n";
+        const variable_summary& result = this->variable_summaries_.store[j];
+        stream << "variable " << result.variable_id << " = " << result.avg_max_value() << "\n";
     }
     
-    stream << "\n\nReachability: \n";
-    bool has_seen_hit = false;
+    stream << "\n\nReachability: ";
     
     // node_summary no_hit = node_summary{0, 0};
-    std::map<int, node_summary> no_hit_map{};
-    stream << "Not reached:\n";
-    
-    for (const std::pair<const int, node_summary>& it : this->node_summary_map_)
+    node_summary global_no_hit = {0, 0, 0};
+    for(auto& groups : this->network_groups_)
     {
-        if(HAS_HIT_MAX_STEPS(it.first))
+        stream << "\nProcess: " << groups.first << "\n";
+        node_summary no_hit = {0, 0, 0};
+
+        for(const int id : groups.second)
         {
-            // no_hit.cumulative(it.second);
-            int network = this->node_network_.count(abs(it.first))
-            ? this->node_network_.at(abs(it.first))
-            : 0;
+            node_summary summary = this->node_summary_map_.at(id);
+            if(!is_goal_node_by_id(this->eric_->node_map, id))
+                no_hit.cumulative(summary);
             
-            if(no_hit_map.count(network))
-                no_hit_map[network].cumulative(it.second);
-            else
-                no_hit_map[network] = it.second;
+            const float percentage = calc_percentage(summary.reach_count, total_simulations_);
+            insert_name(id, this->eric_->node_names, stream);
+            stream << " reached " << summary.reach_count << " times (" << percentage << "%)\n";
+            stream << "    " << " avg steps: " << summary.avg_steps() << " | avg sim time: " << summary.avg_time() << "t.\n";
         }
-        else  if(!has_seen_hit)
-        {
-            has_seen_hit = true;
-            stream << "Goals: \n";
-        }
-        
-        const float percentage = calc_percentage(it.second.reach_count, total_simulations_);
-        insert_name(it.first, this->node_names_, stream);
-        stream << " reached " << it.second.reach_count << " times (" << percentage << "%)\n";
-        stream << "    " << " avg steps: " << it.second.avg_steps << " | avg sim time: " << it.second.avg_time << "t.\n";
-    }
 
-    stream << "\nPer process\n";
-    node_summary global_no_hit = {0,0,0};
-    for (int i = 0; i < static_cast<int>(this->model_count_); ++i)
-    {
-        const node_summary no_hit = no_hit_map.count(i)
-                                        ? no_hit_map[i]
-                                        : node_summary{0, 0, 0} ;
-        global_no_hit.cumulative(no_hit);
         const float percentage = calc_percentage(no_hit.reach_count, total_simulations_);
-
-        stream << "Process " << i << " did not reach goal " << no_hit.reach_count << " times ("<< percentage <<"%)\n";
-        stream << "    " <<" avg steps: " << no_hit.avg_steps << " | avg sim time: " << no_hit.avg_time << "t.\n";
+        stream << "\nProcess " << groups.first << " did not reach goal " << no_hit.reach_count << " times ("<< percentage <<"%)\n";
+        stream << "    " <<" avg steps: " << no_hit.avg_steps() << " | avg sim time: " << no_hit.avg_time() << "t.\n";
+        global_no_hit.cumulative(no_hit);
     }
 
     stream << '\n';
@@ -139,7 +144,7 @@ void output_writer::write_hit_file(const std::chrono::steady_clock::duration sim
     bool any = false;
     for (const auto& pair : this->node_summary_map_)
     {
-        if (HAS_HIT_MAX_STEPS(pair.first)) continue;
+        if (is_goal_node_by_id(this->eric_->node_map, pair.first)) continue;
         const float percentage = this->calc_percentage(pair.second.reach_count, total_simulations_);
         file << percentage << "\t" << std::chrono::duration_cast<std::chrono::milliseconds>(sim_duration).count();
         any = true;
@@ -153,17 +158,35 @@ void output_writer::write_hit_file(const std::chrono::steady_clock::duration sim
     file.close();
 }
 
+void output_writer::setup_network_groups(const sim_config* config)
+{
+    for(const auto& pair : *config->properties->node_network)
+    {
+        if(this->network_groups_.count(pair.second))
+            this->network_groups_.at(pair.second).push_back(pair.first);
+        else
+        {
+            this->network_groups_.insert(std::pair<int, std::list<int>>(pair.second, std::list<int>()));
+            this->network_groups_.at(pair.second).push_back(pair.first);
+        }
+    }
+    for(auto& pair : this->network_groups_)
+    {
+        pair.second.sort(id_sorter);
+    }
+}
+
 output_writer::output_writer(const sim_config* config, const network* model)
 {
     this->file_path_ = config->paths->output_path;
     this->write_mode_ = config->write_mode;
     this->node_summary_map_ = std::map<int, node_summary>();
-    this->model_count_ = config->network_size;
-    this->total_simulations_ = static_cast<unsigned>(config->total_simulations()) * config->simulation_repetitions;
+    this->total_simulations_ = config->total_simulations() * config->simulation_repetitions;
     this->alpha_ = config->alpha;
     this->epsilon_ = config->epsilon;
-    this->node_names_ = std::unordered_map<int, std::string>(*config->properties->node_names);
-    this->node_network_ = std::unordered_map<int, int>(*config->properties->node_network);
+    this->eric_ = config->properties;
+    this->node_count_ = static_cast<int>(config->node_count);
+    this->variable_count_ = static_cast<int>(config->tracked_variable_count);
     
     this->variable_summaries_ = arr<variable_summary>{
         static_cast<variable_summary*>(malloc(sizeof(variable_summary)*config->tracked_variable_count)),
@@ -176,6 +199,51 @@ output_writer::output_writer(const sim_config* config, const network* model)
         this->variable_summaries_.store[j++] = variable_summary{static_cast<unsigned>(i), 0.0, 0};
     }
 
+    this->network_groups_ = std::map<int, std::list<int>>();
+    this->setup_network_groups(config);
+}
+
+output_writer::~output_writer()
+{
+    free(this->variable_summaries_.store);
+}
+
+void output_writer::analyse_batch(const result_pointers& pointers)
+{
+    const unsigned sims_per_thread = pointers.sim_per_thread();
+
+    for (int t = 0; t < pointers.threads; ++t)
+    {
+        for (int i = 0; i < this->node_count_; ++i)
+        {
+            const int index = t * this->node_count_ + i;
+            const int id = i == 0 ? this->node_count_ : i; //i = 0 is actually the node with the highest value.
+            const node_results* node = &pointers.nodes[index];
+            node_summary summary = node_summary
+            {
+                node->reached,
+                node->total_steps,
+                node->total_time
+            };
+            
+            if(this->node_summary_map_.count(id))
+                this->node_summary_map_.at(id).cumulative(summary);
+            else
+                this->node_summary_map_.insert(
+                    std::pair<int, node_summary>(id, summary));
+        }
+
+        for (int i = 0; i < this->variable_count_; ++i)
+        {
+            const int k = t * this->variable_count_ + i;
+            variable_summary summary = {
+                this->variable_summaries_.store[i].variable_id,
+                pointers.variables[k].total_values,
+                sims_per_thread
+            };
+            this->variable_summaries_.store[i].combine(summary);
+        }
+    }
 }
 
 void output_writer::write(const result_store* sim_result, std::chrono::steady_clock::duration sim_duration)
@@ -188,27 +256,8 @@ void output_writer::write(const result_store* sim_result, std::chrono::steady_cl
     if(this->write_mode_ & (console_sum | file_sum | file_data | hit_file))
     {
         const result_pointers pointers = sim_result->load_results();
-
-        for (unsigned i = 0; i < this->total_simulations_; ++i)
-        {
-            const sim_metadata x = pointers.meta_results[i];
-            for (unsigned j = 0; j < model_count_; ++j)
-            {
-                int n = pointers.nodes[i*model_count_ + j];
-                if(this->node_summary_map_.count(n)) //exists
-                    this->node_summary_map_[n].add_reach(x.steps, x.global_time);
-                else
-                    this->node_summary_map_.insert(
-                        std::pair<int, node_summary>(
-                            n, node_summary{ 1, static_cast<double>(x.steps), x.global_time }
-                            ));
-            }
-            for (int j = 0; j < this->variable_summaries_.size; ++j)
-            {
-                const double v = pointers.variables[i*this->variable_summaries_.size + j];
-                this->variable_summaries_.store[j].update_count(v);
-            }
-        }
+        this->analyse_batch(pointers);
+        
         if(this->write_mode_ & file_data) write_to_file(&pointers, sim_duration);
         pointers.free_internals();
     }

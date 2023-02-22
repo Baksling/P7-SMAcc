@@ -17,7 +17,9 @@ void domain_optimization_visitor::visit(network* a)
 void domain_optimization_visitor::visit(node* n)
 {
     if(has_visited(n)) return;
-
+    this->node_count++;
+    this->node_map_.insert(std::pair<int,node*>(n->id, n));
+    
     this->max_edge_fanout_ = std::max(this->max_edge_fanout_, static_cast<unsigned>(n->edges.size));
     for (int i = 0; i < n->invariants.size; ++i)
     {
@@ -82,11 +84,13 @@ void domain_optimization_visitor::visit(expr* ex)
 void domain_optimization_visitor::clear()
 {
     visitor::clear();
+    this->node_count = 0;
     this->max_expr_depth_ = 0;
     this->max_edge_fanout_ = 0;
     this->check_depth_lock_ = true;
     this->variables_clock_map_.clear();
     this->check_depth_lock_ = true;
+    this->node_map_.clear();
 }
 
 unsigned domain_optimization_visitor::get_max_expr_depth() const
@@ -102,6 +106,16 @@ bool domain_optimization_visitor::has_invalid_constraint() const
 unsigned domain_optimization_visitor::get_max_fanout() const
 {
     return this->max_edge_fanout_;
+}
+
+unsigned domain_optimization_visitor::get_node_count() const
+{
+    return this->node_count;
+}
+
+std::unordered_map<int, node*> domain_optimization_visitor::get_node_map() const
+{
+    return std::unordered_map<int, node*>(this->node_map_);
 }
 
 
