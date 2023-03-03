@@ -89,9 +89,11 @@ void simulation_runner::simulate_gpu_jit(network* model, sim_config* config)
                                     dim3(config->threads),
                                     static_cast<unsigned>(fast_memory))
                                 .launch(oracle_d, store_d, config_d);
-
-        if(cuCtxSynchronize() != CUDA_SUCCESS)
+        const CUresult sync = cuCtxSynchronize();
+        if(result != CUDA_SUCCESS)
             throw std::runtime_error("An error was encountered while running simulation. Error code: " + std::to_string(result) + ".\n" );
+        if(sync != CUDA_SUCCESS)
+            throw std::runtime_error("An error was encountered while synchronising simulation. Error code: " + std::to_string(sync) + ".\n" );
         
         writer.write(&store, std::chrono::duration_cast<milliseconds>(steady_clock::now() - local_start));
     }
@@ -144,8 +146,9 @@ void simulation_runner::simulate_gpu(network* model, sim_config* config)
         const steady_clock::time_point local_start = steady_clock::now();
         simulator_gpu_kernel<<<config->blocks, config->threads, fast_memory>>>(oracle_d, store_d, config_d);
         cudaDeviceSynchronize();
-        if(cudaPeekAtLastError() != cudaSuccess)
-            throw std::runtime_error("An error was encountered while running simulation. Error: " + std::to_string(cudaPeekAtLastError()) + ".\n" );
+        const cudaError status = cudaPeekAtLastError();
+        if(status != cudaSuccess)
+            throw std::runtime_error("An error was encountered while running simulation. Error: " + std::to_string(status) + ".\n" );
 
         writer.write(
             &store,

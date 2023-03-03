@@ -33,7 +33,7 @@ class uppaal_xml_parser
 {
    
 private:
-    int init_node_id_{};
+    int init_node_id_ = 0;
     list<clock_var>* vars_list_ = new list<clock_var>();
     int vars_id_ = 0;
     int chan_id_ = 1;

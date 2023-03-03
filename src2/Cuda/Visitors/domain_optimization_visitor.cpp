@@ -17,7 +17,8 @@ void domain_optimization_visitor::visit(network* a)
 void domain_optimization_visitor::visit(node* n)
 {
     if(has_visited(n)) return;
-    this->node_count++;
+    //nodeid should be sequential. This is just more safety
+    this->node_count = std::max(this->node_count, static_cast<unsigned>(n->id)); 
     this->node_map_.insert(std::pair<int,node*>(n->id, n));
     
     this->max_edge_fanout_ = std::max(this->max_edge_fanout_, static_cast<unsigned>(n->edges.size));

@@ -100,8 +100,16 @@ public:
     //This must be in .h for RDC=false to be used.
     CPU GPU void write_output(const unsigned idx,  const state* sim) const
     {
-        const int var_offset = static_cast<int>(this->variables_count_ * idx);
+        const int offset = static_cast<int>(this->node_count_ * idx);
+        for (int i = 0; i < sim->models.size; ++i)
+        {
+            const int index = offset + sim->models.store[i]->id - 1;
+            this->node_p_[index].reached++;
+            this->node_p_[index].total_steps += sim->steps;
+            this->node_p_[index].total_time += sim->global_time;
+        }
 
+        const int var_offset = static_cast<int>(this->variables_count_ * idx);
         for (int i = 0, j = 0; i < sim->variables.size; ++i)
         {
             if(!sim->variables.store[i].should_track) continue;
@@ -110,15 +118,6 @@ public:
             this->variable_p_[index].max_value = fmax(
                 this->variable_p_[index].max_value,
                 sim->variables.store[i].max_value);
-        }
-
-        const int offset = static_cast<int>(this->node_count_ * idx);
-        for (int i = 0; i < sim->models.size; ++i)
-        {
-            const int index = offset + sim->models.store[i]->id;
-            this->node_p_[index].reached++;
-            this->node_p_[index].total_steps += sim->steps;
-            this->node_p_[index].total_time += sim->global_time;
         }
     }
 };

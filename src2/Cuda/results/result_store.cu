@@ -23,8 +23,8 @@ void result_pointers::free_internals() const
 
 size_t result_store::total_data_size() const
 {
-    return sizeof(node_results)    * this->node_count_ * this->thread_count_
-         + sizeof(variable_result) * this->variables_count_ * this->thread_count_;
+    return (sizeof(node_results)    * (this->node_count_) * this->thread_count_)
+         + (sizeof(variable_result) * (this->variables_count_) * this->thread_count_);
 }
 
 

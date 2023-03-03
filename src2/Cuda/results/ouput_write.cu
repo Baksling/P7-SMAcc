@@ -144,7 +144,7 @@ void output_writer::write_hit_file(const std::chrono::steady_clock::duration sim
     bool any = false;
     for (const auto& pair : this->node_summary_map_)
     {
-        if (is_goal_node_by_id(this->eric_->node_map, pair.first)) continue;
+        if (!is_goal_node_by_id(this->eric_->node_map, pair.first)) continue;
         const float percentage = this->calc_percentage(pair.second.reach_count, total_simulations_);
         file << percentage << "\t" << std::chrono::duration_cast<std::chrono::milliseconds>(sim_duration).count();
         any = true;
@@ -217,7 +217,7 @@ void output_writer::analyse_batch(const result_pointers& pointers)
         for (int i = 0; i < this->node_count_; ++i)
         {
             const int index = t * this->node_count_ + i;
-            const int id = i == 0 ? this->node_count_ : i; //i = 0 is actually the node with the highest value.
+            const int id = i+1; //ids go from 1..*, so to index them, they are id-1. Here we do the reverse.
             const node_results* node = &pointers.nodes[index];
             node_summary summary = node_summary
             {
