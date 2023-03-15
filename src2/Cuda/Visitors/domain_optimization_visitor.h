@@ -8,7 +8,7 @@
 
 class domain_optimization_visitor : public visitor
 {
-    unsigned node_count = 0;
+    unsigned node_count_ = 0;
     unsigned max_expr_depth_ = 0;
     unsigned max_edge_fanout_ = 0;
     bool check_depth_lock_ = true;

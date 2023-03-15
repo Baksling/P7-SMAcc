@@ -188,8 +188,8 @@ struct state
     my_stack<double> value_stack;
     my_stack<w_edge> edge_stack;
 
-    CPU GPU void traverse_state(node** automata, node* dest);
-    CPU GPU void broadcast_channel(int channel, const node* source);
+    CPU GPU void traverse_edge(int process_id, node* dest);
+    CPU GPU void broadcast_channel(const int channel, const int process);
     CPU GPU static state init(void* cache, curandState* random, const network* model, const unsigned expr_depth, const unsigned fanout);
     CPU GPU void reset(const unsigned sim_id, const network* model);
 };

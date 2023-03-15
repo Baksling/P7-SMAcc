@@ -1,8 +1,9 @@
 ﻿#include "pretty_print_visitor.h"
 
-pretty_print_visitor::pretty_print_visitor(std::ostream* stream)
+pretty_print_visitor::pretty_print_visitor(std::ostream* stream, std::unordered_map<int, std::string>* variable_names)
 {
     this->stream_ = stream;
+    this->var_names_ = variable_names;
     visit_set_.clear();
 }
 
@@ -20,8 +21,7 @@ void pretty_print_visitor::visit(node* n)
     if(this->has_visited(n)) return;
     this->scope_ = 1;
     *this->stream_ << "NODE = id: " << n->id
-                   << " | is branch: " << (n->is_branch_point ? "True" : "False")
-                   << " | is goal: " << (n->is_goal ? "True" : "False")
+                   << " | type: " << node_type_to_string(n)
                    << " | lambda: " << pretty_expr(n->lamda) << '\n';
 
     this->scope_++;
@@ -38,7 +38,7 @@ void pretty_print_visitor::visit(edge* e)
     *this->stream_ << "EDGE = dest: " << e->dest->id
                    << " | channel id: " << e->channel
                    << " | weight: " << pretty_expr(e->weight)
-                   << '\n';
+                   << "\n";
 
     this->scope_++;
     accept(e, this);
@@ -62,7 +62,8 @@ void pretty_print_visitor::visit(clock_var* cv)
 {
     if(this->has_visited(cv)) return;
     print_indent();
-    *this->stream_ << "CLOCK = id: " << cv->id
+    *this->stream_ << "Var " <<  cv->id << ": "
+                   // << (this->var_names_->count(cv->id) ? this->var_names_->at(cv->id) : "_")
                    << " | value: " << cv->value
                    << " | rate: " << cv->rate
                    << " | track: " << (cv->should_track ? "True" : "False")
@@ -103,9 +104,24 @@ std::string pretty_print_visitor::constraint_type_to_string(const constraint* c)
     case constraint::greater_c: return ">";
     case constraint::equal_c: return "==";
     case constraint::not_equal_c: return "!=";
+    case constraint::compiled_c: return "COMPILED";
+    default: return "unknown";
     }
 
     return "unknown";
+}
+
+std::string pretty_print_visitor::node_type_to_string(const node* n)
+{
+    switch(n->type)
+    {
+    case node::location: return "Location";
+    case node::goal: return "Goal";
+    case node::branch: return "Branch point";
+    case node::urgent: return "urgent";
+    case node::committed: return "committed";
+    default: return "unknown";
+    }
 }
 
 std::string pretty_print_visitor::expr_type_to_string(const expr* ex)
@@ -120,7 +136,8 @@ std::string pretty_print_visitor::expr_type_to_string(const expr* ex)
     case expr::division_ee: return "/"; 
     case expr::power_ee: return "^"; 
     case expr::negation_ee: return "~"; 
-    case expr::sqrt_ee: return "sqrt"; 
+    case expr::sqrt_ee: return "sqrt";
+    case expr::modulo_ee: return "%";
     case expr::less_equal_ee: return "<="; 
     case expr::greater_equal_ee: return ">="; 
     case expr::less_ee: return "<"; 

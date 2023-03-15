@@ -1,0 +1,48 @@
+<Network>
+	<Variable name="H" value="0" rate="1" is_clock="True" />
+	<Variable name="E" value="100" rate="1" is_clock="True" />
+	<Variable name="S" value="9000" rate="1" is_clock="True" />
+	<Variable name="R" value="0" rate="1" is_clock="True" />
+	<Variable name="I" value="0" rate="1" is_clock="True" />
+	<Automata>
+		<Node id="1" name="n1" init="True" lambda="0.7058823529411765*S*I/10000" />
+		<Edge weight="1" source_id="1" dest_id="1">
+			<Constraint type="&gt;" left_var="S" right_expr="0" />
+			<Constraint type="&gt;" left_var="I" right_expr="0" />
+			<Update var="S" expr="S-1" />
+			<Update var="E" expr="E+1" />
+		</Edge>
+	</Automata>
+	<Automata>
+		<Node id="2" name="n2" init="True" lambda="0.19607843137254904*E" />
+		<Edge weight="1" source_id="2" dest_id="2">
+			<Constraint type="&gt;" left_var="E" right_expr="0" />
+			<Update var="I" expr="I+1" />
+			<Update var="E" expr="E-1" />
+		</Edge>
+	</Automata>
+	<Automata>
+		<Node id="3" name="n3" init="True" lambda="0.00026494433225196794*I" />
+		<Edge weight="1" source_id="3" dest_id="3">
+			<Constraint type="&gt;" left_var="I" right_expr="0" />
+			<Update var="H" expr="H+1" />
+			<Update var="I" expr="I-1" />
+		</Edge>
+	</Automata>
+	<Automata>
+		<Node id="4" name="n4" init="True" lambda="0.09881422924901187*H" />
+		<Edge weight="1" source_id="4" dest_id="4">
+			<Constraint type="&gt;" left_var="H" right_expr="0" />
+			<Update var="H" expr="H-1" />
+			<Update var="R" expr="R+1" />
+		</Edge>
+	</Automata>
+	<Automata>
+		<Node id="5" name="n5" init="True" lambda="0.29411764705882354*I" />
+		<Edge weight="1" source_id="5" dest_id="5">
+			<Constraint type="&gt;" left_var="I" right_expr="0" />
+			<Update var="I" expr="I-1" />
+			<Update var="R" expr="R+1" />
+		</Edge>
+	</Automata>
+</Network>

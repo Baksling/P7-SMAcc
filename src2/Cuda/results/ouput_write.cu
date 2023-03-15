@@ -2,7 +2,7 @@
 
 bool is_goal_node_by_id(const std::unordered_map<int,node*>& node_map, const int id)
 {
-    return node_map.count(id) && node_map.at(id)->is_goal;
+    return node_map.count(id) && node_map.at(id)->type == node::goal;
 }
 
 float output_writer::calc_percentage(const unsigned long long counter, const unsigned long long divisor)
@@ -19,7 +19,7 @@ void output_writer::write_to_file(const result_pointers* results,
     file_variable.open(this->file_path_ + "_variable_data_" + std::to_string(output_counter_) + ".csv");
     
     file_node << "node_id,name,thread,network_id,reach_count,avg_steps,avg_time\n";
-    file_variable << "variableID,thread,avg_max_value,max_value\n";
+    file_variable << "variableID,name,thread,avg_max_value,max_value\n";
 
     for (int t = 0; t < results->threads; ++t)
     {
@@ -27,9 +27,9 @@ void output_writer::write_to_file(const result_pointers* results,
         {
             const int index = t * this->node_count_ + i;
             const int id = i + 1;
-            const int network_id = this->eric_->node_network->at(id);
-            std::string name = this->eric_->node_names->count(id)
-                ? this->eric_->node_names->at(id)
+            const int network_id = this->properties_->node_network->at(id);
+            std::string name = this->properties_->node_names->count(id)
+                ? this->properties_->node_names->at(id)
                   : "_";
 
             file_node
@@ -47,6 +47,7 @@ void output_writer::write_to_file(const result_pointers* results,
             const int index = t * this->variable_count_ + i;
             file_variable
                 << i << ','
+                << (this->properties_->variable_names->count(i) ? this->properties_->variable_names->at(i) : "_")
                 << t << ','
                 << results->variables[index].avg_max_value(sims_pr_thread) << ','
                 << results->variables[index].max_value << '\n';
@@ -86,7 +87,13 @@ void output_writer::write_summary_to_stream(std::ostream& stream,
     for (int j = 0; j < this->variable_summaries_.size; ++j)
     {
         const variable_summary& result = this->variable_summaries_.store[j];
-        stream << "variable " << result.variable_id << " = " << result.avg_max_value() << "\n";
+        stream << "variable "
+               << result.variable_id
+               << " (" << (this->properties_->variable_names->count(static_cast<int>(result.variable_id))
+                           ? this->properties_->variable_names->at(static_cast<int>(result.variable_id))
+                           : "_") << ") "
+               <<  " = "
+               << result.avg_max_value() << "\n";
     }
     
     stream << "\n\nReachability: ";
@@ -101,11 +108,11 @@ void output_writer::write_summary_to_stream(std::ostream& stream,
         for(const int id : groups.second)
         {
             node_summary summary = this->node_summary_map_.at(id);
-            if(!is_goal_node_by_id(this->eric_->node_map, id))
+            if(!is_goal_node_by_id(this->properties_->node_map, id))
                 no_hit.cumulative(summary);
             
             const float percentage = calc_percentage(summary.reach_count, total_simulations_);
-            insert_name(id, this->eric_->node_names, stream);
+            insert_name(id, this->properties_->node_names, stream);
             stream << " reached " << summary.reach_count << " times (" << percentage << "%)\n";
             stream << "    " << " avg steps: " << summary.avg_steps() << " | avg sim time: " << summary.avg_time() << "t.\n";
         }
@@ -144,7 +151,7 @@ void output_writer::write_hit_file(const std::chrono::steady_clock::duration sim
     bool any = false;
     for (const auto& pair : this->node_summary_map_)
     {
-        if (!is_goal_node_by_id(this->eric_->node_map, pair.first)) continue;
+        if (!is_goal_node_by_id(this->properties_->node_map, pair.first)) continue;
         const float percentage = this->calc_percentage(pair.second.reach_count, total_simulations_);
         file << percentage << "\t" << std::chrono::duration_cast<std::chrono::milliseconds>(sim_duration).count();
         any = true;
@@ -184,7 +191,7 @@ output_writer::output_writer(const sim_config* config, const network* model)
     this->total_simulations_ = config->total_simulations() * config->simulation_repetitions;
     this->alpha_ = config->alpha;
     this->epsilon_ = config->epsilon;
-    this->eric_ = config->properties;
+    this->properties_ = config->properties;
     this->node_count_ = static_cast<int>(config->node_count);
     this->variable_count_ = static_cast<int>(config->tracked_variable_count);
     

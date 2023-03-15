@@ -3,22 +3,16 @@
 #ifndef UPAALXMLParser_H
 #define UPAALXMLParser_H
 
+#include "abstract_parser.h"
 #include <list>
 #include "pugixml.hpp"
 #include <map>
-#include <cuda.h>
-#include <cuda_runtime.h>
-#include <vector>
-#include <algorithm>
 #include <string>
-#include <vector>
-#include <sstream>
 #include "helper_methods.h"
 #include "string_extractor.h"
-#include "declaration.h"
-#include "declaration_parser.h"
 #include <utility>
 #include "variable_expression_evaluator.h"
+#include "declaration_parser.h"
 
 
 #include "../common/macro.h"
@@ -29,7 +23,7 @@ using namespace std;
 using namespace pugi;
 using namespace helper;
 
-class uppaal_xml_parser
+class uppaal_xml_parser : public abstract_parser
 {
    
 private:
@@ -75,10 +69,11 @@ private:
     }
 
 public:
-    unordered_map<int, string>* get_nodes_with_name() const {return this->node_names_;}
-    unordered_map<int, int>* get_subsystems() const {return this->nodes_map_;}
+    unordered_map<int, string>* get_nodes_with_name() override {return this->node_names_;}
+    unordered_map<int, int>* get_subsystems() override {return this->nodes_map_;}
+    unordered_map<int, string>* get_clock_names() override;
     uppaal_xml_parser();
-    network parse(string file_path);
+    network parse(const std::string& file) override;
     static bool try_parse_block_threads(const std::string& str, unsigned* out_blocks, unsigned* out_threads);
     static bool try_parse_units(const std::string& str, bool* is_time, double* value);
 };

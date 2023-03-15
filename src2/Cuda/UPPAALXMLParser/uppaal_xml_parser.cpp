@@ -248,6 +248,24 @@ void uppaal_xml_parser::init_local_clocks(xml_node template_node)
     }
 }
 
+inline void add_timer(int i, const string& s, unordered_map<int, string>* map)
+{
+    if (map->count(i) == 0)
+        map->insert(std::pair<int, string>(i, s));
+}
+
+unordered_map<int, string>* uppaal_xml_parser::get_clock_names()
+{
+    unordered_map<int, string>* map = new unordered_map<int, string>();
+        
+    for (const auto& pair : this->global_timers_map_) add_timer(pair.second, pair.first, map);
+    for (const auto& pair : this->global_vars_map_) add_timer(pair.second, pair.first, map);
+    for (const auto& pair : this->timers_map_) add_timer(pair.second, pair.first, map);
+    for (const auto& pair : this->vars_map_) add_timer(pair.second, pair.first, map);
+        
+    return map;
+}
+
 uppaal_xml_parser::uppaal_xml_parser()
 = default;
 
@@ -545,16 +563,11 @@ __host__ network uppaal_xml_parser::parse_xml(const char* file_path)
     return network{start_nodes, to_array(vars_list_)};
 }
 
-__host__ network uppaal_xml_parser::parse(string file_path)
+__host__ network uppaal_xml_parser::parse(const string& file)
 {
     try
     {
-        char* writeable = new char[file_path.size() + 1];
-        std::copy(file_path.begin(), file_path.end(), writeable);
-        writeable[file_path.size()] = '\0';
-        auto model = parse_xml(writeable);
-        delete[] writeable;
-        return model;
+        return parse_xml(file.c_str());
     }
     catch (const std::runtime_error &ex)
     {

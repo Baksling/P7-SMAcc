@@ -314,6 +314,7 @@
       <SDLCheck>true</SDLCheck>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
+    <ClCompile Include="Cuda\UPPAALXMLParser\smacc_parser.cpp" />
     <ClCompile Include="Cuda\visitors\domain_optimization_visitor.cpp" />
     <ClCompile Include="Cuda\visitors\jit_compile_visitor.cpp" />
     <ClCompile Include="Cuda\visitors\memory_alignment_visitor.cpp" />
@@ -705,6 +706,8 @@
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
     <ClInclude Include="Cuda\simulation_runner.h" />
+    <ClInclude Include="Cuda\UPPAALXMLParser\abstract_parser.h" />
+    <ClInclude Include="Cuda\UPPAALXMLParser\smacc_parser.h" />
     <ClInclude Include="Cuda\visitors\domain_optimization_visitor.h" />
     <ClInclude Include="Cuda\visitors\jit_compile_visitor.h" />
     <ClInclude Include="Cuda\visitors\memory_alignment_visitor.h" />
@@ -760,6 +763,13 @@
     <Content Include="Cuda\UPPAALXMLParser\XmlFiles\tests\var_test.xml" />
     <Content Include="Cuda\UPPAALXMLParser\XmlFiles\ThisIsCancer2ElectricBoogaloo.xml" />
     <Content Include="Cuda\UPPAALXMLParser\XmlFiles\var_test_test.xml" />
+    <Content Include="modelling\SMAccBuilder.py" />
+    <Content Include="modelling\SMAccDomain.py" />
+    <Content Include="modelling\SMAccVisitors.py" />
+    <Content Include="modelling\covid.py" />
+    <Content Include="modelling\StochasticModel.py" />
+    <Content Include="modelling\Traders.py" />
+    <Content Include="modelling\__init__.py" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

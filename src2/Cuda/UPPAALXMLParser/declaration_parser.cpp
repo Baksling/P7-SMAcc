@@ -1,7 +1,7 @@
 ﻿#include "declaration_parser.h"
-
-#include "arithmetic-expression-evaluator.h"
 #include "string_extractor.h"
+#include "arithmetic-expression-evaluator.h"
+
 using namespace std;
 using namespace helper;
 using namespace evalguy;

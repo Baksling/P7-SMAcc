@@ -73,11 +73,10 @@ void cuda_allocator::allocate_node(const node* source, node* dest)
 
     const node temp = node{
         source->id,
+        source->type,
         exp_d,
         arr<edge>{edge_store, source->edges.size},
         arr<constraint>{invariant_store, source->invariants.size},
-        source->is_branch_point,
-        source->is_goal
     };
 
     CUDA_CHECK(cudaMemcpy(dest, &temp, sizeof(node), cudaMemcpyHostToDevice));

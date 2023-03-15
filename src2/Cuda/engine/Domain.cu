@@ -70,6 +70,10 @@ CPU GPU double evaluate_expression_node(const expr* expr, state* state)
     case expr::sqrt_ee: 
         v1 = state->value_stack.pop();
         return sqrt(v1);
+    case expr::modulo_ee:
+        v2 = state->value_stack.pop();
+        v1 = state->value_stack.pop();
+        return static_cast<double>(static_cast<int>(v1) % static_cast<int>(v2));
     case expr::less_equal_ee: 
         v2 = state->value_stack.pop();
         v1 = state->value_stack.pop();
@@ -258,29 +262,40 @@ CPU GPU inline bool edge::edge_enabled(state* state) const
     return true;
 }
 
-CPU GPU void inline state::broadcast_channel(const int channel, const node* source)
+CPU GPU void state::traverse_edge(const int process_id, node* dest)
+{
+    const node* current = this->models.store[process_id];
+
+    this->urgent_count -= IS_URGENT(current->type);
+    this->committed_count -= current->type == node::committed;
+
+    this->urgent_count += IS_URGENT(dest->type);
+    this->committed_count += dest->type == node::committed;
+    
+    this->models.store[process_id] = dest;
+}
+
+void inline state::broadcast_channel(const int channel, const int process)
 {
     if(!IS_BROADCASTER(channel)) return;
     
-    for (int i = 0; i < this->models.size; ++i)
+    for (int p = 0; p < this->models.size; ++p)
     {
-        const node* current = this->models.store[i];
+        const node* current = this->models.store[p];
         
-        if(current->id == source->id) continue;
-        if(current->is_goal) continue;
+        if (p == process) continue;
+        if(current->type == node::goal) continue;
         if(!constraint::evaluate_constraint_set(current->invariants, this)) continue;
         
         const unsigned offset = curand(this->random) % current->edges.size;
         
-        for (int j = 0; j < current->edges.size; ++j)
+        for (int e = 0; e < current->edges.size; ++e)
         {
-            const edge current_e = current->edges.store[(j + offset) % current->edges.size];
+            const edge current_e = current->edges.store[(e + offset) % current->edges.size];
             if(!IS_LISTENER(current_e.channel)) continue;
             if(!CAN_SYNC(channel, current_e.channel)) continue;
-            
-            node* dest = current_e.dest;
 
-            this->models.store[i] = dest;
+            this->traverse_edge(p, current_e.dest);
 
             current_e.apply_updates(this);
             break;
@@ -309,6 +324,8 @@ state state::init(void* cache, curandState* random, const network* model, const 
     return state{
         0,
         0,
+        0,
+        0,
         0.0,
         arr<node*>{ nodes, model->automatas.size },
         arr<clock_var>{ vars, model->variables.size },
@@ -324,6 +341,8 @@ void state::reset(const unsigned sim_id, const network* model)
     this->simulation_id = sim_id;
     this->steps = 0;
     this->global_time = 0.0;
+    this->urgent_count = 0;
+    this->committed_count = 0;
     for (int i = 0; i < model->automatas.size; ++i)
     {
         this->models.store[i] = model->automatas.store[i];

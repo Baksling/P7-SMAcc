@@ -7,6 +7,8 @@
 #include "./results/output_writer.h"
 #include "./allocations/argparser.h"
 #include "common/io_paths.h"
+#include "UPPAALXMLParser/abstract_parser.h"
+#include "UPPAALXMLParser/smacc_parser.h"
 
 #include "visitors/domain_optimization_visitor.h"
 #include "visitors/model_count_visitor.h"
@@ -79,7 +81,7 @@ parser_state parse_configs(const int argc, const char* argv[], sim_config* confi
 
     if(parser.exists("b"))
     {
-        if(!uppaal_xml_parser::try_parse_block_threads(
+        if(!abstract_parser::try_parse_block_threads(
             parser.get<std::string>("b"),
             &config->blocks,
             &config->threads
@@ -128,7 +130,7 @@ parser_state parse_configs(const int argc, const char* argv[], sim_config* confi
     {
         bool is_timer;
         double unit_value = 0.0;
-        const bool success = uppaal_xml_parser::try_parse_units(parser.get<std::string>("x"), &is_timer, &unit_value);
+        const bool success = abstract_parser::try_parse_units(parser.get<std::string>("x"), &is_timer, &unit_value);
         if(!success) throw argparse::arg_exception('x', "could not parse unit format. e.g. 100t or 100s");
         config->use_max_steps = !is_timer;
         config->max_steps_pr_sim = static_cast<unsigned>(floor(unit_value));
@@ -182,6 +184,31 @@ void print_config(const sim_config* config, const size_t model_size)
         (config->use_max_steps ? "steps" : "time units"));
 }
 
+
+inline bool str_ends_with(const std::string& full_string, const std::string& ending) {
+    if (full_string.length() >= ending.length()) {
+        return (0 == full_string.compare (full_string.length() - ending.length(), ending.length(), ending));
+    } else {
+        return false;
+    }
+}
+
+abstract_parser* instantiate_parser(const std::string& filepath)
+{
+    if(str_ends_with(filepath, ".SMAcc"))
+    {
+        return new smacc_parser();
+    }
+    else if (str_ends_with(filepath, ".xml"))
+    {
+        return new uppaal_xml_parser();
+    }
+    else
+    {
+        throw std::runtime_error(R"(Could not parse file. Should end in ".SMAcc" or ".xml", but neither was detected)");
+    }
+}
+
 int main(int argc, const char* argv[])
 {
     CUDA_CHECK(cudaFree(nullptr));
@@ -199,14 +226,16 @@ int main(int argc, const char* argv[])
         config.sim_location == sim_config::device || config.sim_location == sim_config::both
         );
 
-    uppaal_xml_parser xml_parser;
-    network model = xml_parser.parse(config.paths->model_path);
+    abstract_parser* model_parser = instantiate_parser(config.paths->model_path);
+    network model = model_parser->parse(config.paths->model_path);
 
-    properties.node_names = xml_parser.get_nodes_with_name();
-    properties.node_network = xml_parser.get_subsystems();
+    properties.node_names = new std::unordered_map<int, std::string>(*model_parser->get_nodes_with_name());
+    properties.node_network = new std::unordered_map<int, int>(*model_parser->get_subsystems());
+    properties.variable_names = new std::unordered_map<int, std::string>(*model_parser->get_clock_names()); // this can create mem leaks.
+    delete model_parser;
     
     if(config.verbose)
-        pretty_print_visitor(&std::cout).visit(&model);
+        pretty_print_visitor(&std::cout, properties.variable_names).visit(&model);
 
     if(config.verbose) printf("Optimizing...\n");
     domain_optimization_visitor optimizer = domain_optimization_visitor();

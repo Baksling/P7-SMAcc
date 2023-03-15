@@ -176,6 +176,7 @@ void jit_compile_visitor::compile_expr(std::stringstream& ss, const expr* e, con
     case expr::power_ee: ss << "pow("; compile_expr(ss, e->left); ss << ','; compile_expr(ss, e->right); ss << ')'; break;
     case expr::negation_ee: ss << '-'; compile_expr(ss, e->left); break;
     case expr::sqrt_ee: ss << "sqrt("; compile_expr(ss, e->left); ss << ')'; break;
+    case expr::modulo_ee: compile_expr(ss, e->left); ss << '%'; compile_expr(ss, e->right); break;
     case expr::less_equal_ee: compile_expr(ss, e->left); ss << "<="; compile_expr(ss, e->right); break;
     case expr::greater_equal_ee: compile_expr(ss, e->left); ss << ">="; compile_expr(ss, e->right); break;
     case expr::less_ee: compile_expr(ss, e->left); ss << '<'; compile_expr(ss, e->right); break;
@@ -188,6 +189,7 @@ void jit_compile_visitor::compile_expr(std::stringstream& ss, const expr* e, con
         ss << ':'; compile_expr(ss, e->conditional_else);
         break;
     case expr::compiled_ee: throw std::runtime_error("Cannot compile already compiled expression");
+    default: ;
     }
     ss << ')';
 }

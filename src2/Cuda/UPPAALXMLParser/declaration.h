@@ -1,9 +1,11 @@
 ﻿#pragma once
+
+#ifndef DECLARATION_H
+#define DECLARATION_H
+
 #include <string>
 
 using namespace std;
-#ifndef DECLARATION
-#define DECLARATION
 
 enum declaration_types {clock_type, const_double_type, const_int_type, chan_type, double_type, int_type};
 #define THROW_LINE(arg); throw parser_exception(arg, __FILE__, __LINE__);

@@ -40,7 +40,9 @@ struct sim_config
     unsigned variable_count = 1;
     unsigned network_size = 1;
     unsigned node_count = 0;
-
+    unsigned initial_urgent = 0;
+    unsigned initial_committed = 0;
+    
     //paths
     io_paths* paths;
 

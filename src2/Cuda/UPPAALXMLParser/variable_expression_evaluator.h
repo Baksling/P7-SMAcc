@@ -2,19 +2,8 @@
 #ifndef UPDATE_EXPRESSION_EVALUATOR_H
 #define UPDATE_EXPRESSION_EVALUATOR_H
 
-#include <iostream>
-#include <cstdlib>
-#include <cctype>
-#include <cstring>
-#include <math.h> 
-#include <cctype>
-#include <cstring>
-#include <iostream>
-#include <map>
 #include "../engine/Domain.h"
 #include <unordered_map>
-
-#include "parser_exception.h"
 
 #define PI 3.14159265358979323846 
 

@@ -18,7 +18,7 @@ void domain_optimization_visitor::visit(node* n)
 {
     if(has_visited(n)) return;
     //nodeid should be sequential. This is just more safety
-    this->node_count = std::max(this->node_count, static_cast<unsigned>(n->id)); 
+    this->node_count_ = std::max(this->node_count_, static_cast<unsigned>(n->id)); 
     this->node_map_.insert(std::pair<int,node*>(n->id, n));
     
     this->max_edge_fanout_ = std::max(this->max_edge_fanout_, static_cast<unsigned>(n->edges.size));
@@ -85,7 +85,7 @@ void domain_optimization_visitor::visit(expr* ex)
 void domain_optimization_visitor::clear()
 {
     visitor::clear();
-    this->node_count = 0;
+    this->node_count_ = 0;
     this->max_expr_depth_ = 0;
     this->max_edge_fanout_ = 0;
     this->check_depth_lock_ = true;
@@ -111,7 +111,7 @@ unsigned domain_optimization_visitor::get_max_fanout() const
 
 unsigned domain_optimization_visitor::get_node_count() const
 {
-    return this->node_count;
+    return this->node_count_;
 }
 
 std::unordered_map<int, node*> domain_optimization_visitor::get_node_map() const

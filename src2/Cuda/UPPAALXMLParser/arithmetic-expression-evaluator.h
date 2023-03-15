@@ -1,14 +1,12 @@
 ﻿#ifndef ARITHMETIC_EXPRESSION_EVALUATOR_H
 #define ARITHMETIC_EXPRESSION_EVALUATOR_H
 
-#include <iostream>
 #include <cstdlib>
 #include <cctype>
 #include <cstring>
 #include <math.h> 
 #include <cctype>
 #include <cstring>
-#include <iostream>
 #include <unordered_map>
 
 #define PI 3.14159265358979323846 
