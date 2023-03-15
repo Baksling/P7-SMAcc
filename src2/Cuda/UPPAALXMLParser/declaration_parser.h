@@ -25,7 +25,7 @@ private:
     list<declaration> parse_keyword(const string& lines, declaration_types type);
     void number_parser(const string& input_string, list<declaration>* result, bool is_const);
     string val_;
-    const map<declaration_types, string> decl_type_map_ { {const_double_type, "double"},{const_int_type, "int"},{clock_type,"clock"}, {double_type,"double"}, {int_type, "int"}, {chan_type, "broadcastchan"}};
+    const map<declaration_types, string> decl_type_map_ { {const_bool_type, "bool"}, {bool_type, "bool"}, {const_double_type, "double"},{const_int_type, "int"},{clock_type,"clock"}, {double_type,"double"}, {int_type, "int"}, {chan_type, "broadcastchan"}};
 public:
     std::list<declaration> parse(const std::string& decl, unordered_map<string,double>* const_global_vars);
 };

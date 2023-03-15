@@ -50,6 +50,11 @@ void declaration_parser::number_parser(const string& input_string, list<declarat
         list<declaration> cloc_decls = parse_keyword(input_string, is_const ? const_double_type : double_type);
         result->insert(result->end(), cloc_decls.begin(), cloc_decls.end());
     }
+    if (is_this_keyword(input_string,"bool"))
+    {
+        list<declaration> cloc_decls = parse_keyword(input_string, is_const ? const_bool_type : bool_type);
+        result->insert(result->end(), cloc_decls.begin(), cloc_decls.end());
+    }
     if (is_this_keyword(input_string,"int"))
     {
         list<declaration> cloc_decls = parse_keyword(input_string, is_const ? const_int_type : int_type);
