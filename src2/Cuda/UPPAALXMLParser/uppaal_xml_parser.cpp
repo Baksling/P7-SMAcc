@@ -265,6 +265,8 @@ void uppaal_xml_parser::handle_locations(const xml_node locs)
 {
     const string string_id = locs.attribute("id").as_string();
     const string string_name = locs.child("name").child_value();
+    const bool committed = locs.child("committed").empty();
+    const bool urgent = locs.child("urgent").empty();
     const int node_id = string_extractor::extract(extract_node_id(string_id));
     list<constraint> invariants;
     expr* expo_rate = new expr;
@@ -307,8 +309,7 @@ void uppaal_xml_parser::handle_locations(const xml_node locs)
     node* node_ = new node();
     node_->id = node_id;
     node_->invariants = to_array(&invariants);
-    node_->is_branch_point = false;
-    node_->is_goal = is_goal;
+    node_->type = is_goal ? node::goal : (committed ? node:committed : (urgent ? node::urgent : node::location));
     node_->lamda = expo_rate;
     node_->edges = arr<edge>::empty();
     
@@ -519,8 +520,7 @@ __host__ network uppaal_xml_parser::parse_xml(const char* file_path)
             node* node_ = new node();
             node_->id = node_id;
             node_->invariants = arr<constraint>::empty();
-            node_->is_branch_point = true;
-            node_->is_goal = false;
+            node_->type = node::branch; 
             node_->lamda = lamda;
             node_->edges = arr<edge>::empty();
             

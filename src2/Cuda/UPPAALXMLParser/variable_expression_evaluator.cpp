@@ -1,5 +1,4 @@
 ﻿#include "variable_expression_evaluator.h"
-
 #include "helper_methods.h"
 
 // Parser constructor.
@@ -101,7 +100,7 @@ expr* variable_expression_evaluator::eval_exp3()
     
     expr* result = eval_exp4();
     
-    while ((op = *token_) == '*' || op == '/')
+    while ((op = *token_) == '*' || op == '/' || op == '%')
     {
         get_token();
         expr* temp = eval_exp4();
@@ -114,9 +113,14 @@ expr* variable_expression_evaluator::eval_exp3()
             ex->operand = expr::multiply_ee;
             result = ex;
             break;
-        case '/':  // NOLINT(clang-diagnostic-implicit-fallthrough)
+        case '%':
+            ex->operand = expr::modulo_ee;
+            result = ex;
+            break;
+        case '/':
             ex->operand = expr::division_ee;
             result = ex;
+            break;
         }
     }
 
