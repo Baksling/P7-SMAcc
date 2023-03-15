@@ -187,7 +187,7 @@ void uppaal_xml_parser::init_global_clocks(const xml_document* doc)
         {
             insert_to_map(&this->global_vars_map_, d.get_name(), chan_id_++);
         }
-        else if (d.get_type() == const_double_type || d.get_type() == const_int_type)
+        else if (d.get_type() == const_double_type || d.get_type() == const_int_type || d.get_type() == const_bool_type)
         {
             insert_to_map(&this->const_global_vars, d.get_name(), d.get_value());
         }
@@ -230,7 +230,7 @@ void uppaal_xml_parser::init_local_clocks(xml_node template_node)
         {
             insert_to_map(&this->vars_map_, d.get_name(), chan_id_++);
         }
-        else if (d.get_type() == const_double_type || d.get_type() == const_int_type)
+        else if (d.get_type() == const_double_type || d.get_type() == const_int_type || d.get_type() == const_bool_type)
         {
             insert_to_map(&this->const_local_vars, d.get_name(), d.get_value());
         }

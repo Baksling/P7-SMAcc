@@ -7,7 +7,7 @@
 
 using namespace std;
 
-enum declaration_types {clock_type, const_double_type, const_int_type, chan_type, double_type, int_type};
+enum declaration_types {clock_type, const_bool_type, bool_type, const_double_type, const_int_type, chan_type, double_type, int_type};
 #define THROW_LINE(arg); throw parser_exception(arg, __FILE__, __LINE__);
 
 class declaration
