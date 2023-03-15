@@ -166,6 +166,10 @@ void uppaal_xml_parser::init_global_clocks(const xml_document* doc)
     string global_decl = doc->child("nta").child("declaration").child_value();
     global_decl = remove_whitespace(global_decl);
     const list<declaration> decls = dp_.parse(global_decl, &const_global_vars);
+
+    insert_to_map(&this->global_vars_map_, "true", 1);
+    insert_to_map(&this->global_vars_map_, "false", 0);
+
     for (declaration d : decls)
     {
         //global declarations
