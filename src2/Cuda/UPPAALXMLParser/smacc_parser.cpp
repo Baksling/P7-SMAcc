@@ -67,7 +67,7 @@ void smacc_parser::parse_node(const pugi::xml_node& root)
     node* n = new node();
     n->id = root.attribute("id").as_int();
     n->edges = arr<edge>::empty();
-    n->is_branch_point = root.attribute("branch").as_bool();
+    n->type = static_cast<node::node_types>(root.attribute("type").as_int(node::location));
     const bool init = root.attribute("init").as_bool();
     
     std::string name = root.attribute("name").as_string();

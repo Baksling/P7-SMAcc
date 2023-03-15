@@ -265,12 +265,9 @@ CPU GPU inline bool edge::edge_enabled(state* state) const
 CPU GPU void state::traverse_edge(const int process_id, node* dest)
 {
     const node* current = this->models.store[process_id];
-
-    this->urgent_count -= IS_URGENT(current->type);
-    this->committed_count -= current->type == node::committed;
-
-    this->urgent_count += IS_URGENT(dest->type);
-    this->committed_count += dest->type == node::committed;
+    
+    this->urgent_count = this->urgent_count + IS_URGENT(dest->type) - IS_URGENT(current->type);
+    this->committed_count = this->committed_count + (dest->type == node::committed) - (current->type == node::committed);
     
     this->models.store[process_id] = dest;
 }

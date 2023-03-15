@@ -180,14 +180,14 @@ CPU GPU void simulate_automata(
         while (true)
         {
             const int process = progress_sim(&sim_state, config);
-            if(IS_NO_PROCESS(process) || sim_state.models.store[process]->type == node::goal) break;
-            const node* current = sim_state.models.store[process];
+            if(IS_NO_PROCESS(process)) break;
             
             do
             {
+                const node* current = sim_state.models.store[process];
                 const edge* e = pick_next_edge_stack(current->edges, &sim_state);
                 if(e == nullptr) break;
-
+                
                 sim_state.traverse_edge(process, e->dest);
                 e->apply_updates(&sim_state);
                 sim_state.broadcast_channel(e->channel, process);
