@@ -39,6 +39,7 @@ struct expr  // NOLINT(cppcoreguidelines-pro-type-member-init)
         power_ee,
         negation_ee,
         sqrt_ee,
+        modulo_ee,
 
         //boolean types
         less_equal_ee,
@@ -113,14 +114,21 @@ struct clock_var
 };
 
 
+#define IS_URGENT(x) ((x) > 2)
 struct node
 {
     int id{};
+    enum node_types
+    {
+        location = 0,
+        goal = 1,
+        branch = 2,
+        urgent = 3,
+        committed = 4,
+    } type = location;
     expr* lamda{};
     arr<edge> edges = arr<edge>::empty();
     arr<constraint> invariants = arr<constraint>::empty();
-    bool is_branch_point{};
-    bool is_goal{};
     CPU GPU double max_progression(state* state, bool* is_finite) const;
 };
 
@@ -160,6 +168,8 @@ struct network
 
 struct state
 {
+    unsigned urgent_count = 0;
+    unsigned committed_count = 0;
     unsigned simulation_id;
     unsigned steps;
     double global_time;
@@ -178,10 +188,9 @@ struct state
     my_stack<double> value_stack;
     my_stack<w_edge> edge_stack;
 
+    CPU GPU void traverse_state(node** automata, node* dest);
     CPU GPU void broadcast_channel(int channel, const node* source);
-
     CPU GPU static state init(void* cache, curandState* random, const network* model, const unsigned expr_depth, const unsigned fanout);
-
     CPU GPU void reset(const unsigned sim_id, const network* model);
 };
 #endif
