@@ -30,6 +30,11 @@ void domain_optimization_visitor::visit(node* n)
             this->contains_invalid_constraint_ = this->contains_invalid_constraint_ || expr_contains_clock(con.expression);
         }
     }
+
+    if(this->is_goal(n->id))
+    {
+        n->type = node::goal;
+    }
     
     accept(n, this);
 }
@@ -119,6 +124,24 @@ std::unordered_map<int, node*> domain_optimization_visitor::get_node_map() const
     return std::unordered_map<int, node*>(this->node_map_);
 }
 
+
+bool domain_optimization_visitor::is_goal(const int node_id) const
+{
+    if (this->node_names_->count(node_id) == 0) return false;
+    if(this->node_subsystems_map_->count(node_id) == 0)
+        throw std::runtime_error("Node " + std::to_string(node_id) + " does not belong to any subsystem");
+    
+    const int process_id = this->node_subsystems_map_->at(node_id);
+    if(this->subsystem_names_->count(process_id) == 0)
+        throw std::runtime_error("subsystem with id " + std::to_string(process_id) + " could not be found");
+
+    
+    const std::string process_name = this->subsystem_names_->at(process_id);
+    const std::string node_name = this->node_names_->at(node_id);
+    const std::string name = process_name + "." + node_name;
+    
+    return this->query_->count(name);
+}
 
 unsigned domain_optimization_visitor::count_expr_depth(const expr* ex)
 {

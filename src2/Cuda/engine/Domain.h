@@ -1,4 +1,4 @@
-﻿#ifndef DOMAIN_H
+﻿    #ifndef DOMAIN_H
 #define DOMAIN_H
 
 struct state;

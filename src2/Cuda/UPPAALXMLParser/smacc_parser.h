@@ -40,6 +40,7 @@ public:
     std::unordered_map<int, std::string>* get_nodes_with_name() override { return &this->node_names_; }
     std::unordered_map<int, int>* get_subsystems() override { return &this->system_map_; }
     std::unordered_map<int, std::string>* get_clock_names() override{ return &this->clock_names_; }
+    std::unordered_map<int, std::string>* get_template_names() override {return new std::unordered_map<int, std::string>();}
 };
 
 #endif

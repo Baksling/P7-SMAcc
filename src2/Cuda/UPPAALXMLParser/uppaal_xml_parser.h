@@ -71,7 +71,7 @@ private:
 
 public:
     unordered_map<int, string>* get_nodes_with_name() override {return this->node_names_;}
-    unordered_map<int, string>* get_template_names() override {return this->node_names_;}
+    unordered_map<int, string>* get_template_names() override {return this->template_names;}
     unordered_map<int, int>* get_subsystems() override {return this->nodes_map_;}
     unordered_map<int, string>* get_clock_names() override;
     uppaal_xml_parser();

@@ -194,9 +194,7 @@ void jit_compile_visitor::compile_expr(std::stringstream& ss, const expr* e, con
     ss << ')';
 }
 
-void jit_compile_visitor::compile_con(std::stringstream& ss,
-    std::unordered_map<const expr*, std::string>& compile_map,
-    const constraint* con)
+inline void jit_compile_visitor::left_constraint_expr(const constraint* con, std::stringstream& ss, std::unordered_map<const expr*, std::string>& compile_map)
 {
     if(con->uses_variable)
     {
@@ -210,19 +208,10 @@ void jit_compile_visitor::compile_con(std::stringstream& ss,
     {
         compile_expr(ss, con->value, false);
     }
+}
 
-    switch(con->operand)
-    {
-    case constraint::less_equal_c: ss << "<="; break;
-    case constraint::less_c: ss << "<"; break;
-    case constraint::greater_equal_c: ss << ">="; break;
-    case constraint::greater_c: ss << ">"; break;
-    case constraint::equal_c: ss << "=="; break;
-    case constraint::not_equal_c: ss << "!="; break;
-    case constraint::compiled_c: throw std::runtime_error("cannot compile already compiled constraint.");
-    // default: throw std::out_of_range("constraint operand not recognized");
-    }
-
+inline void jit_compile_visitor::right_constraint_expr(const constraint* con, std::stringstream& ss, std::unordered_map<const expr*, std::string>& compile_map)
+{
     if(con->expression->operand == expr::compiled_ee)
     {
         ss << compile_map[con->expression];
@@ -231,6 +220,57 @@ void jit_compile_visitor::compile_con(std::stringstream& ss,
     {
         compile_expr(ss, con->expression);
     }
+}
+
+void jit_compile_visitor::compile_con(std::stringstream& ss,
+    std::unordered_map<const expr*, std::string>& compile_map,
+    const constraint* con)
+{
+    switch (con->operand)
+    {
+    case constraint::less_equal_c: left_constraint_expr(con, ss, compile_map); ss << "<="; right_constraint_expr(con, ss, compile_map); break;
+    case constraint::less_c: left_constraint_expr(con, ss, compile_map); ss << "<"; right_constraint_expr(con, ss, compile_map); break;
+    case constraint::greater_equal_c: left_constraint_expr(con, ss, compile_map); ss << ">="; right_constraint_expr(con, ss, compile_map); break;
+    case constraint::greater_c: left_constraint_expr(con, ss, compile_map); ss << ">"; right_constraint_expr(con, ss, compile_map); break;
+    case constraint::equal_c: ss << "abs("; left_constraint_expr(con, ss, compile_map); ss << "-"; right_constraint_expr(con, ss, compile_map); ss << ") <= DBL_EPSILON"; break;
+    case constraint::not_equal_c: ss << "abs("; left_constraint_expr(con, ss, compile_map); ss << "-"; right_constraint_expr(con, ss, compile_map); ss << ") > DBL_EPSILON"; break;
+    case constraint::compiled_c: throw std::runtime_error("cannot compile already compiled constraint.");
+    default: throw std::out_of_range("constraint operand not recognized");
+    }
+    
+    // if(con->uses_variable)
+    // {
+    //     ss << "(state->variables.store[" << con->variable_id << "].value)";
+    // }
+    // else if(con->value->operand == expr::compiled_ee)
+    // {
+    //     ss << compile_map[con->value];
+    // }
+    // else
+    // {
+    //     compile_expr(ss, con->value, false);
+    // }
+    //
+    // switch(con->operand)
+    // {
+    // case constraint::less_equal_c: ss << "<="; break;
+    // case constraint::less_c: ss << "<"; break;
+    // case constraint::greater_equal_c: ss << ">="; break;
+    // case constraint::greater_c: ss << ">"; break;
+    // case constraint::equal_c: ss << "=="; break;
+    // case constraint::not_equal_c: ss << "!="; break;
+    // case constraint::compiled_c: throw std::runtime_error("cannot compile already compiled constraint.");
+    // // default: throw std::out_of_range("constraint operand not recognized");
+    // }
+    //
+    // if(con->expression->operand == expr::compiled_ee)
+    // {
+    //     ss << compile_map[con->expression];
+    // }
+    // else
+    // {
+    //     compile_expr(ss, con->expression);
+    // }
 }
 
 bool jit_compile_visitor::compile_invariant(std::stringstream& ss,

@@ -27,8 +27,9 @@ parser_state parse_configs(const int argc, const char* argv[], sim_config* confi
 
     argparse::ArgumentParser parser("Cuda stochastic system simulator", "Argument parser example");
 
-    //model
+    //model and query
     parser.add_argument("-m", "--model", "Model xml file path", false);
+    parser.add_argument("-q", "--query", "Check reachability of nodes with names.\n (comma seperated string, eg.: ProcessName0.node0,ProcessName1.node1,ProcessName2.node2)", false);
 
     //output 
     parser.add_argument("-o", "--output", "The path to output result file without file extension. e.g. './output' ", false);
@@ -72,6 +73,9 @@ parser_state parse_configs(const int argc, const char* argv[], sim_config* confi
     
     if(parser.exists("m")) config->paths->model_path = parser.get<std::string>("m");
     else throw argparse::arg_exception('m', "No model argument supplied");
+
+    if(parser.exists("q")) config->paths->query = parser.get<std::string>("q");
+    else config->paths->query = "";
 
     if(parser.exists("o")) config->paths->output_path = parser.get<std::string>("o");
     else config->paths->output_path = "./output";
@@ -238,7 +242,6 @@ int main(int argc, const char* argv[])
     properties.node_names = new std::unordered_map<int, std::string>(*model_parser->get_nodes_with_name());
     properties.node_network = new std::unordered_map<int, int>(*model_parser->get_subsystems());
     properties.variable_names = new std::unordered_map<int, std::string>(*model_parser->get_clock_names()); // this can create mem leaks.
-    delete model_parser;
     
     if(config.verbose)
         pretty_print_visitor(&std::cout,
@@ -246,12 +249,17 @@ int main(int argc, const char* argv[])
         properties.variable_names).visit(&model);
 
     if(config.verbose) printf("Optimizing...\n");
-    domain_optimization_visitor optimizer = domain_optimization_visitor();
+    domain_optimization_visitor optimizer = domain_optimization_visitor(
+        abstract_parser::parse_query(paths.query),
+        properties.node_network,
+        properties.node_names,
+        model_parser->get_template_names());
     optimizer.optimize(&model);
 
     model_count_visitor count_visitor = model_count_visitor();
     count_visitor.visit(&model);
-    
+    delete model_parser;
+
     model_size size_of_model = count_visitor.get_model_size();
     properties.node_map = optimizer.get_node_map();
     setup_config(&config, &model,

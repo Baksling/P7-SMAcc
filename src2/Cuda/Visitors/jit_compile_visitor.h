@@ -18,6 +18,9 @@ private:
     int con_compile_id_enumerator_ = 0;
 
     static void compile_expr(std::stringstream& ss, const expr* e, bool is_root);
+    static void left_constraint_expr(const constraint* con, std::stringstream& ss, std::unordered_map<const expr*, std::string>& compile_map);
+    static void right_constraint_expr(const constraint* con, std::stringstream& ss,
+                                      std::unordered_map<const expr*, std::string>& compile_map);
     static void compile_con(std::stringstream& ss, std::unordered_map<const expr*, std::string>& compile_map, const constraint* con);
     static bool compile_invariant(std::stringstream& ss, const arr<clock_var>& clocks,
                                   const constraint* con, std::unordered_map<const expr*, std::string>& expr_cache);

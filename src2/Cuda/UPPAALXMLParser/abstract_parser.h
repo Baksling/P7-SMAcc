@@ -3,6 +3,7 @@
 
 #pragma once
 #include <unordered_map>
+#include <unordered_set>
 
 #include "helper_methods.h"
 #include "../engine/Domain.h"
@@ -17,14 +18,15 @@ public:
     virtual std::unordered_map<int, int>* get_subsystems() = 0;
     virtual std::unordered_map<int, string>* get_template_names() = 0;
 
-    static unordered_set<std::string>* parse_query(const std::string& query)
+    static std::unordered_set<std::string>* parse_query(const std::string& query)
     {
+        if(query.empty()) return new unordered_set<std::string>();
         if(query.find(' ') != std::string::npos)
             throw std::runtime_error("Query contains space");
         
         //p0.Node0,P1.Node2,P1.Node0
         const std::list<std::string> split = helper::split_all(query, ",");
-        unordered_set<std::string>* set = new unordered_set<std::string>();
+        std::unordered_set<std::string>* set = new std::unordered_set<std::string>();
         for(auto& q : split)
         {
             if(std::count(q.begin(), q.end(), '.') != 1)

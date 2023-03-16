@@ -202,14 +202,22 @@ CPU GPU bool constraint::evaluate_constraint(state* state) const
         : this->value->evaluate_expression(state);
     const double right = this->expression->evaluate_expression(state);
 
+    // if (this->uses_variable)
+    // {
+    //     printf("v:%d %d %lf\n", this->variable_id, this->operand, right);
+    // }
+    // else
+    // {
+    //     printf("e:%lf %d %lf\n", left, this->operand, right);
+    // }
+    
     switch (this->operand)
     {
     case less_equal_c: return left <= right;
     case less_c: return left < right;
     case greater_equal_c: return left >= right;
     case greater_c: return left > right;
-    case equal_c:
-        return abs(left - right) <= DBL_EPSILON;
+    case equal_c: return abs(left - right) <= DBL_EPSILON;
     case not_equal_c: return abs(left - right) > DBL_EPSILON;
     case compiled_c: return false;
     }
@@ -266,6 +274,7 @@ CPU GPU inline bool edge::edge_enabled(state* state) const
 CPU GPU void state::traverse_edge(const int process_id, node* dest)
 {
     const node* current = this->models.store[process_id];
+    // printf("TRAVERSING: %d to %d\n", current->id, dest->id);
     
     this->urgent_count = this->urgent_count + IS_URGENT(dest->type) - IS_URGENT(current->type);
     this->committed_count = this->committed_count + (dest->type == node::committed) - (current->type == node::committed);

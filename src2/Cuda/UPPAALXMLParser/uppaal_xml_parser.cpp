@@ -168,8 +168,8 @@ void uppaal_xml_parser::init_global_clocks(const xml_document* doc)
     global_decl = remove_whitespace(global_decl);
     const list<declaration> decls = dp_.parse(global_decl, &const_global_vars);
 
-    insert_to_map(&this->global_vars_map_, string("true"), 1);
-    insert_to_map(&this->global_vars_map_, string("false"), 0);
+    insert_to_map(&this->const_global_vars, string("true"), 1.0);
+    insert_to_map(&this->const_global_vars, string("false"), 0.0);
 
     for (declaration d : decls)
     {
