@@ -1,20 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
 <nta>
-	<declaration>// Place global declarations here.
-clock gc;
-// maximum and minimum delays
-// fast
+	<declaration>clock gc;
 const int rc_fast_max = 85;
 const int rc_fast_min = 76;
-//slow
 const int rc_slow_max = 167;
 const int rc_slow_min = 159;
-// delay caused by the wire length
 const int delay = 30;
 const int delay_min = 5;
-
-// probability of choosing fast or slow
 const int fast = 20;
 const int slow = 80;
 const int FAST0=99;
@@ -22,17 +15,14 @@ const int FAST1=1;
 const int SLOW0=1;
 const int SLOW1=99;
 
-// clocks for node1 and node2
 clock tx0;
 clock tx1;
 
-// clocks for wire12 and wire21
 clock t10;
 clock t11;
 clock t20;
 clock t21;
 
-//
 broadcast chan snd_idle0;
 broadcast chan snd_idle1;
 broadcast chan snd_req0;
@@ -46,26 +36,16 @@ broadcast chan rec_req1;
 broadcast chan rec_ack0;
 broadcast chan rec_ack1;
 
-// this boolean variable is used for shake-hand
 bool rec_idle_s0;
 bool rec_idle_s1;
 bool rec_req_s0;
 bool rec_req_s1;
 bool rec_ack_s0;
 bool rec_ack_s1;
-/*
-broadcast chan rec_idle12;
-broadcast chan rec_req12;
-broadcast chan rec_ack12;
-
-broadcast chan rec_idle21;
-broadcast chan rec_req21;
-broadcast chan rec_ack21;
-*/</declaration>
+</declaration>
 	<template>
 		<name x="5" y="5">Node0</name>
-		<declaration>// Place local declarations here.
-int s = 0;
+		<declaration>int s = 0;
 </declaration>
 		<location id="id0" x="624" y="8">
 			<name x="640" y="-16">s8</name>
@@ -582,8 +562,7 @@ t20 := 0</label>
 	</template>
 	<template>
 		<name x="5" y="5">Node1</name>
-		<declaration>// Place local declarations here.
-int s = 0;
+		<declaration>int s = 0;
 </declaration>
 		<location id="id21" x="624" y="8">
 			<name x="640" y="-16">s8</name>
@@ -600,7 +579,7 @@ tx1 &lt;= rc_slow_max</label>
 tx1 &lt;= rc_slow_max</label>
 		</location>
 		<location id="id24" x="160" y="160">
-			<name x="176" y="160">s5</name>
+			<name x="176" y="160">Goal</name>
 			<label kind="invariant" x="152" y="176">s == 5 &amp;&amp;
 tx1 &lt;= rc_slow_max</label>
 		</location>
@@ -1098,14 +1077,10 @@ t21 := 0</label>
 			<nail x="-64" y="-232"/>
 		</transition>
 	</template>
-	<system>// Place template instantiations here.
-node1 = Node0();
+	<system>node1 = Node0();
 node2 = Node1();
-//node2 = Node(idx, snd_idle21, rec_idle12, snd_req21, rec_req12, snd_ack21, rec_ack12);
 wire12 = Wire0();
 wire21 = Wire1();
-//wire21 = Wire(tz1, tz2, snd_idle21, rec_idle21, snd_req21, rec_req21, snd_ack21, rec_ack21);
-// List one or more processes to be composed into a system.
 system node1, node2, wire12, wire21;</system>
 	<queries>
 		<query>
@@ -1277,7 +1252,7 @@ system node1, node2, wire12, wire21;</system>
 			</comment>
 		</query>
 		<query>
-			<formula>Pr[&lt;=1000](&lt;&gt;node1.s5)</formula>
+			<formula>Pr[&lt;=100](&lt;&gt;node1.s5)</formula>
 			<comment></comment>
 		</query>
 	</queries>

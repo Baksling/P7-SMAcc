@@ -14,6 +14,7 @@ string get_constraint_op(const string& expr)
         return "<";
     if(expr.find('>') != std::string::npos)
         return ">";
+
     THROW_LINE("Operand in " + expr + " not found, sad..");
 }
 

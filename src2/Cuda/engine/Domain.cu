@@ -208,8 +208,9 @@ CPU GPU bool constraint::evaluate_constraint(state* state) const
     case less_c: return left < right;
     case greater_equal_c: return left >= right;
     case greater_c: return left > right;
-    case equal_c: return left == right;  // NOLINT(clang-diagnostic-float-equal)
-    case not_equal_c: return left != right;  // NOLINT(clang-diagnostic-float-equal)
+    case equal_c:
+        return abs(left - right) <= DBL_EPSILON;
+    case not_equal_c: return abs(left - right) > DBL_EPSILON;
     case compiled_c: return false;
     }
     return false;
@@ -333,13 +334,13 @@ state state::init(void* cache, curandState* random, const network* model, const 
     };
 }
 
-void state::reset(const unsigned sim_id, const network* model)
+void state::reset(const unsigned sim_id, const network* model, int initial_urgent_count, int initial_committed_count)
 {
     this->simulation_id = sim_id;
     this->steps = 0;
     this->global_time = 0.0;
-    this->urgent_count = 0;
-    this->committed_count = 0;
+    this->urgent_count = initial_urgent_count;
+    this->committed_count = initial_committed_count;
     for (int i = 0; i < model->automatas.size; ++i)
     {
         this->models.store[i] = model->automatas.store[i];

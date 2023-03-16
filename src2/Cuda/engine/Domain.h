@@ -168,8 +168,8 @@ struct network
 
 struct state
 {
-    unsigned urgent_count = 0;
-    unsigned committed_count = 0;
+    unsigned urgent_count;
+    unsigned committed_count;
     unsigned simulation_id;
     unsigned steps;
     double global_time;
@@ -191,6 +191,6 @@ struct state
     CPU GPU void traverse_edge(int process_id, node* dest);
     CPU GPU void broadcast_channel(const int channel, const int process);
     CPU GPU static state init(void* cache, curandState* random, const network* model, const unsigned expr_depth, const unsigned fanout);
-    CPU GPU void reset(const unsigned sim_id, const network* model);
+    CPU GPU void reset(const unsigned sim_id, const network* model, int initial_urgent_count, int initial_committed_count);
 };
 #endif

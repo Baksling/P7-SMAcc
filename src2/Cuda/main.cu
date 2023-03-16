@@ -159,6 +159,12 @@ void setup_config(sim_config* config, const network* model,
         if(model->variables.store[i].should_track)
             track_count++;
 
+    for (int i = 0; i < model->automatas.size; ++i)
+    {
+        config->initial_urgent += IS_URGENT(model->automatas.store[i]->type);
+        config->initial_committed += model->automatas.store[i]->type == node::committed;
+    }
+
     config->tracked_variable_count = track_count;
     config->network_size = model->automatas.size;
     config->variable_count = model->variables.size;
@@ -235,7 +241,9 @@ int main(int argc, const char* argv[])
     delete model_parser;
     
     if(config.verbose)
-        pretty_print_visitor(&std::cout, properties.variable_names).visit(&model);
+        pretty_print_visitor(&std::cout,
+        properties.node_names,
+        properties.variable_names).visit(&model);
 
     if(config.verbose) printf("Optimizing...\n");
     domain_optimization_visitor optimizer = domain_optimization_visitor();
@@ -259,6 +267,11 @@ int main(int argc, const char* argv[])
 
     const bool run_device = (config.sim_location == sim_config::device || config.sim_location == sim_config::both);
     const bool run_host   = (config.sim_location == sim_config::host   || config.sim_location == sim_config::both);
+
+    // printf("DIFF!\n");
+    // pretty_print_visitor(&std::cout,
+    //     properties.node_names,
+    //     properties.variable_names).visit(&model);
 
     //run simulation
     if(run_device)
