@@ -146,7 +146,8 @@ void uppaal_xml_parser::fill_expressions(const list<string>& expressions, list<T
         //Constraint is heap allocated, and is then copied here.
         //Results in dead memory.
         
-        if (timers_map_.count(extracted_condition.left) || global_timers_map_.count(extracted_condition.left))
+        if (timers_map_.count(extracted_condition.left) || global_timers_map_.count(extracted_condition.left) ||
+            vars_map_.count(extracted_condition.left) || global_vars_map_.count(extracted_condition.left))
             t->push_back(*get_constraint(extracted_condition.input,
                 get_timer_id(extracted_condition.input),
                 variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right,
