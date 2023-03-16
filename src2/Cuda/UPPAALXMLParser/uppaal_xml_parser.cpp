@@ -522,9 +522,11 @@ __host__ network uppaal_xml_parser::parse_xml(const char* file_path)
     for (pugi::xml_node templates: doc.child("nta").children("template"))
     {
         const string init_node = templates.child("init").attribute("ref").as_string();
+        const string template_name = templates.child("name").child_value();
         init_node_id_ = string_extractor::extract(extract_node_id(init_node));
         init_local_clocks(templates);
         
+        template_names->emplace(this->system_count_,template_name);
         
         for (const pugi::xml_node locs: templates.children("location"))
         {

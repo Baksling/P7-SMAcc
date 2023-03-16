@@ -15,6 +15,7 @@ public:
     virtual std::unordered_map<int, std::string>* get_nodes_with_name() = 0;
     virtual std::unordered_map<int, std::string>* get_clock_names() = 0;
     virtual std::unordered_map<int, int>* get_subsystems() = 0;
+    virtual std::unordered_map<int, string>* get_template_names() = 0;
 
     static unordered_set<std::string>* parse_query(const std::string& query)
     {
