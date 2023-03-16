@@ -78,7 +78,7 @@ private:
     unsigned simulations_;
     unsigned node_count_;
     unsigned variables_count_;
-    int thread_count_;
+    int n_parallelism;
     
     
     node_results* node_p_ = nullptr;
@@ -92,10 +92,11 @@ public:
         unsigned total_sim,
         unsigned variables,
         unsigned node_count,
-        int thread_count,
+        int n_parallelism,
         memory_allocator* helper);
 
     result_pointers load_results() const;
+    void clear() const;
 
     //This must be in .h for RDC=false to be used.
     CPU GPU void write_output(const unsigned idx,  const state* sim) const

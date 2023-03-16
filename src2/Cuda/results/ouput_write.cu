@@ -269,6 +269,7 @@ void output_writer::write(const result_store* sim_result, std::chrono::steady_cl
         pointers.free_internals();
     }
     output_counter_++;
+    sim_result->clear();
 }
 
 void output_writer::write_summary(std::chrono::steady_clock::duration sim_duration) const
