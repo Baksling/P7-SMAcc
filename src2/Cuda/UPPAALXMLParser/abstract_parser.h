@@ -15,6 +15,7 @@ public:
     virtual std::unordered_map<int, std::string>* get_nodes_with_name() = 0;
     virtual std::unordered_map<int, std::string>* get_clock_names() = 0;
     virtual std::unordered_map<int, int>* get_subsystems() = 0;
+    virtual std::unordered_map<int, string>* get_template_names() = 0;
 
     static bool try_parse_block_threads(const std::string& str, unsigned* out_blocks, unsigned* out_threads)
     {

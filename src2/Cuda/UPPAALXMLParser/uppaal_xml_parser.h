@@ -44,6 +44,7 @@ private:
     unordered_map<string, int> global_vars_map_{};
     unordered_map<int, list<edge>> node_edge_map{};
     unordered_map<int, string>* node_names_ = new unordered_map<int, string>();
+    unordered_map<int, string>* template_names = new unordered_map<int, string>();
     unordered_map<int, int>* nodes_map_= new unordered_map<int, int>();
     list<node*>* nodes_ = new list<node*>();
     list<int> start_nodes_{};
@@ -70,6 +71,7 @@ private:
 
 public:
     unordered_map<int, string>* get_nodes_with_name() override {return this->node_names_;}
+    unordered_map<int, string>* get_template_names() override {return this->node_names_;}
     unordered_map<int, int>* get_subsystems() override {return this->nodes_map_;}
     unordered_map<int, string>* get_clock_names() override;
     uppaal_xml_parser();
