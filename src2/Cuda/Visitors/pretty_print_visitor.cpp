@@ -1,9 +1,11 @@
 ﻿#include "pretty_print_visitor.h"
 
-pretty_print_visitor::pretty_print_visitor(std::ostream* stream, std::unordered_map<int, std::string>* variable_names)
+pretty_print_visitor::pretty_print_visitor(std::ostream* stream,
+    std::unordered_map<int, std::string>* node_names, std::unordered_map<int, std::string>* variable_names)
 {
     this->stream_ = stream;
     this->var_names_ = variable_names;
+    this->node_names_ = node_names;
     visit_set_.clear();
 }
 
@@ -20,8 +22,9 @@ void pretty_print_visitor::visit(node* n)
 {
     if(this->has_visited(n)) return;
     this->scope_ = 1;
-    *this->stream_ << "NODE = id: " << n->id
-                   << " | type: " << node_type_to_string(n)
+
+    *this->stream_ << "NODE = id: " << n->id << " (" << print_node_name(n->id)
+                   << ") | type: " << node_type_to_string(n)
                    << " | lambda: " << pretty_expr(n->lamda) << '\n';
 
     this->scope_++;
@@ -35,8 +38,8 @@ void pretty_print_visitor::visit(edge* e)
 
     print_indent();
     
-    *this->stream_ << "EDGE = dest: " << e->dest->id
-                   << " | channel id: " << e->channel
+    *this->stream_ << "EDGE = dest: " << e->dest->id << " ("; print_node_name(e->dest->id);
+    *this->stream_ << ") | channel id: " << e->channel
                    << " | weight: " << pretty_expr(e->weight)
                    << "\n";
 
@@ -50,8 +53,12 @@ void pretty_print_visitor::visit(constraint* c)
     if(this->has_visited(c)) return;
     print_indent();
 
-    *this->stream_ << "CONSTRAINT = " << (c->uses_variable ? "var" + std::to_string(c->variable_id) : pretty_expr(c->value))
-                   << ' ' << constraint_type_to_string(c) << ' ' << pretty_expr(c->expression) << '\n';
+    *this->stream_ << "CONSTRAINT = "
+        << (c->uses_variable
+            ? "var" + std::to_string(c->variable_id) + "(" + print_var_name(c->variable_id) +")"
+            : pretty_expr(c->value))
+        << ' ' << constraint_type_to_string(c)
+        << ' ' << pretty_expr(c->expression) << '\n';
 
     this->scope_++;
     accept(c, this);
@@ -62,9 +69,9 @@ void pretty_print_visitor::visit(clock_var* cv)
 {
     if(this->has_visited(cv)) return;
     print_indent();
-    *this->stream_ << "Var " <<  cv->id << ": "
-                   // << (this->var_names_->count(cv->id) ? this->var_names_->at(cv->id) : "_")
-                   << " | value: " << cv->value
+    *this->stream_ << "Var " <<  cv->id << " ("
+                   << print_var_name(cv->id)
+                   << "): | value: " << cv->value
                    << " | rate: " << cv->rate
                    << " | track: " << (cv->should_track ? "True" : "False")
                    << "\n";
@@ -78,7 +85,9 @@ void pretty_print_visitor::visit(update* u)
 {
     if(this->has_visited(u)) return;
     print_indent();
-    *this->stream_ << "UPDATE = var " << u->variable_id << ": " << pretty_expr(u->expression) << '\n';
+    *this->stream_
+        << "UPDATE = var " << u->variable_id << " ("
+        << print_var_name(u->variable_id) << "): " << pretty_expr(u->expression) << '\n';
 
     this->scope_++;
     accept(u, this);
@@ -87,11 +96,20 @@ void pretty_print_visitor::visit(update* u)
 
 void pretty_print_visitor::visit(expr* u)
 {
-    if(this->has_visited(u)) return;
     //Handled by each individual method, to make it prettier.
     // *this->stream_ << pretty_expr(u) << '\n';
     
     //no accept here, cuz we dont want to print expr tree :)
+}
+
+std::string pretty_print_visitor::print_node_name(const int id) const
+{
+    return (this->node_names_->count(id) ? this->node_names_->at(id) : std::string("_"));
+}
+
+std::string pretty_print_visitor::print_var_name(const int id) const
+{
+    return (this->var_names_->count(id) ? this->var_names_->at(id) : std::string("_"));
 }
 
 std::string pretty_print_visitor::constraint_type_to_string(const constraint* c)
@@ -107,8 +125,6 @@ std::string pretty_print_visitor::constraint_type_to_string(const constraint* c)
     case constraint::compiled_c: return "COMPILED";
     default: return "unknown";
     }
-
-    return "unknown";
 }
 
 std::string pretty_print_visitor::node_type_to_string(const node* n)

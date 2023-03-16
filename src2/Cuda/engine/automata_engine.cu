@@ -174,23 +174,26 @@ CPU GPU void simulate_automata(
     for (unsigned i = 0; i < config->simulation_amount; ++i)
     {
         const unsigned int sim_id = i + config->simulation_amount * static_cast<unsigned int>(idx);
-        sim_state.reset(sim_id, model);
+        sim_state.reset(sim_id, model, config->initial_urgent, config->initial_committed);
         
         //run simulation
         while (true)
         {
             const int process = progress_sim(&sim_state, config);
+            // printf("current process_id: %d %lf | urgent_count: %d\n", process, sim_state.global_time, sim_state.urgent_count);
             if(IS_NO_PROCESS(process)) break;
             
             do
             {
                 const node* current = sim_state.models.store[process];
                 const edge* e = pick_next_edge_stack(current->edges, &sim_state);
+                // printf("current: %d, %d, %p\n", current->id, current->type, e);
                 if(e == nullptr) break;
                 
                 sim_state.traverse_edge(process, e->dest);
                 e->apply_updates(&sim_state);
                 sim_state.broadcast_channel(e->channel, process);
+                // printf("dest: %d, %d\n", sim_state.models.store[process]->id, sim_state.models.store[process]->type);
             } while (sim_state.models.store[process]->type == node::branch);
         }
         output->write_output(idx, &sim_state);

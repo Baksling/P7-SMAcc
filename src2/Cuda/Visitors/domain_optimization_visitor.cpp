@@ -143,6 +143,12 @@ void domain_optimization_visitor::compound_optimize_constraints(edge* e)
     for (int i = 0; i < e->dest->invariants.size; ++i)
     {
         const constraint inv = e->dest->invariants.store[i];
+
+        // if(e->dest->id == 6 || e->dest->id == 7)
+        // {
+        //     printf("uses vars: %d | variable: %d\n", inv.uses_variable, inv.variable_id);
+        // }
+        
         //if invariant does not use variable, 
         if(!inv.uses_variable)
         {
@@ -152,7 +158,7 @@ void domain_optimization_visitor::compound_optimize_constraints(edge* e)
         bool any = false;
         for (int j = 0; j < e->updates.size; ++j)
         {
-            const update upd = e->updates.store[j];
+            const update& upd = e->updates.store[j];
             if(upd.variable_id != inv.variable_id) continue;
             constraint compound = {};
             compound.operand = inv.operand;
