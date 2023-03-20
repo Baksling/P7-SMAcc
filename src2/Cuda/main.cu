@@ -56,6 +56,7 @@ parser_state parse_configs(const int argc, const char* argv[], sim_config* confi
     
     //other
     parser.add_argument("-v", "--verbose", "Enable pretty print of model (print model (0) / silent(1))", false);
+    parser.add_argument("-p", "--print", "Pretty print of model (0 = no print, 1 = before optimisation, 2 = after optimisation). default = 0", false);
     parser.enable_help();
 
     const auto err = parser.parse(argc, argv);
@@ -114,22 +115,12 @@ parser_state parse_configs(const int argc, const char* argv[], sim_config* confi
     if(parser.exists("r")) config->simulation_repetitions = parser.get<unsigned>("r");
     else config->simulation_repetitions = 1;
 
-    //Insert into config object
-    config->simulation_amount = static_cast<unsigned>(ceil(
-            static_cast<double>(total_simulations) /
-            static_cast<double>((config->blocks * config->threads * config->simulation_repetitions))));
-    config->alpha = alpha;
-    config->epsilon = epsilon;
-
     if(parser.exists("d")) config->sim_location = static_cast<sim_config::device_opt>(parser.get<int>("d"));
     else config->sim_location = sim_config::device;
 
     if(parser.exists("c")) config->cpu_threads = parser.get<unsigned>("c");
     else config->cpu_threads = 1;
 
-    config->use_shared_memory = parser.exists("s");
-    config->use_jit = parser.exists("j");
-    
     if(parser.exists("x"))
     {
         bool is_timer;
@@ -149,6 +140,19 @@ parser_state parse_configs(const int argc, const char* argv[], sim_config* confi
 
     if(parser.exists("v")) config->verbose = parser.get<int>("v");
     else config->verbose = true;
+
+    if(parser.exists("p")) config->model_print_mode = static_cast<sim_config::pretty_print>(parser.get<int>("p"));
+    else config->model_print_mode = sim_config::no_print;
+
+    config->use_shared_memory = parser.exists("s");
+    config->use_jit = parser.exists("j");
+    
+    //Insert into config object
+    config->simulation_amount = static_cast<unsigned>(ceil(
+            static_cast<double>(total_simulations) /
+            static_cast<double>((config->blocks * config->threads * config->simulation_repetitions))));
+    config->alpha = alpha;
+    config->epsilon = epsilon;
     
     return parser_state::parsed;
 }
@@ -242,11 +246,16 @@ int main(int argc, const char* argv[])
     properties.node_names = new std::unordered_map<int, std::string>(*model_parser->get_nodes_with_name());
     properties.node_network = new std::unordered_map<int, int>(*model_parser->get_subsystems());
     properties.variable_names = new std::unordered_map<int, std::string>(*model_parser->get_clock_names()); // this can create mem leaks.
-    
-    if(config.verbose)
-        pretty_print_visitor(&std::cout,
+
+    pretty_print_visitor print_visitor = pretty_print_visitor(&std::cout,
         properties.node_names,
-        properties.variable_names).visit(&model);
+        properties.variable_names);
+    
+    if(config.model_print_mode == sim_config::print_model)
+    {
+        print_visitor.clear();
+        print_visitor.visit(&model);
+    }
 
     if(config.verbose) printf("Optimizing...\n");
     domain_optimization_visitor optimizer = domain_optimization_visitor(
@@ -273,6 +282,13 @@ int main(int argc, const char* argv[])
     if(config.use_shared_memory)
         config.use_shared_memory = config.can_use_cuda_shared_memory(size_of_model.total_memory_size());
 
+    if(config.model_print_mode == sim_config::print_reduction)
+    {
+        print_visitor.clear();
+        print_visitor.visit(&model);
+    }
+        
+        
     const bool run_device = (config.sim_location == sim_config::device || config.sim_location == sim_config::both);
     const bool run_host   = (config.sim_location == sim_config::host   || config.sim_location == sim_config::both);
 

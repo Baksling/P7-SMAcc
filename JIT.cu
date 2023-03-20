@@ -24,8 +24,8 @@ __device__ double atomicAdd(double* a, double b) { return b; }
 #define IS_GPU __CUDACC__
 
 #define DBL_MAX 1.7976931348623158e+308 //max 64 bit double value
-#define DBL_EPSILON 2.2204460492503131e-016 // smallest such that 1.0+DBL_EPSILON != 1.0
-
+// #define DBL_EPSILON 2.2204460492503131e-016 // smallest such that 1.0+DBL_EPSILON != 1.0
+#define DBL_EPSILON (0.00001)
 
 //While loop done to enfore ; after macro call. See: 
 //https://stackoverflow.com/a/61363791/17430854
@@ -75,6 +75,12 @@ struct sim_config
     unsigned int max_steps_pr_sim = 1;
     double max_global_progression = 1;
     bool verbose = false;
+    enum pretty_print
+    {
+        no_print = 0,
+        print_model = 1,
+        print_reduction = 2
+    } model_print_mode;
     
     enum device_opt
     {
@@ -160,7 +166,7 @@ public:
         this->count_ = 0;
     }
 };
-#ifndef DOMAIN_H
+    #ifndef DOMAIN_H
 #define DOMAIN_H
 
 struct state;
@@ -328,8 +334,8 @@ struct network
 
 struct state
 {
-    unsigned urgent_count = 0;
-    unsigned committed_count = 0;
+    unsigned urgent_count;
+    unsigned committed_count;
     unsigned simulation_id;
     unsigned steps;
     double global_time;
@@ -351,7 +357,7 @@ struct state
     CPU GPU void traverse_edge(int process_id, node* dest);
     CPU GPU void broadcast_channel(const int channel, const int process);
     CPU GPU static state init(void* cache, curandState* random, const network* model, const unsigned expr_depth, const unsigned fanout);
-    CPU GPU void reset(const unsigned sim_id, const network* model);
+    CPU GPU void reset(const unsigned sim_id, const network* model, int initial_urgent_count, int initial_committed_count);
 };
 #endif
 
@@ -373,306 +379,238 @@ CPU GPU bool evaluate_compiled_constraint(const constraint* con, state* state)
 {
     //DO NOT REMOVE FOLLOWING COMMENT! IT IS USED AS SEARCH TARGET FOR JIT COMPILATION!!!
     switch(con->compile_id){
-case 0: return (state->variables.store[13].value)==(0); break;
-case 1: return (state->variables.store[13].value)==(1); break;
-case 2: return (state->variables.store[13].value)==(1); break;
-case 3: return (state->variables.store[13].value)==(0); break;
-case 4: return (state->variables.store[13].value)==(5); break;
+case 0: return abs((state->variables.store[13].value)-(0)) <= DBL_EPSILON; break;
+case 1: return abs((state->variables.store[13].value)-(1)) <= DBL_EPSILON; break;
+case 2: return (state->variables.store[1].value)<=(167); break;
+case 3: return (state->variables.store[1].value)<=(85); break;
+case 4: return abs((state->variables.store[13].value)-(5)) <= DBL_EPSILON; break;
 case 5: return (state->variables.store[1].value)<=(167); break;
-case 6: return (state->variables.store[13].value)==(4); break;
-case 7: return (state->variables.store[1].value)<=(85); break;
-case 8: return (state->variables.store[13].value)==(5); break;
-case 9: return (state->variables.store[1].value)<=(167); break;
-case 10: return (state->variables.store[1].value)<=(159); break;
-case 11: return (state->variables.store[13].value)==(5); break;
+case 6: return (state->variables.store[1].value)<=(159); break;
+case 7: return abs((state->variables.store[13].value)-(5)) <= DBL_EPSILON; break;
+case 8: return (state->variables.store[1].value)<=(167); break;
+case 9: return (state->variables.store[1].value)>=(159); break;
+case 10: return (state->variables.store[1].value)<=(167); break;
+case 11: return abs((state->variables.store[13].value)-(6)) <= DBL_EPSILON; break;
 case 12: return (state->variables.store[1].value)<=(167); break;
-case 13: return (state->variables.store[1].value)>=(159); break;
-case 14: return (state->variables.store[13].value)==(6); break;
-case 15: return (state->variables.store[13].value)==(3); break;
-case 16: return (state->variables.store[1].value)<=(167); break;
-case 17: return (state->variables.store[13].value)==(6); break;
-case 18: return (state->variables.store[13].value)==(8); break;
-case 19: return (state->variables.store[1].value)<=(167); break;
-case 20: return (state->variables.store[13].value)==(0); break;
-case 21: return (state->variables.store[13].value)==(8); break;
+case 13: return abs((state->variables.store[13].value)-(8)) <= DBL_EPSILON; break;
+case 14: return (state->variables.store[1].value)<=(167); break;
+case 15: return (state->variables.store[1].value)<(159); break;
+case 16: return abs((state->variables.store[13].value)-(8)) <= DBL_EPSILON; break;
+case 17: return (state->variables.store[1].value)<=(167); break;
+case 18: return (state->variables.store[1].value)>=(159); break;
+case 19: return abs((state->variables.store[13].value)-(8)) <= DBL_EPSILON; break;
+case 20: return (state->variables.store[1].value)<=(167); break;
+case 21: return abs((state->variables.store[13].value)-(3)) <= DBL_EPSILON; break;
 case 22: return (state->variables.store[1].value)<=(167); break;
 case 23: return (state->variables.store[1].value)<(159); break;
-case 24: return (state->variables.store[13].value)==(8); break;
+case 24: return abs((state->variables.store[13].value)-(3)) <= DBL_EPSILON; break;
 case 25: return (state->variables.store[1].value)<=(167); break;
-case 26: return (state->variables.store[1].value)>=(159); break;
-case 27: return (state->variables.store[13].value)==(8); break;
+case 26: return (state->variables.store[1].value)<=(167); break;
+case 27: return (state->variables.store[1].value)>=(159); break;
 case 28: return (state->variables.store[1].value)<=(167); break;
-case 29: return (state->variables.store[13].value)==(3); break;
+case 29: return abs((state->variables.store[13].value)-(7)) <= DBL_EPSILON; break;
 case 30: return (state->variables.store[1].value)<=(167); break;
 case 31: return (state->variables.store[1].value)<(159); break;
-case 32: return (state->variables.store[13].value)==(3); break;
+case 32: return abs((state->variables.store[13].value)-(7)) <= DBL_EPSILON; break;
 case 33: return (state->variables.store[1].value)<=(167); break;
-case 34: return (state->variables.store[13].value)==(5); break;
-case 35: return (state->variables.store[1].value)<=(167); break;
-case 36: return (state->variables.store[1].value)>=(159); break;
-case 37: return (state->variables.store[13].value)==(7); break;
-case 38: return (state->variables.store[1].value)<=(167); break;
-case 39: return (state->variables.store[13].value)==(7); break;
-case 40: return (state->variables.store[1].value)<=(167); break;
-case 41: return (state->variables.store[1].value)<(159); break;
-case 42: return (state->variables.store[13].value)==(7); break;
-case 43: return (state->variables.store[1].value)<=(167); break;
-case 44: return (state->variables.store[1].value)>=(159); break;
-case 45: return (state->variables.store[13].value)==(7); break;
+case 34: return (state->variables.store[1].value)>=(159); break;
+case 35: return abs((state->variables.store[13].value)-(7)) <= DBL_EPSILON; break;
+case 36: return (state->variables.store[1].value)<=(167); break;
+case 37: return abs((state->variables.store[13].value)-(4)) <= DBL_EPSILON; break;
+case 38: return (state->variables.store[1].value)<=(85); break;
+case 39: return (state->variables.store[1].value)>=(76); break;
+case 40: return (state->variables.store[1].value)<=(85); break;
+case 41: return abs((state->variables.store[13].value)-(2)) <= DBL_EPSILON; break;
+case 42: return (state->variables.store[1].value)<=(85); break;
+case 43: return (state->variables.store[1].value)>=(76); break;
+case 44: return (state->variables.store[1].value)<=(167); break;
+case 45: return (state->variables.store[1].value)<=(85); break;
 case 46: return (state->variables.store[1].value)<=(167); break;
-case 47: return (state->variables.store[13].value)==(4); break;
-case 48: return (state->variables.store[1].value)<=(85); break;
-case 49: return (state->variables.store[1].value)>=(76); break;
-case 50: return (state->variables.store[13].value)==(6); break;
-case 51: return (state->variables.store[13].value)==(2); break;
-case 52: return (state->variables.store[1].value)<=(85); break;
-case 53: return (state->variables.store[13].value)==(2); break;
-case 54: return (state->variables.store[1].value)<=(85); break;
-case 55: return (state->variables.store[1].value)>=(76); break;
-case 56: return (state->variables.store[13].value)==(7); break;
-case 57: return (state->variables.store[1].value)<=(167); break;
-case 58: return (state->variables.store[13].value)==(4); break;
-case 59: return (state->variables.store[1].value)<=(85); break;
-case 60: return (state->variables.store[13].value)==(3); break;
-case 61: return (state->variables.store[1].value)<=(167); break;
-case 62: return (state->variables.store[13].value)==(2); break;
-case 63: return (state->variables.store[1].value)<=(85); break;
-case 64: return (state->variables.store[14].value)==(0); break;
-case 65: return (state->variables.store[14].value)==(5); break;
+case 47: return (state->variables.store[1].value)<=(85); break;
+case 48: return abs((state->variables.store[14].value)-(0)) <= DBL_EPSILON; break;
+case 49: return (state->variables.store[5].value)<=(30); break;
+case 50: return (state->variables.store[5].value)<=(30); break;
+case 51: return (state->variables.store[3].value)<=(30); break;
+case 52: return abs((state->variables.store[14].value)-(5)) <= DBL_EPSILON; break;
+case 53: return (state->variables.store[5].value)<=(30); break;
+case 54: return (state->variables.store[3].value)<=(30); break;
+case 55: return (state->variables.store[3].value)<=(30); break;
+case 56: return abs((state->variables.store[7].value)-(1)) <= DBL_EPSILON; break;
+case 57: return (state->variables.store[5].value)>=(5); break;
+case 58: return abs((state->variables.store[14].value)-(5)) <= DBL_EPSILON; break;
+case 59: return (state->variables.store[5].value)<=(30); break;
+case 60: return abs((state->variables.store[14].value)-(9)) <= DBL_EPSILON; break;
+case 61: return (state->variables.store[3].value)<=(30); break;
+case 62: return abs((state->variables.store[7].value)-(1)) <= DBL_EPSILON; break;
+case 63: return (state->variables.store[3].value)>=(5); break;
+case 64: return (state->variables.store[5].value)<=(30); break;
+case 65: return abs((state->variables.store[14].value)-(3)) <= DBL_EPSILON; break;
 case 66: return (state->variables.store[5].value)<=(30); break;
-case 67: return (state->variables.store[14].value)==(3); break;
-case 68: return (state->variables.store[5].value)<=(30); break;
-case 69: return (state->variables.store[14].value)==(1); break;
-case 70: return (state->variables.store[3].value)<=(30); break;
-case 71: return (state->variables.store[14].value)==(5); break;
+case 67: return (state->variables.store[3].value)<=(30); break;
+case 68: return (state->variables.store[3].value)<=(30); break;
+case 69: return abs((state->variables.store[11].value)-(1)) <= DBL_EPSILON; break;
+case 70: return (state->variables.store[5].value)>=(5); break;
+case 71: return abs((state->variables.store[14].value)-(3)) <= DBL_EPSILON; break;
 case 72: return (state->variables.store[5].value)<=(30); break;
-case 73: return (state->variables.store[14].value)==(9); break;
+case 73: return abs((state->variables.store[14].value)-(7)) <= DBL_EPSILON; break;
 case 74: return (state->variables.store[3].value)<=(30); break;
-case 75: return (state->variables.store[14].value)==(6); break;
-case 76: return (state->variables.store[3].value)<=(30); break;
-case 77: return (state->variables.store[7].value)==(state->variables.store[1].value); break;
-case 78: return (state->variables.store[5].value)>=(5); break;
-case 79: return (state->variables.store[14].value)==(0); break;
-case 80: return (state->variables.store[14].value)==(5); break;
-case 81: return (state->variables.store[5].value)<=(30); break;
-case 82: return (state->variables.store[14].value)==(9); break;
+case 75: return abs((state->variables.store[11].value)-(1)) <= DBL_EPSILON; break;
+case 76: return (state->variables.store[3].value)>=(5); break;
+case 77: return (state->variables.store[3].value)<=(30); break;
+case 78: return abs((state->variables.store[14].value)-(7)) <= DBL_EPSILON; break;
+case 79: return (state->variables.store[3].value)<=(30); break;
+case 80: return abs((state->variables.store[14].value)-(1)) <= DBL_EPSILON; break;
+case 81: return (state->variables.store[3].value)<=(30); break;
+case 82: return (state->variables.store[3].value)<=(30); break;
 case 83: return (state->variables.store[3].value)<=(30); break;
-case 84: return (state->variables.store[7].value)==(state->variables.store[1].value); break;
+case 84: return abs((state->variables.store[9].value)-(1)) <= DBL_EPSILON; break;
 case 85: return (state->variables.store[3].value)>=(5); break;
-case 86: return (state->variables.store[14].value)==(3); break;
-case 87: return (state->variables.store[5].value)<=(30); break;
-case 88: return (state->variables.store[14].value)==(3); break;
-case 89: return (state->variables.store[5].value)<=(30); break;
-case 90: return (state->variables.store[14].value)==(7); break;
+case 86: return abs((state->variables.store[14].value)-(1)) <= DBL_EPSILON; break;
+case 87: return (state->variables.store[3].value)<=(30); break;
+case 88: return abs((state->variables.store[14].value)-(8)) <= DBL_EPSILON; break;
+case 89: return (state->variables.store[3].value)<=(30); break;
+case 90: return abs((state->variables.store[14].value)-(8)) <= DBL_EPSILON; break;
 case 91: return (state->variables.store[3].value)<=(30); break;
-case 92: return (state->variables.store[14].value)==(4); break;
-case 93: return (state->variables.store[3].value)<=(30); break;
-case 94: return (state->variables.store[11].value)==(state->variables.store[1].value); break;
-case 95: return (state->variables.store[5].value)>=(5); break;
-case 96: return (state->variables.store[14].value)==(0); break;
-case 97: return (state->variables.store[14].value)==(3); break;
-case 98: return (state->variables.store[5].value)<=(30); break;
-case 99: return (state->variables.store[14].value)==(7); break;
-case 100: return (state->variables.store[3].value)<=(30); break;
-case 101: return (state->variables.store[11].value)==(state->variables.store[1].value); break;
-case 102: return (state->variables.store[3].value)>=(5); break;
-case 103: return (state->variables.store[14].value)==(1); break;
-case 104: return (state->variables.store[3].value)<=(30); break;
-case 105: return (state->variables.store[14].value)==(7); break;
-case 106: return (state->variables.store[3].value)<=(30); break;
-case 107: return (state->variables.store[14].value)==(1); break;
+case 92: return abs((state->variables.store[9].value)-(1)) <= DBL_EPSILON; break;
+case 93: return (state->variables.store[3].value)>=(5); break;
+case 94: return (state->variables.store[5].value)<=(30); break;
+case 95: return abs((state->variables.store[14].value)-(2)) <= DBL_EPSILON; break;
+case 96: return (state->variables.store[3].value)<=(30); break;
+case 97: return abs((state->variables.store[9].value)-(1)) <= DBL_EPSILON; break;
+case 98: return (state->variables.store[3].value)>=(5); break;
+case 99: return (state->variables.store[5].value)<=(30); break;
+case 100: return abs((state->variables.store[14].value)-(2)) <= DBL_EPSILON; break;
+case 101: return (state->variables.store[3].value)<=(30); break;
+case 102: return abs((state->variables.store[14].value)-(4)) <= DBL_EPSILON; break;
+case 103: return (state->variables.store[3].value)<=(30); break;
+case 104: return abs((state->variables.store[11].value)-(1)) <= DBL_EPSILON; break;
+case 105: return (state->variables.store[3].value)>=(5); break;
+case 106: return (state->variables.store[5].value)<=(30); break;
+case 107: return abs((state->variables.store[14].value)-(4)) <= DBL_EPSILON; break;
 case 108: return (state->variables.store[3].value)<=(30); break;
-case 109: return (state->variables.store[14].value)==(8); break;
+case 109: return abs((state->variables.store[14].value)-(6)) <= DBL_EPSILON; break;
 case 110: return (state->variables.store[3].value)<=(30); break;
-case 111: return (state->variables.store[14].value)==(2); break;
-case 112: return (state->variables.store[3].value)<=(30); break;
-case 113: return (state->variables.store[9].value)==(state->variables.store[1].value); break;
-case 114: return (state->variables.store[3].value)>=(5); break;
-case 115: return (state->variables.store[14].value)==(0); break;
-case 116: return (state->variables.store[14].value)==(1); break;
-case 117: return (state->variables.store[3].value)<=(30); break;
-case 118: return (state->variables.store[14].value)==(8); break;
-case 119: return (state->variables.store[3].value)<=(30); break;
-case 120: return (state->variables.store[14].value)==(8); break;
-case 121: return (state->variables.store[3].value)<=(30); break;
-case 122: return (state->variables.store[9].value)==(state->variables.store[1].value); break;
-case 123: return (state->variables.store[3].value)>=(5); break;
-case 124: return (state->variables.store[14].value)==(5); break;
-case 125: return (state->variables.store[5].value)<=(30); break;
-case 126: return (state->variables.store[14].value)==(2); break;
-case 127: return (state->variables.store[3].value)<=(30); break;
-case 128: return (state->variables.store[9].value)==(state->variables.store[1].value); break;
-case 129: return (state->variables.store[3].value)>=(5); break;
-case 130: return (state->variables.store[14].value)==(3); break;
-case 131: return (state->variables.store[5].value)<=(30); break;
-case 132: return (state->variables.store[14].value)==(2); break;
-case 133: return (state->variables.store[3].value)<=(30); break;
-case 134: return (state->variables.store[14].value)==(4); break;
-case 135: return (state->variables.store[3].value)<=(30); break;
-case 136: return (state->variables.store[11].value)==(state->variables.store[1].value); break;
-case 137: return (state->variables.store[3].value)>=(5); break;
-case 138: return (state->variables.store[14].value)==(5); break;
-case 139: return (state->variables.store[5].value)<=(30); break;
-case 140: return (state->variables.store[14].value)==(4); break;
-case 141: return (state->variables.store[3].value)<=(30); break;
-case 142: return (state->variables.store[14].value)==(6); break;
-case 143: return (state->variables.store[3].value)<=(30); break;
-case 144: return (state->variables.store[7].value)==(state->variables.store[1].value); break;
-case 145: return (state->variables.store[3].value)>=(5); break;
-case 146: return (state->variables.store[14].value)==(1); break;
-case 147: return (state->variables.store[3].value)<=(30); break;
-case 148: return (state->variables.store[14].value)==(6); break;
-case 149: return (state->variables.store[3].value)<=(30); break;
-case 150: return (state->variables.store[15].value)==(0); break;
-case 151: return (state->variables.store[15].value)==(1); break;
-case 152: return (state->variables.store[15].value)==(1); break;
-case 153: return (state->variables.store[15].value)==(0); break;
-case 154: return (state->variables.store[15].value)==(5); break;
-case 155: return (state->variables.store[2].value)<=(167); break;
-case 156: return (state->variables.store[15].value)==(4); break;
-case 157: return (state->variables.store[2].value)<=(85); break;
-case 158: return (state->variables.store[15].value)==(5); break;
-case 159: return (state->variables.store[2].value)<=(167); break;
-case 160: return (state->variables.store[2].value)<=(159); break;
-case 161: return (state->variables.store[15].value)==(5); break;
+case 111: return abs((state->variables.store[7].value)-(1)) <= DBL_EPSILON; break;
+case 112: return (state->variables.store[3].value)>=(5); break;
+case 113: return (state->variables.store[3].value)<=(30); break;
+case 114: return abs((state->variables.store[14].value)-(6)) <= DBL_EPSILON; break;
+case 115: return (state->variables.store[3].value)<=(30); break;
+case 116: return abs((state->variables.store[15].value)-(0)) <= DBL_EPSILON; break;
+case 117: return abs((state->variables.store[15].value)-(1)) <= DBL_EPSILON; break;
+case 118: return (state->variables.store[2].value)<=(167); break;
+case 119: return (state->variables.store[2].value)<=(85); break;
+case 120: return abs((state->variables.store[15].value)-(5)) <= DBL_EPSILON; break;
+case 121: return (state->variables.store[2].value)<=(167); break;
+case 122: return (state->variables.store[2].value)<=(159); break;
+case 123: return abs((state->variables.store[15].value)-(5)) <= DBL_EPSILON; break;
+case 124: return (state->variables.store[2].value)<=(167); break;
+case 125: return (state->variables.store[2].value)>=(159); break;
+case 126: return (state->variables.store[2].value)<=(167); break;
+case 127: return abs((state->variables.store[15].value)-(6)) <= DBL_EPSILON; break;
+case 128: return (state->variables.store[2].value)<=(167); break;
+case 129: return abs((state->variables.store[15].value)-(8)) <= DBL_EPSILON; break;
+case 130: return (state->variables.store[2].value)<=(167); break;
+case 131: return (state->variables.store[2].value)<(159); break;
+case 132: return abs((state->variables.store[15].value)-(8)) <= DBL_EPSILON; break;
+case 133: return (state->variables.store[2].value)<=(167); break;
+case 134: return (state->variables.store[2].value)>=(159); break;
+case 135: return abs((state->variables.store[15].value)-(8)) <= DBL_EPSILON; break;
+case 136: return (state->variables.store[2].value)<=(167); break;
+case 137: return abs((state->variables.store[15].value)-(3)) <= DBL_EPSILON; break;
+case 138: return (state->variables.store[2].value)<=(167); break;
+case 139: return (state->variables.store[2].value)<(159); break;
+case 140: return abs((state->variables.store[15].value)-(3)) <= DBL_EPSILON; break;
+case 141: return (state->variables.store[2].value)<=(167); break;
+case 142: return (state->variables.store[2].value)<=(167); break;
+case 143: return (state->variables.store[2].value)>=(159); break;
+case 144: return (state->variables.store[2].value)<=(167); break;
+case 145: return abs((state->variables.store[15].value)-(7)) <= DBL_EPSILON; break;
+case 146: return (state->variables.store[2].value)<=(167); break;
+case 147: return (state->variables.store[2].value)<(159); break;
+case 148: return abs((state->variables.store[15].value)-(7)) <= DBL_EPSILON; break;
+case 149: return (state->variables.store[2].value)<=(167); break;
+case 150: return (state->variables.store[2].value)>=(159); break;
+case 151: return abs((state->variables.store[15].value)-(7)) <= DBL_EPSILON; break;
+case 152: return (state->variables.store[2].value)<=(167); break;
+case 153: return abs((state->variables.store[15].value)-(4)) <= DBL_EPSILON; break;
+case 154: return (state->variables.store[2].value)<=(85); break;
+case 155: return (state->variables.store[2].value)>=(76); break;
+case 156: return (state->variables.store[2].value)<=(85); break;
+case 157: return abs((state->variables.store[15].value)-(2)) <= DBL_EPSILON; break;
+case 158: return (state->variables.store[2].value)<=(85); break;
+case 159: return (state->variables.store[2].value)>=(76); break;
+case 160: return (state->variables.store[2].value)<=(167); break;
+case 161: return (state->variables.store[2].value)<=(85); break;
 case 162: return (state->variables.store[2].value)<=(167); break;
-case 163: return (state->variables.store[2].value)>=(159); break;
-case 164: return (state->variables.store[15].value)==(6); break;
-case 165: return (state->variables.store[15].value)==(3); break;
-case 166: return (state->variables.store[2].value)<=(167); break;
-case 167: return (state->variables.store[15].value)==(6); break;
-case 168: return (state->variables.store[15].value)==(8); break;
-case 169: return (state->variables.store[2].value)<=(167); break;
-case 170: return (state->variables.store[15].value)==(0); break;
-case 171: return (state->variables.store[15].value)==(8); break;
-case 172: return (state->variables.store[2].value)<=(167); break;
-case 173: return (state->variables.store[2].value)<(159); break;
-case 174: return (state->variables.store[15].value)==(8); break;
-case 175: return (state->variables.store[2].value)<=(167); break;
-case 176: return (state->variables.store[2].value)>=(159); break;
-case 177: return (state->variables.store[15].value)==(8); break;
-case 178: return (state->variables.store[2].value)<=(167); break;
-case 179: return (state->variables.store[15].value)==(3); break;
-case 180: return (state->variables.store[2].value)<=(167); break;
-case 181: return (state->variables.store[2].value)<(159); break;
-case 182: return (state->variables.store[15].value)==(3); break;
-case 183: return (state->variables.store[2].value)<=(167); break;
-case 184: return (state->variables.store[15].value)==(5); break;
-case 185: return (state->variables.store[2].value)<=(167); break;
-case 186: return (state->variables.store[2].value)>=(159); break;
-case 187: return (state->variables.store[15].value)==(7); break;
-case 188: return (state->variables.store[2].value)<=(167); break;
-case 189: return (state->variables.store[15].value)==(7); break;
-case 190: return (state->variables.store[2].value)<=(167); break;
-case 191: return (state->variables.store[2].value)<(159); break;
-case 192: return (state->variables.store[15].value)==(7); break;
-case 193: return (state->variables.store[2].value)<=(167); break;
-case 194: return (state->variables.store[2].value)>=(159); break;
-case 195: return (state->variables.store[15].value)==(7); break;
-case 196: return (state->variables.store[2].value)<=(167); break;
-case 197: return (state->variables.store[15].value)==(4); break;
-case 198: return (state->variables.store[2].value)<=(85); break;
-case 199: return (state->variables.store[2].value)>=(76); break;
-case 200: return (state->variables.store[15].value)==(6); break;
-case 201: return (state->variables.store[15].value)==(2); break;
-case 202: return (state->variables.store[2].value)<=(85); break;
-case 203: return (state->variables.store[15].value)==(2); break;
-case 204: return (state->variables.store[2].value)<=(85); break;
-case 205: return (state->variables.store[2].value)>=(76); break;
-case 206: return (state->variables.store[15].value)==(7); break;
-case 207: return (state->variables.store[2].value)<=(167); break;
-case 208: return (state->variables.store[15].value)==(4); break;
-case 209: return (state->variables.store[2].value)<=(85); break;
-case 210: return (state->variables.store[15].value)==(3); break;
-case 211: return (state->variables.store[2].value)<=(167); break;
-case 212: return (state->variables.store[15].value)==(2); break;
-case 213: return (state->variables.store[2].value)<=(85); break;
-case 214: return (state->variables.store[16].value)==(0); break;
-case 215: return (state->variables.store[16].value)==(5); break;
-case 216: return (state->variables.store[6].value)<=(30); break;
-case 217: return (state->variables.store[16].value)==(3); break;
-case 218: return (state->variables.store[6].value)<=(30); break;
-case 219: return (state->variables.store[16].value)==(1); break;
-case 220: return (state->variables.store[4].value)<=(30); break;
-case 221: return (state->variables.store[16].value)==(5); break;
+case 163: return (state->variables.store[2].value)<=(85); break;
+case 164: return abs((state->variables.store[16].value)-(0)) <= DBL_EPSILON; break;
+case 165: return (state->variables.store[6].value)<=(30); break;
+case 166: return (state->variables.store[6].value)<=(30); break;
+case 167: return (state->variables.store[4].value)<=(30); break;
+case 168: return abs((state->variables.store[16].value)-(5)) <= DBL_EPSILON; break;
+case 169: return (state->variables.store[6].value)<=(30); break;
+case 170: return (state->variables.store[4].value)<=(30); break;
+case 171: return (state->variables.store[4].value)<=(30); break;
+case 172: return abs((state->variables.store[8].value)-(1)) <= DBL_EPSILON; break;
+case 173: return (state->variables.store[6].value)>=(5); break;
+case 174: return abs((state->variables.store[16].value)-(5)) <= DBL_EPSILON; break;
+case 175: return (state->variables.store[6].value)<=(30); break;
+case 176: return abs((state->variables.store[16].value)-(9)) <= DBL_EPSILON; break;
+case 177: return (state->variables.store[4].value)<=(30); break;
+case 178: return abs((state->variables.store[8].value)-(1)) <= DBL_EPSILON; break;
+case 179: return (state->variables.store[4].value)>=(5); break;
+case 180: return (state->variables.store[6].value)<=(30); break;
+case 181: return abs((state->variables.store[16].value)-(3)) <= DBL_EPSILON; break;
+case 182: return (state->variables.store[6].value)<=(30); break;
+case 183: return (state->variables.store[4].value)<=(30); break;
+case 184: return (state->variables.store[4].value)<=(30); break;
+case 185: return abs((state->variables.store[12].value)-(1)) <= DBL_EPSILON; break;
+case 186: return (state->variables.store[6].value)>=(5); break;
+case 187: return abs((state->variables.store[16].value)-(3)) <= DBL_EPSILON; break;
+case 188: return (state->variables.store[6].value)<=(30); break;
+case 189: return abs((state->variables.store[16].value)-(7)) <= DBL_EPSILON; break;
+case 190: return (state->variables.store[4].value)<=(30); break;
+case 191: return abs((state->variables.store[12].value)-(1)) <= DBL_EPSILON; break;
+case 192: return (state->variables.store[4].value)>=(5); break;
+case 193: return (state->variables.store[4].value)<=(30); break;
+case 194: return abs((state->variables.store[16].value)-(7)) <= DBL_EPSILON; break;
+case 195: return (state->variables.store[4].value)<=(30); break;
+case 196: return abs((state->variables.store[16].value)-(1)) <= DBL_EPSILON; break;
+case 197: return (state->variables.store[4].value)<=(30); break;
+case 198: return (state->variables.store[4].value)<=(30); break;
+case 199: return (state->variables.store[4].value)<=(30); break;
+case 200: return abs((state->variables.store[10].value)-(1)) <= DBL_EPSILON; break;
+case 201: return (state->variables.store[4].value)>=(5); break;
+case 202: return abs((state->variables.store[16].value)-(1)) <= DBL_EPSILON; break;
+case 203: return (state->variables.store[4].value)<=(30); break;
+case 204: return abs((state->variables.store[16].value)-(8)) <= DBL_EPSILON; break;
+case 205: return (state->variables.store[4].value)<=(30); break;
+case 206: return abs((state->variables.store[16].value)-(8)) <= DBL_EPSILON; break;
+case 207: return (state->variables.store[4].value)<=(30); break;
+case 208: return abs((state->variables.store[10].value)-(1)) <= DBL_EPSILON; break;
+case 209: return (state->variables.store[4].value)>=(5); break;
+case 210: return (state->variables.store[6].value)<=(30); break;
+case 211: return abs((state->variables.store[16].value)-(2)) <= DBL_EPSILON; break;
+case 212: return (state->variables.store[4].value)<=(30); break;
+case 213: return abs((state->variables.store[10].value)-(1)) <= DBL_EPSILON; break;
+case 214: return (state->variables.store[4].value)>=(5); break;
+case 215: return (state->variables.store[6].value)<=(30); break;
+case 216: return abs((state->variables.store[16].value)-(2)) <= DBL_EPSILON; break;
+case 217: return (state->variables.store[4].value)<=(30); break;
+case 218: return abs((state->variables.store[16].value)-(4)) <= DBL_EPSILON; break;
+case 219: return (state->variables.store[4].value)<=(30); break;
+case 220: return abs((state->variables.store[12].value)-(1)) <= DBL_EPSILON; break;
+case 221: return (state->variables.store[4].value)>=(5); break;
 case 222: return (state->variables.store[6].value)<=(30); break;
-case 223: return (state->variables.store[16].value)==(9); break;
+case 223: return abs((state->variables.store[16].value)-(4)) <= DBL_EPSILON; break;
 case 224: return (state->variables.store[4].value)<=(30); break;
-case 225: return (state->variables.store[16].value)==(6); break;
+case 225: return abs((state->variables.store[16].value)-(6)) <= DBL_EPSILON; break;
 case 226: return (state->variables.store[4].value)<=(30); break;
-case 227: return (state->variables.store[8].value)==(state->variables.store[1].value); break;
-case 228: return (state->variables.store[6].value)>=(5); break;
-case 229: return (state->variables.store[16].value)==(0); break;
-case 230: return (state->variables.store[16].value)==(5); break;
-case 231: return (state->variables.store[6].value)<=(30); break;
-case 232: return (state->variables.store[16].value)==(9); break;
-case 233: return (state->variables.store[4].value)<=(30); break;
-case 234: return (state->variables.store[8].value)==(state->variables.store[1].value); break;
-case 235: return (state->variables.store[4].value)>=(5); break;
-case 236: return (state->variables.store[16].value)==(3); break;
-case 237: return (state->variables.store[6].value)<=(30); break;
-case 238: return (state->variables.store[16].value)==(3); break;
-case 239: return (state->variables.store[6].value)<=(30); break;
-case 240: return (state->variables.store[16].value)==(7); break;
-case 241: return (state->variables.store[4].value)<=(30); break;
-case 242: return (state->variables.store[16].value)==(4); break;
-case 243: return (state->variables.store[4].value)<=(30); break;
-case 244: return (state->variables.store[12].value)==(state->variables.store[1].value); break;
-case 245: return (state->variables.store[6].value)>=(5); break;
-case 246: return (state->variables.store[16].value)==(0); break;
-case 247: return (state->variables.store[16].value)==(3); break;
-case 248: return (state->variables.store[6].value)<=(30); break;
-case 249: return (state->variables.store[16].value)==(7); break;
-case 250: return (state->variables.store[4].value)<=(30); break;
-case 251: return (state->variables.store[12].value)==(state->variables.store[1].value); break;
-case 252: return (state->variables.store[4].value)>=(5); break;
-case 253: return (state->variables.store[16].value)==(1); break;
-case 254: return (state->variables.store[4].value)<=(30); break;
-case 255: return (state->variables.store[16].value)==(7); break;
-case 256: return (state->variables.store[4].value)<=(30); break;
-case 257: return (state->variables.store[16].value)==(1); break;
-case 258: return (state->variables.store[4].value)<=(30); break;
-case 259: return (state->variables.store[16].value)==(8); break;
-case 260: return (state->variables.store[4].value)<=(30); break;
-case 261: return (state->variables.store[16].value)==(2); break;
-case 262: return (state->variables.store[4].value)<=(30); break;
-case 263: return (state->variables.store[10].value)==(state->variables.store[1].value); break;
-case 264: return (state->variables.store[4].value)>=(5); break;
-case 265: return (state->variables.store[16].value)==(0); break;
-case 266: return (state->variables.store[16].value)==(1); break;
-case 267: return (state->variables.store[4].value)<=(30); break;
-case 268: return (state->variables.store[16].value)==(8); break;
-case 269: return (state->variables.store[4].value)<=(30); break;
-case 270: return (state->variables.store[16].value)==(8); break;
-case 271: return (state->variables.store[4].value)<=(30); break;
-case 272: return (state->variables.store[10].value)==(state->variables.store[1].value); break;
-case 273: return (state->variables.store[4].value)>=(5); break;
-case 274: return (state->variables.store[16].value)==(5); break;
-case 275: return (state->variables.store[6].value)<=(30); break;
-case 276: return (state->variables.store[16].value)==(2); break;
-case 277: return (state->variables.store[4].value)<=(30); break;
-case 278: return (state->variables.store[10].value)==(state->variables.store[1].value); break;
-case 279: return (state->variables.store[4].value)>=(5); break;
-case 280: return (state->variables.store[16].value)==(3); break;
-case 281: return (state->variables.store[6].value)<=(30); break;
-case 282: return (state->variables.store[16].value)==(2); break;
-case 283: return (state->variables.store[4].value)<=(30); break;
-case 284: return (state->variables.store[16].value)==(4); break;
-case 285: return (state->variables.store[4].value)<=(30); break;
-case 286: return (state->variables.store[12].value)==(state->variables.store[1].value); break;
-case 287: return (state->variables.store[4].value)>=(5); break;
-case 288: return (state->variables.store[16].value)==(5); break;
-case 289: return (state->variables.store[6].value)<=(30); break;
-case 290: return (state->variables.store[16].value)==(4); break;
-case 291: return (state->variables.store[4].value)<=(30); break;
-case 292: return (state->variables.store[16].value)==(6); break;
-case 293: return (state->variables.store[4].value)<=(30); break;
-case 294: return (state->variables.store[8].value)==(state->variables.store[1].value); break;
-case 295: return (state->variables.store[4].value)>=(5); break;
-case 296: return (state->variables.store[16].value)==(1); break;
-case 297: return (state->variables.store[4].value)<=(30); break;
-case 298: return (state->variables.store[16].value)==(6); break;
-case 299: return (state->variables.store[4].value)<=(30); break;
+case 227: return abs((state->variables.store[8].value)-(1)) <= DBL_EPSILON; break;
+case 228: return (state->variables.store[4].value)>=(5); break;
+case 229: return (state->variables.store[4].value)<=(30); break;
+case 230: return abs((state->variables.store[16].value)-(6)) <= DBL_EPSILON; break;
+case 231: return (state->variables.store[4].value)<=(30); break;
 
 }
 
@@ -689,20 +627,20 @@ CPU GPU double evaluate_compiled_constraint_upper_bound(const constraint* con, s
     
     //DO NOT REMOVE FOLLOWING COMMENT! IT IS USED AS SEARCH TARGET FOR JIT COMPILATION!!!
     switch(con->compile_id){
-case 10: v0 = ((159)-(state->variables.store[1].value))/ (1); break;
+case 6: v0 = ((159)-(state->variables.store[1].value))/ (1); break;
+case 15: v0 = ((159)-(state->variables.store[1].value))/ (1); break;
 case 23: v0 = ((159)-(state->variables.store[1].value))/ (1); break;
 case 31: v0 = ((159)-(state->variables.store[1].value))/ (1); break;
-case 41: v0 = ((159)-(state->variables.store[1].value))/ (1); break;
-case 91: v0 = ((30)-(state->variables.store[3].value))/ (1); break;
-case 100: v0 = ((30)-(state->variables.store[3].value))/ (1); break;
-case 106: v0 = ((30)-(state->variables.store[3].value))/ (1); break;
-case 160: v0 = ((159)-(state->variables.store[2].value))/ (1); break;
-case 173: v0 = ((159)-(state->variables.store[2].value))/ (1); break;
-case 181: v0 = ((159)-(state->variables.store[2].value))/ (1); break;
-case 191: v0 = ((159)-(state->variables.store[2].value))/ (1); break;
-case 241: v0 = ((30)-(state->variables.store[4].value))/ (1); break;
-case 250: v0 = ((30)-(state->variables.store[4].value))/ (1); break;
-case 256: v0 = ((30)-(state->variables.store[4].value))/ (1); break;
+case 67: v0 = ((30)-(state->variables.store[3].value))/ (1); break;
+case 74: v0 = ((30)-(state->variables.store[3].value))/ (1); break;
+case 79: v0 = ((30)-(state->variables.store[3].value))/ (1); break;
+case 122: v0 = ((159)-(state->variables.store[2].value))/ (1); break;
+case 131: v0 = ((159)-(state->variables.store[2].value))/ (1); break;
+case 139: v0 = ((159)-(state->variables.store[2].value))/ (1); break;
+case 147: v0 = ((159)-(state->variables.store[2].value))/ (1); break;
+case 183: v0 = ((30)-(state->variables.store[4].value))/ (1); break;
+case 190: v0 = ((30)-(state->variables.store[4].value))/ (1); break;
+case 195: v0 = ((30)-(state->variables.store[4].value))/ (1); break;
 
 }
 
@@ -880,14 +818,23 @@ CPU GPU bool constraint::evaluate_constraint(state* state) const
         : this->value->evaluate_expression(state);
     const double right = this->expression->evaluate_expression(state);
 
+    // if (this->uses_variable)
+    // {
+    //     printf("v:%d %d %lf\n", this->variable_id, this->operand, right);
+    // }
+    // else
+    // {
+    //     printf("e:%lf %d %lf\n", left, this->operand, right);
+    // }
+    
     switch (this->operand)
     {
     case less_equal_c: return left <= right;
     case less_c: return left < right;
     case greater_equal_c: return left >= right;
     case greater_c: return left > right;
-    case equal_c: return left == right;  // NOLINT(clang-diagnostic-float-equal)
-    case not_equal_c: return left != right;  // NOLINT(clang-diagnostic-float-equal)
+    case equal_c: return abs(left - right) <= DBL_EPSILON;
+    case not_equal_c: return abs(left - right) > DBL_EPSILON;
     case compiled_c: return false;
     }
     return false;
@@ -943,6 +890,7 @@ CPU GPU inline bool edge::edge_enabled(state* state) const
 CPU GPU void state::traverse_edge(const int process_id, node* dest)
 {
     const node* current = this->models.store[process_id];
+    // printf("TRAVERSING: %d to %d\n", current->id, dest->id);
     
     this->urgent_count = this->urgent_count + IS_URGENT(dest->type) - IS_URGENT(current->type);
     this->committed_count = this->committed_count + (dest->type == node::committed) - (current->type == node::committed);
@@ -1011,13 +959,13 @@ state state::init(void* cache, curandState* random, const network* model, const 
     };
 }
 
-void state::reset(const unsigned sim_id, const network* model)
+void state::reset(const unsigned sim_id, const network* model, int initial_urgent_count, int initial_committed_count)
 {
     this->simulation_id = sim_id;
     this->steps = 0;
     this->global_time = 0.0;
-    this->urgent_count = 0;
-    this->committed_count = 0;
+    this->urgent_count = initial_urgent_count;
+    this->committed_count = initial_committed_count;
     for (int i = 0; i < model->automatas.size; ++i)
     {
         this->models.store[i] = model->automatas.store[i];
@@ -1329,7 +1277,7 @@ private:
     unsigned simulations_;
     unsigned node_count_;
     unsigned variables_count_;
-    int thread_count_;
+    int n_parallelism;
     
     
     node_results* node_p_ = nullptr;
@@ -1343,10 +1291,11 @@ public:
         unsigned total_sim,
         unsigned variables,
         unsigned node_count,
-        int thread_count,
+        int n_parallelism,
         memory_allocator* helper);
 
     result_pointers load_results() const;
+    void clear() const;
 
     //This must be in .h for RDC=false to be used.
     CPU GPU void write_output(const unsigned idx,  const state* sim) const
@@ -1542,23 +1491,26 @@ CPU GPU void simulate_automata(
     for (unsigned i = 0; i < config->simulation_amount; ++i)
     {
         const unsigned int sim_id = i + config->simulation_amount * static_cast<unsigned int>(idx);
-        sim_state.reset(sim_id, model);
+        sim_state.reset(sim_id, model, config->initial_urgent, config->initial_committed);
         
         //run simulation
         while (true)
         {
             const int process = progress_sim(&sim_state, config);
+            // printf("current process_id: %d %lf | urgent_count: %d\n", process, sim_state.global_time, sim_state.urgent_count);
             if(IS_NO_PROCESS(process)) break;
             
             do
             {
                 const node* current = sim_state.models.store[process];
                 const edge* e = pick_next_edge_stack(current->edges, &sim_state);
+                // printf("current: %d, %d, %p\n", current->id, current->type, e);
                 if(e == nullptr) break;
                 
                 sim_state.traverse_edge(process, e->dest);
                 e->apply_updates(&sim_state);
                 sim_state.broadcast_channel(e->channel, process);
+                // printf("dest: %d, %d\n", sim_state.models.store[process]->id, sim_state.models.store[process]->type);
             } while (sim_state.models.store[process]->type == node::branch);
         }
         output->write_output(idx, &sim_state);

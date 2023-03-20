@@ -23,6 +23,12 @@ struct sim_config
     unsigned int max_steps_pr_sim = 1;
     double max_global_progression = 1;
     bool verbose = false;
+    enum pretty_print
+    {
+        no_print = 0,
+        print_model = 1,
+        print_reduction = 2
+    } model_print_mode;
     
     enum device_opt
     {

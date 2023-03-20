@@ -14,14 +14,8 @@ void domain_optimization_visitor::visit(network* a)
     accept(a, this);
 }
 
-void domain_optimization_visitor::visit(node* n)
+void domain_optimization_visitor::validate_invariants(node* n)
 {
-    if(has_visited(n)) return;
-    //nodeid should be sequential. This is just more safety
-    this->node_count_ = std::max(this->node_count_, static_cast<unsigned>(n->id)); 
-    this->node_map_.insert(std::pair<int,node*>(n->id, n));
-    
-    this->max_edge_fanout_ = std::max(this->max_edge_fanout_, static_cast<unsigned>(n->edges.size));
     for (int i = 0; i < n->invariants.size; ++i)
     {
         const constraint con = n->invariants.store[i];
@@ -30,12 +24,30 @@ void domain_optimization_visitor::visit(node* n)
             this->contains_invalid_constraint_ = this->contains_invalid_constraint_ || expr_contains_clock(con.expression);
         }
     }
+}
 
-    if(this->is_goal(n->id))
+void domain_optimization_visitor::collect_node_data(node* n)
+{
+    this->node_map_.insert(std::pair<int,node*>(n->id, n));
+    this->node_count_ = std::max(this->node_count_, static_cast<unsigned>(n->id));
+    this->max_edge_fanout_ = std::max(this->max_edge_fanout_, static_cast<unsigned>(n->edges.size));
+}
+
+void domain_optimization_visitor::visit(node* n)
+{
+    if(has_visited(n)) return;
+    
+    collect_node_data(n);
+    validate_invariants(n);
+    
+    if(use_model_reductions_)
     {
-        n->type = node::goal;
+        reduce_constraint_set(&n->invariants);
     }
     
+    if(this->is_goal(n->id))
+        n->type = node::goal;
+
     accept(n, this);
 }
 
@@ -44,6 +56,9 @@ void domain_optimization_visitor::visit(edge* e)
     if(has_visited(e)) return;
     
     compound_optimize_constraints(e);
+
+    if(use_model_reductions_)
+        reduce_constraint_set(&e->guards);
     
     accept(e, this);
 }
@@ -73,18 +88,22 @@ void domain_optimization_visitor::visit(expr* ex)
 {
     if(has_visited(ex)) return;
 
-    bool has_lock = false;
-    if(check_depth_lock_)
-    {
-        has_lock = true;
-        check_depth_lock_ = false;
-        const unsigned max_depth = count_expr_depth(ex);
-        this->max_expr_depth_ = std::max(this->max_expr_depth_, max_depth);
-    }
+    if(use_model_reductions_)
+        reduce_expr(ex);
     
-    accept(ex, this);
-
-    if(has_lock) check_depth_lock_ = true;
+    this->max_expr_depth_ = std::max(this->max_expr_depth_, count_expr_depth(ex));
+    // bool has_lock = false;
+    // if(check_depth_lock_)
+    // {
+    //     has_lock = true;
+    //     check_depth_lock_ = false;
+    //     const unsigned max_depth = count_expr_depth(ex);
+    //     this->max_expr_depth_ = std::max(this->max_expr_depth_, max_depth);
+    // }
+    //
+    // accept(ex, this);
+    //
+    // if(has_lock) check_depth_lock_ = true;
 }
 
 void domain_optimization_visitor::clear()
@@ -121,7 +140,7 @@ unsigned domain_optimization_visitor::get_node_count() const
 
 std::unordered_map<int, node*> domain_optimization_visitor::get_node_map() const
 {
-    return std::unordered_map<int, node*>(this->node_map_);
+    return {this->node_map_};
 }
 
 
@@ -166,11 +185,6 @@ void domain_optimization_visitor::compound_optimize_constraints(edge* e)
     for (int i = 0; i < e->dest->invariants.size; ++i)
     {
         const constraint inv = e->dest->invariants.store[i];
-
-        // if(e->dest->id == 6 || e->dest->id == 7)
-        // {
-        //     printf("uses vars: %d | variable: %d\n", inv.uses_variable, inv.variable_id);
-        // }
         
         //if invariant does not use variable, 
         if(!inv.uses_variable)
@@ -222,3 +236,149 @@ bool domain_optimization_visitor::expr_contains_clock(const expr* ex)
 }
 
 
+inline bool domain_optimization_visitor::is_const_expr(const expr* ex)
+{
+    if(ex->operand == expr::literal_ee) return true;
+    if(ex->operand == expr::clock_variable_ee) return false;
+    if(ex->operand == expr::random_ee) return false;
+
+    const bool left = ex->left != nullptr ? is_const_expr(ex->left) : true;
+    const bool right = ex->right != nullptr ? is_const_expr(ex->right) : true;
+    const bool cond = ex->operand == expr::conditional_ee ? is_const_expr(ex->conditional_else) : true;
+
+    
+    return cond && left && right;
+}
+
+bool domain_optimization_visitor::is_const_constraint(const constraint* con)
+{
+    if(con->uses_variable) return false;
+    const bool left = is_const_expr(con->value);
+    const bool right = is_const_expr(con->expression);
+    return left && right;
+}
+
+bool domain_optimization_visitor::evaluate_const_constraint(const constraint* con)
+{
+    if(con->uses_variable) throw std::runtime_error("Cannot evaluate constraint as constant, if a variable is used");
+    const double left = evaluate_const_expr(con->value);
+    const double right = evaluate_const_expr(con->expression);
+    
+    switch(con->operand) {
+        case constraint::less_equal_c: return left <= right;
+        case constraint::less_c: return left < right;
+        case constraint::greater_equal_c: return left >= right;
+        case constraint::greater_c: return left > right;
+        case constraint::equal_c: return abs(left - right) <= DBL_EPSILON;
+        case constraint::not_equal_c: return abs(left - right) > DBL_EPSILON;
+        case constraint::compiled_c: throw std::runtime_error("Cannot evaluate compiled constraint as constant.");
+        default: throw std::runtime_error("unknown operand while evaluating const constraint");
+    }
+
+}
+
+double domain_optimization_visitor::evaluate_const_expr(const expr* ex)
+{
+    double temp;
+    switch (ex->operand)
+    {
+        case expr::literal_ee: return ex->value;
+        case expr::clock_variable_ee: throw std::runtime_error("Tried evaluating variable expression as constant expression in optimizer.");
+        case expr::random_ee: throw std::runtime_error("Tried evaluating random expression as constant expression in optimizer.");
+        case expr::plus_ee: return evaluate_const_expr(ex->left) + evaluate_const_expr(ex->right);
+        case expr::minus_ee: return evaluate_const_expr(ex->left) - evaluate_const_expr(ex->right);
+        case expr::multiply_ee: return evaluate_const_expr(ex->left) * evaluate_const_expr(ex->right);
+        case expr::division_ee:
+            temp = evaluate_const_expr(ex->right);
+            if(temp == 0.0) throw std::runtime_error("Found division by zero in const expression, while running optimizer.");
+            return evaluate_const_expr(ex->left) / temp;
+        case expr::power_ee: return pow(evaluate_const_expr(ex->left), evaluate_const_expr(ex->right));
+        case expr::negation_ee: return -evaluate_const_expr(ex->left);
+        case expr::sqrt_ee: return sqrt(evaluate_const_expr(ex->left));
+        case expr::modulo_ee: return static_cast<int>(evaluate_const_expr(ex->left)) % static_cast<int>(evaluate_const_expr(ex->right));
+        case expr::less_equal_ee: return evaluate_const_expr(ex->left) <= evaluate_const_expr(ex->right);
+        case expr::greater_equal_ee: return evaluate_const_expr(ex->left) >= evaluate_const_expr(ex->right);
+        case expr::less_ee: return evaluate_const_expr(ex->left) < evaluate_const_expr(ex->right);
+        case expr::greater_ee: return evaluate_const_expr(ex->left) > evaluate_const_expr(ex->right);
+        case expr::equal_ee: return abs(evaluate_const_expr(ex->left) - evaluate_const_expr(ex->right)) <= DBL_EPSILON;
+        case expr::not_equal_ee: return abs(evaluate_const_expr(ex->left) - evaluate_const_expr(ex->right)) > DBL_EPSILON;
+        case expr::not_ee: return (abs(evaluate_const_expr(ex->left)) <= DBL_EPSILON); //if left is equal zero, return 1 else 0
+        case expr::conditional_ee: return abs(evaluate_const_expr(ex->left)) > DBL_EPSILON //if left is not zero, go into cond otherwise goto else
+            ? evaluate_const_expr(ex->right)
+            : evaluate_const_expr(ex->conditional_else);
+        case expr::compiled_ee: throw std::runtime_error("Tried evaluating compiled expression as constant expression in optimizer.");
+        default: throw std::runtime_error("unknown operand found in const expression evaluation");
+    }
+}
+
+inline arr<constraint> to_constraint_array(const std::list<constraint*>& con_lst)
+{
+    const int size = static_cast<int>(con_lst.size());
+    constraint* store = static_cast<constraint*>(malloc(sizeof(constraint)*size));
+    int i = 0;
+    for (const constraint* con : con_lst)
+    {
+        store[i++] = *con;
+    }
+    return { store, size };
+}
+
+inline void create_false_constraint_set(arr<constraint>* con_array)
+{
+    constraint* con = new constraint();
+    
+    expr* left = new expr();
+    left->operand = expr::literal_ee;
+    left->left = nullptr;
+    left->right = nullptr;
+    left->value = 1.0;
+
+    expr* right = new expr();
+    left->operand = expr::literal_ee;
+    left->left = nullptr;
+    left->right = nullptr;
+    left->value = 0.0;
+
+    con->uses_variable = false;
+    con->operand = constraint::less_c;
+    con->value = left;
+    con->expression = right;
+    *con_array = {con, 1}; 
+}
+
+void domain_optimization_visitor::reduce_constraint_set(arr<constraint>* con_array)
+{
+    std::list<constraint*> temp_lst;
+    for (int i = 0; i < con_array->size; ++i)
+    {
+        constraint* temp = &con_array->store[i];
+        if(temp->uses_variable || !is_const_constraint(temp))
+        {
+            temp_lst.push_back(temp);
+            continue;
+        }
+
+        const bool valid = evaluate_const_constraint(temp);
+        if(!valid)
+        {
+            create_false_constraint_set(con_array); 
+            return;
+        }
+    }
+
+    if(static_cast<int>(temp_lst.size()) < con_array->size)
+    {
+        *con_array = to_constraint_array(temp_lst);
+    }
+}
+
+void domain_optimization_visitor::reduce_expr(expr* ex)
+{
+    if(!is_const_expr(ex)) return;
+    if(ex->operand == expr::literal_ee) return; //cannot reduce further
+
+    ex->value = evaluate_const_expr(ex); //this has to occur before we change the modify the expr.
+    ex->operand = expr::literal_ee;
+    ex->left = nullptr;
+    ex->right = nullptr;
+}
