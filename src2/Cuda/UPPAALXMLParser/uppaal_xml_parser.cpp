@@ -412,11 +412,11 @@ expr* uppaal_xml_parser::handle_if_statement(const string& input)
     fill_expressions(expressions, &condition_exprs);
 
     //Build the condition
-    expr* right_side_con_expr = variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right,
-        &this->vars_map_, &this->global_vars_map_,&const_local_vars, &const_global_vars);
-    expr* left_side_con_expr = variable_expression_evaluator::evaluate_variable_expression(extracted_condition.left,
-        &this->vars_map_, &this->global_vars_map_,&const_local_vars, &const_global_vars);
-    expr* condition_e = get_expression_con(extracted_if_statement.condition, left_side_con_expr, right_side_con_expr);
+    // expr* right_side_con_expr = variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right,
+    //     &this->vars_map_, &this->global_vars_map_,&const_local_vars, &const_global_vars);
+    // expr* left_side_con_expr = variable_expression_evaluator::evaluate_variable_expression(extracted_condition.left,
+    //     &this->vars_map_, &this->global_vars_map_,&const_local_vars, &const_global_vars);
+    // expr* condition_e = get_expression_con(extracted_if_statement.condition, left_side_con_expr, right_side_con_expr);
     
     expr* if_true_e = variable_expression_evaluator::evaluate_variable_expression(extracted_if_statement.if_true,
         &this->vars_map_, &this->global_vars_map_,&const_local_vars, &const_global_vars);
@@ -434,14 +434,16 @@ expr* uppaal_xml_parser::handle_if_statement(const string& input)
     return whole_expr;
 }
 
-expr* build_con(list<expr*> condition_exprs, expr* concantted_condition){
+expr* uppaal_xml_parser::build_con(list<expr*> condition_exprs, expr* concantted_condition){
     if (condition_exprs.size() == 1){
-        return condition_exprs.pop_front();
+        return condition_exprs[0];
     }
 
-    concantted_condition->left = condition_exprs.pop_front();
+    concantted_condition->left = condition_exprs[0];
+    condition_exprs.pop_front();
+
     concantted_condition->operand = expr::and_ee;
-    concantted_condition->right = condition_exprs.size() == 1 ? condition_exprs.pop_front() : build_con(condition_exprs, concantted_condition);
+    concantted_condition->right = condition_exprs.size() == 1 ? condition_exprs[0] : build_con(condition_exprs, concantted_condition);
 
     return concantted_condition;
 }
