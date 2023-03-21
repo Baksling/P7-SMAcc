@@ -259,6 +259,7 @@ expr* domain_optimization_visitor::interleave_updates_in_expr(expr* ex, const ar
         return ex;
 
     expr* copy = new expr();
+    copy->operand = ex->operand;
     copy->left = interleave_updates_in_expr(ex->left, updates);
     copy->right = interleave_updates_in_expr(ex->right, updates);
     
