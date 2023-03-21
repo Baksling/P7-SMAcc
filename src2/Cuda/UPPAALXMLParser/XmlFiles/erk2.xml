@@ -20,7 +20,7 @@ int x;</declaration>
 		<transition>
 			<source ref="id0"/>
 			<target ref="id1"/>
-			<label kind="assignment" x="18" y="-4">(x == 2) ? x = x-1 : x = x + 1</label>
+			<label kind="assignment" x="18" y="-4">x = (x == 2) ? x-1 : x + 1</label>
 		</transition>
 	</template>
 	<system>// Place template instantiations here.

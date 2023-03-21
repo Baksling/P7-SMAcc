@@ -25,7 +25,8 @@ int r;
 const int mrep = 128;
 const int mrec = 128;
 int s = 0;
-int f;  
+int f;
+int ff = f % 2;
 int o; 
 int c;  
 int rep;
@@ -97,7 +98,7 @@ suspend_sender_s := true</label>
 		<transition>
 			<source ref="id1"/>
 			<target ref="id4"/>
-			<label kind="guard" x="-1088" y="-360">!(f % 2 == 1) &amp;&amp; f != 16</label>
+			<label kind="guard" x="-1088" y="-360">!(ff == 1) &amp;&amp; f != 16</label>
 			<label kind="assignment" x="-1088" y="-336">s := 1,
 f := f + 1,
 o := f == c? 1 - o: o,
@@ -119,7 +120,7 @@ suspend_sender_s := true</label>
 		<transition>
 			<source ref="id1"/>
 			<target ref="id3"/>
-			<label kind="guard" x="-320" y="-416">f % 2 == 1</label>
+			<label kind="guard" x="-320" y="-416">ff == 1</label>
 			<label kind="assignment" x="-320" y="-400">f := f + 1,
 o := f == c ? 1 - o: o,
 suspend_sender_s := true</label>
@@ -135,7 +136,7 @@ suspend_sender_s := true</label>
 		<transition>
 			<source ref="id2"/>
 			<target ref="id3"/>
-			<label kind="guard" x="-504" y="-272">f % 2 == 1</label>
+			<label kind="guard" x="-504" y="-272">ff == 1</label>
 			<label kind="assignment" x="-504" y="-256">t := 0,
 f := f + 1,
 s := 2,
@@ -144,7 +145,7 @@ suspend_sender_s := true</label>
 		<transition>
 			<source ref="id2"/>
 			<target ref="id4"/>
-			<label kind="guard" x="-672" y="-304">!(f % 2 == 1)</label>
+			<label kind="guard" x="-672" y="-304">!(ff == 1)</label>
 			<label kind="assignment" x="-672" y="-288">t := 0,
 f := f - 1,
 suspend_sender_s := true</label>

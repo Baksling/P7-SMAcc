@@ -36,6 +36,7 @@ private:
     int edge_id_ = 0;
     declaration_parser dp_;
     template <typename T> void fill_expressions(const list<string>& expressions, list<T>* t);
+    template <typename T> void fill_expressions_if_else(const list<string>& expressions, list<T>* t);
     unordered_map<string, double> const_local_vars{};
     unordered_map<string, double> const_global_vars{};
     unordered_map<string, int> timers_map_{};
@@ -52,7 +53,7 @@ private:
     int get_timer_id(const string& expr) const;
     void get_condition_strings(const string& con, string* left, string* op, string* right);
     node* get_node(const int target_id, const list<node*>* arr) const;
-    expr* build_con(list<expr*> condition_exprs, expr* concantted_condition)
+    expr* build_con(list<expr*> condition_exprs, expr* concantted_condition);
     int handle_sync(const string& input) const;
     list<update> handle_assignment(const string& input);
     bool is_if_statement(const string& expr);
