@@ -28,7 +28,7 @@ struct sim_config
         no_print = 0,
         print_model = 1,
         print_reduction = 2
-    } model_print_mode;
+    } model_print_mode = no_print;
     
     enum device_opt
     {

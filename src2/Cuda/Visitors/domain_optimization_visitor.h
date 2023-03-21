@@ -25,6 +25,7 @@ class domain_optimization_visitor : public visitor
     bool is_goal(const int node_id) const;
     static unsigned count_expr_depth(const expr* ex);
     static void compound_optimize_constraints(edge* e);
+    static expr* interleave_updates_in_expr(expr* ex, const arr<update>& updates);
     bool expr_contains_clock(const expr* ex);
 
 

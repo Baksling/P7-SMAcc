@@ -223,6 +223,50 @@ abstract_parser* instantiate_parser(const std::string& filepath)
     }
 }
 
+
+void run_optimise(network* model, sim_config* config, output_properties* properties)
+{
+    pretty_print_visitor print_visitor = pretty_print_visitor(&std::cout,
+        properties->node_names,
+        properties->variable_names);
+
+    if(config->verbose)
+        print_visitor.visit(model);
+
+    if(config->verbose) printf("Optimizing...\n");
+    domain_optimization_visitor optimizer = domain_optimization_visitor(
+        abstract_parser::parse_query(config->paths->query),
+        properties->node_network,
+        properties->node_names,
+        properties->template_names);
+    optimizer.optimize(model);
+
+    model_count_visitor count_visitor = model_count_visitor();
+    count_visitor.visit(model);
+
+    model_size size_of_model = count_visitor.get_model_size();
+    properties->node_map = optimizer.get_node_map();
+    
+    setup_config(config, model,
+        optimizer.get_max_expr_depth(),
+        optimizer.get_max_fanout(),
+        optimizer.get_node_count());
+    
+    optimizer.clear();
+
+    if(config->model_print_mode == sim_config::print_model)
+    {
+        print_visitor.clear();
+        print_visitor.visit(model);
+    }
+
+    if(config->verbose) print_config(config, size_of_model.total_memory_size());
+    
+    if(config->use_shared_memory) //ensure shared memory is safe
+        config->use_shared_memory = config->can_use_cuda_shared_memory(size_of_model.total_memory_size());
+        
+}
+
 int main(int argc, const char* argv[])
 {
     CUDA_CHECK(cudaFree(nullptr));
@@ -246,57 +290,14 @@ int main(int argc, const char* argv[])
     properties.node_names = new std::unordered_map<int, std::string>(*model_parser->get_nodes_with_name());
     properties.node_network = new std::unordered_map<int, int>(*model_parser->get_subsystems());
     properties.variable_names = new std::unordered_map<int, std::string>(*model_parser->get_clock_names()); // this can create mem leaks.
+    properties.template_names = new std::unordered_map<int, std::string>(*model_parser->get_template_names());
 
-    pretty_print_visitor print_visitor = pretty_print_visitor(&std::cout,
-        properties.node_names,
-        properties.variable_names);
-    
-    if(config.model_print_mode == sim_config::print_model)
-    {
-        print_visitor.clear();
-        print_visitor.visit(&model);
-    }
-
-    if(config.verbose) printf("Optimizing...\n");
-    domain_optimization_visitor optimizer = domain_optimization_visitor(
-        abstract_parser::parse_query(paths.query),
-        properties.node_network,
-        properties.node_names,
-        model_parser->get_template_names());
-    optimizer.optimize(&model);
-
-    model_count_visitor count_visitor = model_count_visitor();
-    count_visitor.visit(&model);
     delete model_parser;
+    run_optimise(&model, &config, &properties);
 
-    model_size size_of_model = count_visitor.get_model_size();
-    properties.node_map = optimizer.get_node_map();
-    setup_config(&config, &model,
-        optimizer.get_max_expr_depth(),
-        optimizer.get_max_fanout(),
-        optimizer.get_node_count());
-    
-    optimizer.clear();
-    if(config.verbose) print_config(&config, size_of_model.total_memory_size());
-    
-    if(config.use_shared_memory)
-        config.use_shared_memory = config.can_use_cuda_shared_memory(size_of_model.total_memory_size());
-
-    if(config.model_print_mode == sim_config::print_reduction)
-    {
-        print_visitor.clear();
-        print_visitor.visit(&model);
-    }
-        
-        
     const bool run_device = (config.sim_location == sim_config::device || config.sim_location == sim_config::both);
     const bool run_host   = (config.sim_location == sim_config::host   || config.sim_location == sim_config::both);
-
-    // printf("DIFF!\n");
-    // pretty_print_visitor(&std::cout,
-    //     properties.node_names,
-    //     properties.variable_names).visit(&model);
-
+    
     //run simulation
     if(run_device)
     {

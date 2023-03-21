@@ -42,6 +42,8 @@ struct expr  // NOLINT(cppcoreguidelines-pro-type-member-init)
         modulo_ee,
 
         //boolean types
+        and_ee,
+        or_ee,
         less_equal_ee,
         greater_equal_ee,
         less_ee,
