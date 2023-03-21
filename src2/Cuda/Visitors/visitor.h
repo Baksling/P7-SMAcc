@@ -19,6 +19,7 @@ protected:
     static void accept(const expr* ex, visitor* v);
     
 public:
+    virtual ~visitor() = default;
     virtual void visit(network* a) = 0;
     virtual void visit(node* n) = 0;
     virtual void visit(edge* e) = 0;

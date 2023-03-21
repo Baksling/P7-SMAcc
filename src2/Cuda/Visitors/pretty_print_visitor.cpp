@@ -154,6 +154,8 @@ std::string pretty_print_visitor::expr_type_to_string(const expr* ex)
     case expr::negation_ee: return "~"; 
     case expr::sqrt_ee: return "sqrt";
     case expr::modulo_ee: return "%";
+    case expr::and_ee: return "&&";
+    case expr::or_ee: return "||";
     case expr::less_equal_ee: return "<="; 
     case expr::greater_equal_ee: return ">="; 
     case expr::less_ee: return "<"; 

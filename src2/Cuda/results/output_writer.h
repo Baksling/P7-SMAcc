@@ -74,6 +74,7 @@ struct output_properties
 {
     std::unordered_map<int, std::string>* variable_names;
     std::unordered_map<int, std::string>* node_names;
+    std::unordered_map<int, std::string>* template_names;
     std::unordered_map<int, int>* node_network;
     std::unordered_map<int, node*> node_map;
 };

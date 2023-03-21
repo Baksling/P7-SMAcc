@@ -61,7 +61,8 @@ void visitor::accept(const edge* e, visitor* v)
 
 void visitor::accept(const constraint* c, visitor* v)
 {
-    if(!c->uses_variable && c->operand != constraint::compiled_c)
+    if(c->operand == constraint::compiled_c) return; //nothing of value
+    if(!c->uses_variable)
     {
         v->visit(c->value);
     }

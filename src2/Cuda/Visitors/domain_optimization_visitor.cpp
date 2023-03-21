@@ -172,6 +172,26 @@ unsigned domain_optimization_visitor::count_expr_depth(const expr* ex)
     return (conditional > temp ? conditional : temp) + 1;
 }
 
+expr* deepcopy_expr(expr* ex)
+{
+    if(ex == nullptr) return nullptr;
+
+    expr* copy = new expr();
+    copy->operand = ex->operand;
+    copy->left = deepcopy_expr(ex->left);
+    copy->right = deepcopy_expr(ex->right);
+    if(ex->operand == expr::conditional_ee)
+        copy->conditional_else = deepcopy_expr(ex->conditional_else);
+    else if(ex->operand == expr::clock_variable_ee)
+        copy->variable_id = ex->variable_id;
+    else if(ex->operand == expr::literal_ee)
+        copy->value = ex->value;
+    else if(ex->operand == expr::compiled_ee)
+        throw std::runtime_error("Cannot deepcopy a compiled expression");
+
+    return copy;
+}
+
 void domain_optimization_visitor::compound_optimize_constraints(edge* e)
 {
     std::list<constraint> con_lst;
@@ -184,7 +204,8 @@ void domain_optimization_visitor::compound_optimize_constraints(edge* e)
     //go through each invariant
     for (int i = 0; i < e->dest->invariants.size; ++i)
     {
-        const constraint inv = e->dest->invariants.store[i];
+        constraint inv = e->dest->invariants.store[i];
+        inv.expression = interleave_updates_in_expr(inv.expression, e->updates);
         
         //if invariant does not use variable, 
         if(!inv.uses_variable)
@@ -192,6 +213,7 @@ void domain_optimization_visitor::compound_optimize_constraints(edge* e)
             con_lst.push_back(inv);
             continue;
         }
+        
         bool any = false;
         for (int j = 0; j < e->updates.size; ++j)
         {
@@ -209,7 +231,7 @@ void domain_optimization_visitor::compound_optimize_constraints(edge* e)
         if(!any) con_lst.push_back(inv);
     }
 
-    if(con_lst.size() <= static_cast<size_t>(e->guards.size)) return;
+    // if(con_lst.size() <= static_cast<size_t>(e->guards.size)) return;
 
     constraint* store = static_cast<constraint*>(malloc(sizeof(constraint)*con_lst.size()));
     int i = 0;
@@ -218,7 +240,32 @@ void domain_optimization_visitor::compound_optimize_constraints(edge* e)
         store[i++] = con;
     }
     e->guards = arr<constraint>{ store, i };
+}
+
+expr* domain_optimization_visitor::interleave_updates_in_expr(expr* ex, const arr<update>& updates)
+{
+    if(ex == nullptr) return nullptr;
+    if(ex->operand == expr::clock_variable_ee)
+    {
+        for (int i = 0; i < updates.size; ++i)
+        {
+            if(ex->variable_id != updates.store[i].variable_id) continue;
+            return deepcopy_expr(updates.store[i].expression);
+        }
+
+        return ex; //not affected by updates
+    }
+    if(ex->operand == expr::literal_ee)
+        return ex;
+
+    expr* copy = new expr();
+    copy->left = interleave_updates_in_expr(ex->left, updates);
+    copy->right = interleave_updates_in_expr(ex->right, updates);
     
+    if(ex->operand == expr::conditional_ee)
+        copy->conditional_else = interleave_updates_in_expr(ex->conditional_else, updates);
+    
+    return copy;
 }
 
 bool domain_optimization_visitor::expr_contains_clock(const expr* ex)
@@ -232,7 +279,7 @@ bool domain_optimization_visitor::expr_contains_clock(const expr* ex)
     const bool cond_else = ex->operand == expr::conditional_ee && ex->conditional_else != nullptr
                                ? expr_contains_clock(ex->conditional_else) : false;
 
-    return left || right ||cond_else;
+    return left || right || cond_else;
 }
 
 
@@ -296,6 +343,8 @@ double domain_optimization_visitor::evaluate_const_expr(const expr* ex)
         case expr::negation_ee: return -evaluate_const_expr(ex->left);
         case expr::sqrt_ee: return sqrt(evaluate_const_expr(ex->left));
         case expr::modulo_ee: return static_cast<int>(evaluate_const_expr(ex->left)) % static_cast<int>(evaluate_const_expr(ex->right));
+        case expr::and_ee: return abs(evaluate_const_expr(ex->left)) > DBL_EPSILON && abs(evaluate_const_expr(ex->right)) > DBL_EPSILON; 
+        case expr::or_ee: return abs(evaluate_const_expr(ex->left)) > DBL_EPSILON || abs(evaluate_const_expr(ex->right)) > DBL_EPSILON; 
         case expr::less_equal_ee: return evaluate_const_expr(ex->left) <= evaluate_const_expr(ex->right);
         case expr::greater_equal_ee: return evaluate_const_expr(ex->left) >= evaluate_const_expr(ex->right);
         case expr::less_ee: return evaluate_const_expr(ex->left) < evaluate_const_expr(ex->right);
@@ -374,8 +423,8 @@ void domain_optimization_visitor::reduce_constraint_set(arr<constraint>* con_arr
 
 void domain_optimization_visitor::reduce_expr(expr* ex)
 {
-    if(!is_const_expr(ex)) return;
     if(ex->operand == expr::literal_ee) return; //cannot reduce further
+    if(!is_const_expr(ex)) return;
 
     ex->value = evaluate_const_expr(ex); //this has to occur before we change the modify the expr.
     ex->operand = expr::literal_ee;
