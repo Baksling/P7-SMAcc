@@ -405,8 +405,11 @@ bool uppaal_xml_parser::is_if_statement(const string& expr)
 
 expr* uppaal_xml_parser::handle_if_statement(const string& input)
 {
+    list<expr*> condition_exprs;
     const extract_if_statement extracted_if_statement = string_extractor::extract(extract_if_statement(input));
-    const extract_condition extracted_condition = string_extractor::extract(extract_condition(extracted_if_statement.condition));
+    // const extract_condition extracted_condition = string_extractor::extract(extract_condition(extracted_if_statement.condition));
+    list<string> expressions = split_expr(extracted_if_statement.condition);
+    fill_expressions(expressions, &condition_exprs);
 
     //Build the condition
     expr* right_side_con_expr = variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right,
@@ -421,12 +424,26 @@ expr* uppaal_xml_parser::handle_if_statement(const string& input)
         &this->vars_map_, &this->global_vars_map_,&const_local_vars, &const_global_vars);
 
     expr* whole_expr = new expr();
-    whole_expr->left = condition_e;
+    expr* concantted_condition = build_con(condition_exprs, new expr());
+
+    whole_expr->left = concantted_condition;
     whole_expr->right = if_true_e;
     whole_expr->conditional_else = if_false_e;
     whole_expr->operand = expr::conditional_ee;
     
     return whole_expr;
+}
+
+expr* build_con(list<expr*> condition_exprs, expr* concantted_condition){
+    if (condition_exprs.size() == 1){
+        return condition_exprs.pop_front();
+    }
+
+    concantted_condition->left = condition_exprs.pop_front();
+    concantted_condition->operand = expr::and_ee;
+    concantted_condition->right = condition_exprs.size() == 1 ? condition_exprs.pop_front() : build_con(condition_exprs, concantted_condition);
+
+    return concantted_condition;
 }
 
 list<update> uppaal_xml_parser::handle_assignment(const string& input)
