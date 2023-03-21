@@ -74,6 +74,14 @@ CPU GPU double evaluate_expression_node(const expr* expr, state* state)
         v2 = state->value_stack.pop();
         v1 = state->value_stack.pop();
         return static_cast<double>(static_cast<int>(v1) % static_cast<int>(v2));
+    case expr::and_ee:
+        v2 = state->value_stack.pop();
+        v1 = state->value_stack.pop();
+        return static_cast<double>(abs(v1) > DBL_EPSILON && abs(v2) > DBL_EPSILON);
+    case expr::or_ee:
+        v2 = state->value_stack.pop();
+        v1 = state->value_stack.pop();
+        return static_cast<double>(abs(v1) > DBL_EPSILON || abs(v2) > DBL_EPSILON);
     case expr::less_equal_ee: 
         v2 = state->value_stack.pop();
         v1 = state->value_stack.pop();
@@ -202,15 +210,6 @@ CPU GPU bool constraint::evaluate_constraint(state* state) const
         : this->value->evaluate_expression(state);
     const double right = this->expression->evaluate_expression(state);
 
-    // if (this->uses_variable)
-    // {
-    //     printf("v:%d %d %lf\n", this->variable_id, this->operand, right);
-    // }
-    // else
-    // {
-    //     printf("e:%lf %d %lf\n", left, this->operand, right);
-    // }
-    
     switch (this->operand)
     {
     case less_equal_c: return left <= right;
@@ -274,7 +273,6 @@ CPU GPU inline bool edge::edge_enabled(state* state) const
 CPU GPU void state::traverse_edge(const int process_id, node* dest)
 {
     const node* current = this->models.store[process_id];
-    // printf("TRAVERSING: %d to %d\n", current->id, dest->id);
     
     this->urgent_count = this->urgent_count + IS_URGENT(dest->type) - IS_URGENT(current->type);
     this->committed_count = this->committed_count + (dest->type == node::committed) - (current->type == node::committed);
@@ -290,7 +288,7 @@ void inline state::broadcast_channel(const int channel, const int process)
     {
         const node* current = this->models.store[p];
         
-        if (p == process) continue;
+        if(p == process) continue;
         if(current->type == node::goal) continue;
         if(!constraint::evaluate_constraint_set(current->invariants, this)) continue;
         
@@ -299,7 +297,7 @@ void inline state::broadcast_channel(const int channel, const int process)
         for (int e = 0; e < current->edges.size; ++e)
         {
             const edge current_e = current->edges.store[(e + offset) % current->edges.size];
-            if(!IS_LISTENER(current_e.channel)) continue;
+            // if(!IS_LISTENER(current_e.channel)) continue; <-- redundant. Already assured by CAN_SYNC
             if(!CAN_SYNC(channel, current_e.channel)) continue;
 
             this->traverse_edge(p, current_e.dest);
