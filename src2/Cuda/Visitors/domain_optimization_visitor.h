@@ -24,11 +24,14 @@ class domain_optimization_visitor : public visitor
 
     bool is_goal(const int node_id) const;
     static unsigned count_expr_depth(const expr* ex);
+    static unsigned estimate_pn_expr(const expr* ex);
     static void compound_optimize_constraints(edge* e);
     static expr* interleave_updates_in_expr(expr* ex, const arr<update>& updates);
     bool expr_contains_clock(const expr* ex);
 
-
+    static expr* as_polish_notation(expr* ex);
+    static void convert_to_polish_notation(const expr* current, expr* array, int* c_index);
+    
     inline static bool is_const_expr(const expr* ex);
     inline static bool is_const_constraint(const constraint* con);
     static bool evaluate_const_constraint(const constraint* con);

@@ -52,7 +52,7 @@ private:
     int get_timer_id(const string& expr) const;
     void get_condition_strings(const string& con, string* left, string* op, string* right);
     node* get_node(const int target_id, const list<node*>* arr) const;
-    expr* build_con(list<expr*> condition_exprs, expr* concantted_condition)
+    expr* build_con(list<expr*> condition_exprs, expr* concantted_condition);
     int handle_sync(const string& input) const;
     list<update> handle_assignment(const string& input);
     bool is_if_statement(const string& expr);

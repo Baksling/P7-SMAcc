@@ -1,5 +1,19 @@
 ﻿#include "cuda_allocator.h"
 
+expr* cuda_allocator::malloc_expr(const expr* source) const
+{
+    expr* p = nullptr;
+    if(source->operand == expr::pn_init)
+    {
+        CUDA_CHECK(this->allocator_->allocate(&p, sizeof(expr)*source->pn_length));
+    }
+    else
+    {
+        CUDA_CHECK(this->allocator_->allocate(&p, sizeof(expr)));
+    }
+    return p;    
+}
+
 model_oracle* cuda_allocator::allocate_model(const network* model)
 {
     network* dest = nullptr;
@@ -67,8 +81,7 @@ void cuda_allocator::allocate_node(const node* source, node* dest)
         allocate_constraint(&source->invariants.store[i], &invariant_store[i]);
     }
 
-    expr* exp_d = nullptr;
-    CUDA_CHECK(this->allocator_->allocate(&exp_d, sizeof(expr)));
+    expr* exp_d = this->malloc_expr(source->lamda);
     this->allocate_expr(source->lamda, exp_d);
 
     const node temp = node{
@@ -110,8 +123,7 @@ void cuda_allocator::allocate_edge(const edge* source, edge* dest)
         allocate_update(&source->updates.store[i], &update_store[i]);
     }
 
-    expr* exp_d = nullptr;
-    CUDA_CHECK(this->allocator_->allocate(&exp_d, sizeof(expr)));
+    expr* exp_d = malloc_expr(source->weight);
     this->allocate_expr(source->weight, exp_d);
 
     const edge temp = edge{
@@ -142,14 +154,12 @@ void cuda_allocator::allocate_constraint(const constraint* source, constraint* d
     }
     else
     {
-        expr* left = nullptr;
-        CUDA_CHECK(this->allocator_->allocate(&left, sizeof(expr)));
+        expr* left = malloc_expr(source->value);
         this->allocate_expr(source->value, left);
         temp.value = left;
     }
 
-    expr* right = nullptr;
-    CUDA_CHECK(this->allocator_->allocate(&right, sizeof(expr)));
+    expr* right = malloc_expr(source->expression);
     this->allocate_expr(source->expression, right);
     temp.expression = right;
 
@@ -158,8 +168,7 @@ void cuda_allocator::allocate_constraint(const constraint* source, constraint* d
 
 void cuda_allocator::allocate_update(const update* source, update* dest)
 {
-    expr* right = nullptr;
-    CUDA_CHECK(this->allocator_->allocate(&right, sizeof(expr)));
+    expr* right = malloc_expr(source->expression);
     this->allocate_expr(source->expression, right);
 
     const update temp{
@@ -182,25 +191,30 @@ void cuda_allocator::allocate_expr(const expr* source, expr* dest)
         CUDA_CHECK(cudaMemcpy(dest, source, sizeof(expr), cudaMemcpyHostToDevice));
         return;
     }
+    if(source->operand == expr::pn_init)
+    {
+        CUDA_CHECK(cudaMemcpy(dest, source, sizeof(expr)*source->pn_length, cudaMemcpyHostToDevice));
+        return;
+    }
 
     expr* left = nullptr;
     if(source->left != nullptr)
     {
-        CUDA_CHECK(this->allocator_->allocate(&left, sizeof(expr)));
+        left = malloc_expr(source->left);
         this->allocate_expr(source->left, left);
     }
 
     expr* right = nullptr;
     if(source->right != nullptr)
     {
-        CUDA_CHECK(this->allocator_->allocate(&right, sizeof(expr)));
+        right = malloc_expr(source->right);
         this->allocate_expr(source->right, right);
     }
 
     expr* else_branch = nullptr;
     if(source->operand == expr::conditional_ee && source->conditional_else != nullptr)
     {
-        CUDA_CHECK(this->allocator_->allocate(&else_branch, sizeof(expr)));
+        else_branch = malloc_expr(source->conditional_else);
         this->allocate_expr(source->conditional_else, else_branch);
     }
 
@@ -214,6 +228,8 @@ void cuda_allocator::allocate_expr(const expr* source, expr* dest)
     if     (source->operand == expr::literal_ee)        temp.value            = source->value;
     else if(source->operand == expr::clock_variable_ee) temp.variable_id      = source->variable_id;
     else if(source->operand == expr::conditional_ee)    temp.conditional_else = else_branch;
+    else if(source->operand == expr::compiled_ee)       temp.compile_id = source->compile_id;
+    else if (source->operand == expr::pn_init)          temp.pn_length = source->pn_length;
 
     CUDA_CHECK(cudaMemcpy(dest, &temp, sizeof(expr), cudaMemcpyHostToDevice));
 }

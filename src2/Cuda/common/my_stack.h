@@ -20,6 +20,11 @@ public:
         store_[count_++] = t;
     }
 
+    CPU GPU void push_val(T t)
+    {
+        store_[count_++] = t;
+    }
+
     CPU GPU T pop()
     {
         // if(this->count_ <= 0) printf("stack is empty, cannot pop! PANIC!");

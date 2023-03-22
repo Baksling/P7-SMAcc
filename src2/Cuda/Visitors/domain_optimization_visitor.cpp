@@ -168,8 +168,19 @@ unsigned domain_optimization_visitor::count_expr_depth(const expr* ex)
     const unsigned left = ex->left != nullptr ? count_expr_depth(ex->left) : 0;
     const unsigned right = ex->right != nullptr ? count_expr_depth(ex->right) : 0;
 
-    const unsigned temp = (left > right ? left : right);
-    return (conditional > temp ? conditional : temp) + 1;
+    const unsigned temp = std::max(left, right);
+    return std::max(conditional, temp) + 1;
+    // const unsigned temp = (left > right ? left : right);
+    // return (conditional > temp ? conditional : temp) + 1;
+}
+
+unsigned domain_optimization_visitor::estimate_pn_expr(const expr* ex)
+{
+    if(IS_LEAF(ex->operand)) return 1;
+    const unsigned left = ex->left != nullptr ? estimate_pn_expr(ex->left) : 0;
+    const unsigned right = ex->right != nullptr ? estimate_pn_expr(ex->right) : 0;
+
+    return left + right + 1;
 }
 
 expr* deepcopy_expr(expr* ex)
@@ -281,6 +292,38 @@ bool domain_optimization_visitor::expr_contains_clock(const expr* ex)
                                ? expr_contains_clock(ex->conditional_else) : false;
 
     return left || right || cond_else;
+}
+
+expr* domain_optimization_visitor::as_polish_notation(expr* ex)
+{
+    if(IS_LEAF(ex->operand)) return ex;
+    const unsigned count = estimate_pn_expr(ex) + 1;  // +1, as we got to have room for pn_start.
+    const size_t size = sizeof(expr)*(count);
+    expr* array = static_cast<expr*>(malloc(size));
+
+    int index = 1; //start adding at 1, as 0 is init.
+    array[0] = expr{ PN_INIT, nullptr, nullptr, {-1.0}};
+    array[0].variable_id = static_cast<int>(count);
+    convert_to_polish_notation(ex, array, &index);
+    array[count-1] = expr{PN_RETURN, nullptr, nullptr, {-1.0}};
+
+    return array;
+}
+
+void domain_optimization_visitor::convert_to_polish_notation(const expr* current, expr* array, int* c_index)
+{
+    if(IS_LEAF(current->operand))
+        array[*c_index++] = *current;
+
+    if(current->left != nullptr)
+        convert_to_polish_notation(current->left, array, c_index);
+    if(current->right != nullptr)
+        convert_to_polish_notation(current->right, array, c_index);
+
+    array[*c_index] = *current;
+    array[*c_index].left = nullptr;
+    array[*c_index].right = nullptr;
+    *c_index += 1;
 }
 
 

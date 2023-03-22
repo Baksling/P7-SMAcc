@@ -19,6 +19,10 @@ struct arr
     static arr<T> empty(){ return arr<T>{nullptr, 0}; }
 };
 
+#define PN_INIT (static_cast<expr::operators>(-1))
+#define PN_RETURN (static_cast<expr::operators>(static_cast<int>(expr::compiled_ee)+1))
+#define IS_OPTIMISED(x) ((x) < 0)
+#define IS_RETURN(x) ((x) > expr::compiled_ee)
 #define IS_LEAF(x) ((x) < 2)
 struct expr  // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
@@ -54,8 +58,11 @@ struct expr  // NOLINT(cppcoreguidelines-pro-type-member-init)
 
         //conditional types
         conditional_ee,
-        compiled_ee
-        
+        compiled_ee,
+
+        //pn_notation
+        pn_init,
+        pn_goto
     } operand = literal_ee;
     
     expr* left = nullptr;
@@ -67,6 +74,7 @@ struct expr  // NOLINT(cppcoreguidelines-pro-type-member-init)
         int variable_id;
         expr* conditional_else;
         int compile_id;
+        int pn_length;
     };
 
     CPU GPU double evaluate_expression(state* state);

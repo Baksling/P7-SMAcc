@@ -9,6 +9,9 @@ class cuda_allocator
 {
     memory_allocator* allocator_;
     std::unordered_map<const node*, node*> circular_ref_{};
+
+    expr* malloc_expr(const expr* source) const;
+    
 public:
     explicit cuda_allocator(memory_allocator* allocator)
     {

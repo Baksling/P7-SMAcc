@@ -118,6 +118,19 @@ CPU GPU double evaluate_expression_node(const expr* expr, state* state)
     return 0.0;
 }
 
+CPU GPU double evaluate_polish_notated_expression(const expr* pn_expr, state* state)
+{
+    state->value_stack.clear();
+    for (int i = 1; i < pn_expr->variable_id; ++i)
+    {
+        const expr* current = &pn_expr[i];
+        const double temp = evaluate_expression_node(current, state);
+        state->value_stack.push_val(temp);
+    }
+
+    return state->value_stack.pop();
+}
+
 CPU GPU double expr::evaluate_expression(state* state)
 {
     if(this->operand == literal_ee)
