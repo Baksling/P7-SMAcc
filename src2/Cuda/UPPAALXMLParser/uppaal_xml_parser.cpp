@@ -1,6 +1,5 @@
 ﻿#include "uppaal_xml_parser.h"
-
-
+#include <iostream>
 /* 
  * TODO init like this: double x,y = 0.0; --flueben
  * TODO If else in init, guards, and invariants
@@ -49,6 +48,38 @@ constraint* get_constraint(const string& exprs, expr* v_one, expr* v_two)
     cons->expression = v_two;
 
     return cons;
+}
+
+expr* get_expression_con(const string& exprs, int left, expr* right)
+{
+    expr* expr_p = new expr();
+    if(exprs.find("<=") != std::string::npos)
+        expr_p->operand = expr::less_equal_ee;
+    else if(exprs.find(">=") != std::string::npos)
+        expr_p->operand = expr::greater_equal_ee;
+    else if(exprs.find("==") != std::string::npos)
+        expr_p->operand = expr::equal_ee;
+    else if(exprs.find("!=") != std::string::npos)
+        expr_p->operand = expr::not_equal_ee;
+    else if(exprs.find('<') != std::string::npos)
+        expr_p->operand = expr::less_ee;
+    else if(exprs.find('>') != std::string::npos)
+        expr_p->operand = expr::greater_ee;
+    else if(exprs.find('>') != std::string::npos)
+        expr_p->operand = expr::not_ee;
+    else
+    {
+        THROW_LINE("Operand in " + exprs + " not found, sad..");
+    }
+
+    expr_p->left = new expr();
+    expr_p->left->operand = expr::clock_variable_ee;
+    expr_p->left->left = nullptr;
+    expr_p->left->right = nullptr;
+    expr_p->right = right;
+    expr_p->left->variable_id = left;
+
+    return expr_p;
 }
 
 expr* get_expression_con(const string& exprs, expr* left, expr* right)
@@ -109,7 +140,7 @@ int uppaal_xml_parser::get_timer_id(const string& expr) const
             break;
         }
         
-        if (in_array(expr_wout_spaces[++index], {'<','>','='}))
+        if (in_array(expr_wout_spaces[++index], {'<','>','=', '!'}))
         {
             break;
         }
@@ -125,7 +156,7 @@ int uppaal_xml_parser::get_timer_id(const string& expr) const
     {
         return global_vars_map_.at(sub);
     }
-    
+    std::cout << expr << std::endl;
     THROW_LINE("sum tin wong");
 }
 
@@ -145,7 +176,10 @@ void uppaal_xml_parser::fill_expressions(const list<string>& expressions, list<T
         //TODO fix this plz
         //Constraint is heap allocated, and is then copied here.
         //Results in dead memory.
+        std::cout << extracted_condition.right << std::endl;
+        std::cout << extracted_condition.left << std::endl;
         
+
         if (timers_map_.count(extracted_condition.left) || global_timers_map_.count(extracted_condition.left) ||
             vars_map_.count(extracted_condition.left) || global_vars_map_.count(extracted_condition.left))
             t->push_back(*get_constraint(extracted_condition.input,
@@ -154,6 +188,41 @@ void uppaal_xml_parser::fill_expressions(const list<string>& expressions, list<T
                     &vars_map_, &global_vars_map_, &const_local_vars, &const_global_vars)));
         else
             t->push_back(*get_constraint(extracted_condition.input,
+                variable_expression_evaluator::evaluate_variable_expression(extracted_condition.left,
+                    &vars_map_, &global_vars_map_,&const_local_vars, &const_global_vars),
+                variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right,
+                    &vars_map_, &global_vars_map_,&const_local_vars, &const_global_vars)));
+    }
+}
+
+template <typename T>
+void uppaal_xml_parser::fill_expressions_if_else(const list<string>& expressions, list<T>* t)
+{
+    for(const auto& expr: expressions)
+    {
+        if (expr.empty())
+            continue;
+        
+        const extract_condition extracted_condition = string_extractor::extract(extract_condition(expr));
+
+        if (extracted_condition.input.empty())
+            continue;
+        
+        //TODO fix this plz
+        //Constraint is heap allocated, and is then copied here.
+        //Results in dead memory.
+
+        std::cout << extracted_condition.right << std::endl;
+        std::cout << extracted_condition.left << std::endl;
+        
+        if (timers_map_.count(extracted_condition.left) || global_timers_map_.count(extracted_condition.left) ||
+            vars_map_.count(extracted_condition.left) || global_vars_map_.count(extracted_condition.left))
+            t->push_back(get_expression_con(extracted_condition.input,
+                get_timer_id(extracted_condition.input),
+                variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right,
+                    &vars_map_, &global_vars_map_, &const_local_vars, &const_global_vars)));
+        else
+            t->push_back(get_expression_con(extracted_condition.input,
                 variable_expression_evaluator::evaluate_variable_expression(extracted_condition.left,
                     &vars_map_, &global_vars_map_,&const_local_vars, &const_global_vars),
                 variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right,
@@ -314,6 +383,7 @@ void uppaal_xml_parser::handle_locations(const xml_node locs)
         //TODO make string trimmer
         const string line_wo_ws = remove_whitespace(expr_string);
         const string nums = take_after(line_wo_ws, "=");
+        std::cout << nums << std::endl;
 
         delete expo_rate;
         expo_rate = variable_expression_evaluator::evaluate_variable_expression(nums,
@@ -374,6 +444,8 @@ void uppaal_xml_parser::handle_transitions(const xml_node trans)
         else if (kind == "probability")
         {
             extract_probability extracted_probability = string_extractor::extract(extract_probability(expr_string));
+            std::cout << extracted_probability.value << std::endl;
+
             probability = variable_expression_evaluator::evaluate_variable_expression(extracted_probability.value,
                 &vars_map_, &global_vars_map_,&const_local_vars, &const_global_vars);
         }
@@ -409,7 +481,7 @@ expr* uppaal_xml_parser::handle_if_statement(const string& input)
     const extract_if_statement extracted_if_statement = string_extractor::extract(extract_if_statement(input));
     // const extract_condition extracted_condition = string_extractor::extract(extract_condition(extracted_if_statement.condition));
     list<string> expressions = split_expr(extracted_if_statement.condition);
-    fill_expressions(expressions, &condition_exprs);
+    fill_expressions_if_else(expressions, &condition_exprs);
 
     //Build the condition
     // expr* right_side_con_expr = variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right,
@@ -417,6 +489,9 @@ expr* uppaal_xml_parser::handle_if_statement(const string& input)
     // expr* left_side_con_expr = variable_expression_evaluator::evaluate_variable_expression(extracted_condition.left,
     //     &this->vars_map_, &this->global_vars_map_,&const_local_vars, &const_global_vars);
     // expr* condition_e = get_expression_con(extracted_if_statement.condition, left_side_con_expr, right_side_con_expr);
+
+    std::cout << extracted_if_statement.if_true << std::endl;
+    std::cout << extracted_if_statement.if_false << std::endl;
     
     expr* if_true_e = variable_expression_evaluator::evaluate_variable_expression(extracted_if_statement.if_true,
         &this->vars_map_, &this->global_vars_map_,&const_local_vars, &const_global_vars);
@@ -435,15 +510,24 @@ expr* uppaal_xml_parser::handle_if_statement(const string& input)
 }
 
 expr* uppaal_xml_parser::build_con(list<expr*> condition_exprs, expr* concantted_condition){
+    // expr* val = new expr();
+    // val->operand = condition_exprs.front().operand;
+    // val->right = condition_exprs.front().right;
+    // val->left = condition_exprs.front().left;
+
     if (condition_exprs.size() == 1){
-        return condition_exprs[0];
+        return condition_exprs.front();
     }
 
-    concantted_condition->left = condition_exprs[0];
+    concantted_condition->left = condition_exprs.front();
     condition_exprs.pop_front();
 
+    // val->operand = condition_exprs.front().operand;
+    // val->right = condition_exprs.front().right;
+    // val->left = condition_exprs.front().left;
+
     concantted_condition->operand = expr::and_ee;
-    concantted_condition->right = condition_exprs.size() == 1 ? condition_exprs[0] : build_con(condition_exprs, concantted_condition);
+    concantted_condition->right = condition_exprs.size() == 1 ? condition_exprs.front() : build_con(condition_exprs, concantted_condition);
 
     return concantted_condition;
 }
@@ -470,6 +554,7 @@ list<update> uppaal_xml_parser::handle_assignment(const string& input)
         else
         {
             //Is normal assignment
+            std::cout << extracted_assignment.right << std::endl;
             right_side = variable_expression_evaluator::evaluate_variable_expression(extracted_assignment.right,
                 &this->vars_map_, &this->global_vars_map_,&const_local_vars, &const_global_vars);
         }

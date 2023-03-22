@@ -186,7 +186,13 @@ void jit_compile_visitor::compile_expr(std::stringstream& ss, const expr* e, con
     case expr::power_ee: ss << "pow("; compile_expr(ss, e->left); ss << ','; compile_expr(ss, e->right); ss << ')'; break;
     case expr::negation_ee: ss << '-'; compile_expr(ss, e->left); break;
     case expr::sqrt_ee: ss << "sqrt("; compile_expr(ss, e->left); ss << ')'; break;
-    case expr::modulo_ee: compile_expr(ss, e->left); ss << '%'; compile_expr(ss, e->right); break;
+    case expr::modulo_ee:
+        ss << "static_cast<int>(";
+        compile_expr(ss, e->left);
+        ss << ") % static_cast<int>(";
+        compile_expr(ss, e->right);
+        ss << ")";
+        break;
     case expr::and_ee: compile_expr(ss, e->left); ss << "&&"; compile_expr(ss, e->right); break;
     case expr::or_ee: compile_expr(ss, e->left); ss << "||"; compile_expr(ss, e->right); break;
     case expr::less_equal_ee: compile_expr(ss, e->left); ss << "<="; compile_expr(ss, e->right); break;
