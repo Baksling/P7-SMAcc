@@ -7,6 +7,7 @@
 #include <vector>
 #include <algorithm>
 #include "parser_exception.h"
+#include <regex>
 
 using namespace std;
 
@@ -78,8 +79,12 @@ namespace helper
         while(std::getline(test, segment, '&'))
         {
             string s = replace_all(segment, "&", "");
-            // s = helper::replace_all(s, "(", "");
-            // s = helper::replace_all(s, ")", "");
+            std::regex e ("random\\((.*)\\)"); 
+            s = std::regex_replace (s,e,"random|$1|");
+            s = helper::replace_all(s, "(", "");
+            s = helper::replace_all(s, ")", "");
+            std::regex e2 ("random\\|(.*)\\|");
+            s = std::regex_replace (s,e2,"random($1)");
             result.push_back(s);
         }
         return result;
