@@ -176,9 +176,6 @@ void uppaal_xml_parser::fill_expressions(const list<string>& expressions, list<T
         //TODO fix this plz
         //Constraint is heap allocated, and is then copied here.
         //Results in dead memory.
-        std::cout << extracted_condition.right << std::endl;
-        std::cout << extracted_condition.left << std::endl;
-        
 
         if (timers_map_.count(extracted_condition.left) || global_timers_map_.count(extracted_condition.left) ||
             vars_map_.count(extracted_condition.left) || global_vars_map_.count(extracted_condition.left))
@@ -211,10 +208,6 @@ void uppaal_xml_parser::fill_expressions_if_else(const list<string>& expressions
         //TODO fix this plz
         //Constraint is heap allocated, and is then copied here.
         //Results in dead memory.
-
-        std::cout << extracted_condition.right << std::endl;
-        std::cout << extracted_condition.left << std::endl;
-        
         if (timers_map_.count(extracted_condition.left) || global_timers_map_.count(extracted_condition.left) ||
             vars_map_.count(extracted_condition.left) || global_vars_map_.count(extracted_condition.left))
             t->push_back(get_expression_con(extracted_condition.input,
@@ -383,7 +376,6 @@ void uppaal_xml_parser::handle_locations(const xml_node locs)
         //TODO make string trimmer
         const string line_wo_ws = remove_whitespace(expr_string);
         const string nums = take_after(line_wo_ws, "=");
-        std::cout << nums << std::endl;
 
         delete expo_rate;
         expo_rate = variable_expression_evaluator::evaluate_variable_expression(nums,
@@ -444,8 +436,6 @@ void uppaal_xml_parser::handle_transitions(const xml_node trans)
         else if (kind == "probability")
         {
             extract_probability extracted_probability = string_extractor::extract(extract_probability(expr_string));
-            std::cout << extracted_probability.value << std::endl;
-
             probability = variable_expression_evaluator::evaluate_variable_expression(extracted_probability.value,
                 &vars_map_, &global_vars_map_,&const_local_vars, &const_global_vars);
         }
@@ -489,10 +479,6 @@ expr* uppaal_xml_parser::handle_if_statement(const string& input)
     // expr* left_side_con_expr = variable_expression_evaluator::evaluate_variable_expression(extracted_condition.left,
     //     &this->vars_map_, &this->global_vars_map_,&const_local_vars, &const_global_vars);
     // expr* condition_e = get_expression_con(extracted_if_statement.condition, left_side_con_expr, right_side_con_expr);
-
-    std::cout << extracted_if_statement.if_true << std::endl;
-    std::cout << extracted_if_statement.if_false << std::endl;
-    
     expr* if_true_e = variable_expression_evaluator::evaluate_variable_expression(extracted_if_statement.if_true,
         &this->vars_map_, &this->global_vars_map_,&const_local_vars, &const_global_vars);
     expr* if_false_e = variable_expression_evaluator::evaluate_variable_expression(extracted_if_statement.if_false,
@@ -554,7 +540,6 @@ list<update> uppaal_xml_parser::handle_assignment(const string& input)
         else
         {
             //Is normal assignment
-            std::cout << extracted_assignment.right << std::endl;
             right_side = variable_expression_evaluator::evaluate_variable_expression(extracted_assignment.right,
                 &this->vars_map_, &this->global_vars_map_,&const_local_vars, &const_global_vars);
         }
