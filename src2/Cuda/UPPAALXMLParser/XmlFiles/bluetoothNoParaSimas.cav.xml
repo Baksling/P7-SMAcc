@@ -221,8 +221,7 @@ const int N_wait = 127;
 		</location>
 		<location id="id17" x="-520" y="-184">
 			<name x="-560" y="-216">sleep</name>
-			<label kind="invariant" x="-616" y="-200">r == 0 &amp;&amp;
-y &lt;= T_sleep</label>
+			<label kind="invariant" x="-616" y="-200">r == 0 &amp;&amp; y &lt;= T_sleep</label>
 		</location>
 		<location id="id18" x="8" y="-127">
 			<committed/>
