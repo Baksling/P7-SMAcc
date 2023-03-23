@@ -78,8 +78,8 @@ namespace helper
         while(std::getline(test, segment, '&'))
         {
             string s = replace_all(segment, "&", "");
-            s = helper::replace_all(s, "(", "");
-            s = helper::replace_all(s, ")", "");
+            // s = helper::replace_all(s, "(", "");
+            // s = helper::replace_all(s, ")", "");
             result.push_back(s);
         }
         return result;
