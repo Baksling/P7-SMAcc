@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?> 
-<!DOCTYPE nta PUBLIC "-//Uppaal Team//DTD Flat System 1.1//EN" "http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd">
+<!DOCTYPE nta PUBLIC "-//Uppaal Team//DTD Flat System 1.1//En" "http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd">
 <nta>
-<declaration>const int N=100; 
- const double BRN = 2.4; 
- const double alpha = 1.0/5.1; 
- const double gamma = 1.0/3.4; 
- const double beta = BRN * gamma; 
- const double pH = 9.0/10000.0; 
- const double kappa = gamma * pH / (1.0-pH); 
- const double tau = 1.0/10.12; 
- int inf = 1;
+<declaration>const int n = 100; 
+const double brn = 2.4; 
+const double alpha = 1.0/5.1; 
+const double gamma = 1.0/3.4; 
+const double beta = brn * gamma; 
+const double pH = 9.0/10000.0; 
+const double kappa = gamma * pH / (1.0-pH); 
+const double tau = 1.0/10.12; 
+int inf = 1;
 </declaration>
 <template>
 <name x="5" y="5">person0
@@ -19,7 +19,7 @@
 <location id="id0" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id1" x="-42" y="-161">
@@ -89,7 +89,7 @@
 <location id="id6" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id7" x="-42" y="-161">
@@ -159,7 +159,7 @@
 <location id="id12" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id13" x="-42" y="-161">
@@ -229,7 +229,7 @@
 <location id="id18" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id19" x="-42" y="-161">
@@ -299,7 +299,7 @@
 <location id="id24" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id25" x="-42" y="-161">
@@ -369,7 +369,7 @@
 <location id="id30" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id31" x="-42" y="-161">
@@ -439,7 +439,7 @@
 <location id="id36" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id37" x="-42" y="-161">
@@ -509,7 +509,7 @@
 <location id="id42" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id43" x="-42" y="-161">
@@ -579,7 +579,7 @@
 <location id="id48" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id49" x="-42" y="-161">
@@ -649,7 +649,7 @@
 <location id="id54" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id55" x="-42" y="-161">
@@ -719,7 +719,7 @@
 <location id="id60" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id61" x="-42" y="-161">
@@ -789,7 +789,7 @@
 <location id="id66" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id67" x="-42" y="-161">
@@ -859,7 +859,7 @@
 <location id="id72" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id73" x="-42" y="-161">
@@ -929,7 +929,7 @@
 <location id="id78" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id79" x="-42" y="-161">
@@ -999,7 +999,7 @@
 <location id="id84" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id85" x="-42" y="-161">
@@ -1069,7 +1069,7 @@
 <location id="id90" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id91" x="-42" y="-161">
@@ -1139,7 +1139,7 @@
 <location id="id96" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id97" x="-42" y="-161">
@@ -1209,7 +1209,7 @@
 <location id="id102" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id103" x="-42" y="-161">
@@ -1279,7 +1279,7 @@
 <location id="id108" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id109" x="-42" y="-161">
@@ -1349,7 +1349,7 @@
 <location id="id114" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id115" x="-42" y="-161">
@@ -1419,7 +1419,7 @@
 <location id="id120" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id121" x="-42" y="-161">
@@ -1489,7 +1489,7 @@
 <location id="id126" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id127" x="-42" y="-161">
@@ -1559,7 +1559,7 @@
 <location id="id132" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id133" x="-42" y="-161">
@@ -1629,7 +1629,7 @@
 <location id="id138" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id139" x="-42" y="-161">
@@ -1699,7 +1699,7 @@
 <location id="id144" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id145" x="-42" y="-161">
@@ -1769,7 +1769,7 @@
 <location id="id150" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id151" x="-42" y="-161">
@@ -1839,7 +1839,7 @@
 <location id="id156" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id157" x="-42" y="-161">
@@ -1909,7 +1909,7 @@
 <location id="id162" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id163" x="-42" y="-161">
@@ -1979,7 +1979,7 @@
 <location id="id168" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id169" x="-42" y="-161">
@@ -2049,7 +2049,7 @@
 <location id="id174" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id175" x="-42" y="-161">
@@ -2119,7 +2119,7 @@
 <location id="id180" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id181" x="-42" y="-161">
@@ -2189,7 +2189,7 @@
 <location id="id186" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id187" x="-42" y="-161">
@@ -2259,7 +2259,7 @@
 <location id="id192" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id193" x="-42" y="-161">
@@ -2329,7 +2329,7 @@
 <location id="id198" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id199" x="-42" y="-161">
@@ -2399,7 +2399,7 @@
 <location id="id204" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id205" x="-42" y="-161">
@@ -2469,7 +2469,7 @@
 <location id="id210" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id211" x="-42" y="-161">
@@ -2539,7 +2539,7 @@
 <location id="id216" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id217" x="-42" y="-161">
@@ -2609,7 +2609,7 @@
 <location id="id222" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id223" x="-42" y="-161">
@@ -2679,7 +2679,7 @@
 <location id="id228" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id229" x="-42" y="-161">
@@ -2749,7 +2749,7 @@
 <location id="id234" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id235" x="-42" y="-161">
@@ -2819,7 +2819,7 @@
 <location id="id240" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id241" x="-42" y="-161">
@@ -2889,7 +2889,7 @@
 <location id="id246" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id247" x="-42" y="-161">
@@ -2959,7 +2959,7 @@
 <location id="id252" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id253" x="-42" y="-161">
@@ -3029,7 +3029,7 @@
 <location id="id258" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id259" x="-42" y="-161">
@@ -3099,7 +3099,7 @@
 <location id="id264" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id265" x="-42" y="-161">
@@ -3169,7 +3169,7 @@
 <location id="id270" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id271" x="-42" y="-161">
@@ -3239,7 +3239,7 @@
 <location id="id276" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id277" x="-42" y="-161">
@@ -3309,7 +3309,7 @@
 <location id="id282" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id283" x="-42" y="-161">
@@ -3379,7 +3379,7 @@
 <location id="id288" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id289" x="-42" y="-161">
@@ -3449,7 +3449,7 @@
 <location id="id294" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id295" x="-42" y="-161">
@@ -3519,7 +3519,7 @@
 <location id="id300" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id301" x="-42" y="-161">
@@ -3589,7 +3589,7 @@
 <location id="id306" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id307" x="-42" y="-161">
@@ -3659,7 +3659,7 @@
 <location id="id312" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id313" x="-42" y="-161">
@@ -3729,7 +3729,7 @@
 <location id="id318" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id319" x="-42" y="-161">
@@ -3799,7 +3799,7 @@
 <location id="id324" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id325" x="-42" y="-161">
@@ -3869,7 +3869,7 @@
 <location id="id330" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id331" x="-42" y="-161">
@@ -3939,7 +3939,7 @@
 <location id="id336" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id337" x="-42" y="-161">
@@ -4009,7 +4009,7 @@
 <location id="id342" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id343" x="-42" y="-161">
@@ -4079,7 +4079,7 @@
 <location id="id348" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id349" x="-42" y="-161">
@@ -4149,7 +4149,7 @@
 <location id="id354" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id355" x="-42" y="-161">
@@ -4219,7 +4219,7 @@
 <location id="id360" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id361" x="-42" y="-161">
@@ -4289,7 +4289,7 @@
 <location id="id366" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id367" x="-42" y="-161">
@@ -4359,7 +4359,7 @@
 <location id="id372" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id373" x="-42" y="-161">
@@ -4429,7 +4429,7 @@
 <location id="id378" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id379" x="-42" y="-161">
@@ -4499,7 +4499,7 @@
 <location id="id384" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id385" x="-42" y="-161">
@@ -4569,7 +4569,7 @@
 <location id="id390" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id391" x="-42" y="-161">
@@ -4639,7 +4639,7 @@
 <location id="id396" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id397" x="-42" y="-161">
@@ -4709,7 +4709,7 @@
 <location id="id402" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id403" x="-42" y="-161">
@@ -4779,7 +4779,7 @@
 <location id="id408" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id409" x="-42" y="-161">
@@ -4849,7 +4849,7 @@
 <location id="id414" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id415" x="-42" y="-161">
@@ -4919,7 +4919,7 @@
 <location id="id420" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id421" x="-42" y="-161">
@@ -4989,7 +4989,7 @@
 <location id="id426" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id427" x="-42" y="-161">
@@ -5059,7 +5059,7 @@
 <location id="id432" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id433" x="-42" y="-161">
@@ -5129,7 +5129,7 @@
 <location id="id438" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id439" x="-42" y="-161">
@@ -5199,7 +5199,7 @@
 <location id="id444" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id445" x="-42" y="-161">
@@ -5269,7 +5269,7 @@
 <location id="id450" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id451" x="-42" y="-161">
@@ -5339,7 +5339,7 @@
 <location id="id456" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id457" x="-42" y="-161">
@@ -5409,7 +5409,7 @@
 <location id="id462" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id463" x="-42" y="-161">
@@ -5479,7 +5479,7 @@
 <location id="id468" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id469" x="-42" y="-161">
@@ -5549,7 +5549,7 @@
 <location id="id474" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id475" x="-42" y="-161">
@@ -5619,7 +5619,7 @@
 <location id="id480" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id481" x="-42" y="-161">
@@ -5689,7 +5689,7 @@
 <location id="id486" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id487" x="-42" y="-161">
@@ -5759,7 +5759,7 @@
 <location id="id492" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id493" x="-42" y="-161">
@@ -5829,7 +5829,7 @@
 <location id="id498" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id499" x="-42" y="-161">
@@ -5899,7 +5899,7 @@
 <location id="id504" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id505" x="-42" y="-161">
@@ -5969,7 +5969,7 @@
 <location id="id510" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id511" x="-42" y="-161">
@@ -6039,7 +6039,7 @@
 <location id="id516" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id517" x="-42" y="-161">
@@ -6109,7 +6109,7 @@
 <location id="id522" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id523" x="-42" y="-161">
@@ -6179,7 +6179,7 @@
 <location id="id528" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id529" x="-42" y="-161">
@@ -6249,7 +6249,7 @@
 <location id="id534" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id535" x="-42" y="-161">
@@ -6319,7 +6319,7 @@
 <location id="id540" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id541" x="-42" y="-161">
@@ -6389,7 +6389,7 @@
 <location id="id546" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id547" x="-42" y="-161">
@@ -6459,7 +6459,7 @@
 <location id="id552" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id553" x="-42" y="-161">
@@ -6529,7 +6529,7 @@
 <location id="id558" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id559" x="-42" y="-161">
@@ -6599,7 +6599,7 @@
 <location id="id564" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id565" x="-42" y="-161">
@@ -6669,7 +6669,7 @@
 <location id="id570" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id571" x="-42" y="-161">
@@ -6739,7 +6739,7 @@
 <location id="id576" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id577" x="-42" y="-161">
@@ -6809,7 +6809,7 @@
 <location id="id582" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id583" x="-42" y="-161">
@@ -6879,7 +6879,7 @@
 <location id="id588" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id589" x="-42" y="-161">
@@ -6949,7 +6949,7 @@
 <location id="id594" x="-144" y="-161">
 <name x="-154" y="-195">S
 </name>
-<label kind="exponentialrate" x="-154" y="-127">beta*inf/N
+<label kind="exponentialrate" x="-154" y="-127">beta*inf/n
 </label>
 </location>
 <location id="id595" x="-42" y="-161">
@@ -7016,7 +7016,7 @@
 </system>
 <queries>
 <query>
-<formula>simulate[&lt;=100; 1]{S,E,I,H,R}
+<formula>simulate[&lt;=100; 1]{inf}
 </formula>
 <comment>
 </comment>
