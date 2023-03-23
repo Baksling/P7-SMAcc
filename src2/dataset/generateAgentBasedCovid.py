@@ -1,13 +1,14 @@
 
-n = 10000
-s = '<?xml version="1.0" encoding="utf-8"?> \n<!DOCTYPE nta PUBLIC "-//Uppaal Team//DTD Flat System 1.1//EN" "http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd">\n<nta>\n<declaration>const int N=10000; \n const double BRN = 2.4; \n const double alpha = 1.0/5.1; \n const double gamma = 1.0/3.4; \n const double beta = BRN * gamma; \n const double pH = 9.0/10000.0; \n const double kappa = gamma * pH / (1.0-pH); \n const double tau = 1.0/10.12; \n int inf = 0;\n</declaration>\n'
+n = 1000
+infected_percent = 0.01
+s = f'<?xml version="1.0" encoding="utf-8"?> \n<!DOCTYPE nta PUBLIC "-//Uppaal Team//DTD Flat System 1.1//EN" "http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd">\n<nta>\n<declaration>const int N={n}; \n const double BRN = 2.4; \n const double alpha = 1.0/5.1; \n const double gamma = 1.0/3.4; \n const double beta = BRN * gamma; \n const double pH = 9.0/10000.0; \n const double kappa = gamma * pH / (1.0-pH); \n const double tau = 1.0/10.12; \n int inf = {int(infected_percent * n)};\n</declaration>\n'
 name = ""
 nodeId = 0
 persons = ""
 
 e = '\n<queries>\n<query>\n<formula>simulate[&lt;=100; 1]{S,E,I,H,R}\n</formula>\n<comment>\n</comment>\n</query>\n</queries>\n</nta>'
 
-with open("test.xml", "w") as f:
+with open(f"agentBsaeCovid_{n}_{infected_percent}.xml", "w") as f:
     f.write(s)
     for i in range(0, n):
         name = "person" + str(i)
