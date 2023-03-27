@@ -50,9 +50,9 @@ struct sim_config
     unsigned initial_committed = 0;
     
     //paths
-    io_paths* paths;
+    io_paths* paths = nullptr;
 
-    output_properties* properties;
+    output_properties* properties = nullptr;
     double alpha = 0.005;
     double epsilon = 0.005;
     

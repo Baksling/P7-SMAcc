@@ -276,6 +276,7 @@ CPU GPU void state::traverse_edge(const int process_id, node* dest)
     
     this->urgent_count = this->urgent_count + IS_URGENT(dest->type) - IS_URGENT(current->type);
     this->committed_count = this->committed_count + (dest->type == node::committed) - (current->type == node::committed);
+    // printf("process %d from %d to %d\n", process_id, current->id, dest->id);
     
     this->models.store[process_id] = dest;
 }

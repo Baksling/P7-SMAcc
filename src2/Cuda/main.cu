@@ -230,7 +230,7 @@ void run_optimise(network* model, sim_config* config, output_properties* propert
         properties->node_names,
         properties->variable_names);
 
-    if(config->verbose)
+    if(config->model_print_mode == sim_config::print_model)
         print_visitor.visit(model);
 
     if(config->verbose) printf("Optimizing...\n");
@@ -254,7 +254,7 @@ void run_optimise(network* model, sim_config* config, output_properties* propert
     
     optimizer.clear();
 
-    if(config->model_print_mode == sim_config::print_model)
+    if(config->model_print_mode == sim_config::print_reduction)
     {
         print_visitor.clear();
         print_visitor.visit(model);

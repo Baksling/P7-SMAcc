@@ -22,6 +22,7 @@ CPU GPU size_t thread_heap_size(const sim_config* config)
 
 CPU GPU double determine_progress(const node* node, state* state)
 {
+    if(state->urgent_count > 0) return 0.0;
     bool is_finite = true;
     const double random_val = curand_uniform_double(state->random);
     const double max = node->max_progression(state, &is_finite);
@@ -47,6 +48,28 @@ CPU GPU inline bool can_progress(const node* n)
     return false;
 } 
 
+CPU GPU inline bool is_winning_process(
+    const double local_progress,
+    const double min_progression_time,
+    const unsigned epsilon,
+    const unsigned max_epsilon,
+    const state* sim_state,
+    const node* current)
+
+{
+    const bool equal_check_cond = (local_progress == min_progression_time) * (epsilon > max_epsilon);  // NOLINT(clang-diagnostic-float-equal)
+    const bool lower_cond = (local_progress >= 0.0) * (local_progress < min_progression_time);
+    const bool committed_check = (sim_state->committed_count == 0) + (current->type == node::committed);
+    
+    return (equal_check_cond + lower_cond) * (committed_check);
+    
+    // return (abs(local_progress - min_progression_time) <= DBL_EPSILON && rseed > max_rseed)
+    //         || (local_progress > 0.0 && local_progress < min_progression_time)
+    //         && (sim_state->committed_count == 0
+    //             || (sim_state->committed_count > 0
+    //                 && current->type == node::committed));
+}
+
 #define NO_PROCESS (-1)
 #define IS_NO_PROCESS(x) ((x) < 0)
 CPU GPU int progress_sim(state* sim_state, const sim_config* config)
@@ -62,15 +85,17 @@ CPU GPU int progress_sim(state* sim_state, const sim_config* config)
 
     //progress number of steps
     sim_state->steps++;
-
+    
     // const double max_progression_time = config->use_max_steps
     //                                         ? DBL_MAX
     //                                         : config->max_global_progression - sim_state->global_time;
 
+    // const bool has_urgent = sim_state->urgent_count > 0 && sim_state->committed_count == 0;
     const double max_progression_time = ((config->use_max_steps) * DBL_MAX)
                 + ((!config->use_max_steps) * (config->max_global_progression - sim_state->global_time));
 
     double min_progression_time = max_progression_time;
+    unsigned max_epsilon = 0;
     int winning_process = NO_PROCESS;
     // node** winning_model = nullptr;
     for (int i = 0; i < sim_state->models.size; ++i)
@@ -89,25 +114,23 @@ CPU GPU int progress_sim(state* sim_state, const sim_config* config)
 
         
         //determine current models progress
+        const unsigned epsilon = curand(sim_state->random);
         const double local_progress = determine_progress(current, sim_state);
-
-        // printf("progress %lf\n", local_progress);
+        // has_urgent
+        // ? curand_uniform_double(sim_state->random)
+        // : determine_progress(current, sim_state);
+        
         //If negative progression, skip. Represents NO_PROGRESS
         //Set current as winner, if it is the earliest active model.
-        if(
-            local_progress >= 0.0
-            && local_progress < min_progression_time
-            && (sim_state->committed_count == 0
-                || (sim_state->committed_count > 0
-                    && current->type == node::committed)))
+        if(is_winning_process(local_progress, min_progression_time, epsilon, max_epsilon, sim_state, current))
         {
             min_progression_time = local_progress;
             winning_process = i;
-            // winning_model = &sim_state->models.store[i];
+            max_epsilon = epsilon;
         }
     }
     // printf(" I WON! Node: %d \n", winning_model->current_node->get_id());
-    if(min_progression_time < max_progression_time && sim_state->urgent_count == 0)
+    if(sim_state->urgent_count == 0 && min_progression_time < max_progression_time)
     {
         for (int i = 0; i < sim_state->variables.size; ++i)
         {
@@ -187,7 +210,7 @@ CPU GPU void simulate_automata(
             {
                 const node* current = sim_state.models.store[process];
                 const edge* e = pick_next_edge_stack(current->edges, &sim_state);
-                // printf("current: %d, %d, %p\n", current->id, current->type, e);
+                // printf("current e: %d, %d, %p\n", current->id, current->type, e);
                 if(e == nullptr) break;
                 
                 sim_state.traverse_edge(process, e->dest);

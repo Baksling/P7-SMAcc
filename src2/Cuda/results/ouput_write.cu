@@ -47,7 +47,7 @@ void output_writer::write_to_file(const result_pointers* results,
             const int index = t * this->variable_count_ + i;
             file_variable
                 << i << ','
-                << (this->properties_->variable_names->count(i) ? this->properties_->variable_names->at(i) : "_")
+                << (this->properties_->variable_names->count(i) ? this->properties_->variable_names->at(i) : "_") << ','
                 << t << ','
                 << results->variables[index].avg_max_value(sims_pr_thread) << ','
                 << results->variables[index].max_value << '\n';
