@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?> 
 <!DOCTYPE nta PUBLIC "-//Uppaal Team//DTD Flat System 1.1//En" "http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd">
 <nta>
-<declaration>int p = 10000; 
+<declaration>int p = 500; 
 const double brn = 2.4; 
 const double alpha = 1.0/5.1; 
 const double gamma = 1.0/3.4; 
@@ -9,7 +9,7 @@ const double beta = brn * gamma;
 const double pH = 9.0/10000.0; 
 const double kappa = gamma * pH / (1.0-pH); 
 const double tau = 1.0/10.12; 
-int inf = 100;
+int inf = 5;
 </declaration>
 <template>
 <name x="5" y="5">person0

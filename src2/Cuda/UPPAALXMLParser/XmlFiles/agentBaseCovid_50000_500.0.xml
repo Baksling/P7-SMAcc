@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?> 
 <!DOCTYPE nta PUBLIC "-//Uppaal Team//DTD Flat System 1.1//En" "http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd">
 <nta>
-<declaration>int p = 1; 
+<declaration>int p = 50000; 
 const double brn = 2.4; 
 const double alpha = 1.0/5.1; 
 const double gamma = 1.0/3.4; 

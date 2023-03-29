@@ -1,10 +1,10 @@
-number_of_automatas = 100000
+number_of_automatas = 500
 n = 1
 infected_percent = number_of_automatas*0.01
 kappa = 265
 gamma = 294_117
 
-s = f'<?xml version="1.0" encoding="utf-8"?> \n<!DOCTYPE nta PUBLIC "-//Uppaal Team//DTD Flat System 1.1//En" "http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd">\n<nta>\n<declaration>int p = {n}; \nconst double brn = 2.4; \nconst double alpha = 1.0/5.1; \nconst double gamma = 1.0/3.4; \nconst double beta = brn * gamma; \nconst double pH = 9.0/10000.0; \nconst double kappa = gamma * pH / (1.0-pH); \nconst double tau = 1.0/10.12; \nint inf = {int(infected_percent)};\n</declaration>\n'
+s = f'<?xml version="1.0" encoding="utf-8"?> \n<!DOCTYPE nta PUBLIC "-//Uppaal Team//DTD Flat System 1.1//En" "http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd">\n<nta>\n<declaration>int p = {number_of_automatas}; \nconst double brn = 2.4; \nconst double alpha = 1.0/5.1; \nconst double gamma = 1.0/3.4; \nconst double beta = brn * gamma; \nconst double pH = 9.0/10000.0; \nconst double kappa = gamma * pH / (1.0-pH); \nconst double tau = 1.0/10.12; \nint inf = {int(infected_percent)};\n</declaration>\n'
 name = ""
 nodeId = 0
 persons = ""
