@@ -1,16 +1,18 @@
+number_of_automatas = 100000
 n = 1
-infected_percent = 0.01
+infected_percent = number_of_automatas*0.01
 kappa = 265
 gamma = 294_117
 
-s = f'<?xml version="1.0" encoding="utf-8"?> \n<!DOCTYPE nta PUBLIC "-//Uppaal Team//DTD Flat System 1.1//En" "http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd">\n<nta>\n<declaration>int p = {n}; \nconst double brn = 2.4; \nconst double alpha = 1.0/5.1; \nconst double gamma = 1.0/3.4; \nconst double beta = brn * gamma; \nconst double pH = 9.0/10000.0; \nconst double kappa = gamma * pH / (1.0-pH); \nconst double tau = 1.0/10.12; \nint inf = {int(infected_percent * n)};\n</declaration>\n'
+s = f'<?xml version="1.0" encoding="utf-8"?> \n<!DOCTYPE nta PUBLIC "-//Uppaal Team//DTD Flat System 1.1//En" "http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd">\n<nta>\n<declaration>int p = {n}; \nconst double brn = 2.4; \nconst double alpha = 1.0/5.1; \nconst double gamma = 1.0/3.4; \nconst double beta = brn * gamma; \nconst double pH = 9.0/10000.0; \nconst double kappa = gamma * pH / (1.0-pH); \nconst double tau = 1.0/10.12; \nint inf = {int(infected_percent)};\n</declaration>\n'
 name = ""
 nodeId = 0
 persons = ""
+do_da_old = False
 
 e = '\n<queries>\n<query>\n<formula>simulate[&lt;=100; 1]{inf}\n</formula>\n<comment>\n</comment>\n</query>\n</queries>\n</nta>'
 
-with open(f"agentBaseCovid_{n}_{infected_percent}.xml", "w") as f:
+with open(f"agentBaseCovid_{number_of_automatas}_{infected_percent}.xml", "w") as f:
     f.write(s)
     for i in range(0, n):
         name = "person" + str(i)
@@ -21,3 +23,4 @@ with open(f"agentBaseCovid_{n}_{infected_percent}.xml", "w") as f:
     system = f"\n<system>system {persons};\n</system>"
     f.write(system)
     f.write(e)
+    
