@@ -18,6 +18,32 @@ public:
     virtual std::unordered_map<int, int>* get_subsystems() = 0;
     virtual std::unordered_map<int, string>* get_template_names() = 0;
 
+    static void naive_multiply_instantiation(network* n, const int multiplier)
+    {
+        if(multiplier <= 0)
+        {
+            throw std::runtime_error("Cannot multiply model with 0 or less");
+        }
+        if(multiplier == 1) return; //dont do anything
+
+        const int size = n->automatas.size;
+        const int new_size = size * multiplier;
+        node** originals = n->automatas.store;
+
+        node** store = static_cast<node**>(malloc(sizeof(node*)*new_size));
+
+        for (int i = 0; i < multiplier; ++i)
+        {
+            for (int j = 0; j < size; ++j)
+            {
+                const int k = i * size + j;
+                store[k] = originals[j];
+            }   
+        }
+
+        n->automatas = arr<node*>{store, new_size};
+    }
+    
     static std::unordered_set<std::string>* parse_query(const std::string& query)
     {
         if(query.empty()) return new unordered_set<std::string>();

@@ -270,6 +270,31 @@ CPU GPU inline bool edge::edge_enabled(state* state) const
     return true;
 }
 
+// bool proposition::evaluate(state* state) const
+// {
+//     switch (this->type) {
+//     case reach:
+//         return state->models.store[this->data.reachability.process_id]->id == this->data.reachability.id;
+//     case sys_constraint:
+//         return this->data.constraint.evaluate_constraint(state);
+//     }
+//     return false;
+// }
+//
+// bool query::check_query(state* state) const
+// {
+//     const int current = state->query_state; 
+//     unsigned k = 0; //max 32 bits, aka 32 propositions
+//     for (int i = 0; i < min(this->propositions.size, 32); ++i)
+//     {
+//         const bool pred = this->propositions.store[i].evaluate(state);
+//         k = SET_BIT_IF(i, pred, k);
+//     }
+//     const unsigned index = this->inputs * current + k;
+//     state->query_state =  dfa[index];
+//     return state->query_state < 0;
+// }
+
 CPU GPU void state::traverse_edge(const int process_id, node* dest)
 {
     const node* current = this->models.store[process_id];
@@ -332,6 +357,7 @@ state state::init(void* cache, curandState* random, const network* model, const 
         0,
         0,
         0,
+        0,
         0.0,
         arr<node*>{ nodes, model->automatas.size },
         arr<clock_var>{ vars, model->variables.size },
@@ -342,7 +368,7 @@ state state::init(void* cache, curandState* random, const network* model, const 
     };
 }
 
-void state::reset(const unsigned sim_id, const network* model, int initial_urgent_count, int initial_committed_count)
+void state::reset(const unsigned sim_id, const network* model, const unsigned initial_urgent_count, const unsigned initial_committed_count)
 {
     this->simulation_id = sim_id;
     this->steps = 0;

@@ -11,7 +11,7 @@ CPU GPU size_t thread_heap_size(const sim_config* config)
     const size_t size =
           static_cast<size_t>(config->max_expression_depth*2+1) * sizeof(void*) + //this is a expression*, but it doesnt like sizeof(expression*)
           config->max_expression_depth * sizeof(double) +
-          config->network_size * sizeof(node) +
+          config->network_size * sizeof(void*) + //this is a node*
           config->variable_count * sizeof(clock_var) +
           config->max_edge_fanout * sizeof(state::w_edge);
 
@@ -79,7 +79,7 @@ CPU GPU int progress_sim(state* sim_state, const sim_config* config)
     // if(config->use_max_steps * sim_state->steps  >= config->max_steps_pr_sim
     //     + !config->use_max_steps * sim_state->global_time >= config->max_global_progression)
     
-    if((config->use_max_steps && sim_state->steps  >= config->max_steps_pr_sim)
+    if((config->use_max_steps && sim_state->steps  >= config->max_sim_steps)
         || (!config->use_max_steps && sim_state->global_time >= config->max_global_progression) )
             return NO_PROCESS;
 
@@ -194,14 +194,15 @@ CPU GPU void simulate_automata(
     curand_init(config->seed, idx, idx, r_state);
     state sim_state = state::init(cache, r_state, model, config->max_expression_depth, config->max_edge_fanout);
     
-    for (unsigned i = 0; i < config->simulation_amount; ++i)
+    for (unsigned i = 0; i < config->sim_pr_thread; ++i)
     {
-        const unsigned int sim_id = i + config->simulation_amount * static_cast<unsigned int>(idx);
+        const unsigned int sim_id = i + config->sim_pr_thread * static_cast<unsigned int>(idx);
         sim_state.reset(sim_id, model, config->initial_urgent, config->initial_committed);
         
         //run simulation
         while (true)
         {
+            // model->query->check_query()
             const int process = progress_sim(&sim_state, config);
             // printf("current process_id: %d %lf | urgent_count: %d\n", process, sim_state.global_time, sim_state.urgent_count);
             if(IS_NO_PROCESS(process)) break;

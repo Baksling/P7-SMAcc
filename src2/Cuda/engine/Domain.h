@@ -4,6 +4,7 @@
 struct state;
 struct edge;
 struct node;
+int min(int, int);
 
 #include "../common/macro.h"
 #include "../common/my_stack.h"
@@ -160,16 +161,60 @@ struct edge
     CPU GPU bool edge_enabled(state* state) const;
 };
 
+// struct proposition
+// {
+//     enum prop_type
+//     {
+//         reach,
+//         sys_constraint,s
+//     } type;
+//     union
+//     {
+//         struct
+//         {
+//             int process_id;
+//             int id;
+//         } reachability;
+//         constraint constraint;
+//     } data;
+//
+//     bool evaluate(state* state) const;
+// };
+//
+// #define QUERY_GOAL (-1)
+// #define QUERY_TERMINAL (-2)
+// #define IS_TERMINAL(x) ((x) == -2)
+// #define IS_GOAL(x) ((x)==-1)
+// struct query
+// {
+//     enum query_types
+//     {
+//         liveness,
+//         safety,
+//         estimate
+//     } type;
+//     const int inputs;
+//     const int states;
+//     int* dfa;
+//     arr<proposition> propositions;
+//
+// #define SET_BIT(i, x) ((x) | (1<<(i)))
+// #define SET_BIT_IF(i, cond, x) ((x) | ((cond)<<(i)))
+// #define IS_BIT_SET(i, x) ((x) & (1<<(i))) 
+//     CPU GPU bool check_query(state* state) const;
+// };
+
 struct network
 {
     arr<node*> automatas;
     arr<clock_var> variables;
+    // query* query;
 };
-
 
 
 struct state
 {
+    int query_state;
     unsigned urgent_count;
     unsigned committed_count;
     unsigned simulation_id;
@@ -193,6 +238,7 @@ struct state
     CPU GPU void traverse_edge(int process_id, node* dest);
     CPU GPU void broadcast_channel(const int channel, const int process);
     CPU GPU static state init(void* cache, curandState* random, const network* model, const unsigned expr_depth, const unsigned fanout);
-    CPU GPU void reset(const unsigned sim_id, const network* model, int initial_urgent_count, int initial_committed_count);
+    CPU GPU void reset(const unsigned sim_id, const network* model, const unsigned initial_urgent_count, const unsigned
+                       initial_committed_count);
 };
 #endif

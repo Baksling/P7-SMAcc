@@ -330,6 +330,7 @@
     <ClInclude Include="Cuda\common\sim_config.h" />
     <ClInclude Include="Cuda\common\thread_pool.h" />
     <ClInclude Include="Cuda\engine\Domain.h" />
+    <ClInclude Include="Cuda\engine\interpreter.h" />
     <ClInclude Include="Cuda\engine\model_oracle.h" />
     <ClInclude Include="Cuda\JIT\jitify.hpp" />
     <ClInclude Include="Cuda\JIT\jit_compiler.hpp" />

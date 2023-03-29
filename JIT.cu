@@ -102,9 +102,9 @@ struct sim_config
     unsigned initial_committed = 0;
     
     //paths
-    io_paths* paths;
+    io_paths* paths = nullptr;
 
-    output_properties* properties;
+    output_properties* properties = nullptr;
     double alpha = 0.005;
     double epsilon = 0.005;
     
@@ -140,6 +140,10 @@ public:
     }
 
     CPU GPU void push(T& t)
+    {
+        store_[count_++] = t;
+    }
+    CPU GPU void push_val(T t)
     {
         store_[count_++] = t;
     }
@@ -208,6 +212,8 @@ struct expr  // NOLINT(cppcoreguidelines-pro-type-member-init)
         modulo_ee,
 
         //boolean types
+        and_ee,
+        or_ee,
         less_equal_ee,
         greater_equal_ee,
         less_ee,
@@ -367,6 +373,46 @@ CPU GPU double evaluate_compiled_expression(const expr* ex, state* state)
 {
     //DO NOT REMOVE FOLLOWING COMMENT! IT IS USED AS SEARCH TARGET FOR JIT COMPILATION!!!
     switch(ex->compile_id){
+case 0: return((state->variables.store[2].value)+(1));
+case 1: return((state->variables.store[2].value)-(1));
+case 2: return((state->variables.store[1].value)+(1));
+case 3: return((state->variables.store[2].value)-(1));
+case 4: return((state->variables.store[2].value)+(1));
+case 5: return((state->variables.store[2].value)-(1));
+case 6: return((state->variables.store[1].value)+(1));
+case 7: return((state->variables.store[2].value)-(1));
+case 8: return((state->variables.store[2].value)+(1));
+case 9: return((state->variables.store[2].value)-(1));
+case 10: return((state->variables.store[1].value)+(1));
+case 11: return((state->variables.store[2].value)-(1));
+case 12: return((state->variables.store[2].value)+(1));
+case 13: return((state->variables.store[2].value)-(1));
+case 14: return((state->variables.store[1].value)+(1));
+case 15: return((state->variables.store[2].value)-(1));
+case 16: return((state->variables.store[2].value)+(1));
+case 17: return((state->variables.store[2].value)-(1));
+case 18: return((state->variables.store[1].value)+(1));
+case 19: return((state->variables.store[2].value)-(1));
+case 20: return((state->variables.store[2].value)+(1));
+case 21: return((state->variables.store[2].value)-(1));
+case 22: return((state->variables.store[1].value)+(1));
+case 23: return((state->variables.store[2].value)-(1));
+case 24: return((state->variables.store[2].value)+(1));
+case 25: return((state->variables.store[2].value)-(1));
+case 26: return((state->variables.store[1].value)+(1));
+case 27: return((state->variables.store[2].value)-(1));
+case 28: return((state->variables.store[2].value)+(1));
+case 29: return((state->variables.store[2].value)-(1));
+case 30: return((state->variables.store[1].value)+(1));
+case 31: return((state->variables.store[2].value)-(1));
+case 32: return((state->variables.store[2].value)+(1));
+case 33: return((state->variables.store[2].value)-(1));
+case 34: return((state->variables.store[1].value)+(1));
+case 35: return((state->variables.store[2].value)-(1));
+case 36: return((state->variables.store[2].value)+(1));
+case 37: return((state->variables.store[2].value)-(1));
+case 38: return((state->variables.store[1].value)+(1));
+case 39: return((state->variables.store[2].value)-(1));
 
 }
 
@@ -379,70 +425,10 @@ CPU GPU bool evaluate_compiled_constraint(const constraint* con, state* state)
 {
     //DO NOT REMOVE FOLLOWING COMMENT! IT IS USED AS SEARCH TARGET FOR JIT COMPILATION!!!
     switch(con->compile_id){
-case 0: return abs((state->variables.store[13].value)-(0)) <= DBL_EPSILON; break;
-case 1: return abs((state->variables.store[13].value)-(1)) <= DBL_EPSILON; break;
-case 2: return (state->variables.store[1].value)<=(167); break;
-case 3: return (state->variables.store[1].value)<=(85); break;
-case 4: return abs((state->variables.store[13].value)-(5)) <= DBL_EPSILON; break;
-case 5: return (state->variables.store[1].value)<=(159); break;
-case 6: return (state->variables.store[1].value)>=(159); break;
-case 7: return abs((state->variables.store[13].value)-(6)) <= DBL_EPSILON; break;
-case 8: return abs((state->variables.store[13].value)-(8)) <= DBL_EPSILON; break;
-case 9: return (state->variables.store[1].value)<(159); break;
-case 10: return abs((state->variables.store[13].value)-(3)) <= DBL_EPSILON; break;
-case 11: return abs((state->variables.store[13].value)-(7)) <= DBL_EPSILON; break;
-case 12: return abs((state->variables.store[13].value)-(4)) <= DBL_EPSILON; break;
-case 13: return (state->variables.store[1].value)>=(76); break;
-case 14: return abs((state->variables.store[13].value)-(2)) <= DBL_EPSILON; break;
-case 15: return abs((state->variables.store[14].value)-(0)) <= DBL_EPSILON; break;
-case 16: return (state->variables.store[5].value)<=(30); break;
-case 17: return (state->variables.store[3].value)<=(30); break;
-case 18: return abs((state->variables.store[14].value)-(5)) <= DBL_EPSILON; break;
-case 19: return abs((state->variables.store[7].value)-(1)) <= DBL_EPSILON; break;
-case 20: return (state->variables.store[5].value)>=(5); break;
-case 21: return abs((state->variables.store[14].value)-(9)) <= DBL_EPSILON; break;
-case 22: return (state->variables.store[3].value)>=(5); break;
-case 23: return abs((state->variables.store[14].value)-(3)) <= DBL_EPSILON; break;
-case 24: return abs((state->variables.store[11].value)-(1)) <= DBL_EPSILON; break;
-case 25: return abs((state->variables.store[14].value)-(7)) <= DBL_EPSILON; break;
-case 26: return abs((state->variables.store[14].value)-(1)) <= DBL_EPSILON; break;
-case 27: return abs((state->variables.store[9].value)-(1)) <= DBL_EPSILON; break;
-case 28: return abs((state->variables.store[14].value)-(8)) <= DBL_EPSILON; break;
-case 29: return abs((state->variables.store[14].value)-(2)) <= DBL_EPSILON; break;
-case 30: return abs((state->variables.store[14].value)-(4)) <= DBL_EPSILON; break;
-case 31: return abs((state->variables.store[14].value)-(6)) <= DBL_EPSILON; break;
-case 32: return abs((state->variables.store[15].value)-(0)) <= DBL_EPSILON; break;
-case 33: return abs((state->variables.store[15].value)-(1)) <= DBL_EPSILON; break;
-case 34: return (state->variables.store[2].value)<=(167); break;
-case 35: return (state->variables.store[2].value)<=(85); break;
-case 36: return abs((state->variables.store[15].value)-(5)) <= DBL_EPSILON; break;
-case 37: return (state->variables.store[2].value)<=(159); break;
-case 38: return (state->variables.store[2].value)>=(159); break;
-case 39: return abs((state->variables.store[15].value)-(6)) <= DBL_EPSILON; break;
-case 40: return abs((state->variables.store[15].value)-(8)) <= DBL_EPSILON; break;
-case 41: return (state->variables.store[2].value)<(159); break;
-case 42: return abs((state->variables.store[15].value)-(3)) <= DBL_EPSILON; break;
-case 43: return abs((state->variables.store[15].value)-(7)) <= DBL_EPSILON; break;
-case 44: return abs((state->variables.store[15].value)-(4)) <= DBL_EPSILON; break;
-case 45: return (state->variables.store[2].value)>=(76); break;
-case 46: return abs((state->variables.store[15].value)-(2)) <= DBL_EPSILON; break;
-case 47: return abs((state->variables.store[16].value)-(0)) <= DBL_EPSILON; break;
-case 48: return (state->variables.store[6].value)<=(30); break;
-case 49: return (state->variables.store[4].value)<=(30); break;
-case 50: return abs((state->variables.store[16].value)-(5)) <= DBL_EPSILON; break;
-case 51: return abs((state->variables.store[8].value)-(1)) <= DBL_EPSILON; break;
-case 52: return (state->variables.store[6].value)>=(5); break;
-case 53: return abs((state->variables.store[16].value)-(9)) <= DBL_EPSILON; break;
-case 54: return (state->variables.store[4].value)>=(5); break;
-case 55: return abs((state->variables.store[16].value)-(3)) <= DBL_EPSILON; break;
-case 56: return abs((state->variables.store[12].value)-(1)) <= DBL_EPSILON; break;
-case 57: return abs((state->variables.store[16].value)-(7)) <= DBL_EPSILON; break;
-case 58: return abs((state->variables.store[16].value)-(1)) <= DBL_EPSILON; break;
-case 59: return abs((state->variables.store[10].value)-(1)) <= DBL_EPSILON; break;
-case 60: return abs((state->variables.store[16].value)-(8)) <= DBL_EPSILON; break;
-case 61: return abs((state->variables.store[16].value)-(2)) <= DBL_EPSILON; break;
-case 62: return abs((state->variables.store[16].value)-(4)) <= DBL_EPSILON; break;
-case 63: return abs((state->variables.store[16].value)-(6)) <= DBL_EPSILON; break;
+case 0: return (state->variables.store[0].value)<=(1); break;
+case 1: return abs((state->variables.store[2].value)-(0)) <= DBL_EPSILON; break;
+case 2: return (state->variables.store[2].value)>(0); break;
+case 3: return abs((state->variables.store[0].value)-(1)) <= DBL_EPSILON; break;
 
 }
 
@@ -459,10 +445,7 @@ CPU GPU double evaluate_compiled_constraint_upper_bound(const constraint* con, s
     
     //DO NOT REMOVE FOLLOWING COMMENT! IT IS USED AS SEARCH TARGET FOR JIT COMPILATION!!!
     switch(con->compile_id){
-case 5: v0 = ((159)-(state->variables.store[1].value))/ (1); break;
-case 9: v0 = ((159)-(state->variables.store[1].value))/ (1); break;
-case 37: v0 = ((159)-(state->variables.store[2].value))/ (1); break;
-case 41: v0 = ((159)-(state->variables.store[2].value))/ (1); break;
+case 0: v0 = ((1)-(state->variables.store[0].value))/ (1); break;
 
 }
 
@@ -512,6 +495,14 @@ CPU GPU double evaluate_expression_node(const expr* expr, state* state)
         v2 = state->value_stack.pop();
         v1 = state->value_stack.pop();
         return static_cast<double>(static_cast<int>(v1) % static_cast<int>(v2));
+    case expr::and_ee:
+        v2 = state->value_stack.pop();
+        v1 = state->value_stack.pop();
+        return static_cast<double>(abs(v1) > DBL_EPSILON && abs(v2) > DBL_EPSILON);
+    case expr::or_ee:
+        v2 = state->value_stack.pop();
+        v1 = state->value_stack.pop();
+        return static_cast<double>(abs(v1) > DBL_EPSILON || abs(v2) > DBL_EPSILON);
     case expr::less_equal_ee: 
         v2 = state->value_stack.pop();
         v1 = state->value_stack.pop();
@@ -706,6 +697,7 @@ CPU GPU void state::traverse_edge(const int process_id, node* dest)
     
     this->urgent_count = this->urgent_count + IS_URGENT(dest->type) - IS_URGENT(current->type);
     this->committed_count = this->committed_count + (dest->type == node::committed) - (current->type == node::committed);
+    // printf("process %d from %d to %d\n", process_id, current->id, dest->id);
     
     this->models.store[process_id] = dest;
 }
@@ -1151,6 +1143,7 @@ CPU GPU size_t thread_heap_size(const sim_config* config)
 
 CPU GPU double determine_progress(const node* node, state* state)
 {
+    if(state->urgent_count > 0) return 0.0;
     bool is_finite = true;
     const double random_val = curand_uniform_double(state->random);
     const double max = node->max_progression(state, &is_finite);
@@ -1176,6 +1169,28 @@ CPU GPU inline bool can_progress(const node* n)
     return false;
 } 
 
+CPU GPU inline bool is_winning_process(
+    const double local_progress,
+    const double min_progression_time,
+    const unsigned epsilon,
+    const unsigned max_epsilon,
+    const state* sim_state,
+    const node* current)
+
+{
+    const bool equal_check_cond = (local_progress == min_progression_time) * (epsilon > max_epsilon);  // NOLINT(clang-diagnostic-float-equal)
+    const bool lower_cond = (local_progress >= 0.0) * (local_progress < min_progression_time);
+    const bool committed_check = (sim_state->committed_count == 0) + (current->type == node::committed);
+    
+    return (equal_check_cond + lower_cond) * (committed_check);
+    
+    // return (abs(local_progress - min_progression_time) <= DBL_EPSILON && rseed > max_rseed)
+    //         || (local_progress > 0.0 && local_progress < min_progression_time)
+    //         && (sim_state->committed_count == 0
+    //             || (sim_state->committed_count > 0
+    //                 && current->type == node::committed));
+}
+
 #define NO_PROCESS (-1)
 #define IS_NO_PROCESS(x) ((x) < 0)
 CPU GPU int progress_sim(state* sim_state, const sim_config* config)
@@ -1191,15 +1206,17 @@ CPU GPU int progress_sim(state* sim_state, const sim_config* config)
 
     //progress number of steps
     sim_state->steps++;
-
+    
     // const double max_progression_time = config->use_max_steps
     //                                         ? DBL_MAX
     //                                         : config->max_global_progression - sim_state->global_time;
 
+    // const bool has_urgent = sim_state->urgent_count > 0 && sim_state->committed_count == 0;
     const double max_progression_time = ((config->use_max_steps) * DBL_MAX)
                 + ((!config->use_max_steps) * (config->max_global_progression - sim_state->global_time));
 
     double min_progression_time = max_progression_time;
+    unsigned max_epsilon = 0;
     int winning_process = NO_PROCESS;
     // node** winning_model = nullptr;
     for (int i = 0; i < sim_state->models.size; ++i)
@@ -1218,25 +1235,23 @@ CPU GPU int progress_sim(state* sim_state, const sim_config* config)
 
         
         //determine current models progress
+        const unsigned epsilon = curand(sim_state->random);
         const double local_progress = determine_progress(current, sim_state);
-
-        // printf("progress %lf\n", local_progress);
+        // has_urgent
+        // ? curand_uniform_double(sim_state->random)
+        // : determine_progress(current, sim_state);
+        
         //If negative progression, skip. Represents NO_PROGRESS
         //Set current as winner, if it is the earliest active model.
-        if(
-            local_progress >= 0.0
-            && local_progress < min_progression_time
-            && (sim_state->committed_count == 0
-                || (sim_state->committed_count > 0
-                    && current->type == node::committed)))
+        if(is_winning_process(local_progress, min_progression_time, epsilon, max_epsilon, sim_state, current))
         {
             min_progression_time = local_progress;
             winning_process = i;
-            // winning_model = &sim_state->models.store[i];
+            max_epsilon = epsilon;
         }
     }
     // printf(" I WON! Node: %d \n", winning_model->current_node->get_id());
-    if(min_progression_time < max_progression_time && sim_state->urgent_count == 0)
+    if(sim_state->urgent_count == 0 && min_progression_time < max_progression_time)
     {
         for (int i = 0; i < sim_state->variables.size; ++i)
         {
@@ -1316,7 +1331,7 @@ CPU GPU void simulate_automata(
             {
                 const node* current = sim_state.models.store[process];
                 const edge* e = pick_next_edge_stack(current->edges, &sim_state);
-                // printf("current: %d, %d, %p\n", current->id, current->type, e);
+                // printf("current e: %d, %d, %p\n", current->id, current->type, e);
                 if(e == nullptr) break;
                 
                 sim_state.traverse_edge(process, e->dest);

@@ -52,7 +52,7 @@ parser_state parse_configs(const int argc, const char* argv[], sim_config* confi
     parser.add_argument("-x", "--units", "Maximum number of steps or time to simulate. e.g. 100t for 100 time units or 100s for 100 steps", false);
     parser.add_argument("-s", "--shared", "Attempt to use shared memory in cuda simulation. Will only enable if (threads * 32 > model size)", false);
     parser.add_argument("-j", "--jit", "JIT compile the expressions. Only works for GPU, mutually exclusive with --shared.", false);
-    
+    parser.add_argument("-u", "--upscale", "scale model processes naively. default = 1", false);
     
     //other
     parser.add_argument("-v", "--verbose", "Enable pretty print of model (print model (0) / silent(1))", false);
@@ -94,24 +94,7 @@ parser_state parse_configs(const int argc, const char* argv[], sim_config* confi
                 throw argparse::arg_exception('b', "could not parse block/threads. format: 'blocks,threads'. e.g. '32,512'");
     }
     else throw argparse::arg_exception('b', "no block arg supplied");
-
-    double epsilon, alpha;
-    size_t total_simulations;
-    if(parser.exists("e")) epsilon = parser.get<double>("e");
-    else epsilon = 0.005; //default value
     
-    if(parser.exists("n"))
-    {
-        total_simulations = parser.get<size_t>("n");
-        alpha = 2 * exp((-2.0) * static_cast<double>(total_simulations) * pow(epsilon,2));
-    }
-    else if(parser.exists("a"))
-    {
-        alpha = parser.get<double>("a");
-        total_simulations = static_cast<size_t>(ceil((log(2.0) - log(alpha)) / (2*pow(epsilon, 2))));
-    }
-    else throw argparse::arg_exception('n', "no simulation amount supplied. ");
-
     if(parser.exists("r")) config->simulation_repetitions = parser.get<unsigned>("r");
     else config->simulation_repetitions = 1;
 
@@ -128,15 +111,18 @@ parser_state parse_configs(const int argc, const char* argv[], sim_config* confi
         const bool success = abstract_parser::try_parse_units(parser.get<std::string>("x"), &is_timer, &unit_value);
         if(!success) throw argparse::arg_exception('x', "could not parse unit format. e.g. 100t or 100s");
         config->use_max_steps = !is_timer;
-        config->max_steps_pr_sim = static_cast<unsigned>(floor(unit_value));
+        config->max_sim_steps = static_cast<unsigned>(floor(unit_value));
         config->max_global_progression = unit_value;
     }
     else
     {
         config->use_max_steps = true;
-        config->max_steps_pr_sim = 100;
+        config->max_sim_steps = 100;
         config->max_global_progression = 100;
     }
+
+    if(parser.exists("u")) config->upscale = parser.get<unsigned>("u");
+    else config->upscale = 1;
 
     if(parser.exists("v")) config->verbose = parser.get<int>("v");
     else config->verbose = true;
@@ -146,11 +132,36 @@ parser_state parse_configs(const int argc, const char* argv[], sim_config* confi
 
     config->use_shared_memory = parser.exists("s");
     config->use_jit = parser.exists("j");
+
+    //calculate number of runs
+    double epsilon, alpha;
+    size_t total_simulations;
+    if(parser.exists("e")) epsilon = parser.get<double>("e");
+    else epsilon = 0.05; //default value
     
-    //Insert into config object
-    config->simulation_amount = static_cast<unsigned>(ceil(
+    if(parser.exists("n"))
+    {
+        total_simulations = parser.get<size_t>("n");
+    }
+    else if(parser.exists("a"))
+    {
+        alpha = parser.get<double>("a");
+        total_simulations = static_cast<size_t>(ceil((log(2.0) - log(alpha)) / (2*pow(epsilon, 2))));
+    }
+    else throw argparse::arg_exception('n', "no simulation amount supplied. ");
+
+    config->sim_pr_thread = config->sim_location == sim_config::device ? static_cast<unsigned>(ceil( //round up GPU sims
             static_cast<double>(total_simulations) /
-            static_cast<double>((config->blocks * config->threads * config->simulation_repetitions))));
+            static_cast<double>((config->blocks * config->threads * config->simulation_repetitions))))
+        : static_cast<unsigned>(ceil( //round up CPU sims
+            static_cast<double>(total_simulations) /
+            static_cast<double>((config->cpu_threads * config->simulation_repetitions))));
+    
+    
+    //adjust alpha based on total simulation ceil
+    alpha = 2 * exp((-2.0) * static_cast<double>(config->total_simulations()) * pow(epsilon,2));
+    
+    //Assign to config object
     config->alpha = alpha;
     config->epsilon = epsilon;
     
@@ -188,13 +199,13 @@ void print_config(const sim_config* config, const size_t model_size)
     printf("running %llu simulations on %d repetitions using parallelism of %d.\n",
         static_cast<unsigned long long>(config->total_simulations()),
         config->simulation_repetitions,
-        config->blocks*config->threads);
+        (config->sim_location == sim_config::device ? config->blocks*config->threads : config->cpu_threads));
     printf("Model size: %llu bytes\n", static_cast<unsigned long long>(model_size));
     printf("attempt to use shared memory: %s (possible: %s)\n",
         (config->use_shared_memory ? "Yes" : "No" ),
         (config->can_use_cuda_shared_memory(model_size) ? "Yes" : "No"));
     printf("End criteria: %lf %s\n",
-        (config->use_max_steps ? static_cast<double>(config->max_steps_pr_sim) : config->max_global_progression),
+        (config->use_max_steps ? static_cast<double>(config->max_sim_steps) : config->max_global_progression),
         (config->use_max_steps ? "steps" : "time units"));
 }
 
@@ -226,6 +237,8 @@ abstract_parser* instantiate_parser(const std::string& filepath)
 
 void run_optimise(network* model, sim_config* config, output_properties* properties)
 {
+    abstract_parser::naive_multiply_instantiation(model, config->upscale);
+    
     pretty_print_visitor print_visitor = pretty_print_visitor(&std::cout,
         properties->node_names,
         properties->variable_names);

@@ -24,8 +24,17 @@ void cuda_allocator::allocate_network(const network* source, network* dest)
     
     for (int i = 0; i < source->automatas.size; ++i)
     {
-        this->allocate_node(source->automatas.store[i], &node_store[i]);
-        local_network[i] = &node_store[i];
+        node* n = source->automatas.store[i];
+        if(this->multi_model_resolver_.count(n))
+        {
+            local_network[i] = this->multi_model_resolver_.at(n);
+        }
+        else
+        {
+            this->allocate_node(source->automatas.store[i], &node_store[i]);
+            local_network[i] = &node_store[i];
+            this->multi_model_resolver_.insert(std::pair<const node*, node*>(n, &node_store[i]));
+        }
     }
 
     node** network_store = nullptr;
@@ -233,4 +242,10 @@ model_oracle* cuda_allocator::allocate_oracle(const model_oracle* oracle) const
     CUDA_CHECK(cudaMemcpy(oracle_d, &temp, sizeof(model_oracle), cudaMemcpyHostToDevice));
 
     return oracle_d;
+}
+
+void cuda_allocator::clear()
+{
+    this->circular_ref_.clear();
+    this->multi_model_resolver_.clear();
 }

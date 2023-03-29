@@ -1102,7 +1102,7 @@ system node1, node2, wire12, wire21;</system>
 			</comment>
 		</query>
 		<query>
-			<formula>Pr[&lt;= 100] (&lt;&gt; node1.s == 7 &amp;&amp; node2.s == 8 )
+			<formula>Pr[&lt;= 100; 10000] (&lt;&gt; node1.s6)
 			</formula>
 			<comment>
 			</comment>

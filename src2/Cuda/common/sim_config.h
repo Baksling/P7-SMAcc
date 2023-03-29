@@ -15,12 +15,12 @@ struct sim_config
     unsigned int blocks = 1;
     unsigned int threads = 1;
     unsigned int cpu_threads = 1;
-    unsigned int simulation_amount = 1;
+    unsigned int sim_pr_thread = 1;
     unsigned int simulation_repetitions = 1;
     unsigned long long seed = 1;
     int write_mode = 0;
     bool use_max_steps = true;
-    unsigned int max_steps_pr_sim = 1;
+    unsigned int max_sim_steps = 1;
     double max_global_progression = 1;
     bool verbose = false;
     enum pretty_print
@@ -55,6 +55,7 @@ struct sim_config
     output_properties* properties = nullptr;
     double alpha = 0.005;
     double epsilon = 0.005;
+    unsigned upscale = 1;
     
     //pointers
     void* cache = nullptr;
@@ -62,7 +63,9 @@ struct sim_config
     
     size_t total_simulations() const
     {
-        return static_cast<size_t>(blocks) * threads * simulation_amount;
+        return sim_location == device
+            ? sim_pr_thread * blocks * threads
+            : sim_pr_thread * cpu_threads;
     }
 
     bool can_use_cuda_shared_memory(const size_t model_size) const
