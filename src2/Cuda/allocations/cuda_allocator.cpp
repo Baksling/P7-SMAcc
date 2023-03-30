@@ -1,5 +1,23 @@
 ﻿#include "cuda_allocator.h"
 
+expr* cuda_allocator::move_expr(const expr* ex)
+{
+    if(ex == nullptr) return nullptr;
+
+    expr* exp_d = nullptr;
+    if(ex->operand == expr::pn_compiled_ee)
+    {
+        CUDA_CHECK(this->allocator_->allocate(&exp_d, sizeof(expr)*ex->length));
+        CUDA_CHECK(cudaMemcpy(exp_d, ex, sizeof(expr)*ex->length, cudaMemcpyHostToDevice));        
+    }
+    else
+    {
+        CUDA_CHECK(this->allocator_->allocate(&exp_d, sizeof(expr)));
+        this->allocate_expr(ex, exp_d);
+    }
+    return exp_d;
+}
+
 model_oracle* cuda_allocator::allocate_model(const network* model)
 {
     network* dest = nullptr;
@@ -76,9 +94,11 @@ void cuda_allocator::allocate_node(const node* source, node* dest)
         allocate_constraint(&source->invariants.store[i], &invariant_store[i]);
     }
 
-    expr* exp_d = nullptr;
-    CUDA_CHECK(this->allocator_->allocate(&exp_d, sizeof(expr)));
-    this->allocate_expr(source->lamda, exp_d);
+    expr* exp_d = move_expr(source->lamda);
+    // expr* exp_d = nullptr;
+    // CUDA_CHECK(this->allocator_->allocate(&exp_d, sizeof(expr)));
+    // this->allocate_expr(source->lamda, exp_d);
+    
 
     const node temp = node{
         source->id,
@@ -118,10 +138,11 @@ void cuda_allocator::allocate_edge(const edge* source, edge* dest)
     {
         allocate_update(&source->updates.store[i], &update_store[i]);
     }
-
-    expr* exp_d = nullptr;
-    CUDA_CHECK(this->allocator_->allocate(&exp_d, sizeof(expr)));
-    this->allocate_expr(source->weight, exp_d);
+    
+    expr* exp_d = move_expr(source->weight);
+    // expr* exp_d = nullptr;
+    // CUDA_CHECK(this->allocator_->allocate(&exp_d, sizeof(expr)));
+    // this->allocate_expr(source->weight, exp_d);
 
     const edge temp = edge{
         source->channel,
@@ -151,25 +172,28 @@ void cuda_allocator::allocate_constraint(const constraint* source, constraint* d
     }
     else
     {
-        expr* left = nullptr;
-        CUDA_CHECK(this->allocator_->allocate(&left, sizeof(expr)));
-        this->allocate_expr(source->value, left);
-        temp.value = left;
+        temp.value  = move_expr(source->value);
+        // expr* left = nullptr;
+        // CUDA_CHECK(this->allocator_->allocate(&left, sizeof(expr)));
+        // this->allocate_expr(source->value, left);
+        // temp.value = left;
     }
 
-    expr* right = nullptr;
-    CUDA_CHECK(this->allocator_->allocate(&right, sizeof(expr)));
-    this->allocate_expr(source->expression, right);
-    temp.expression = right;
+    temp.expression = move_expr(source->expression);
+    // expr* right = nullptr;
+    // CUDA_CHECK(this->allocator_->allocate(&right, sizeof(expr)));
+    // this->allocate_expr(source->expression, right);
+    // temp.expression = right;
 
     CUDA_CHECK(cudaMemcpy(dest, &temp, sizeof(constraint), cudaMemcpyHostToDevice));
 }
 
 void cuda_allocator::allocate_update(const update* source, update* dest)
 {
-    expr* right = nullptr;
-    CUDA_CHECK(this->allocator_->allocate(&right, sizeof(expr)));
-    this->allocate_expr(source->expression, right);
+    expr* right = move_expr(source->expression);
+    // expr* right = nullptr;
+    // CUDA_CHECK(this->allocator_->allocate(&right, sizeof(expr)));
+    // this->allocate_expr(source->expression, right);
 
     const update temp{
         source->variable_id,

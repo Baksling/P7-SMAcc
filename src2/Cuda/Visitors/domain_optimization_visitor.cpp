@@ -357,6 +357,8 @@ double domain_optimization_visitor::evaluate_const_expr(const expr* ex)
             ? evaluate_const_expr(ex->right)
             : evaluate_const_expr(ex->conditional_else);
         case expr::compiled_ee: throw std::runtime_error("Tried evaluating compiled expression as constant expression in optimizer.");
+        case expr::pn_compiled_ee: 
+        case expr::pn_skips_ee: throw std::runtime_error("Tried evaluating pn compiled expression as constant expression in optimizer.");
         default: throw std::runtime_error("unknown operand found in const expression evaluation");
     }
 }

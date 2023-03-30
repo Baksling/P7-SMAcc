@@ -40,6 +40,8 @@ struct sim_config
     //model parameters (setup using function)
     bool use_shared_memory = false;
     bool use_jit = false;
+    bool use_pn = false;
+    unsigned max_backtrace_depth = 1;
     unsigned max_expression_depth = 1;
     unsigned max_edge_fanout = 0;
     unsigned tracked_variable_count = 1;
@@ -55,7 +57,7 @@ struct sim_config
     output_properties* properties = nullptr;
     double alpha = 0.005;
     double epsilon = 0.005;
-    unsigned upscale = 1;
+    int upscale = 1;
     
     //pointers
     void* cache = nullptr;

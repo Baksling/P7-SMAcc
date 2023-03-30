@@ -12,6 +12,7 @@
 
 #include "visitors/domain_optimization_visitor.h"
 #include "visitors/model_count_visitor.h"
+#include "visitors/pn_compile_visitor.h"
 #include "visitors/pretty_print_visitor.h"
 
 
@@ -53,6 +54,7 @@ parser_state parse_configs(const int argc, const char* argv[], sim_config* confi
     parser.add_argument("-s", "--shared", "Attempt to use shared memory in cuda simulation. Will only enable if (threads * 32 > model size)", false);
     parser.add_argument("-j", "--jit", "JIT compile the expressions. Only works for GPU, mutually exclusive with --shared.", false);
     parser.add_argument("-u", "--upscale", "scale model processes naively. default = 1", false);
+    parser.add_argument("-z", "--pnotate", "Convert expression trees into polish notation for execution. Cannot be used in conjunction with JIT.", false);
     
     //other
     parser.add_argument("-v", "--verbose", "Enable pretty print of model (print model (0) / silent(1))", false);
@@ -121,7 +123,7 @@ parser_state parse_configs(const int argc, const char* argv[], sim_config* confi
         config->max_global_progression = 100;
     }
 
-    if(parser.exists("u")) config->upscale = parser.get<unsigned>("u");
+    if(parser.exists("u")) config->upscale = parser.get<int>("u");
     else config->upscale = 1;
 
     if(parser.exists("v")) config->verbose = parser.get<int>("v");
@@ -132,7 +134,8 @@ parser_state parse_configs(const int argc, const char* argv[], sim_config* confi
 
     config->use_shared_memory = parser.exists("s");
     config->use_jit = parser.exists("j");
-
+    config->use_pn = parser.exists("z");
+    
     //calculate number of runs
     double epsilon, alpha;
     size_t total_simulations;
@@ -164,7 +167,22 @@ parser_state parse_configs(const int argc, const char* argv[], sim_config* confi
     //Assign to config object
     config->alpha = alpha;
     config->epsilon = epsilon;
+
+    if(config->use_pn && config->use_jit)
+    {
+        if(config->verbose)
+            printf("WARNING! Cannot use JIT and pn expressions simultaneously. Disabling pn expressions.\n");
+        config->use_pn = false;
+    }
     
+    if(config->use_pn && config->use_shared_memory)
+    {
+        if(config->verbose)
+            printf("WARNING! Cannot use shared memory and pn expressions simultaneously. Disabling shared memory.\n");
+
+        config->use_shared_memory = false;
+    }
+
     return parser_state::parsed;
 }
 
@@ -187,7 +205,16 @@ void setup_config(sim_config* config, const network* model,
     config->tracked_variable_count = track_count;
     config->network_size = model->automatas.size;
     config->variable_count = model->variables.size;
-    config->max_expression_depth = max_expr_depth;
+    if(config->use_jit)
+    {
+        config->max_expression_depth = 0;
+        config->max_backtrace_depth = 0;
+    }
+    else
+    {
+        config->max_expression_depth = max_expr_depth;
+        config->max_backtrace_depth = config->use_pn ? 0 : max_expr_depth*2+1;   
+    }
     config->max_edge_fanout = max_fanout;
     config->node_count = node_count;
 }
@@ -267,12 +294,19 @@ void run_optimise(network* model, sim_config* config, output_properties* propert
     
     optimizer.clear();
 
+    if(config->use_pn)
+    {
+        if(config->verbose) printf("Compiling expressiosn into pnotation\n");
+        pn_compile_visitor pn_compiler;
+        pn_compiler.visit(model);
+    }
+    
     if(config->model_print_mode == sim_config::print_reduction)
     {
         print_visitor.clear();
         print_visitor.visit(model);
     }
-
+    
     if(config->verbose) print_config(config, size_of_model.total_memory_size());
     
     if(config->use_shared_memory) //ensure shared memory is safe
@@ -305,12 +339,15 @@ int main(int argc, const char* argv[])
     properties.variable_names = new std::unordered_map<int, std::string>(*model_parser->get_clock_names()); // this can create mem leaks.
     properties.template_names = new std::unordered_map<int, std::string>(*model_parser->get_template_names());
 
+    properties.pre_optimisation_start = std::chrono::steady_clock::now();
     delete model_parser;
     run_optimise(&model, &config, &properties);
 
     const bool run_device = (config.sim_location == sim_config::device || config.sim_location == sim_config::both);
     const bool run_host   = (config.sim_location == sim_config::host   || config.sim_location == sim_config::both);
-    
+
+    properties.post_optimisation_start = std::chrono::steady_clock::now();
+
     //run simulation
     if(run_device)
     {

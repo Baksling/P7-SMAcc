@@ -1,4 +1,5 @@
 ﻿#include "pretty_print_visitor.h"
+#include <sstream>
 
 pretty_print_visitor::pretty_print_visitor(std::ostream* stream,
     std::unordered_map<int, std::string>* node_names, std::unordered_map<int, std::string>* variable_names)
@@ -165,13 +166,32 @@ std::string pretty_print_visitor::expr_type_to_string(const expr* ex)
     case expr::not_ee: return "!"; 
     case expr::conditional_ee: return "if";
     case expr::compiled_ee: return "expr_id_" + std::to_string(ex->compile_id) ;
-    default: return "unknown";
+    case expr::pn_compiled_ee: return "pn:";
+    case expr::pn_skips_ee: return "SKIP(" + std::to_string(ex->length) + ")";
     }
+    return "unknown";
+
+}
+
+std::string pretty_print_visitor::pretty_pn_expr(const expr* ex)
+{
+    if(ex->operand != expr::pn_compiled_ee)
+        throw std::runtime_error("Cannot print non-pn expressions as pn expression");
+    
+    std::stringstream ss;
+    ss << '(';
+    for (int i = 0; i < ex->length; ++i)
+    {
+        ss << expr_type_to_string(&ex[i]) << ' ';
+    }
+    ss << ')';
+    return ss.str();
 }
 
 std::string pretty_print_visitor::pretty_expr(const expr* ex)
 {
     if(IS_LEAF(ex->operand)) return expr_type_to_string(ex);
+    if(ex->operand == expr::pn_compiled_ee) return pretty_pn_expr(ex);
 
     if(ex->operand == expr::conditional_ee)
     {

@@ -1,4 +1,5 @@
 ﻿#include "output_writer.h"
+using namespace std::chrono;
 
 bool is_goal_node_by_id(const std::unordered_map<int,node*>& node_map, const int id)
 {
@@ -80,22 +81,8 @@ bool id_sorter(const int lhs, const int rhs)
 }
 
 void output_writer::write_summary_to_stream(std::ostream& stream,
-                                            std::chrono::steady_clock::duration sim_duration) const
+                                            steady_clock::duration sim_duration) const
 {
-    stream << "\nAverage maximum value of each variable: \n";
-    
-    for (int j = 0; j < this->variable_summaries_.size; ++j)
-    {
-        const variable_summary& result = this->variable_summaries_.store[j];
-        stream << "variable "
-               << result.variable_id
-               << " (" << (this->properties_->variable_names->count(static_cast<int>(result.variable_id))
-                           ? this->properties_->variable_names->at(static_cast<int>(result.variable_id))
-                           : "_") << ") "
-               <<  " = "
-               << result.avg_max_value() << "\n";
-    }
-    
     stream << "\n\nReachability: ";
     
     // node_summary no_hit = node_summary{0, 0};
@@ -123,21 +110,36 @@ void output_writer::write_summary_to_stream(std::ostream& stream,
         global_no_hit.cumulative(no_hit);
     }
 
+    stream << "\nAverage maximum value of each variable: \n";
+    
+    for (int j = 0; j < this->variable_summaries_.size; ++j)
+    {
+        const variable_summary& result = this->variable_summaries_.store[j];
+        stream << "variable "
+               << result.variable_id
+               << " (" << (this->properties_->variable_names->count(static_cast<int>(result.variable_id))
+                           ? this->properties_->variable_names->at(static_cast<int>(result.variable_id))
+                           : "_") << ") "
+               <<  " = "
+               << result.avg_max_value() << "\n";
+    }
+
     stream << '\n';
     stream << "Probability of false negative results (alpha): " << this->alpha_*100 << "%\n";  
     stream << "Probability uncertainty (-+epsilon) of results: " << this->epsilon_*100 << "%\n";  
     stream << "Nr of simulations: " << total_simulations_ << "\n\n";
-    stream << "Simulation ran for: " << std::chrono::duration_cast<std::chrono::milliseconds>(sim_duration).count()
+    stream << "Simulation ran for: " << duration_cast<milliseconds>(sim_duration).count()
            << "[ms]" << "\n";
+    stream << "Including overhead: " << duration_cast<milliseconds>((steady_clock::now() - properties_->pre_optimisation_start)).count()<< "[ms]\n";
 }
 
-void output_writer::write_lite(std::chrono::steady_clock::duration sim_duration) const
+void output_writer::write_lite(steady_clock::duration sim_duration) const
 {
     std::ofstream lite;
     const std::string file_path = file_path_ + "_lite_summary.txt";
     lite.open(file_path);
 
-    lite << std::chrono::duration_cast<std::chrono::milliseconds>(sim_duration).count();
+    lite << duration_cast<milliseconds>(sim_duration).count();
 
     lite.flush();
     lite.close();

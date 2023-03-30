@@ -319,6 +319,7 @@
     <ClCompile Include="Cuda\visitors\jit_compile_visitor.cpp" />
     <ClCompile Include="Cuda\visitors\memory_alignment_visitor.cpp" />
     <ClCompile Include="Cuda\visitors\model_count_visitor.cpp" />
+    <ClCompile Include="Cuda\visitors\pn_compile_visitor.cpp" />
     <ClCompile Include="Cuda\visitors\pretty_print_visitor.cpp" />
     <ClCompile Include="Cuda\visitors\visitor.cpp" />
     <ClInclude Include="Cuda\allocations\argparser.h" />
@@ -713,6 +714,7 @@
     <ClInclude Include="Cuda\visitors\jit_compile_visitor.h" />
     <ClInclude Include="Cuda\visitors\memory_alignment_visitor.h" />
     <ClInclude Include="Cuda\visitors\model_count_visitor.h" />
+    <ClInclude Include="Cuda\visitors\pn_compile_visitor.h" />
     <ClInclude Include="Cuda\visitors\pretty_print_visitor.h" />
     <ClInclude Include="Cuda\visitors\visitor.h" />
   </ItemGroup>

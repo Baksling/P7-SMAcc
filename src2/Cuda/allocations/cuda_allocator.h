@@ -10,6 +10,8 @@ class cuda_allocator
     memory_allocator* allocator_;
     std::unordered_map<const node*, node*> multi_model_resolver_{};
     std::unordered_map<const node*, node*> circular_ref_{};
+
+    expr* move_expr(const expr* ex);
 public:
     explicit cuda_allocator(memory_allocator* allocator)
     {

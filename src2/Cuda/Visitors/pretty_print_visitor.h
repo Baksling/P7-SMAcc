@@ -20,6 +20,7 @@ private:
      static std::string constraint_type_to_string(const constraint* c);
      static std::string node_type_to_string(const node* n);
      static std::string expr_type_to_string(const expr* ex);
+     static std::string pretty_pn_expr(const expr* ex);
      static std::string pretty_expr(const expr* ex);
 public:
      explicit pretty_print_visitor(std::ostream* stream,

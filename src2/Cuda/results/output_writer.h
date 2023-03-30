@@ -72,6 +72,8 @@ struct variable_summary
 
 struct output_properties
 {
+    std::chrono::steady_clock::time_point pre_optimisation_start;
+    std::chrono::steady_clock::time_point post_optimisation_start;
     std::unordered_map<int, std::string>* variable_names;
     std::unordered_map<int, std::string>* node_names;
     std::unordered_map<int, std::string>* template_names;

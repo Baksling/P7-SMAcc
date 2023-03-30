@@ -33,6 +33,7 @@ CPU GPU double evaluate_compiled_constraint_upper_bound(const constraint* con, s
     return v0;
 }
 
+
 CPU GPU double evaluate_expression_node(const expr* expr, state* state)
 {
     double v1, v2;
@@ -113,9 +114,34 @@ CPU GPU double evaluate_expression_node(const expr* expr, state* state)
         v1 = state->value_stack.pop();
         state->value_stack.pop();
         return v1;
-    case expr::compiled_ee: return 0.0; break;
+    case expr::compiled_ee:
+    case expr::pn_compiled_ee:
+    case expr::pn_skips_ee: return 0.0;
     }
     return 0.0;
+}
+
+CPU GPU double evaluate_pn_expr(const expr* pn, state* state)
+{
+    state->value_stack.clear();
+    
+    for (int i = 1; i < pn->length; ++i)
+    {
+        const expr* current = &pn[i];
+        if(current->operand == expr::pn_skips_ee)
+        {
+            if(abs(state->value_stack.pop()) > DBL_EPSILON)
+            {
+                i += current->length;
+            }
+            continue;
+        }
+
+        const double value = evaluate_expression_node(current, state);
+        state->value_stack.push_val(value);
+    }
+
+    return state->value_stack.pop();
 }
 
 CPU GPU double expr::evaluate_expression(state* state)
@@ -126,6 +152,8 @@ CPU GPU double expr::evaluate_expression(state* state)
         return state->variables.store[this->variable_id].value;
     if(this->operand == compiled_ee)
         return evaluate_compiled_expression(this, state);
+    if(this->operand == pn_compiled_ee)
+        return evaluate_pn_expr(this, state);
 
     state->expr_stack.clear();
     state->value_stack.clear();
@@ -334,7 +362,7 @@ void inline state::broadcast_channel(const int channel, const int process)
     }
 }
 
-state state::init(void* cache, curandState* random, const network* model, const unsigned expr_depth, const unsigned fanout)
+state state::init(void* cache, curandState* random, const network* model, const unsigned expr_depth, const unsigned backtrace_depth,const unsigned fanout)
 {
     node** nodes = static_cast<node**>(cache);
     cache = static_cast<void*>(&nodes[model->automatas.size]);
@@ -343,7 +371,7 @@ state state::init(void* cache, curandState* random, const network* model, const 
     cache = static_cast<void*>(&vars[model->variables.size]);
         
     expr** exp = static_cast<expr**>(cache);
-    cache = static_cast<void*>(&exp[expr_depth*2+1]);
+    cache = static_cast<void*>(&exp[backtrace_depth]);
         
     double* val_store = static_cast<double*>(cache);
     cache = static_cast<void*>(&val_store[expr_depth]);
@@ -362,7 +390,7 @@ state state::init(void* cache, curandState* random, const network* model, const 
         arr<node*>{ nodes, model->automatas.size },
         arr<clock_var>{ vars, model->variables.size },
         random,
-        my_stack<expr*>(exp, static_cast<int>(expr_depth*2+1)),
+        my_stack<expr*>(exp, static_cast<int>(backtrace_depth)),
         my_stack<double>(val_store, static_cast<int>(expr_depth)),
         my_stack<state::w_edge>(fanout_store, static_cast<int>(fanout))
     };

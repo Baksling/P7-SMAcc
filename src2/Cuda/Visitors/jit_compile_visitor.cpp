@@ -207,6 +207,8 @@ void jit_compile_visitor::compile_expr(std::stringstream& ss, const expr* e, con
         ss << ':'; compile_expr(ss, e->conditional_else);
         break;
     case expr::compiled_ee: throw std::runtime_error("Cannot compile already compiled expression");
+    case expr::pn_compiled_ee:
+    case expr::pn_skips_ee: throw std::runtime_error("Cannot compile PN-Compiled expression");
     default: throw std::runtime_error("unknown expression operand");
     }
     ss << ')';

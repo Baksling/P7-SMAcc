@@ -55,7 +55,9 @@ struct expr  // NOLINT(cppcoreguidelines-pro-type-member-init)
 
         //conditional types
         conditional_ee,
-        compiled_ee
+        compiled_ee,
+        pn_compiled_ee,
+        pn_skips_ee,
         
     } operand = literal_ee;
     
@@ -66,6 +68,7 @@ struct expr  // NOLINT(cppcoreguidelines-pro-type-member-init)
     {
         double value = 1.0;
         int variable_id;
+        int length;
         expr* conditional_else;
         int compile_id;
     };
@@ -237,7 +240,8 @@ struct state
 
     CPU GPU void traverse_edge(int process_id, node* dest);
     CPU GPU void broadcast_channel(const int channel, const int process);
-    CPU GPU static state init(void* cache, curandState* random, const network* model, const unsigned expr_depth, const unsigned fanout);
+    CPU GPU static state init(void* cache, curandState* random, const network* model, const unsigned expr_depth, const unsigned backtrace_depth, const
+                              unsigned fanout);
     CPU GPU void reset(const unsigned sim_id, const network* model, const unsigned initial_urgent_count, const unsigned
                        initial_committed_count);
 };

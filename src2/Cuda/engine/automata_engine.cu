@@ -9,7 +9,7 @@
 CPU GPU size_t thread_heap_size(const sim_config* config)
 {
     const size_t size =
-          static_cast<size_t>(config->max_expression_depth*2+1) * sizeof(void*) + //this is a expression*, but it doesnt like sizeof(expression*)
+          static_cast<size_t>(config->max_backtrace_depth) * sizeof(void*) + //this is a expression*, but it doesnt like sizeof(expression*)
           config->max_expression_depth * sizeof(double) +
           config->network_size * sizeof(void*) + //this is a node*
           config->variable_count * sizeof(clock_var) +
@@ -192,7 +192,7 @@ CPU GPU void simulate_automata(
     void* cache = static_cast<void*>(&static_cast<char*>(config->cache)[(idx*thread_heap_size(config)) / sizeof(char)]);
     curandState* r_state = &config->random_state_arr[idx];
     curand_init(config->seed, idx, idx, r_state);
-    state sim_state = state::init(cache, r_state, model, config->max_expression_depth, config->max_edge_fanout);
+    state sim_state = state::init(cache, r_state, model, config->max_expression_depth, config->max_backtrace_depth, config->max_edge_fanout);
     
     for (unsigned i = 0; i < config->sim_pr_thread; ++i)
     {
@@ -204,20 +204,17 @@ CPU GPU void simulate_automata(
         {
             // model->query->check_query()
             const int process = progress_sim(&sim_state, config);
-            // printf("current process_id: %d %lf | urgent_count: %d\n", process, sim_state.global_time, sim_state.urgent_count);
             if(IS_NO_PROCESS(process)) break;
             
             do
             {
                 const node* current = sim_state.models.store[process];
                 const edge* e = pick_next_edge_stack(current->edges, &sim_state);
-                // printf("current e: %d, %d, %p\n", current->id, current->type, e);
                 if(e == nullptr) break;
                 
                 sim_state.traverse_edge(process, e->dest);
                 e->apply_updates(&sim_state);
                 sim_state.broadcast_channel(e->channel, process);
-                // printf("dest: %d, %d\n", sim_state.models.store[process]->id, sim_state.models.store[process]->type);
             } while (sim_state.models.store[process]->type == node::branch);
         }
         output->write_output(idx, &sim_state);
