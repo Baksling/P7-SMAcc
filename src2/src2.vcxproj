@@ -241,6 +241,7 @@
     </ClCompile>
     <ClCompile Include="Cuda\results\ouput_write.cu" />
     <ClCompile Include="Cuda\results\result_store.cu" />
+    <ClCompile Include="Cuda\results\result_store_2.cpp" />
     <ClCompile Include="Cuda\simulation_runner.cu">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -331,6 +332,7 @@
     <ClInclude Include="Cuda\common\sim_config.h" />
     <ClInclude Include="Cuda\common\thread_pool.h" />
     <ClInclude Include="Cuda\engine\Domain.h" />
+    <ClCompile Include="Cuda\engine\dynamic_engine.cu" />
     <ClInclude Include="Cuda\engine\interpreter.h" />
     <ClInclude Include="Cuda\engine\model_oracle.h" />
     <ClInclude Include="Cuda\JIT\jitify.hpp" />
@@ -707,6 +709,7 @@
       <SDLCheck>true</SDLCheck>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
+    <ClInclude Include="Cuda\results\result_store_2.h" />
     <ClInclude Include="Cuda\simulation_runner.h" />
     <ClInclude Include="Cuda\UPPAALXMLParser\abstract_parser.h" />
     <ClInclude Include="Cuda\UPPAALXMLParser\smacc_parser.h" />

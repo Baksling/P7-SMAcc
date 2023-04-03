@@ -1,201 +1,234 @@
 ﻿#include <curand_kernel.h>
 #include <curand_uniform.h>
 
+#include "Domain.h"
 #include "../common/my_stack.h"
 
+struct state;
 
-struct intp_v
+
+struct value
 {
-    intp_v(const float fl)
+    value()
     {
-        this->type = types::f32;
-        this->value.float32 = fl;
+        type = int_t;
+        integer = 0;
+    }
+    value(const int i)
+    {
+        type = int_t;
+        integer = i;
+    }
+    value(const int64_t i)
+    {
+        type = int_t;
+        integer = i;
     }
 
-    intp_v(const int i)
+    value(const double f)
     {
-        this->type = types::i32;
-        this->value.int32 = i;
-    }
-    intp_v(const double d)
-    {
-        this->type = types::f64;
-        this->value.float64 = d;
+        type = fp_t;
+        real = f;
     }
     
-    enum types
+    enum primitive_types
     {
-        i32,
-        f32,
-        f64,
-    } type;
+        int_t,
+        fp_t
+    } type = int_t;
     union
     {
-        int int32;
-        float float32;
-        double float64;
-    } value{};
+        long long int integer{};
+        double real{};
+    };
 
-    double as_double()
+    value operator+(const value& left, const value& right) const
     {
-        switch (this->type) {
-            case i32: return value.int32; 
-            case f32: return static_cast<double>(value.float32);
-            case f64: return value.float64;
-        } 
+        switch(type)
+        {
+        case int_t: return left.integer + right.integer;
+        case fp_t: return left.real + right.real;
+        }
+        return {};
     }
 
-    intp_v operator+(const intp_v& first, const intp_v& second)
+    value operator-(const value& left, const value& right) const
     {
-        switch (first.type) {
-            case i32: return first.value.int32 + second.value.int32; 
-            case f32: return first.value.float32 + second.value.float32;
-            case f64: return first.value.float64 + second.value.float64;
+        switch(type)
+        {
+        case int_t: return left.integer - right.integer;
+        case fp_t: return left.real - right.real;
         }
-    }
-
-    intp_v operator-(intp_v& first, intp_v& second)
-    {
-        switch (first.type) {
-        case i32: return first.value.int32 - second.value.int32; 
-        case f32: return first.value.float32 - second.value.float32;
-        case f64: return first.value.float64 - second.value.float64;
-        }
+        return {};
     }
 };
 
 struct sim_state
 {
-    my_stack<intp_v> int_stack;
+    my_stack<int> ins_stack;
     curandState* random;
-    double* variables;
+    value* variables;
 };
 
-struct pn_expr
+inline bool boolify(const double x)
 {
-    enum types
+    return abs(x) > DBL_EPSILON;
+}
+
+#define IS_LEAF(x) ((x) < 4)
+struct instruction 
+{
+    enum operators
     {
-        //axioms
-        literal_s = 0, 
-        variable_s = 1,
-        random_s = 2,
+        //value types
+        literal_i = 0,
+        global_var = 1,
+        local_var = 2,
+        random_i = 3,
 
-        //control
-        return_s = 3,
-        goto_s = 4,
-        cgoto_s = 5,
+        //arithmatic types
+        plus_i,
+        minus_i,
+        multiply_i,
+        division_i,
+        ratio_i,
+        power_i,
+        negation_i,
+        sqrt_i,
+        modulo_i,
+        ln_i,
 
-        //arithmatic
-        plus_s, 
-        minus_s, 
-        multiply_s, 
-        pow_s,
-        sqrt_s,
-        modulo_s,
-        ln_s,
+        //boolean types
+        and_i,
+        or_i,
+        less_equal_i,
+        greater_equal_i,
+        less_i,
+        greater_i,
+        equal_i,
+        not_equal_i,
+        not_i,
 
-        //boolean
-        negation_s,
-        less_s,
-        less_equal_s,
-        greater_s,
-        greater_equal_s,
-        equal_s,
-        not_equal_s,
-        and_s,
-        or_s,
-
-        //compiled,
-        compiled_s
-    } type;
-
-    union expr_metadata
+        //control types
+        goto_i,
+        return_i,
+        init_i,
+        compiled_i
+        
+    } operand = literal_i;
+    
+    union expr_data
     {
-        intp_v value;
-        int variable_id;
-        int goto_dest;
-    } data;
+        value value;
+        int variable_id{};
+        int length;
+        int compile_id;
+    } data = {{1}};
 
-    intp_v evaluate(sim_state* state)
+    CPU GPU value evaluate_expression(int& header, sim_state* state) const
     {
-        intp_v v1{0};
-        intp_v v2{0};
-        switch(this->type)
-        {
-        case literal_s: return this->data.value;
-        case variable_s: return state->variables[this->data.variable_id];
-        case random_s: return curand_uniform_double(state->random);
-        case return_s: return 0.0;
-        case goto_s: return 0.0;
-        case cgoto_s: return 0.0;
-        case plus_s:
-            v2 = state->int_stack.pop();
-            v1 = state->int_stack.pop();
+        double v1,v2;
+        switch (this->operand) {
+        case literal_i: return value{this->data.value};
+        case global_var: return state->variables[this->data.variable_id];
+        case local_var: return state->variables[this->data.variable_id]; //Todo handle better
+        case random_i: return curand_uniform_double(state->random);
+        case plus_i:
+            v2 = state->ins_stack.pop();
+            v1 = state->ins_stack.pop();
             return v1 + v2;
-        case minus_s:
-            v2 = state->int_stack.pop();
-            v1 = state->int_stack.pop();
+        case minus_i:
+            v2 = state->ins_stack.pop();
+            v1 = state->ins_stack.pop();
             return v1 - v2;
-        case multiply_s:
-            v2 = state->int_stack.pop();
-            v1 = state->int_stack.pop();
-            return v1.as_double() * v2.as_double();
-        case pow_s:
-            v2 = state->int_stack.pop();
-            v1 = state->int_stack.pop();
-            return pow(v1.value.float64, v1.value.float64);
-        case sqrt_s:
-            v1 = state->int_stack.pop();
-            return sqrt(v1.value.float64);
-        case modulo_s:
-            v2 = state->int_stack.pop();
-            v1 = state->int_stack.pop();
-            return v1.value.int32 % v2.value.int32;
-        case ln_s: break;
-        case negation_s: break;
-        case less_s: break;
-        case less_equal_s: break;
-        case greater_s: break;
-        case greater_equal_s: break;
-        case equal_s: break;
-        case not_equal_s: break;
-        case and_s: break;
-        case or_s: break;
-        case compiled_s: break;
-        default: ;
+        case multiply_i:
+            v2 = state->ins_stack.pop();
+            v1 = state->ins_stack.pop();
+            return v1 * v2;
+        case division_i:
+            v2 = state->ins_stack.pop();
+            v1 = state->ins_stack.pop();
+            return v1 / v2;
+        case ratio_i:
+            v2 = state->ins_stack.pop();
+            v1 = state->ins_stack.pop();
+            return v1 / v2;
+        case power_i:
+            v2 = state->ins_stack.pop();
+            v1 = state->ins_stack.pop();
+            return pow(v1,v2);
+        case negation_i:
+            v1 = state->ins_stack.pop();
+            return -v1;
+        case sqrt_i:
+            v1 = state->ins_stack.pop();
+            return sqrt(v1);
+        case modulo_i:
+            v1 = state->ins_stack.pop();
+            return -v1;
+        case ln_i:
+            v1 = state->ins_stack.pop();
+            return log(v1);
+        case and_i:
+            v2 = state->ins_stack.pop();
+            v1 = state->ins_stack.pop();
+            return boolify(v1) && boolify(v2);
+        case or_i:
+            v2 = state->ins_stack.pop();
+            v1 = state->ins_stack.pop();
+            return boolify(v1) || boolify(v2);
+        case less_equal_i:
+            v2 = state->ins_stack.pop();
+            v1 = state->ins_stack.pop();
+            return v1 <= v2;
+        case greater_equal_i:
+            v2 = state->ins_stack.pop();
+            v1 = state->ins_stack.pop();
+            return v1 >= v2;
+        case less_i:
+            v2 = state->ins_stack.pop();
+            v1 = state->ins_stack.pop();
+            return v1 < v2;
+        case greater_i:
+            v2 = state->ins_stack.pop();
+            v1 = state->ins_stack.pop();
+            return v1 > v2;
+        case equal_i:
+            v2 = state->ins_stack.pop();
+            v1 = state->ins_stack.pop();
+            return boolify(v1 - v2);
+        case not_equal_i:
+            v2 = state->ins_stack.pop();
+            v1 = state->ins_stack.pop();
+            return !boolify(v1 - v2);
+        case not_i:
+            v1 = state->ins_stack.pop();
+            return boolify(v1);
+        case goto_i:
+            v1 = state->ins_stack.pop();
+            header += boolify(v1) * data.length; //equivilent to: "boolify(v1) ? data.length : 0", but faster
+        case return_i:
+            return header += data.length;
+        case init_i: //TODO should throw error
+        case compiled_i: return 0.0; //TODO should throw error
         }
+        return 0.0;
     }
 };
 
 struct function
 {
-    pn_expr* statements;
+    instruction* ins;
     int size;
 
-    double call(sim_state* state)
+    double call(sim_state* state) const
     {
-        state->int_stack.clear();
-        for (int i = 0; i < size; ++i)
+        state->ins_stack.clear();
+        for (int i = 1; i < size; ++i)
         {
-            pn_expr* stmt = &statements[i];
-            if(stmt->type == pn_expr::return_s)
-            {
-                return state->int_stack.pop().as_double();
-            }
-            else if(stmt->type == pn_expr::goto_s)
-            {
-                i = stmt->data.goto_dest;
-            }
-            else if(stmt->type == pn_expr::cgoto_s)
-            {
-                if(!state->int_stack.pop().value.int32) continue;
-                i = stmt->data.goto_dest;
-            }
-            else
-            {
-                state->int_stack.push_val(stmt->evaluate(state));
-            }
+            ins[i].evaluate_expression(i, state);
         }
+        return state->ins_stack.pop();
     }
 };
 

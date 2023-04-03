@@ -138,6 +138,17 @@ struct node
     CPU GPU double max_progression(state* state, bool* is_finite) const;
 };
 
+struct branch
+{
+    struct combo
+    {
+        node* n;
+        expr* w;
+    };
+    combo* destinations;
+    int size;
+};
+
 struct update
 {
     int variable_id;
@@ -168,26 +179,31 @@ struct edge
 // {
 //     enum prop_type
 //     {
-//         reach,
-//         sys_constraint,s
+//         reach_p,
+//         constraint_p
 //     } type;
-//     union
+//     union prop_data
 //     {
-//         struct
+//         struct reach_data
 //         {
 //             int process_id;
 //             int id;
 //         } reachability;
-//         constraint constraint;
+//         struct constraint_data
+//         {
+//             int variable_id;
+//             constraint::operators op;
+//             float value;
+//         } constraint;
 //     } data;
 //
-//     bool evaluate(state* state) const;
+//     bool evaluate(const state* state) const;
 // };
 //
-// #define QUERY_GOAL (-1)
-// #define QUERY_TERMINAL (-2)
-// #define IS_TERMINAL(x) ((x) == -2)
-// #define IS_GOAL(x) ((x)==-1)
+#define QUERY_GOAL (-1)
+#define QUERY_TERMINAL (-2)
+#define IS_TERMINAL(x) ((x) == -2)
+#define IS_GOAL(x) ((x)==-1)
 // struct query
 // {
 //     enum query_types

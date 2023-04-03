@@ -6,23 +6,10 @@
 #include "../results/result_store.h" 
 #include "device_launch_parameters.h"
 
-CPU GPU size_t thread_heap_size(const sim_config* config)
-{
-    const size_t size =
-          static_cast<size_t>(config->max_backtrace_depth) * sizeof(void*) + //this is a expression*, but it doesnt like sizeof(expression*)
-          config->max_expression_depth * sizeof(double) +
-          config->network_size * sizeof(void*) + //this is a node*
-          config->variable_count * sizeof(clock_var) +
-          config->max_edge_fanout * sizeof(state::w_edge);
-
-    const unsigned long long int padding = (8 - (size % 8));
-
-    return padding < 8 ? size + padding : size;
-}  
 
 CPU GPU double determine_progress(const node* node, state* state)
 {
-    if(state->urgent_count > 0) return 0.0;
+    if(state->urgent_count > 0 && IS_URGENT(node->type)) return 0.0;
     bool is_finite = true;
     const double random_val = curand_uniform_double(state->random);
     const double max = node->max_progression(state, &is_finite);
@@ -189,7 +176,7 @@ CPU GPU void simulate_automata(
     const result_store* output,
     const sim_config* config)
 {
-    void* cache = static_cast<void*>(&static_cast<char*>(config->cache)[(idx*thread_heap_size(config)) / sizeof(char)]);
+    void* cache = static_cast<void*>(&static_cast<char*>(config->cache)[(idx*config->thread_heap_size()) / sizeof(char)]);
     curandState* r_state = &config->random_state_arr[idx];
     curand_init(config->seed, idx, idx, r_state);
     state sim_state = state::init(cache, r_state, model, config->max_expression_depth, config->max_backtrace_depth, config->max_edge_fanout);
@@ -202,7 +189,9 @@ CPU GPU void simulate_automata(
         //run simulation
         while (true)
         {
-            // model->query->check_query()
+            // if(model->query->check_query(&sim_state))
+            //     break;
+            
             const int process = progress_sim(&sim_state, config);
             if(IS_NO_PROCESS(process)) break;
             

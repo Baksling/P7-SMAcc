@@ -298,13 +298,32 @@ CPU GPU inline bool edge::edge_enabled(state* state) const
     return true;
 }
 
-// bool proposition::evaluate(state* state) const
+// bool proposition::evaluate(const state* state) const
 // {
+//     double v1, v2;
 //     switch (this->type) {
-//     case reach:
+//     case proposition::reach_p:
 //         return state->models.store[this->data.reachability.process_id]->id == this->data.reachability.id;
-//     case sys_constraint:
-//         return this->data.constraint.evaluate_constraint(state);
+//     case proposition::constraint_p:
+//         v1 = state->variables.store[this->data.constraint.variable_id].value;
+//         v2 = static_cast<double>(this->data.constraint.value);
+//         switch(this->data.constraint.op)
+//         {
+//         case constraint::less_equal_c:
+//             return v1 <= v2;
+//         case constraint::less_c:
+//             return v1 < v2;
+//         case constraint::greater_equal_c:
+//             return v1 >= v2;
+//         case constraint::greater_c:
+//             return v1 > v2;
+//         case constraint::equal_c:
+//             return abs(v1 - v2) <= DBL_EPSILON;
+//         case constraint::not_equal_c:
+//             return abs(v1 - v2) > DBL_EPSILON;
+//         case constraint::compiled_c:
+//             return false;
+//         }
 //     }
 //     return false;
 // }

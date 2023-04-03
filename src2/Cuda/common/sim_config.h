@@ -74,6 +74,20 @@ struct sim_config
     {
         return (static_cast<size_t>(this->threads) * SHARED_MEMORY_PR_THREAD) > (model_size);
     }
+
+    CPU GPU size_t thread_heap_size() const
+    {
+        const size_t size =
+              static_cast<size_t>(this->max_backtrace_depth) * sizeof(void*) + //this is a expression*, but it doesnt like sizeof(expression*)
+              this->max_expression_depth * sizeof(double) +
+              this->network_size * sizeof(void*) + //this is a node*
+              this->variable_count * sizeof(clock_var) +
+              this->max_edge_fanout * sizeof(state::w_edge);
+
+        const unsigned long long int padding = (8 - (size % 8));
+
+        return padding < 8 ? size + padding : size;
+    }
 };
 
 #endif
