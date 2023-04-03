@@ -1,4 +1,4 @@
-number_of_automatas = 500
+number_of_automatas = 100000
 n = 1
 infected_percent = number_of_automatas*0.01
 kappa = 265
