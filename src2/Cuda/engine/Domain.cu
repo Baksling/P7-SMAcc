@@ -229,6 +229,61 @@ CPU GPU double node::max_progression(state* state, bool* is_finite) const
     return max_bound;
 }
 
+bool node::progress_bounds(state* state, double* out_lower, double* out_upper) const
+{
+    *out_lower = 0.0;
+    *out_upper = DBL_MAX;
+    for (int i = 0; i < this->invariants.size; ++i)
+    {
+        const constraint& con = this->invariants.store[i];
+        double limit;
+        
+        if(IS_INVARIANT(con.operand))
+        {
+            if(!con.uses_variable) continue;
+            const clock_var var = state->variables.store[con.variable_id];
+            if(var.rate == 0) continue;
+            limit = (con.expression->evaluate_expression(state) - var.value) / var.rate;
+        }
+        else if(con.operand == constraint::compiled_c)
+        {
+            bool finite = false;
+            limit = evaluate_compiled_constraint_upper_bound(&con, state, &finite);
+
+            if(!finite) continue;
+        }
+        else continue;
+        *out_upper = fmin(*out_upper,  limit); //rate is >0.
+    }
+
+    for (int i = 0; i < this->edges.size; ++i)
+    {
+        for (int j = 0; j < this->edges.store[i].guards.size; ++j)
+        {
+            const constraint& con = this->edges.store[i].guards.store[i];
+            double limit;
+            if(IS_GUARD(con.operand))
+            {
+                if(!con.uses_variable) continue;
+                const clock_var var = state->variables.store[con.variable_id];
+                if(var.rate == 0) continue;
+                limit = (var.value - con.expression->evaluate_expression(state)) / var.rate;
+            }
+            else if(con.operand == constraint::compiled_c)
+            {
+                bool finite = false;
+                limit = evaluate_compiled_constraint_upper_bound(&con, state, &finite);
+
+                if(!finite) continue;
+            }
+            else continue;
+            *out_lower = fmin(*out_lower,  limit); //rate is >0.   
+        }
+    }
+
+    return *out_upper < DBL_MAX;
+}
+
 CPU GPU bool constraint::evaluate_constraint(state* state) const
 {
     if(this->operand == compiled_c)

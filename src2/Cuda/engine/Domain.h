@@ -4,8 +4,6 @@
 struct state;
 struct edge;
 struct node;
-int min(int, int);
-
 #include "../common/macro.h"
 #include "../common/my_stack.h"
 
@@ -82,6 +80,7 @@ struct expr  // NOLINT(cppcoreguidelines-pro-type-member-init)
  * \param a constraint::operators
  */
 #define IS_INVARIANT(a) ((a) < 2)
+#define IS_GUARD(a) ((a) < 6 && (a) >= 2)
 struct constraint
 {
     enum operators
@@ -136,17 +135,7 @@ struct node
     arr<edge> edges = arr<edge>::empty();
     arr<constraint> invariants = arr<constraint>::empty();
     CPU GPU double max_progression(state* state, bool* is_finite) const;
-};
-
-struct branch
-{
-    struct combo
-    {
-        node* n;
-        expr* w;
-    };
-    combo* destinations;
-    int size;
+    CPU GPU bool progress_bounds(state* state, double* out_lower, double* out_upper) const;
 };
 
 struct update
@@ -166,9 +155,20 @@ struct update
 
 struct edge
 {
+    struct branch
+    {
+        node* dest;
+        expr* weight;
+    };
+    
     int channel{};
-    expr* weight{};
-    node* dest{};
+    arr<branch> branches;
+
+    // expr* weight{};
+
+    // node* dest{};
+    
+    
     arr<constraint> guards = arr<constraint>::empty();
     arr<update> updates = arr<update>::empty();
     CPU GPU void apply_updates(state* state) const;
@@ -245,7 +245,7 @@ struct state
 
     struct w_edge
     {
-        edge* e;
+        edge::branch* e;
         double w;
     };
     
