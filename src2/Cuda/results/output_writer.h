@@ -72,7 +72,11 @@ struct variable_summary
 
 struct output_properties
 {
+    std::chrono::steady_clock::time_point pre_optimisation_start;
+    std::chrono::steady_clock::time_point post_optimisation_start;
+    std::unordered_map<int, std::string>* variable_names;
     std::unordered_map<int, std::string>* node_names;
+    std::unordered_map<int, std::string>* template_names;
     std::unordered_map<int, int>* node_network;
     std::unordered_map<int, node*> node_map;
 };
@@ -93,7 +97,7 @@ private:
     arr<variable_summary> variable_summaries_ = arr<variable_summary>::empty();
     double epsilon_;
     double alpha_;
-    output_properties* eric_;
+    output_properties* properties_;
     
     static float calc_percentage(const unsigned long long counter, const unsigned long long divisor);
 

@@ -1,6 +1,5 @@
 ﻿#include "uppaal_xml_parser.h"
-
-
+#include <iostream>
 /* 
  * TODO init like this: double x,y = 0.0; --flueben
  * TODO If else in init, guards, and invariants
@@ -49,6 +48,38 @@ constraint* get_constraint(const string& exprs, expr* v_one, expr* v_two)
     cons->expression = v_two;
 
     return cons;
+}
+
+expr* get_expression_con(const string& exprs, int left, expr* right)
+{
+    expr* expr_p = new expr();
+    if(exprs.find("<=") != std::string::npos)
+        expr_p->operand = expr::less_equal_ee;
+    else if(exprs.find(">=") != std::string::npos)
+        expr_p->operand = expr::greater_equal_ee;
+    else if(exprs.find("==") != std::string::npos)
+        expr_p->operand = expr::equal_ee;
+    else if(exprs.find("!=") != std::string::npos)
+        expr_p->operand = expr::not_equal_ee;
+    else if(exprs.find('<') != std::string::npos)
+        expr_p->operand = expr::less_ee;
+    else if(exprs.find('>') != std::string::npos)
+        expr_p->operand = expr::greater_ee;
+    else if(exprs.find('>') != std::string::npos)
+        expr_p->operand = expr::not_ee;
+    else
+    {
+        THROW_LINE("Operand in " + exprs + " not found, sad..");
+    }
+
+    expr_p->left = new expr();
+    expr_p->left->operand = expr::clock_variable_ee;
+    expr_p->left->left = nullptr;
+    expr_p->left->right = nullptr;
+    expr_p->right = right;
+    expr_p->left->variable_id = left;
+
+    return expr_p;
 }
 
 expr* get_expression_con(const string& exprs, expr* left, expr* right)
@@ -109,7 +140,7 @@ int uppaal_xml_parser::get_timer_id(const string& expr) const
             break;
         }
         
-        if (in_array(expr_wout_spaces[++index], {'<','>','='}))
+        if (in_array(expr_wout_spaces[++index], {'<','>','=', '!'}))
         {
             break;
         }
@@ -125,7 +156,7 @@ int uppaal_xml_parser::get_timer_id(const string& expr) const
     {
         return global_vars_map_.at(sub);
     }
-    
+    std::cout << expr << std::endl;
     THROW_LINE("sum tin wong");
 }
 
@@ -145,8 +176,9 @@ void uppaal_xml_parser::fill_expressions(const list<string>& expressions, list<T
         //TODO fix this plz
         //Constraint is heap allocated, and is then copied here.
         //Results in dead memory.
-        
-        if (timers_map_.count(extracted_condition.left) || global_timers_map_.count(extracted_condition.left))
+
+        if (timers_map_.count(extracted_condition.left) || global_timers_map_.count(extracted_condition.left) ||
+            vars_map_.count(extracted_condition.left) || global_vars_map_.count(extracted_condition.left))
             t->push_back(*get_constraint(extracted_condition.input,
                 get_timer_id(extracted_condition.input),
                 variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right,
@@ -160,12 +192,47 @@ void uppaal_xml_parser::fill_expressions(const list<string>& expressions, list<T
     }
 }
 
+template <typename T>
+void uppaal_xml_parser::fill_expressions_if_else(const list<string>& expressions, list<T>* t)
+{
+    for(const auto& expr: expressions)
+    {
+        if (expr.empty())
+            continue;
+        
+        const extract_condition extracted_condition = string_extractor::extract(extract_condition(expr));
+
+        if (extracted_condition.input.empty())
+            continue;
+        
+        //TODO fix this plz
+        //Constraint is heap allocated, and is then copied here.
+        //Results in dead memory.
+        if (timers_map_.count(extracted_condition.left) || global_timers_map_.count(extracted_condition.left) ||
+            vars_map_.count(extracted_condition.left) || global_vars_map_.count(extracted_condition.left))
+            t->push_back(get_expression_con(extracted_condition.input,
+                get_timer_id(extracted_condition.input),
+                variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right,
+                    &vars_map_, &global_vars_map_, &const_local_vars, &const_global_vars)));
+        else
+            t->push_back(get_expression_con(extracted_condition.input,
+                variable_expression_evaluator::evaluate_variable_expression(extracted_condition.left,
+                    &vars_map_, &global_vars_map_,&const_local_vars, &const_global_vars),
+                variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right,
+                    &vars_map_, &global_vars_map_,&const_local_vars, &const_global_vars)));
+    }
+}
+
 
 void uppaal_xml_parser::init_global_clocks(const xml_document* doc)
 {
     string global_decl = doc->child("nta").child("declaration").child_value();
     global_decl = remove_whitespace(global_decl);
     const list<declaration> decls = dp_.parse(global_decl, &const_global_vars);
+
+    insert_to_map(&this->const_global_vars, string("true"), 1.0);
+    insert_to_map(&this->const_global_vars, string("false"), 0.0);
+
     for (declaration d : decls)
     {
         //global declarations
@@ -187,7 +254,7 @@ void uppaal_xml_parser::init_global_clocks(const xml_document* doc)
         {
             insert_to_map(&this->global_vars_map_, d.get_name(), chan_id_++);
         }
-        else if (d.get_type() == const_double_type || d.get_type() == const_int_type)
+        else if (d.get_type() == const_double_type || d.get_type() == const_int_type || d.get_type() == const_bool_type)
         {
             insert_to_map(&this->const_global_vars, d.get_name(), d.get_value());
         }
@@ -230,7 +297,7 @@ void uppaal_xml_parser::init_local_clocks(xml_node template_node)
         {
             insert_to_map(&this->vars_map_, d.get_name(), chan_id_++);
         }
-        else if (d.get_type() == const_double_type || d.get_type() == const_int_type)
+        else if (d.get_type() == const_double_type || d.get_type() == const_int_type || d.get_type() == const_bool_type)
         {
             insert_to_map(&this->const_local_vars, d.get_name(), d.get_value());
         }
@@ -246,6 +313,24 @@ void uppaal_xml_parser::init_local_clocks(xml_node template_node)
             vars_list_->push_back(c_v);
         }
     }
+}
+
+inline void add_timer(int i, const string& s, unordered_map<int, string>* map)
+{
+    if (map->count(i) == 0)
+        map->insert(std::pair<int, string>(i, s));
+}
+
+unordered_map<int, string>* uppaal_xml_parser::get_clock_names()
+{
+    unordered_map<int, string>* map = new unordered_map<int, string>();
+        
+    for (const auto& pair : this->global_timers_map_) add_timer(pair.second, pair.first, map);
+    for (const auto& pair : this->global_vars_map_) add_timer(pair.second, pair.first, map);
+    for (const auto& pair : this->timers_map_) add_timer(pair.second, pair.first, map);
+    for (const auto& pair : this->vars_map_) add_timer(pair.second, pair.first, map);
+        
+    return map;
 }
 
 uppaal_xml_parser::uppaal_xml_parser()
@@ -265,6 +350,8 @@ void uppaal_xml_parser::handle_locations(const xml_node locs)
 {
     const string string_id = locs.attribute("id").as_string();
     const string string_name = locs.child("name").child_value();
+    const bool committed = !locs.child("committed").empty();
+    const bool urgent = !locs.child("urgent").empty();
     const int node_id = string_extractor::extract(extract_node_id(string_id));
     list<constraint> invariants;
     expr* expo_rate = new expr;
@@ -307,8 +394,7 @@ void uppaal_xml_parser::handle_locations(const xml_node locs)
     node* node_ = new node();
     node_->id = node_id;
     node_->invariants = to_array(&invariants);
-    node_->is_branch_point = false;
-    node_->is_goal = is_goal;
+    node_->type = is_goal ? node::goal : (committed ? node::committed : (urgent ? node::urgent : node::location));
     node_->lamda = expo_rate;
     node_->edges = arr<edge>::empty();
     
@@ -381,28 +467,55 @@ bool uppaal_xml_parser::is_if_statement(const string& expr)
 
 expr* uppaal_xml_parser::handle_if_statement(const string& input)
 {
+    list<expr*> condition_exprs;
     const extract_if_statement extracted_if_statement = string_extractor::extract(extract_if_statement(input));
-    const extract_condition extracted_condition = string_extractor::extract(extract_condition(extracted_if_statement.condition));
+    // const extract_condition extracted_condition = string_extractor::extract(extract_condition(extracted_if_statement.condition));
+    list<string> expressions = split_expr(extracted_if_statement.condition);
+    fill_expressions_if_else(expressions, &condition_exprs);
 
     //Build the condition
-    expr* right_side_con_expr = variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right,
-        &this->vars_map_, &this->global_vars_map_,&const_local_vars, &const_global_vars);
-    expr* left_side_con_expr = variable_expression_evaluator::evaluate_variable_expression(extracted_condition.left,
-        &this->vars_map_, &this->global_vars_map_,&const_local_vars, &const_global_vars);
-    expr* condition_e = get_expression_con(extracted_if_statement.condition, left_side_con_expr, right_side_con_expr);
-    
+    // expr* right_side_con_expr = variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right,
+    //     &this->vars_map_, &this->global_vars_map_,&const_local_vars, &const_global_vars);
+    // expr* left_side_con_expr = variable_expression_evaluator::evaluate_variable_expression(extracted_condition.left,
+    //     &this->vars_map_, &this->global_vars_map_,&const_local_vars, &const_global_vars);
+    // expr* condition_e = get_expression_con(extracted_if_statement.condition, left_side_con_expr, right_side_con_expr);
     expr* if_true_e = variable_expression_evaluator::evaluate_variable_expression(extracted_if_statement.if_true,
         &this->vars_map_, &this->global_vars_map_,&const_local_vars, &const_global_vars);
     expr* if_false_e = variable_expression_evaluator::evaluate_variable_expression(extracted_if_statement.if_false,
         &this->vars_map_, &this->global_vars_map_,&const_local_vars, &const_global_vars);
 
     expr* whole_expr = new expr();
-    whole_expr->left = condition_e;
+    expr* concantted_condition = build_con(condition_exprs, new expr());
+
+    whole_expr->left = concantted_condition;
     whole_expr->right = if_true_e;
     whole_expr->conditional_else = if_false_e;
     whole_expr->operand = expr::conditional_ee;
     
     return whole_expr;
+}
+
+expr* uppaal_xml_parser::build_con(list<expr*> condition_exprs, expr* concantted_condition){
+    // expr* val = new expr();
+    // val->operand = condition_exprs.front().operand;
+    // val->right = condition_exprs.front().right;
+    // val->left = condition_exprs.front().left;
+
+    if (condition_exprs.size() == 1){
+        return condition_exprs.front();
+    }
+
+    concantted_condition->left = condition_exprs.front();
+    condition_exprs.pop_front();
+
+    // val->operand = condition_exprs.front().operand;
+    // val->right = condition_exprs.front().right;
+    // val->left = condition_exprs.front().left;
+
+    concantted_condition->operand = expr::and_ee;
+    concantted_condition->right = condition_exprs.size() == 1 ? condition_exprs.front() : build_con(condition_exprs, concantted_condition);
+
+    return concantted_condition;
 }
 
 list<update> uppaal_xml_parser::handle_assignment(const string& input)
@@ -498,9 +611,11 @@ __host__ network uppaal_xml_parser::parse_xml(const char* file_path)
     for (pugi::xml_node templates: doc.child("nta").children("template"))
     {
         const string init_node = templates.child("init").attribute("ref").as_string();
+        const string template_name = templates.child("name").child_value();
         init_node_id_ = string_extractor::extract(extract_node_id(init_node));
         init_local_clocks(templates);
         
+        template_names->emplace(this->system_count_,template_name);
         
         for (const pugi::xml_node locs: templates.children("location"))
         {
@@ -519,8 +634,7 @@ __host__ network uppaal_xml_parser::parse_xml(const char* file_path)
             node* node_ = new node();
             node_->id = node_id;
             node_->invariants = arr<constraint>::empty();
-            node_->is_branch_point = true;
-            node_->is_goal = false;
+            node_->type = node::branch; 
             node_->lamda = lamda;
             node_->edges = arr<edge>::empty();
             
@@ -545,16 +659,11 @@ __host__ network uppaal_xml_parser::parse_xml(const char* file_path)
     return network{start_nodes, to_array(vars_list_)};
 }
 
-__host__ network uppaal_xml_parser::parse(string file_path)
+__host__ network uppaal_xml_parser::parse(const string& file)
 {
     try
     {
-        char* writeable = new char[file_path.size() + 1];
-        std::copy(file_path.begin(), file_path.end(), writeable);
-        writeable[file_path.size()] = '\0';
-        auto model = parse_xml(writeable);
-        delete[] writeable;
-        return model;
+        return parse_xml(file.c_str());
     }
     catch (const std::runtime_error &ex)
     {

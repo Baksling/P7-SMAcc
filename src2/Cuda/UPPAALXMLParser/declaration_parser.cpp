@@ -1,7 +1,7 @@
 ﻿#include "declaration_parser.h"
-
-#include "arithmetic-expression-evaluator.h"
 #include "string_extractor.h"
+#include "arithmetic-expression-evaluator.h"
+
 using namespace std;
 using namespace helper;
 using namespace evalguy;
@@ -48,6 +48,11 @@ void declaration_parser::number_parser(const string& input_string, list<declarat
     if (is_this_keyword(input_string,"double"))
     {
         list<declaration> cloc_decls = parse_keyword(input_string, is_const ? const_double_type : double_type);
+        result->insert(result->end(), cloc_decls.begin(), cloc_decls.end());
+    }
+    if (is_this_keyword(input_string,"bool"))
+    {
+        list<declaration> cloc_decls = parse_keyword(input_string, is_const ? const_bool_type : bool_type);
         result->insert(result->end(), cloc_decls.begin(), cloc_decls.end());
     }
     if (is_this_keyword(input_string,"int"))

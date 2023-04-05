@@ -14,6 +14,7 @@ string get_constraint_op(const string& expr)
         return "<";
     if(expr.find('>') != std::string::npos)
         return ">";
+
     THROW_LINE("Operand in " + expr + " not found, sad..");
 }
 
@@ -42,9 +43,11 @@ extract_condition string_extractor::extract(const extract_condition& extract)
 
 extract_assignment string_extractor::extract(const extract_assignment& extract)
 {
-    // left_side=right_side
-    const string left_side = helper::take_while(extract.input, "=");
-    const string right_side_of_equal = helper::take_after(extract.input, "=");
+    // left_side=right_side or left_side:=right_side
+    const string left_side = helper::string_contains(extract.input, ":=") ? helper::take_while(extract.input, ":=") : helper::take_while(extract.input, "=");
+    string right_side_of_equal = helper::take_after(extract.input, "=");
+    right_side_of_equal = helper::replace_all(right_side_of_equal, "true", "1");
+    right_side_of_equal = helper::replace_all(right_side_of_equal, "false", "0");
     return extract_assignment(left_side,right_side_of_equal,extract.input);
 }
 
@@ -71,9 +74,12 @@ extract_declaration string_extractor::extract(const extract_declaration& extract
     string input_string = extract.input;
     input_string = helper::replace_all(input_string, extract.input_keyword, "");
     input_string = helper::replace_all(input_string, ";", "");
-    const string right = helper::string_contains(input_string, "=") ? helper::take_after(input_string, "=") : "";
-    const string left = helper::string_contains(input_string, "=") ? helper::take_while(input_string, "=") : input_string;
+    const string left = helper::string_contains(input_string, ":=") ? helper::take_while(input_string, ":=") 
+        : helper::string_contains(input_string, "=") ?  helper::take_while(input_string, "=") : input_string;
     const std::list<string> keywords = helper::split_all(left, ",");
     
+    string right = helper::string_contains(input_string, "=") ? helper::take_after(input_string, "=") : "";
+    right = helper::replace_all(right, "true", "1");
+    right = helper::replace_all(right, "false", "0");
     return extract_declaration(keywords, right, extract.input);
 }

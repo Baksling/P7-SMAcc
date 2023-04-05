@@ -33,6 +33,7 @@ CPU GPU double evaluate_compiled_constraint_upper_bound(const constraint* con, s
     return v0;
 }
 
+
 CPU GPU double evaluate_expression_node(const expr* expr, state* state)
 {
     double v1, v2;
@@ -70,6 +71,18 @@ CPU GPU double evaluate_expression_node(const expr* expr, state* state)
     case expr::sqrt_ee: 
         v1 = state->value_stack.pop();
         return sqrt(v1);
+    case expr::modulo_ee:
+        v2 = state->value_stack.pop();
+        v1 = state->value_stack.pop();
+        return static_cast<double>(static_cast<int>(v1) % static_cast<int>(v2));
+    case expr::and_ee:
+        v2 = state->value_stack.pop();
+        v1 = state->value_stack.pop();
+        return static_cast<double>(abs(v1) > DBL_EPSILON && abs(v2) > DBL_EPSILON);
+    case expr::or_ee:
+        v2 = state->value_stack.pop();
+        v1 = state->value_stack.pop();
+        return static_cast<double>(abs(v1) > DBL_EPSILON || abs(v2) > DBL_EPSILON);
     case expr::less_equal_ee: 
         v2 = state->value_stack.pop();
         v1 = state->value_stack.pop();
@@ -101,9 +114,34 @@ CPU GPU double evaluate_expression_node(const expr* expr, state* state)
         v1 = state->value_stack.pop();
         state->value_stack.pop();
         return v1;
-    case expr::compiled_ee: return 0.0; break;
+    case expr::compiled_ee:
+    case expr::pn_compiled_ee:
+    case expr::pn_skips_ee: return 0.0;
     }
     return 0.0;
+}
+
+CPU GPU double evaluate_pn_expr(const expr* pn, state* state)
+{
+    state->value_stack.clear();
+    
+    for (int i = 1; i < pn->length; ++i)
+    {
+        const expr* current = &pn[i];
+        if(current->operand == expr::pn_skips_ee)
+        {
+            if(abs(state->value_stack.pop()) > DBL_EPSILON)
+            {
+                i += current->length;
+            }
+            continue;
+        }
+
+        const double value = evaluate_expression_node(current, state);
+        state->value_stack.push_val(value);
+    }
+
+    return state->value_stack.pop();
 }
 
 CPU GPU double expr::evaluate_expression(state* state)
@@ -114,6 +152,8 @@ CPU GPU double expr::evaluate_expression(state* state)
         return state->variables.store[this->variable_id].value;
     if(this->operand == compiled_ee)
         return evaluate_compiled_expression(this, state);
+    if(this->operand == pn_compiled_ee)
+        return evaluate_pn_expr(this, state);
 
     state->expr_stack.clear();
     state->value_stack.clear();
@@ -204,8 +244,8 @@ CPU GPU bool constraint::evaluate_constraint(state* state) const
     case less_c: return left < right;
     case greater_equal_c: return left >= right;
     case greater_c: return left > right;
-    case equal_c: return left == right;  // NOLINT(clang-diagnostic-float-equal)
-    case not_equal_c: return left != right;  // NOLINT(clang-diagnostic-float-equal)
+    case equal_c: return abs(left - right) <= DBL_EPSILON;
+    case not_equal_c: return abs(left - right) > DBL_EPSILON;
     case compiled_c: return false;
     }
     return false;
@@ -258,29 +298,63 @@ CPU GPU inline bool edge::edge_enabled(state* state) const
     return true;
 }
 
-CPU GPU void inline state::broadcast_channel(const int channel, const node* source)
+// bool proposition::evaluate(state* state) const
+// {
+//     switch (this->type) {
+//     case reach:
+//         return state->models.store[this->data.reachability.process_id]->id == this->data.reachability.id;
+//     case sys_constraint:
+//         return this->data.constraint.evaluate_constraint(state);
+//     }
+//     return false;
+// }
+//
+// bool query::check_query(state* state) const
+// {
+//     const int current = state->query_state; 
+//     unsigned k = 0; //max 32 bits, aka 32 propositions
+//     for (int i = 0; i < min(this->propositions.size, 32); ++i)
+//     {
+//         const bool pred = this->propositions.store[i].evaluate(state);
+//         k = SET_BIT_IF(i, pred, k);
+//     }
+//     const unsigned index = this->inputs * current + k;
+//     state->query_state =  dfa[index];
+//     return state->query_state < 0;
+// }
+
+CPU GPU void state::traverse_edge(const int process_id, node* dest)
+{
+    const node* current = this->models.store[process_id];
+    
+    this->urgent_count = this->urgent_count + IS_URGENT(dest->type) - IS_URGENT(current->type);
+    this->committed_count = this->committed_count + (dest->type == node::committed) - (current->type == node::committed);
+    // printf("process %d from %d to %d\n", process_id, current->id, dest->id);
+    
+    this->models.store[process_id] = dest;
+}
+
+void inline state::broadcast_channel(const int channel, const int process)
 {
     if(!IS_BROADCASTER(channel)) return;
     
-    for (int i = 0; i < this->models.size; ++i)
+    for (int p = 0; p < this->models.size; ++p)
     {
-        const node* current = this->models.store[i];
+        const node* current = this->models.store[p];
         
-        if(current->id == source->id) continue;
-        if(current->is_goal) continue;
+        if(p == process) continue;
+        if(current->type == node::goal) continue;
         if(!constraint::evaluate_constraint_set(current->invariants, this)) continue;
         
         const unsigned offset = curand(this->random) % current->edges.size;
         
-        for (int j = 0; j < current->edges.size; ++j)
+        for (int e = 0; e < current->edges.size; ++e)
         {
-            const edge current_e = current->edges.store[(j + offset) % current->edges.size];
-            if(!IS_LISTENER(current_e.channel)) continue;
+            const edge current_e = current->edges.store[(e + offset) % current->edges.size];
+            // if(!IS_LISTENER(current_e.channel)) continue; <-- redundant. Already assured by CAN_SYNC
             if(!CAN_SYNC(channel, current_e.channel)) continue;
-            
-            node* dest = current_e.dest;
 
-            this->models.store[i] = dest;
+            this->traverse_edge(p, current_e.dest);
 
             current_e.apply_updates(this);
             break;
@@ -288,7 +362,7 @@ CPU GPU void inline state::broadcast_channel(const int channel, const node* sour
     }
 }
 
-state state::init(void* cache, curandState* random, const network* model, const unsigned expr_depth, const unsigned fanout)
+state state::init(void* cache, curandState* random, const network* model, const unsigned expr_depth, const unsigned backtrace_depth,const unsigned fanout)
 {
     node** nodes = static_cast<node**>(cache);
     cache = static_cast<void*>(&nodes[model->automatas.size]);
@@ -297,7 +371,7 @@ state state::init(void* cache, curandState* random, const network* model, const 
     cache = static_cast<void*>(&vars[model->variables.size]);
         
     expr** exp = static_cast<expr**>(cache);
-    cache = static_cast<void*>(&exp[expr_depth*2+1]);
+    cache = static_cast<void*>(&exp[backtrace_depth]);
         
     double* val_store = static_cast<double*>(cache);
     cache = static_cast<void*>(&val_store[expr_depth]);
@@ -309,21 +383,26 @@ state state::init(void* cache, curandState* random, const network* model, const 
     return state{
         0,
         0,
+        0,
+        0,
+        0,
         0.0,
         arr<node*>{ nodes, model->automatas.size },
         arr<clock_var>{ vars, model->variables.size },
         random,
-        my_stack<expr*>(exp, static_cast<int>(expr_depth*2+1)),
+        my_stack<expr*>(exp, static_cast<int>(backtrace_depth)),
         my_stack<double>(val_store, static_cast<int>(expr_depth)),
         my_stack<state::w_edge>(fanout_store, static_cast<int>(fanout))
     };
 }
 
-void state::reset(const unsigned sim_id, const network* model)
+void state::reset(const unsigned sim_id, const network* model, const unsigned initial_urgent_count, const unsigned initial_committed_count)
 {
     this->simulation_id = sim_id;
     this->steps = 0;
     this->global_time = 0.0;
+    this->urgent_count = initial_urgent_count;
+    this->committed_count = initial_committed_count;
     for (int i = 0; i < model->automatas.size; ++i)
     {
         this->models.store[i] = model->automatas.store[i];

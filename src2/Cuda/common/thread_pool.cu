@@ -2,7 +2,7 @@
 
 thread_pool::thread_pool(const unsigned max_concurrency)
 {
-    this->max_concurrency_ = max_concurrency;
+    this->max_concurrency_ = max_concurrency == 0 ? std::thread::hardware_concurrency() : max_concurrency;
 }
 
 void thread_pool::await_run()
@@ -17,15 +17,12 @@ void thread_pool::await_run()
 
 void thread_pool::start()
 {
-    const unsigned int hardware_max = std::thread::hardware_concurrency();
     // if 0 threads supplied, default to hardware default
-    this->max_concurrency_ = this->max_concurrency_ == 0 ? hardware_max : this->max_concurrency_;
+    const unsigned num_threads = this->max_concurrency_ == 0 ? 1 : this->max_concurrency_;
 
     //pick lowest between user parameter and supported concurrency.
-    const unsigned int num_threads = this->max_concurrency_ < hardware_max ? this->max_concurrency_ : hardware_max;
-
     threads_.resize(num_threads);
-    for (uint32_t i = 0; i < num_threads; i++) {
+    for (unsigned i = 0; i < num_threads; i++) {
         threads_.at(i) = std::thread([this]() {this->thread_loop();});
     }
 }

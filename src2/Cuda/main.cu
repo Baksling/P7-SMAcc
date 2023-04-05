@@ -7,9 +7,12 @@
 #include "./results/output_writer.h"
 #include "./allocations/argparser.h"
 #include "common/io_paths.h"
+#include "UPPAALXMLParser/abstract_parser.h"
+#include "UPPAALXMLParser/smacc_parser.h"
 
 #include "visitors/domain_optimization_visitor.h"
 #include "visitors/model_count_visitor.h"
+#include "visitors/pn_compile_visitor.h"
 #include "visitors/pretty_print_visitor.h"
 
 
@@ -25,8 +28,9 @@ parser_state parse_configs(const int argc, const char* argv[], sim_config* confi
 
     argparse::ArgumentParser parser("Cuda stochastic system simulator", "Argument parser example");
 
-    //model
+    //model and query
     parser.add_argument("-m", "--model", "Model xml file path", false);
+    parser.add_argument("-q", "--query", "Check reachability of nodes with names.\n (comma seperated string, eg.: ProcessName0.node0,ProcessName1.node1,ProcessName2.node2)", false);
 
     //output 
     parser.add_argument("-o", "--output", "The path to output result file without file extension. e.g. './output' ", false);
@@ -49,10 +53,12 @@ parser_state parse_configs(const int argc, const char* argv[], sim_config* confi
     parser.add_argument("-x", "--units", "Maximum number of steps or time to simulate. e.g. 100t for 100 time units or 100s for 100 steps", false);
     parser.add_argument("-s", "--shared", "Attempt to use shared memory in cuda simulation. Will only enable if (threads * 32 > model size)", false);
     parser.add_argument("-j", "--jit", "JIT compile the expressions. Only works for GPU, mutually exclusive with --shared.", false);
-    
+    parser.add_argument("-u", "--upscale", "scale model processes naively. default = 1", false);
+    parser.add_argument("-z", "--pnotate", "Convert expression trees into polish notation for execution. Cannot be used in conjunction with JIT.", false);
     
     //other
     parser.add_argument("-v", "--verbose", "Enable pretty print of model (print model (0) / silent(1))", false);
+    parser.add_argument("-p", "--print", "Pretty print of model (0 = no print, 1 = before optimisation, 2 = after optimisation). default = 0", false);
     parser.enable_help();
 
     const auto err = parser.parse(argc, argv);
@@ -71,6 +77,9 @@ parser_state parse_configs(const int argc, const char* argv[], sim_config* confi
     if(parser.exists("m")) config->paths->model_path = parser.get<std::string>("m");
     else throw argparse::arg_exception('m', "No model argument supplied");
 
+    if(parser.exists("q")) config->paths->query = parser.get<std::string>("q");
+    else config->paths->query = "";
+
     if(parser.exists("o")) config->paths->output_path = parser.get<std::string>("o");
     else config->paths->output_path = "./output";
 
@@ -79,7 +88,7 @@ parser_state parse_configs(const int argc, const char* argv[], sim_config* confi
 
     if(parser.exists("b"))
     {
-        if(!uppaal_xml_parser::try_parse_block_threads(
+        if(!abstract_parser::try_parse_block_threads(
             parser.get<std::string>("b"),
             &config->blocks,
             &config->threads
@@ -87,16 +96,55 @@ parser_state parse_configs(const int argc, const char* argv[], sim_config* confi
                 throw argparse::arg_exception('b', "could not parse block/threads. format: 'blocks,threads'. e.g. '32,512'");
     }
     else throw argparse::arg_exception('b', "no block arg supplied");
+    
+    if(parser.exists("r")) config->simulation_repetitions = parser.get<unsigned>("r");
+    else config->simulation_repetitions = 1;
 
+    if(parser.exists("d")) config->sim_location = static_cast<sim_config::device_opt>(parser.get<int>("d"));
+    else config->sim_location = sim_config::device;
+
+    if(parser.exists("c")) config->cpu_threads = parser.get<unsigned>("c");
+    else config->cpu_threads = 1;
+
+    if(parser.exists("x"))
+    {
+        bool is_timer;
+        double unit_value = 0.0;
+        const bool success = abstract_parser::try_parse_units(parser.get<std::string>("x"), &is_timer, &unit_value);
+        if(!success) throw argparse::arg_exception('x', "could not parse unit format. e.g. 100t or 100s");
+        config->use_max_steps = !is_timer;
+        config->max_sim_steps = static_cast<unsigned>(floor(unit_value));
+        config->max_global_progression = unit_value;
+    }
+    else
+    {
+        config->use_max_steps = true;
+        config->max_sim_steps = 100;
+        config->max_global_progression = 100;
+    }
+
+    if(parser.exists("u")) config->upscale = parser.get<int>("u");
+    else config->upscale = 1;
+
+    if(parser.exists("v")) config->verbose = parser.get<int>("v");
+    else config->verbose = true;
+
+    if(parser.exists("p")) config->model_print_mode = static_cast<sim_config::pretty_print>(parser.get<int>("p"));
+    else config->model_print_mode = sim_config::no_print;
+
+    config->use_shared_memory = parser.exists("s");
+    config->use_jit = parser.exists("j");
+    config->use_pn = parser.exists("z");
+    
+    //calculate number of runs
     double epsilon, alpha;
     size_t total_simulations;
     if(parser.exists("e")) epsilon = parser.get<double>("e");
-    else epsilon = 0.005; //default value
+    else epsilon = 0.05; //default value
     
     if(parser.exists("n"))
     {
         total_simulations = parser.get<size_t>("n");
-        alpha = 2 * exp((-2.0) * static_cast<double>(total_simulations) * pow(epsilon,2));
     }
     else if(parser.exists("a"))
     {
@@ -105,45 +153,36 @@ parser_state parse_configs(const int argc, const char* argv[], sim_config* confi
     }
     else throw argparse::arg_exception('n', "no simulation amount supplied. ");
 
-    if(parser.exists("r")) config->simulation_repetitions = parser.get<unsigned>("r");
-    else config->simulation_repetitions = 1;
-
-    //Insert into config object
-    config->simulation_amount = static_cast<unsigned>(ceil(
+    config->sim_pr_thread = config->sim_location == sim_config::device ? static_cast<unsigned>(ceil( //round up GPU sims
             static_cast<double>(total_simulations) /
-            static_cast<double>((config->blocks * config->threads * config->simulation_repetitions))));
+            static_cast<double>((config->blocks * config->threads * config->simulation_repetitions))))
+        : static_cast<unsigned>(ceil( //round up CPU sims
+            static_cast<double>(total_simulations) /
+            static_cast<double>((config->cpu_threads * config->simulation_repetitions))));
+    
+    
+    //adjust alpha based on total simulation ceil
+    alpha = 2 * exp((-2.0) * static_cast<double>(config->total_simulations()) * pow(epsilon,2));
+    
+    //Assign to config object
     config->alpha = alpha;
     config->epsilon = epsilon;
 
-    if(parser.exists("d")) config->sim_location = static_cast<sim_config::device_opt>(parser.get<int>("d"));
-    else config->sim_location = sim_config::device;
-
-    if(parser.exists("c")) config->cpu_threads = parser.get<unsigned>("c");
-    else config->cpu_threads = 1;
-
-    config->use_shared_memory = parser.exists("s");
-    config->use_jit = parser.exists("j");
-    
-    if(parser.exists("x"))
+    if(config->use_pn && config->use_jit)
     {
-        bool is_timer;
-        double unit_value = 0.0;
-        const bool success = uppaal_xml_parser::try_parse_units(parser.get<std::string>("x"), &is_timer, &unit_value);
-        if(!success) throw argparse::arg_exception('x', "could not parse unit format. e.g. 100t or 100s");
-        config->use_max_steps = !is_timer;
-        config->max_steps_pr_sim = static_cast<unsigned>(floor(unit_value));
-        config->max_global_progression = unit_value;
+        if(config->verbose)
+            printf("WARNING! Cannot use JIT and pn expressions simultaneously. Disabling pn expressions.\n");
+        config->use_pn = false;
     }
-    else
+    
+    if(config->use_pn && config->use_shared_memory)
     {
-        config->use_max_steps = true;
-        config->max_steps_pr_sim = 100;
-        config->max_global_progression = 100;
+        if(config->verbose)
+            printf("WARNING! Cannot use shared memory and pn expressions simultaneously. Disabling shared memory.\n");
+
+        config->use_shared_memory = false;
     }
 
-    if(parser.exists("v")) config->verbose = parser.get<int>("v");
-    else config->verbose = true;
-    
     return parser_state::parsed;
 }
 
@@ -157,10 +196,25 @@ void setup_config(sim_config* config, const network* model,
         if(model->variables.store[i].should_track)
             track_count++;
 
+    for (int i = 0; i < model->automatas.size; ++i)
+    {
+        config->initial_urgent += IS_URGENT(model->automatas.store[i]->type);
+        config->initial_committed += model->automatas.store[i]->type == node::committed;
+    }
+
     config->tracked_variable_count = track_count;
     config->network_size = model->automatas.size;
     config->variable_count = model->variables.size;
-    config->max_expression_depth = max_expr_depth;
+    if(config->use_jit)
+    {
+        config->max_expression_depth = 0;
+        config->max_backtrace_depth = 0;
+    }
+    else
+    {
+        config->max_expression_depth = max_expr_depth;
+        config->max_backtrace_depth = config->use_pn ? 0 : max_expr_depth*2+1;   
+    }
     config->max_edge_fanout = max_fanout;
     config->node_count = node_count;
 }
@@ -172,14 +226,92 @@ void print_config(const sim_config* config, const size_t model_size)
     printf("running %llu simulations on %d repetitions using parallelism of %d.\n",
         static_cast<unsigned long long>(config->total_simulations()),
         config->simulation_repetitions,
-        config->blocks*config->threads);
+        (config->sim_location == sim_config::device ? config->blocks*config->threads : config->cpu_threads));
     printf("Model size: %llu bytes\n", static_cast<unsigned long long>(model_size));
     printf("attempt to use shared memory: %s (possible: %s)\n",
         (config->use_shared_memory ? "Yes" : "No" ),
         (config->can_use_cuda_shared_memory(model_size) ? "Yes" : "No"));
     printf("End criteria: %lf %s\n",
-        (config->use_max_steps ? static_cast<double>(config->max_steps_pr_sim) : config->max_global_progression),
+        (config->use_max_steps ? static_cast<double>(config->max_sim_steps) : config->max_global_progression),
         (config->use_max_steps ? "steps" : "time units"));
+}
+
+
+inline bool str_ends_with(const std::string& full_string, const std::string& ending) {
+    if (full_string.length() >= ending.length()) {
+        return (0 == full_string.compare (full_string.length() - ending.length(), ending.length(), ending));
+    } else {
+        return false;
+    }
+}
+
+abstract_parser* instantiate_parser(const std::string& filepath)
+{
+    if(str_ends_with(filepath, ".SMAcc"))
+    {
+        return new smacc_parser();
+    }
+    else if (str_ends_with(filepath, ".xml"))
+    {
+        return new uppaal_xml_parser();
+    }
+    else
+    {
+        throw std::runtime_error(R"(Could not parse file. Should end in ".SMAcc" or ".xml", but neither was detected)");
+    }
+}
+
+
+void run_optimise(network* model, sim_config* config, output_properties* properties)
+{
+    abstract_parser::naive_multiply_instantiation(model, config->upscale);
+    
+    pretty_print_visitor print_visitor = pretty_print_visitor(&std::cout,
+        properties->node_names,
+        properties->variable_names);
+
+    if(config->model_print_mode == sim_config::print_model)
+        print_visitor.visit(model);
+
+    if(config->verbose) printf("Optimizing...\n");
+    domain_optimization_visitor optimizer = domain_optimization_visitor(
+        abstract_parser::parse_query(config->paths->query),
+        properties->node_network,
+        properties->node_names,
+        properties->template_names);
+    optimizer.optimize(model);
+
+    model_count_visitor count_visitor = model_count_visitor();
+    count_visitor.visit(model);
+
+    model_size size_of_model = count_visitor.get_model_size();
+    properties->node_map = optimizer.get_node_map();
+    
+    setup_config(config, model,
+        optimizer.get_max_expr_depth(),
+        optimizer.get_max_fanout(),
+        optimizer.get_node_count());
+    
+    optimizer.clear();
+
+    if(config->use_pn)
+    {
+        if(config->verbose) printf("Compiling expressiosn into pnotation\n");
+        pn_compile_visitor pn_compiler;
+        pn_compiler.visit(model);
+    }
+    
+    if(config->model_print_mode == sim_config::print_reduction)
+    {
+        print_visitor.clear();
+        print_visitor.visit(model);
+    }
+    
+    if(config->verbose) print_config(config, size_of_model.total_memory_size());
+    
+    if(config->use_shared_memory) //ensure shared memory is safe
+        config->use_shared_memory = config->can_use_cuda_shared_memory(size_of_model.total_memory_size());
+        
 }
 
 int main(int argc, const char* argv[])
@@ -199,37 +331,22 @@ int main(int argc, const char* argv[])
         config.sim_location == sim_config::device || config.sim_location == sim_config::both
         );
 
-    uppaal_xml_parser xml_parser;
-    network model = xml_parser.parse(config.paths->model_path);
+    abstract_parser* model_parser = instantiate_parser(config.paths->model_path);
+    network model = model_parser->parse(config.paths->model_path);
 
-    properties.node_names = xml_parser.get_nodes_with_name();
-    properties.node_network = xml_parser.get_subsystems();
-    
-    if(config.verbose)
-        pretty_print_visitor(&std::cout).visit(&model);
+    properties.node_names = new std::unordered_map<int, std::string>(*model_parser->get_nodes_with_name());
+    properties.node_network = new std::unordered_map<int, int>(*model_parser->get_subsystems());
+    properties.variable_names = new std::unordered_map<int, std::string>(*model_parser->get_clock_names()); // this can create mem leaks.
+    properties.template_names = new std::unordered_map<int, std::string>(*model_parser->get_template_names());
 
-    if(config.verbose) printf("Optimizing...\n");
-    domain_optimization_visitor optimizer = domain_optimization_visitor();
-    optimizer.optimize(&model);
-
-    model_count_visitor count_visitor = model_count_visitor();
-    count_visitor.visit(&model);
-    
-    model_size size_of_model = count_visitor.get_model_size();
-    properties.node_map = optimizer.get_node_map();
-    setup_config(&config, &model,
-        optimizer.get_max_expr_depth(),
-        optimizer.get_max_fanout(),
-        optimizer.get_node_count());
-    
-    optimizer.clear();
-    if(config.verbose) print_config(&config, size_of_model.total_memory_size());
-    
-    if(config.use_shared_memory)
-        config.use_shared_memory = config.can_use_cuda_shared_memory(size_of_model.total_memory_size());
+    properties.pre_optimisation_start = std::chrono::steady_clock::now();
+    delete model_parser;
+    run_optimise(&model, &config, &properties);
 
     const bool run_device = (config.sim_location == sim_config::device || config.sim_location == sim_config::both);
     const bool run_host   = (config.sim_location == sim_config::host   || config.sim_location == sim_config::both);
+
+    properties.post_optimisation_start = std::chrono::steady_clock::now();
 
     //run simulation
     if(run_device)

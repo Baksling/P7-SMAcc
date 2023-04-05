@@ -19,6 +19,10 @@ public:
     {
         store_[count_++] = t;
     }
+    CPU GPU void push_val(T t)
+    {
+        store_[count_++] = t;
+    }
 
     CPU GPU T pop()
     {

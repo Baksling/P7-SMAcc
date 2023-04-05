@@ -25,6 +25,8 @@ function Move-Files{
     Invoke-Expression("ssh $ssh_target mkdir $server_path")
     Invoke-Expression("scp -r ./" + $local_folder2 + " " + $ssh_target + ":" + $server_path + "Cuda/" )
     Invoke-Expression("scp -r ./" + $local_folder + " " + $ssh_target + ":" + $server_path + "Analysis/" )
+    Invoke-Expression("scp -r ./src2/Modelling/ " + $ssh_target + ":" + $server_path )
+
     Write-Output("Files transfered to '" + $ssh_target + "'.")
     Write-Output " "
 }

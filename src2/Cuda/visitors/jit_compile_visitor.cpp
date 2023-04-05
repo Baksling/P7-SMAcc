@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-jit_compile_visitor::jit_compile_visitor() : clocks_(arr<clock_var>::empty())
+jit_compile_visitor::jit_compile_visitor()
 {
     this->init_store();
 }
@@ -19,7 +19,7 @@ void jit_compile_visitor::visit(network* a)
 {
     if(has_visited(a)) return;
 
-    this->clocks_ = a->variables;
+    this->clocks_ = &a->variables;
 
     for (int i = 0; i < a->automatas.size; ++i)
     {
@@ -48,16 +48,26 @@ void jit_compile_visitor::visit(constraint* c)
     if(this->finalized_)
         throw std::runtime_error("Cannot add constraint to compiled constraints collection, as it is already marked as finalied.");
     
+    std::stringstream ss;
+    compile_con(ss, c);
+
+    //Check if already exists
+    const std::string str = ss.str();
+    if(this->redundant_constraint_map_.count(str))
+    {
+        c->operand = constraint::compiled_c;
+        c->compile_id = this->redundant_constraint_map_.at(str);
+        return;
+    }
     const int id = this->con_compile_id_enumerator_++;
 
-    this->con_store_ << "case " << id << ": return ";
-    compile_con(this->con_store_, this->expr_map_cache_, c);
-    this->con_store_ << "; break;\n";
+    this->con_store_ << "case " << id << ": return " << str << "; break;\n";
+    this->redundant_constraint_map_.insert(std::pair<std::string, int>(str, id));
     
     if(c->uses_variable && IS_INVARIANT(c->operand))
     {
         this->invariant_store_ << "case " << id << ": v0 = ";
-        const bool is_invariant = compile_invariant(this->invariant_store_, this->clocks_, c, this->expr_map_cache_);
+        const bool is_invariant = compile_invariant(this->invariant_store_, this->clocks_, c);
         this->invariant_store_ << "; break;\n";
         if(!is_invariant) throw std::runtime_error("invariant cannot be compiled as invariant.");
     }
@@ -176,6 +186,15 @@ void jit_compile_visitor::compile_expr(std::stringstream& ss, const expr* e, con
     case expr::power_ee: ss << "pow("; compile_expr(ss, e->left); ss << ','; compile_expr(ss, e->right); ss << ')'; break;
     case expr::negation_ee: ss << '-'; compile_expr(ss, e->left); break;
     case expr::sqrt_ee: ss << "sqrt("; compile_expr(ss, e->left); ss << ')'; break;
+    case expr::modulo_ee:
+        ss << "static_cast<int>(";
+        compile_expr(ss, e->left);
+        ss << ") % static_cast<int>(";
+        compile_expr(ss, e->right);
+        ss << ")";
+        break;
+    case expr::and_ee: compile_expr(ss, e->left); ss << "&&"; compile_expr(ss, e->right); break;
+    case expr::or_ee: compile_expr(ss, e->left); ss << "||"; compile_expr(ss, e->right); break;
     case expr::less_equal_ee: compile_expr(ss, e->left); ss << "<="; compile_expr(ss, e->right); break;
     case expr::greater_equal_ee: compile_expr(ss, e->left); ss << ">="; compile_expr(ss, e->right); break;
     case expr::less_ee: compile_expr(ss, e->left); ss << '<'; compile_expr(ss, e->right); break;
@@ -188,13 +207,14 @@ void jit_compile_visitor::compile_expr(std::stringstream& ss, const expr* e, con
         ss << ':'; compile_expr(ss, e->conditional_else);
         break;
     case expr::compiled_ee: throw std::runtime_error("Cannot compile already compiled expression");
+    case expr::pn_compiled_ee:
+    case expr::pn_skips_ee: throw std::runtime_error("Cannot compile PN-Compiled expression");
+    default: throw std::runtime_error("unknown expression operand");
     }
     ss << ')';
 }
 
-void jit_compile_visitor::compile_con(std::stringstream& ss,
-    std::unordered_map<const expr*, std::string>& compile_map,
-    const constraint* con)
+inline void jit_compile_visitor::left_constraint_expr(const constraint* con, std::stringstream& ss, std::unordered_map<const expr*, std::string>& compile_map)
 {
     if(con->uses_variable)
     {
@@ -208,19 +228,10 @@ void jit_compile_visitor::compile_con(std::stringstream& ss,
     {
         compile_expr(ss, con->value, false);
     }
+}
 
-    switch(con->operand)
-    {
-    case constraint::less_equal_c: ss << "<="; break;
-    case constraint::less_c: ss << "<"; break;
-    case constraint::greater_equal_c: ss << ">="; break;
-    case constraint::greater_c: ss << ">"; break;
-    case constraint::equal_c: ss << "=="; break;
-    case constraint::not_equal_c: ss << "!="; break;
-    case constraint::compiled_c: throw std::runtime_error("cannot compile already compiled constraint.");
-    // default: throw std::out_of_range("constraint operand not recognized");
-    }
-
+inline void jit_compile_visitor::right_constraint_expr(const constraint* con, std::stringstream& ss, std::unordered_map<const expr*, std::string>& compile_map)
+{
     if(con->expression->operand == expr::compiled_ee)
     {
         ss << compile_map[con->expression];
@@ -231,27 +242,70 @@ void jit_compile_visitor::compile_con(std::stringstream& ss,
     }
 }
 
+void jit_compile_visitor::compile_con(std::stringstream& ss, const constraint* con)
+{
+    switch (con->operand)
+    {
+    case constraint::less_equal_c:
+        left_constraint_expr(con, ss, this->expr_map_cache_);
+        ss << "<=";
+        right_constraint_expr(con, ss, this->expr_map_cache_);
+        break;
+    case constraint::less_c:
+        left_constraint_expr(con, ss, this->expr_map_cache_);
+        ss << "<"; right_constraint_expr(con, ss, this->expr_map_cache_);
+        break;
+    case constraint::greater_equal_c:
+        left_constraint_expr(con, ss, this->expr_map_cache_);
+        ss << ">=";
+        right_constraint_expr(con, ss, this->expr_map_cache_);
+        break;
+    case constraint::greater_c:
+        left_constraint_expr(con, ss, this->expr_map_cache_);
+        ss << ">";
+        right_constraint_expr(con, ss, this->expr_map_cache_);
+        break;
+    case constraint::equal_c:
+        ss << "abs(";
+        left_constraint_expr(con, ss, this->expr_map_cache_);
+        ss << "-";
+        right_constraint_expr(con, ss, this->expr_map_cache_);
+        ss << ") <= DBL_EPSILON";
+        break;
+    case constraint::not_equal_c:
+        ss << "abs(";
+        left_constraint_expr(con, ss, this->expr_map_cache_);
+        ss << "-";
+        right_constraint_expr(con, ss, this->expr_map_cache_);
+        ss << ") > DBL_EPSILON";
+        break;
+    case constraint::compiled_c:
+        throw std::runtime_error("cannot compile already compiled constraint.");
+    default:
+        throw std::out_of_range("constraint operand not recognized");
+    }
+}
+
 bool jit_compile_visitor::compile_invariant(std::stringstream& ss,
-                                              const arr<clock_var>& clocks,
-                                              const constraint* con,
-                                              std::unordered_map<const expr*, std::string>& expr_cache)
+                                              const arr<clock_var>* clocks,
+                                              const constraint* con)
 {
     // if(IS_INVARIANT(con->operand) && con->uses_variable)
     if(!IS_INVARIANT(con->operand) || !con->uses_variable) return false;
     
-    if(con->variable_id < 0 || clocks.size <= con->variable_id)
+    if(con->variable_id < 0 || clocks->size <= con->variable_id)
     {
-        std::cout << "variable ID: " << con->variable_id << " | clock size: " << clocks.size << std::endl; 
+        std::cout << "variable ID: " << con->variable_id << " | clock size: " << clocks->size << std::endl; 
         throw std::runtime_error("Could not find constraint variable while compiling constraint.");
     }
 
-    const clock_var* var = &clocks.store[con->variable_id];
+    const clock_var* var = &clocks->store[con->variable_id];
     if(var->rate == 0) return false;
     
     ss << '(';
     if(con->expression->operand == expr::compiled_ee)
     {
-        ss << expr_cache[con->expression];
+        ss << this->expr_map_cache_[con->expression];
     }
     else
     {

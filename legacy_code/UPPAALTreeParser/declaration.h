@@ -5,7 +5,7 @@ using namespace std;
 #ifndef DECLARATION
 #define DECLARATION
 
-enum declaration_types {clock_type, chan_type, double_type, int_type};
+enum declaration_types {clock_type, chan_type, double_type, int_type, bool_type};
 #define THROW_LINE(arg); throw parser_exception(arg, __FILE__, __LINE__);
 
 class declaration

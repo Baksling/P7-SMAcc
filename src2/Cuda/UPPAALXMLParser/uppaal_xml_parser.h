@@ -3,22 +3,16 @@
 #ifndef UPAALXMLParser_H
 #define UPAALXMLParser_H
 
+#include "abstract_parser.h"
 #include <list>
 #include "pugixml.hpp"
 #include <map>
-#include <cuda.h>
-#include <cuda_runtime.h>
-#include <vector>
-#include <algorithm>
 #include <string>
-#include <vector>
-#include <sstream>
 #include "helper_methods.h"
 #include "string_extractor.h"
-#include "declaration.h"
-#include "declaration_parser.h"
 #include <utility>
 #include "variable_expression_evaluator.h"
+#include "declaration_parser.h"
 
 
 #include "../common/macro.h"
@@ -29,7 +23,7 @@ using namespace std;
 using namespace pugi;
 using namespace helper;
 
-class uppaal_xml_parser
+class uppaal_xml_parser : public abstract_parser
 {
    
 private:
@@ -42,6 +36,7 @@ private:
     int edge_id_ = 0;
     declaration_parser dp_;
     template <typename T> void fill_expressions(const list<string>& expressions, list<T>* t);
+    template <typename T> void fill_expressions_if_else(const list<string>& expressions, list<T>* t);
     unordered_map<string, double> const_local_vars{};
     unordered_map<string, double> const_global_vars{};
     unordered_map<string, int> timers_map_{};
@@ -50,6 +45,7 @@ private:
     unordered_map<string, int> global_vars_map_{};
     unordered_map<int, list<edge>> node_edge_map{};
     unordered_map<int, string>* node_names_ = new unordered_map<int, string>();
+    unordered_map<int, string>* template_names = new unordered_map<int, string>();
     unordered_map<int, int>* nodes_map_= new unordered_map<int, int>();
     list<node*>* nodes_ = new list<node*>();
     list<int> start_nodes_{};
@@ -57,6 +53,7 @@ private:
     int get_timer_id(const string& expr) const;
     void get_condition_strings(const string& con, string* left, string* op, string* right);
     node* get_node(const int target_id, const list<node*>* arr) const;
+    expr* build_con(list<expr*> condition_exprs, expr* concantted_condition);
     int handle_sync(const string& input) const;
     list<update> handle_assignment(const string& input);
     bool is_if_statement(const string& expr);
@@ -75,10 +72,12 @@ private:
     }
 
 public:
-    unordered_map<int, string>* get_nodes_with_name() const {return this->node_names_;}
-    unordered_map<int, int>* get_subsystems() const {return this->nodes_map_;}
+    unordered_map<int, string>* get_nodes_with_name() override {return this->node_names_;}
+    unordered_map<int, string>* get_template_names() override {return this->template_names;}
+    unordered_map<int, int>* get_subsystems() override {return this->nodes_map_;}
+    unordered_map<int, string>* get_clock_names() override;
     uppaal_xml_parser();
-    network parse(string file_path);
+    network parse(const std::string& file) override;
     static bool try_parse_block_threads(const std::string& str, unsigned* out_blocks, unsigned* out_threads);
     static bool try_parse_units(const std::string& str, bool* is_time, double* value);
 };

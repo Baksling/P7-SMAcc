@@ -136,6 +136,16 @@ def __parse_args():
     )
 
     general_options.add_argument(
+        '-z',
+        '--pnotate',
+        dest='use_pn',
+        help='Set it to 1 if you want to use pnotation expressions',
+        type=int,
+        default=0,
+        required=False
+    )
+
+    general_options.add_argument(
         '-alp',
         '--alpha',
         dest='alpha',
@@ -232,6 +242,9 @@ def run_simulations(args_) -> tuple[set[str], list[str]]:
 
             if args.use_jit == 1:
                 parameters.append('-j')
+            
+            if args.use_pn == 1:
+                parameters.append('-z')
 
         if args_.device == 1:
             cores = args_.cores

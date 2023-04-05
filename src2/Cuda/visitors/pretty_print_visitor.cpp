@@ -1,8 +1,12 @@
 ﻿#include "pretty_print_visitor.h"
+#include <sstream>
 
-pretty_print_visitor::pretty_print_visitor(std::ostream* stream)
+pretty_print_visitor::pretty_print_visitor(std::ostream* stream,
+    std::unordered_map<int, std::string>* node_names, std::unordered_map<int, std::string>* variable_names)
 {
     this->stream_ = stream;
+    this->var_names_ = variable_names;
+    this->node_names_ = node_names;
     visit_set_.clear();
 }
 
@@ -19,9 +23,9 @@ void pretty_print_visitor::visit(node* n)
 {
     if(this->has_visited(n)) return;
     this->scope_ = 1;
-    *this->stream_ << "NODE = id: " << n->id
-                   << " | is branch: " << (n->is_branch_point ? "True" : "False")
-                   << " | is goal: " << (n->is_goal ? "True" : "False")
+
+    *this->stream_ << "NODE = id: " << n->id << " (" << print_node_name(n->id)
+                   << ") | type: " << node_type_to_string(n)
                    << " | lambda: " << pretty_expr(n->lamda) << '\n';
 
     this->scope_++;
@@ -35,10 +39,10 @@ void pretty_print_visitor::visit(edge* e)
 
     print_indent();
     
-    *this->stream_ << "EDGE = dest: " << e->dest->id
-                   << " | channel id: " << e->channel
+    *this->stream_ << "EDGE = dest: " << e->dest->id << " ("; print_node_name(e->dest->id);
+    *this->stream_ << ") | channel id: " << e->channel
                    << " | weight: " << pretty_expr(e->weight)
-                   << '\n';
+                   << "\n";
 
     this->scope_++;
     accept(e, this);
@@ -50,8 +54,12 @@ void pretty_print_visitor::visit(constraint* c)
     if(this->has_visited(c)) return;
     print_indent();
 
-    *this->stream_ << "CONSTRAINT = " << (c->uses_variable ? "var" + std::to_string(c->variable_id) : pretty_expr(c->value))
-                   << ' ' << constraint_type_to_string(c) << ' ' << pretty_expr(c->expression) << '\n';
+    *this->stream_ << "CONSTRAINT = "
+        << (c->uses_variable
+            ? "var" + std::to_string(c->variable_id) + "(" + print_var_name(c->variable_id) +")"
+            : pretty_expr(c->value))
+        << ' ' << constraint_type_to_string(c)
+        << ' ' << pretty_expr(c->expression) << '\n';
 
     this->scope_++;
     accept(c, this);
@@ -62,8 +70,9 @@ void pretty_print_visitor::visit(clock_var* cv)
 {
     if(this->has_visited(cv)) return;
     print_indent();
-    *this->stream_ << "CLOCK = id: " << cv->id
-                   << " | value: " << cv->value
+    *this->stream_ << "Var " <<  cv->id << " ("
+                   << print_var_name(cv->id)
+                   << "): | value: " << cv->value
                    << " | rate: " << cv->rate
                    << " | track: " << (cv->should_track ? "True" : "False")
                    << "\n";
@@ -77,7 +86,9 @@ void pretty_print_visitor::visit(update* u)
 {
     if(this->has_visited(u)) return;
     print_indent();
-    *this->stream_ << "UPDATE = var " << u->variable_id << ": " << pretty_expr(u->expression) << '\n';
+    *this->stream_
+        << "UPDATE = var " << u->variable_id << " ("
+        << print_var_name(u->variable_id) << "): " << pretty_expr(u->expression) << '\n';
 
     this->scope_++;
     accept(u, this);
@@ -86,11 +97,20 @@ void pretty_print_visitor::visit(update* u)
 
 void pretty_print_visitor::visit(expr* u)
 {
-    if(this->has_visited(u)) return;
     //Handled by each individual method, to make it prettier.
     // *this->stream_ << pretty_expr(u) << '\n';
     
     //no accept here, cuz we dont want to print expr tree :)
+}
+
+std::string pretty_print_visitor::print_node_name(const int id) const
+{
+    return (this->node_names_->count(id) ? this->node_names_->at(id) : std::string("_"));
+}
+
+std::string pretty_print_visitor::print_var_name(const int id) const
+{
+    return (this->var_names_->count(id) ? this->var_names_->at(id) : std::string("_"));
 }
 
 std::string pretty_print_visitor::constraint_type_to_string(const constraint* c)
@@ -103,9 +123,22 @@ std::string pretty_print_visitor::constraint_type_to_string(const constraint* c)
     case constraint::greater_c: return ">";
     case constraint::equal_c: return "==";
     case constraint::not_equal_c: return "!=";
+    case constraint::compiled_c: return "COMPILED";
+    default: return "unknown";
     }
+}
 
-    return "unknown";
+std::string pretty_print_visitor::node_type_to_string(const node* n)
+{
+    switch(n->type)
+    {
+    case node::location: return "Location";
+    case node::goal: return "Goal";
+    case node::branch: return "Branch point";
+    case node::urgent: return "urgent";
+    case node::committed: return "committed";
+    default: return "unknown";
+    }
 }
 
 std::string pretty_print_visitor::expr_type_to_string(const expr* ex)
@@ -120,7 +153,10 @@ std::string pretty_print_visitor::expr_type_to_string(const expr* ex)
     case expr::division_ee: return "/"; 
     case expr::power_ee: return "^"; 
     case expr::negation_ee: return "~"; 
-    case expr::sqrt_ee: return "sqrt"; 
+    case expr::sqrt_ee: return "sqrt";
+    case expr::modulo_ee: return "%";
+    case expr::and_ee: return "&&";
+    case expr::or_ee: return "||";
     case expr::less_equal_ee: return "<="; 
     case expr::greater_equal_ee: return ">="; 
     case expr::less_ee: return "<"; 
@@ -130,13 +166,32 @@ std::string pretty_print_visitor::expr_type_to_string(const expr* ex)
     case expr::not_ee: return "!"; 
     case expr::conditional_ee: return "if";
     case expr::compiled_ee: return "expr_id_" + std::to_string(ex->compile_id) ;
-    default: return "unknown";
+    case expr::pn_compiled_ee: return "pn:";
+    case expr::pn_skips_ee: return "SKIP(" + std::to_string(ex->length) + ")";
     }
+    return "unknown";
+
+}
+
+std::string pretty_print_visitor::pretty_pn_expr(const expr* ex)
+{
+    if(ex->operand != expr::pn_compiled_ee)
+        throw std::runtime_error("Cannot print non-pn expressions as pn expression");
+    
+    std::stringstream ss;
+    ss << '(';
+    for (int i = 0; i < ex->length; ++i)
+    {
+        ss << expr_type_to_string(&ex[i]) << ' ';
+    }
+    ss << ')';
+    return ss.str();
 }
 
 std::string pretty_print_visitor::pretty_expr(const expr* ex)
 {
     if(IS_LEAF(ex->operand)) return expr_type_to_string(ex);
+    if(ex->operand == expr::pn_compiled_ee) return pretty_pn_expr(ex);
 
     if(ex->operand == expr::conditional_ee)
     {

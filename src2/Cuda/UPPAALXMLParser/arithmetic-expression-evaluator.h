@@ -1,14 +1,12 @@
 ﻿#ifndef ARITHMETIC_EXPRESSION_EVALUATOR_H
 #define ARITHMETIC_EXPRESSION_EVALUATOR_H
 
-#include <iostream>
 #include <cstdlib>
 #include <cctype>
 #include <cstring>
 #include <math.h> 
 #include <cctype>
 #include <cstring>
-#include <iostream>
 #include <unordered_map>
 
 #define PI 3.14159265358979323846 
@@ -120,7 +118,7 @@ void parser::eval_exp3(double &result)
     char op;
     double temp;
     eval_exp4(result);
-    while ((op = *token) == '*' || op == '/') 
+    while ((op = *token) == '*' || op == '/' || op == '%') 
     {
         get_token();
         eval_exp4(temp);
@@ -128,6 +126,9 @@ void parser::eval_exp3(double &result)
         {
         case '*':
             result = result * temp;
+            break;
+        case '%':
+            result = int(result) % int(temp);
             break;
         case '/':
             result = result / temp;

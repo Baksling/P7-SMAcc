@@ -26,8 +26,8 @@ __device__ double atomicAdd(double* a, double b) { return b; }
 #define IS_GPU __CUDACC__
 
 #define DBL_MAX 1.7976931348623158e+308 //max 64 bit double value
-#define DBL_EPSILON 2.2204460492503131e-016 // smallest such that 1.0+DBL_EPSILON != 1.0
-
+// #define DBL_EPSILON 2.2204460492503131e-016 // smallest such that 1.0+DBL_EPSILON != 1.0
+#define DBL_EPSILON (0.00001)
 
 //While loop done to enfore ; after macro call. See: 
 //https://stackoverflow.com/a/61363791/17430854
