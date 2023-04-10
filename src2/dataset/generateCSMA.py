@@ -217,7 +217,7 @@ for current_i in range(0,N*increment, increment):
                 <target ref="id{current_i+11}"/>
                 <label kind="guard" x="-2152" y="-176">x==TurnAround</label>
                 <label kind="synchronisation" x="-2152" y="-120">busy!</label>
-                <label kind="assignment" x="-2152" y="-160">collision_occured:=nt&gt;0,
+                <label kind="assignment" x="-2152" y="-160">collision_occured:=nt&gt;0 ? true : false,
     nt:=nt+1,
     x:=0</label>
             </transition>
@@ -234,7 +234,7 @@ for current_i in range(0,N*increment, increment):
                 <label kind="guard" x="-1920" y="-472">x==TurnAround</label>
                 <label kind="synchronisation" x="-2184" y="-520">busy!</label>
                 <label kind="assignment" x="-1920" y="-456">x:=0,
-    collision_occured:= nt&gt;0,
+    collision_occured:= nt&gt;0 ? true : false,
     nt:=nt+1</label>
             </transition>
             <transition>
