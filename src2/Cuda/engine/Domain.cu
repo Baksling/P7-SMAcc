@@ -74,7 +74,7 @@ CPU GPU double evaluate_expression_node(const expr* expr, state* state)
     case expr::modulo_ee:
         v2 = state->value_stack.pop();
         v1 = state->value_stack.pop();
-        return static_cast<double>(static_cast<int>(v1) % static_cast<int>(v2));
+        return static_cast<double>(static_cast<int>(v1) % static_cast<int>(v2 + DBL_EPSILON));
     case expr::and_ee:
         v2 = state->value_stack.pop();
         v1 = state->value_stack.pop();
@@ -344,6 +344,7 @@ void inline state::broadcast_channel(const int channel, const int process)
         
         if(p == process) continue;
         if(current->type == node::goal) continue;
+        if(current->edges.size == 0) continue;
         if(!constraint::evaluate_constraint_set(current->invariants, this)) continue;
         
         const unsigned offset = curand(this->random) % current->edges.size;

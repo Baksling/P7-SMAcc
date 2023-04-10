@@ -133,7 +133,7 @@ void output_writer::write_summary_to_stream(std::ostream& stream,
     stream << "Including overhead: " << duration_cast<milliseconds>((steady_clock::now() - properties_->pre_optimisation_start)).count()<< "[ms]\n";
 }
 
-void output_writer::write_lite(steady_clock::duration sim_duration) const
+void output_writer::write_lite(const steady_clock::duration sim_duration) const
 {
     std::ofstream lite;
     const std::string file_path = file_path_ + "_lite_summary.txt";

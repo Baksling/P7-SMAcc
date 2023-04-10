@@ -1,5 +1,6 @@
 ﻿#include "uppaal_xml_parser.h"
 #include <iostream>
+
 /* 
  * TODO init like this: double x,y = 0.0; --flueben
  * TODO If else in init, guards, and invariants
@@ -26,7 +27,7 @@ void get_constraint_operand(constraint* cons, const string& exprs)
     }
 }
 
-constraint* get_constraint(const string& exprs, const int timer_id, expr* value)
+constraint*  uppaal_xml_parser::get_constraint(const string& exprs, const int timer_id, expr* value)
 {
     constraint* cons = new constraint();
     get_constraint_operand(cons, exprs);
@@ -38,7 +39,7 @@ constraint* get_constraint(const string& exprs, const int timer_id, expr* value)
     return cons;
 }
 
-constraint* get_constraint(const string& exprs, expr* v_one, expr* v_two)
+constraint* uppaal_xml_parser::get_constraint(const string& exprs, expr* v_one, expr* v_two)
 {
     constraint* cons = new constraint();
     get_constraint_operand(cons, exprs);
@@ -177,8 +178,7 @@ void uppaal_xml_parser::fill_expressions(const list<string>& expressions, list<T
         //Constraint is heap allocated, and is then copied here.
         //Results in dead memory.
 
-        if (timers_map_.count(extracted_condition.left) || global_timers_map_.count(extracted_condition.left) ||
-            vars_map_.count(extracted_condition.left) || global_vars_map_.count(extracted_condition.left))
+        if (timers_map_.count(extracted_condition.left) || global_timers_map_.count(extracted_condition.left))
             t->push_back(*get_constraint(extracted_condition.input,
                 get_timer_id(extracted_condition.input),
                 variable_expression_evaluator::evaluate_variable_expression(extracted_condition.right,

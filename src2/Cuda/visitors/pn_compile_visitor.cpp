@@ -35,10 +35,10 @@ void pn_compile_visitor::compile_expr(expr** ex_p)
     pn_visitor(ex, array, &index);
     
     *ex_p = array;
-    if(ex->operand == expr::conditional_ee)
-    {
-        printf("How tf did i get here. size: %d | index: %d, | 0in: %d | arr[0]: %d \n", size, index, (*ex_p)[0].operand, array[0].operand);
-    }
+    // if(ex->operand == expr::conditional_ee)
+    // {
+    //     printf("How tf did i get here. size: %d | index: %d, | 0in: %d | arr[0]: %d \n", size, index, (*ex_p)[0].operand, array[0].operand);
+    // }
 }
 
 void pn_compile_visitor::pn_visitor(const expr* current, expr* array, int* index)

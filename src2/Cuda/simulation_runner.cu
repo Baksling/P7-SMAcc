@@ -97,6 +97,7 @@ void simulation_runner::simulate_gpu_jit(network* model, sim_config* config)
         
         writer.write(&store, std::chrono::duration_cast<milliseconds>(steady_clock::now() - local_start));
     }
+    if(config->verbose) std::cout << "GPU simulation finished\n";
     writer.write_summary(std::chrono::duration_cast<milliseconds>(steady_clock::now() - global_start));
 
     allocator.free_allocations();
@@ -139,7 +140,7 @@ void simulation_runner::simulate_gpu(network* model, sim_config* config)
 
     CUDA_CHECK(cudaDeviceSetCacheConfig(sm_cache));
 
-    if(config->verbose)  std::cout << "GPU simulation started\n";
+    if(config->verbose) std::cout << "GPU simulation started\n";
     const steady_clock::time_point global_start = steady_clock::now();
     for (unsigned r = 0; r < config->simulation_repetitions; ++r)
     {
@@ -182,7 +183,7 @@ void simulation_runner::simulate_cpu(const network* model, sim_config* config)
     CUDA_CHECK(allocator.allocate_host(&config->cache, n_parallelism*thread_heap_size(config)));
     CUDA_CHECK(allocator.allocate_host(&config->random_state_arr, n_parallelism*sizeof(curandState)));
 
-    std::cout << "CPU simulation started\n";
+    if(config->verbose) std::cout << "CPU simulation started\n";
     const steady_clock::time_point global_start = steady_clock::now();
     for (unsigned r = 0; r < config->simulation_repetitions; ++r)
     {
@@ -198,9 +199,10 @@ void simulation_runner::simulate_cpu(const network* model, sim_config* config)
             });
         }
         pool.await_run();
-
+        
         writer.write(&store, std::chrono::duration_cast<milliseconds>(steady_clock::now() - local_start));
     }
+    if(config->verbose) std::cout << "CPU simulation finished\n";
     writer.write_summary(std::chrono::duration_cast<milliseconds>(steady_clock::now() - global_start));
     
     allocator.free_allocations();

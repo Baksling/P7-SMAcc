@@ -49,7 +49,9 @@ private:
     unordered_map<int, int>* nodes_map_= new unordered_map<int, int>();
     list<node*>* nodes_ = new list<node*>();
     list<int> start_nodes_{};
-    
+
+    constraint* get_constraint(const string& exprs, int timer_id, expr* value);
+    constraint* get_constraint(const string& exprs, expr* v_one, expr* v_two);
     int get_timer_id(const string& expr) const;
     void get_condition_strings(const string& con, string* left, string* op, string* right);
     node* get_node(const int target_id, const list<node*>* arr) const;

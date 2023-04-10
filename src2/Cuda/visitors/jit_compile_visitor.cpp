@@ -69,7 +69,7 @@ void jit_compile_visitor::visit(constraint* c)
         this->invariant_store_ << "case " << id << ": v0 = ";
         const bool is_invariant = compile_invariant(this->invariant_store_, this->clocks_, c);
         this->invariant_store_ << "; break;\n";
-        if(!is_invariant) throw std::runtime_error("invariant cannot be compiled as invariant.");
+        if(!is_invariant) throw std::runtime_error("invariant \"(" + str + ")\" cannot be compiled as invariant.");
     }
 
     c->operand = constraint::compiled_c;
