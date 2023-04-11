@@ -61,9 +61,6 @@ def run_model(default_args, settings_name: str, d_args, time: str, folder, cache
     return load_time(output_name + "_lite_summary.txt")
 
 
-def test_uppaal(uppal_binary: str, models) -> Dict[str, Dict[int, float]]:
-    cmd.run([uppal_binary, ])
-
 
 def test_smacc(binary: str, device, models, cache_dir, args) -> \
         Tuple[Dict[Tuple[str, str], Dict[int, float]], Dict[Tuple[str, str], float]]:
@@ -209,8 +206,8 @@ def main():
                         help="Folder to store cache files (defualt = create temporary folder)")
     parser.add_argument("-o", "--output", type=str, required=False, default=None,
                         dest="output", help="path to store output")
-    parser.add_argument("-u", "--uppaal", type=str, default=None, required=False,
-                        dest="uppaal", help="Path to uppaal binary. If supplied, runs uppaal tests on uppaal too.")
+    # parser.add_argument("-u", "--uppaal", type=str, default=None, required=False,
+    #                     dest="uppaal", help="Path to uppaal binary. If supplied, runs uppaal tests on uppaal too.")
     parser.add_argument("-g", "--graph", type=str, required=False, default=None,
                         dest="graph", help=
                         "Path to existing data to generate plots. If this option is supplied, no tests will be run.")
@@ -250,10 +247,10 @@ def main():
         raise argparse.ArgumentError(None, "No output path supplied or file already exists")
 
     results, table_res = test_smacc(args.program, args.device, args.model, args.temp, args)
-    if args.uppaal is not None:
-        uppaal_dct = test_uppaal(args.uppaal, args.model)
-        for system, dct in uppaal_dct.items():
-            results[(system, "uppaal")] = dct
+    # if args.uppaal is not None:
+    #     uppaal_dct = test_uppaal(args.uppaal, args.model)
+    #     for system, dct in uppaal_dct.items():
+    #         results[(system, "uppaal")] = dct
     write_output(results, args.output, args.show)
 
     if args.temp_dir:
