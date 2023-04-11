@@ -217,6 +217,11 @@ CPU GPU void simulate_automata(
                 //     {
                 //         printf("%d | ", sim_state.models.store[j]->id);
                 //     }
+                //     printf("\nVariable: ");
+                //     for (int j = 0; j < sim_state.variables.size; ++j)
+                //     {
+                //         printf("%d: %lf | ", sim_state.variables.store[j].id, sim_state.variables.store[j].value);
+                //     }
                 //     printf("\nstep %d, time: %lf, current %d, edge %p\n",
                 //         sim_state.steps, sim_state.global_time, current->id, e);
                 // }
