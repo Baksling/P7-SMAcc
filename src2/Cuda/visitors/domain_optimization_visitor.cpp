@@ -14,11 +14,11 @@ void domain_optimization_visitor::visit(network* a)
     accept(a, this);
 }
 
-void domain_optimization_visitor::validate_invariants(node* n)
+void domain_optimization_visitor::validate_invariants(const node* n)
 {
     for (int i = 0; i < n->invariants.size; ++i)
     {
-        const constraint con = n->invariants.store[i];
+        const constraint& con = n->invariants.store[i];
         if(con.uses_variable)
         {
             this->contains_invalid_constraint_ = this->contains_invalid_constraint_ || expr_contains_clock(con.expression);
@@ -210,8 +210,9 @@ void domain_optimization_visitor::compound_optimize_constraints(edge* e)
         //if invariant does not use variable, 
         if(!inv.uses_variable)
         {
+            inv.value = interleave_updates_in_expr(inv.value, e->updates);        
             con_lst.push_back(inv);
-            continue;
+            continue;   
         }
         
         bool any = false;

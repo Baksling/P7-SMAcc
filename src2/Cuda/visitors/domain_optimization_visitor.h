@@ -37,7 +37,7 @@ class domain_optimization_visitor : public visitor
     static void reduce_constraint_set(arr<constraint>* con_array);
     static void reduce_expr(expr* ex);
 
-    void validate_invariants(node* n);
+    void validate_invariants(const node* n);
     void collect_node_data(node* n);
     
 public:
