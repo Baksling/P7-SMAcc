@@ -581,7 +581,7 @@ tx1 &lt;= rc_slow_max</label>
 tx1 &lt;= rc_slow_max</label>
 		</location>
 		<location id="id24" x="160" y="160">
-			<name x="176" y="160">Goal</name>
+			<name x="176" y="160">s5</name>
 			<label kind="invariant" x="152" y="176">s == 5 &amp;&amp;
 tx1 &lt;= rc_slow_max</label>
 		</location>
