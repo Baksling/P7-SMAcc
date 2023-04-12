@@ -1,5 +1,5 @@
-N = 1000
-K = 2
+N = 2
+K = 29
 K_OFFSET = 1
 
 result = ""
