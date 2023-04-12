@@ -23,12 +23,6 @@ clock t11;
 clock t20;
 clock t21;
 
-bool rec_idle_s0;
-bool rec_idle_s1;
-bool rec_req_s0;
-bool rec_req_s1;
-bool rec_ack_s0;
-bool rec_ack_s1;
 
 broadcast chan snd_idle0;
 broadcast chan snd_idle1;
@@ -44,7 +38,12 @@ broadcast chan rec_ack0;
 broadcast chan rec_ack1;
 
 
-</declaration>
+bool rec_idle_s0;
+bool rec_idle_s1;
+bool rec_req_s0;
+bool rec_req_s1;
+bool rec_ack_s0;
+bool rec_ack_s1;</declaration>
 	<template>
 		<name x="5" y="5">Node0</name>
 		<declaration>int s = 0;
