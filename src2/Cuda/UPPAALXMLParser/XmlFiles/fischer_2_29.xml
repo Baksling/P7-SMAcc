@@ -4,7 +4,7 @@
 <declaration>// Fischer's mutual exclusion protocol.
 int id;
 int in_critical = 0;
-const int k = 2;</declaration><template>
+const int k = 29;</declaration><template>
 <name x="16" y="-8">P0</name>
 <declaration>clock x;
 int pid = 1;</declaration>
@@ -14,7 +14,7 @@ int pid = 1;</declaration>
 </location>
 <location id="id1" x="216" y="48">
 <name x="216" y="16">req</name>
-<label kind="invariant" x="240" y="32">x&lt;=3</label>
+<label kind="invariant" x="240" y="32">x&lt;=30</label>
 </location>
 <location id="id2" x="64" y="48">
 <name x="54" y="18">A</name>
@@ -34,7 +34,7 @@ int pid = 1;</declaration>
 <transition>
 <source ref="id1"/>
 <target ref="id0"/>
-<label kind="guard" x="144" y="72">x&lt;=3</label>
+<label kind="guard" x="144" y="72">x&lt;=30</label>
 <label kind="assignment" x="144" y="104">x = 0,
 id = pid</label>
 </transition>
@@ -49,7 +49,7 @@ id = pid</label>
 <transition>
 <source ref="id0"/>
 <target ref="id3"/>
-<label kind="guard" x="96" y="184">x&gt;2 &amp;&amp; id==pid</label>
+<label kind="guard" x="96" y="184">x&gt;29 &amp;&amp; id==pid</label>
 <label kind="assignment" x="96" y="184">in_critical = in_critical + 1</label>
 </transition>
 <transition>
@@ -68,7 +68,7 @@ int pid = 2;</declaration>
 </location>
 <location id="id5" x="216" y="48">
 <name x="216" y="16">req</name>
-<label kind="invariant" x="240" y="32">x&lt;=3</label>
+<label kind="invariant" x="240" y="32">x&lt;=30</label>
 </location>
 <location id="id6" x="64" y="48">
 <name x="54" y="18">A</name>
@@ -88,7 +88,7 @@ int pid = 2;</declaration>
 <transition>
 <source ref="id5"/>
 <target ref="id4"/>
-<label kind="guard" x="144" y="72">x&lt;=3</label>
+<label kind="guard" x="144" y="72">x&lt;=30</label>
 <label kind="assignment" x="144" y="104">x = 0,
 id = pid</label>
 </transition>
@@ -103,7 +103,7 @@ id = pid</label>
 <transition>
 <source ref="id4"/>
 <target ref="id7"/>
-<label kind="guard" x="96" y="184">x&gt;2 &amp;&amp; id==pid</label>
+<label kind="guard" x="96" y="184">x&gt;29 &amp;&amp; id==pid</label>
 <label kind="assignment" x="96" y="184">in_critical = in_critical + 1</label>
 </transition>
 <transition>

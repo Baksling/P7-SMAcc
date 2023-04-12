@@ -4,7 +4,7 @@
 <declaration>// Fischer's mutual exclusion protocol.
 int id;
 int in_critical = 0;
-const int k = 2;</declaration><template>
+const int k = 29;</declaration><template>
 <name x="16" y="-8">P0</name>
 <declaration>clock x;
 int pid = 1;</declaration>
@@ -14,7 +14,7 @@ int pid = 1;</declaration>
 </location>
 <location id="id1" x="216" y="48">
 <name x="216" y="16">req</name>
-<label kind="invariant" x="240" y="32">x&lt;=3</label>
+<label kind="invariant" x="240" y="32">x&lt;=30</label>
 </location>
 <location id="id2" x="64" y="48">
 <name x="54" y="18">A</name>
@@ -34,7 +34,7 @@ int pid = 1;</declaration>
 <transition>
 <source ref="id1"/>
 <target ref="id0"/>
-<label kind="guard" x="144" y="72">x&lt;=3</label>
+<label kind="guard" x="144" y="72">x&lt;=30</label>
 <label kind="assignment" x="144" y="104">x = 0,
 id = pid</label>
 </transition>
@@ -49,7 +49,7 @@ id = pid</label>
 <transition>
 <source ref="id0"/>
 <target ref="id3"/>
-<label kind="guard" x="96" y="184">x&gt;2 &amp;&amp; id==pid</label>
+<label kind="guard" x="96" y="184">x&gt;29 &amp;&amp; id==pid</label>
 <label kind="assignment" x="96" y="184">in_critical = in_critical + 1</label>
 </transition>
 <transition>
@@ -68,7 +68,7 @@ int pid = 2;</declaration>
 </location>
 <location id="id5" x="216" y="48">
 <name x="216" y="16">req</name>
-<label kind="invariant" x="240" y="32">x&lt;=3</label>
+<label kind="invariant" x="240" y="32">x&lt;=30</label>
 </location>
 <location id="id6" x="64" y="48">
 <name x="54" y="18">A</name>
@@ -88,7 +88,7 @@ int pid = 2;</declaration>
 <transition>
 <source ref="id5"/>
 <target ref="id4"/>
-<label kind="guard" x="144" y="72">x&lt;=3</label>
+<label kind="guard" x="144" y="72">x&lt;=30</label>
 <label kind="assignment" x="144" y="104">x = 0,
 id = pid</label>
 </transition>
@@ -103,7 +103,7 @@ id = pid</label>
 <transition>
 <source ref="id4"/>
 <target ref="id7"/>
-<label kind="guard" x="96" y="184">x&gt;2 &amp;&amp; id==pid</label>
+<label kind="guard" x="96" y="184">x&gt;29 &amp;&amp; id==pid</label>
 <label kind="assignment" x="96" y="184">in_critical = in_critical + 1</label>
 </transition>
 <transition>
@@ -122,7 +122,7 @@ int pid = 3;</declaration>
 </location>
 <location id="id9" x="216" y="48">
 <name x="216" y="16">req</name>
-<label kind="invariant" x="240" y="32">x&lt;=3</label>
+<label kind="invariant" x="240" y="32">x&lt;=30</label>
 </location>
 <location id="id10" x="64" y="48">
 <name x="54" y="18">A</name>
@@ -142,7 +142,7 @@ int pid = 3;</declaration>
 <transition>
 <source ref="id9"/>
 <target ref="id8"/>
-<label kind="guard" x="144" y="72">x&lt;=3</label>
+<label kind="guard" x="144" y="72">x&lt;=30</label>
 <label kind="assignment" x="144" y="104">x = 0,
 id = pid</label>
 </transition>
@@ -157,7 +157,7 @@ id = pid</label>
 <transition>
 <source ref="id8"/>
 <target ref="id11"/>
-<label kind="guard" x="96" y="184">x&gt;2 &amp;&amp; id==pid</label>
+<label kind="guard" x="96" y="184">x&gt;29 &amp;&amp; id==pid</label>
 <label kind="assignment" x="96" y="184">in_critical = in_critical + 1</label>
 </transition>
 <transition>
@@ -176,7 +176,7 @@ int pid = 4;</declaration>
 </location>
 <location id="id13" x="216" y="48">
 <name x="216" y="16">req</name>
-<label kind="invariant" x="240" y="32">x&lt;=3</label>
+<label kind="invariant" x="240" y="32">x&lt;=30</label>
 </location>
 <location id="id14" x="64" y="48">
 <name x="54" y="18">A</name>
@@ -196,7 +196,7 @@ int pid = 4;</declaration>
 <transition>
 <source ref="id13"/>
 <target ref="id12"/>
-<label kind="guard" x="144" y="72">x&lt;=3</label>
+<label kind="guard" x="144" y="72">x&lt;=30</label>
 <label kind="assignment" x="144" y="104">x = 0,
 id = pid</label>
 </transition>
@@ -211,7 +211,7 @@ id = pid</label>
 <transition>
 <source ref="id12"/>
 <target ref="id15"/>
-<label kind="guard" x="96" y="184">x&gt;2 &amp;&amp; id==pid</label>
+<label kind="guard" x="96" y="184">x&gt;29 &amp;&amp; id==pid</label>
 <label kind="assignment" x="96" y="184">in_critical = in_critical + 1</label>
 </transition>
 <transition>
@@ -230,7 +230,7 @@ int pid = 5;</declaration>
 </location>
 <location id="id17" x="216" y="48">
 <name x="216" y="16">req</name>
-<label kind="invariant" x="240" y="32">x&lt;=3</label>
+<label kind="invariant" x="240" y="32">x&lt;=30</label>
 </location>
 <location id="id18" x="64" y="48">
 <name x="54" y="18">A</name>
@@ -250,7 +250,7 @@ int pid = 5;</declaration>
 <transition>
 <source ref="id17"/>
 <target ref="id16"/>
-<label kind="guard" x="144" y="72">x&lt;=3</label>
+<label kind="guard" x="144" y="72">x&lt;=30</label>
 <label kind="assignment" x="144" y="104">x = 0,
 id = pid</label>
 </transition>
@@ -265,7 +265,7 @@ id = pid</label>
 <transition>
 <source ref="id16"/>
 <target ref="id19"/>
-<label kind="guard" x="96" y="184">x&gt;2 &amp;&amp; id==pid</label>
+<label kind="guard" x="96" y="184">x&gt;29 &amp;&amp; id==pid</label>
 <label kind="assignment" x="96" y="184">in_critical = in_critical + 1</label>
 </transition>
 <transition>
@@ -284,7 +284,7 @@ int pid = 6;</declaration>
 </location>
 <location id="id21" x="216" y="48">
 <name x="216" y="16">req</name>
-<label kind="invariant" x="240" y="32">x&lt;=3</label>
+<label kind="invariant" x="240" y="32">x&lt;=30</label>
 </location>
 <location id="id22" x="64" y="48">
 <name x="54" y="18">A</name>
@@ -304,7 +304,7 @@ int pid = 6;</declaration>
 <transition>
 <source ref="id21"/>
 <target ref="id20"/>
-<label kind="guard" x="144" y="72">x&lt;=3</label>
+<label kind="guard" x="144" y="72">x&lt;=30</label>
 <label kind="assignment" x="144" y="104">x = 0,
 id = pid</label>
 </transition>
@@ -319,7 +319,7 @@ id = pid</label>
 <transition>
 <source ref="id20"/>
 <target ref="id23"/>
-<label kind="guard" x="96" y="184">x&gt;2 &amp;&amp; id==pid</label>
+<label kind="guard" x="96" y="184">x&gt;29 &amp;&amp; id==pid</label>
 <label kind="assignment" x="96" y="184">in_critical = in_critical + 1</label>
 </transition>
 <transition>
@@ -338,7 +338,7 @@ int pid = 7;</declaration>
 </location>
 <location id="id25" x="216" y="48">
 <name x="216" y="16">req</name>
-<label kind="invariant" x="240" y="32">x&lt;=3</label>
+<label kind="invariant" x="240" y="32">x&lt;=30</label>
 </location>
 <location id="id26" x="64" y="48">
 <name x="54" y="18">A</name>
@@ -358,7 +358,7 @@ int pid = 7;</declaration>
 <transition>
 <source ref="id25"/>
 <target ref="id24"/>
-<label kind="guard" x="144" y="72">x&lt;=3</label>
+<label kind="guard" x="144" y="72">x&lt;=30</label>
 <label kind="assignment" x="144" y="104">x = 0,
 id = pid</label>
 </transition>
@@ -373,7 +373,7 @@ id = pid</label>
 <transition>
 <source ref="id24"/>
 <target ref="id27"/>
-<label kind="guard" x="96" y="184">x&gt;2 &amp;&amp; id==pid</label>
+<label kind="guard" x="96" y="184">x&gt;29 &amp;&amp; id==pid</label>
 <label kind="assignment" x="96" y="184">in_critical = in_critical + 1</label>
 </transition>
 <transition>
@@ -392,7 +392,7 @@ int pid = 8;</declaration>
 </location>
 <location id="id29" x="216" y="48">
 <name x="216" y="16">req</name>
-<label kind="invariant" x="240" y="32">x&lt;=3</label>
+<label kind="invariant" x="240" y="32">x&lt;=30</label>
 </location>
 <location id="id30" x="64" y="48">
 <name x="54" y="18">A</name>
@@ -412,7 +412,7 @@ int pid = 8;</declaration>
 <transition>
 <source ref="id29"/>
 <target ref="id28"/>
-<label kind="guard" x="144" y="72">x&lt;=3</label>
+<label kind="guard" x="144" y="72">x&lt;=30</label>
 <label kind="assignment" x="144" y="104">x = 0,
 id = pid</label>
 </transition>
@@ -427,7 +427,7 @@ id = pid</label>
 <transition>
 <source ref="id28"/>
 <target ref="id31"/>
-<label kind="guard" x="96" y="184">x&gt;2 &amp;&amp; id==pid</label>
+<label kind="guard" x="96" y="184">x&gt;29 &amp;&amp; id==pid</label>
 <label kind="assignment" x="96" y="184">in_critical = in_critical + 1</label>
 </transition>
 <transition>
@@ -446,7 +446,7 @@ int pid = 9;</declaration>
 </location>
 <location id="id33" x="216" y="48">
 <name x="216" y="16">req</name>
-<label kind="invariant" x="240" y="32">x&lt;=3</label>
+<label kind="invariant" x="240" y="32">x&lt;=30</label>
 </location>
 <location id="id34" x="64" y="48">
 <name x="54" y="18">A</name>
@@ -466,7 +466,7 @@ int pid = 9;</declaration>
 <transition>
 <source ref="id33"/>
 <target ref="id32"/>
-<label kind="guard" x="144" y="72">x&lt;=3</label>
+<label kind="guard" x="144" y="72">x&lt;=30</label>
 <label kind="assignment" x="144" y="104">x = 0,
 id = pid</label>
 </transition>
@@ -481,7 +481,7 @@ id = pid</label>
 <transition>
 <source ref="id32"/>
 <target ref="id35"/>
-<label kind="guard" x="96" y="184">x&gt;2 &amp;&amp; id==pid</label>
+<label kind="guard" x="96" y="184">x&gt;29 &amp;&amp; id==pid</label>
 <label kind="assignment" x="96" y="184">in_critical = in_critical + 1</label>
 </transition>
 <transition>
@@ -500,7 +500,7 @@ int pid = 10;</declaration>
 </location>
 <location id="id37" x="216" y="48">
 <name x="216" y="16">req</name>
-<label kind="invariant" x="240" y="32">x&lt;=3</label>
+<label kind="invariant" x="240" y="32">x&lt;=30</label>
 </location>
 <location id="id38" x="64" y="48">
 <name x="54" y="18">A</name>
@@ -520,7 +520,7 @@ int pid = 10;</declaration>
 <transition>
 <source ref="id37"/>
 <target ref="id36"/>
-<label kind="guard" x="144" y="72">x&lt;=3</label>
+<label kind="guard" x="144" y="72">x&lt;=30</label>
 <label kind="assignment" x="144" y="104">x = 0,
 id = pid</label>
 </transition>
@@ -535,7 +535,7 @@ id = pid</label>
 <transition>
 <source ref="id36"/>
 <target ref="id39"/>
-<label kind="guard" x="96" y="184">x&gt;2 &amp;&amp; id==pid</label>
+<label kind="guard" x="96" y="184">x&gt;29 &amp;&amp; id==pid</label>
 <label kind="assignment" x="96" y="184">in_critical = in_critical + 1</label>
 </transition>
 <transition>
