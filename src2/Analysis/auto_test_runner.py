@@ -222,17 +222,17 @@ def test_smacc(binary: str, device, args) -> \
         result_dct[("csma", settings)] = csma
 
         fischer = {}
-        fischer[2] = run_model(default_args, settings, d_args, "300t", args, "fischer_2_2.xml", 10240, 2,
+        fischer[2] = run_model(default_args, settings, d_args, "300t", args, "fischer_2_29.xml", 10240, 2,
                                use_scale=False)
-        fischer[5] = run_model(default_args, settings, d_args, "300t", args, "fischer_5_2.xml", 10240, 5,
+        fischer[5] = run_model(default_args, settings, d_args, "300t", args, "fischer_5_29.xml", 10240, 5,
                                use_scale=False)
-        fischer[10] = run_model(default_args, settings, d_args, "300t", args, "fischer_10_2.xml", 10240,
+        fischer[10] = run_model(default_args, settings, d_args, "300t", args, "fischer_10_29.xml", 10240,
                                 10, use_scale=False)
-        fischer[25] = run_model(default_args, settings, d_args, "300t", args, "fischer_25_2.xml", 10240,
+        fischer[25] = run_model(default_args, settings, d_args, "300t", args, "fischer_25_29.xml", 10240,
                                 25, use_scale=False)
-        fischer[50] = run_model(default_args, settings, d_args, "300t", args, "fischer_50_2.xml", 10240,
+        fischer[50] = run_model(default_args, settings, d_args, "300t", args, "fischer_50_29.xml", 10240,
                                 50, use_scale=False)
-        fischer[100] = run_model(default_args, settings, d_args, "300t", args, "fischer_100_2.xml", 10240,
+        fischer[100] = run_model(default_args, settings, d_args, "300t", args, "fischer_100_29.xml", 10240,
                                  100, use_scale=False)
         # fischer[250] = run_model(default_args, settings, d_args, "300t", args, "fischer_250_2.xml", 10240,
         #                          250, use_scale=False)

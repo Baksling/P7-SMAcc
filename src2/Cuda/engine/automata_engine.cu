@@ -210,21 +210,6 @@ CPU GPU void simulate_automata(
             {
                 const node* current = sim_state.models.store[process];
                 const edge* e = pick_next_edge_stack(current->edges, &sim_state);
-                // if (sim_state.steps > 100)
-                // {
-                //     printf("Currents: ");
-                //     for (int j = 0; j < sim_state.models.size; ++j)
-                //     {
-                //         printf("%d | ", sim_state.models.store[j]->id);
-                //     }
-                //     printf("\nVariable: ");
-                //     for (int j = 0; j < sim_state.variables.size; ++j)
-                //     {
-                //         printf("%d: %lf | ", sim_state.variables.store[j].id, sim_state.variables.store[j].value);
-                //     }
-                //     printf("\nstep %d, time: %lf, current %d, edge %p\n",
-                //         sim_state.steps, sim_state.global_time, current->id, e);
-                // }
                 if(e == nullptr) break;
                 
                 sim_state.traverse_edge(process, e->dest);
