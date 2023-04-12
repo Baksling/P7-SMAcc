@@ -375,4 +375,5 @@ def main():
 
 
 if __name__ == "__main__":
+    printf(sys.argv)
     main()

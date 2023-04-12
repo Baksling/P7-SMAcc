@@ -4,7 +4,7 @@ ENV DEVICE="ALL"
 ENV TIMEOUT="3600"
 ENV THREADS="100"
 ENV BLOCKS="40,256"
-ENV OUTPUT_PATH="/output/smacc_output.tsv"
+ENV OUTPUT_PATH="smacc_output.tsv"
 
 RUN apt-get update -y && apt upgrade -y
 RUN apt-get install python3 python3-pip -y
@@ -13,12 +13,13 @@ RUN mkdir /output
 WORKDIR /Smacc
 
 RUN git clone https://github.com/Baksling/P7-SMAcc.git .
+RUN pip install -r /Smacc/src2/requirements.txt
 
 # WORKDIR /Smacc/src2/Cuda/
 RUN bash /Smacc/src2/Cuda/compile.sh
 
-CMD ["python3", "/Smacc/Analysis/auto_test_runner.py", \
-    "-p", "/Smacc/Cuda/c.out", "-d", "${DEVICE}", \
-    "-m", "/Smacc/Cuda/UPPAALXMLParser/XmlFiles/", \
-    "-b", "${BLOCKS}", "-t", "${THREADS}", "-o", "${OUTPUT_PATH}",\ 
+CMD ["python3", "/Smacc/src2/Analysis/auto_test_runner.py", \
+    "-p", "/Smacc/src2/Cuda/Cuda/c.out", "-d", "${DEVICE}", \
+    "-m", "/Smacc/src2/Cuda/Cuda/UPPAALXMLParser/XmlFiles/", \
+    "-b", "${BLOCKS}", "-t", "${THREADS}", "-o", "/output/${OUTPUT_PATH}",\ 
     "--timeout", "${TIMEOUT}"]
