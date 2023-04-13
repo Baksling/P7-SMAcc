@@ -13,7 +13,7 @@ int pn_compile_visitor::estimate_pn_lenght(const expr* ex)
         constexpr int else_jump = 2;  //needs padding after else case, as to push true and skip.
         const int else_ = estimate_pn_lenght(ex->conditional_else);
 
-        return left + cond_jump + else_ + else_jump + cond_jump;
+        return left + cond_jump + else_ + else_jump + right;
     }
     
     return (left + right) + 1;

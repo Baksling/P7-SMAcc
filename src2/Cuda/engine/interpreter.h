@@ -3,6 +3,26 @@
 
 #include "../common/my_stack.h"
 
+union i_val
+{
+    i_val(const float fp)
+    {
+        this->fp = fp;
+    }
+
+    i_val(const double fp)
+    {
+        this->fp = static_cast<float>(fp);
+    }
+
+    i_val(const int i)
+    {
+        this->i = i;
+    }
+
+    int i{};
+    float fp;
+};
 
 struct intp_v
 {
@@ -66,7 +86,7 @@ struct intp_v
 
 struct sim_state
 {
-    my_stack<intp_v> int_stack;
+    my_stack<i_val> int_stack;
     curandState* random;
     double* variables;
 };
@@ -81,9 +101,7 @@ struct pn_expr
         random_s = 2,
 
         //control
-        return_s = 3,
-        goto_s = 4,
-        cgoto_s = 5,
+        cgoto_s = 4,
 
         //arithmatic
         plus_s, 
@@ -111,23 +129,23 @@ struct pn_expr
 
     union expr_metadata
     {
-        intp_v value;
+        i_val value;
         int variable_id;
         int goto_dest;
     } data;
 
-    intp_v evaluate(sim_state* state)
+    i_val evaluate(sim_state* state)
     {
-        intp_v v1{0};
-        intp_v v2{0};
+        constexpr int neg_flip = (1 << 31); 
+        constexpr i_val default_ = 0.0;
+        i_val v1 = default_;
+        i_val v2 = default_;
         switch(this->type)
         {
         case literal_s: return this->data.value;
         case variable_s: return state->variables[this->data.variable_id];
-        case random_s: return curand_uniform_double(state->random);
-        case return_s: return 0.0;
-        case goto_s: return 0.0;
-        case cgoto_s: return 0.0;
+        case random_s: return curand_uniform(state->random);
+        case cgoto_s: return default_;
         case plus_s:
             v2 = state->int_stack.pop();
             v1 = state->int_stack.pop();
@@ -139,20 +157,24 @@ struct pn_expr
         case multiply_s:
             v2 = state->int_stack.pop();
             v1 = state->int_stack.pop();
-            return v1.as_double() * v2.as_double();
+            return v1 * v2;
         case pow_s:
             v2 = state->int_stack.pop();
             v1 = state->int_stack.pop();
-            return pow(v1.value.float64, v1.value.float64);
+            return pow(v1.fp, v2.fp);
         case sqrt_s:
             v1 = state->int_stack.pop();
-            return sqrt(v1.value.float64);
+            return sqrt(v1.fp);
         case modulo_s:
             v2 = state->int_stack.pop();
             v1 = state->int_stack.pop();
-            return v1.value.int32 % v2.value.int32;
-        case ln_s: break;
-        case negation_s: break;
+            return (v1.i % v2.i);
+        case ln_s:
+            v1 = state->int_stack.pop();
+            return log(v1.fp);
+        case negation_s:
+            v1 = state->int_stack.pop();
+            return neg_flip ^ v1.i; //works for both float and ints
         case less_s: break;
         case less_equal_s: break;
         case greater_s: break;
@@ -164,6 +186,7 @@ struct pn_expr
         case compiled_s: break;
         default: ;
         }
+        return default_;
     }
 };
 
@@ -172,30 +195,23 @@ struct function
     pn_expr* statements;
     int size;
 
-    double call(sim_state* state)
+    intp_v call(sim_state* state) const
     {
         state->int_stack.clear();
+        // int i = 0;
+        // int* ip = &i;
         for (int i = 0; i < size; ++i)
         {
             pn_expr* stmt = &statements[i];
-            if(stmt->type == pn_expr::return_s)
-            {
-                return state->int_stack.pop().as_double();
-            }
-            else if(stmt->type == pn_expr::goto_s)
-            {
-                i = stmt->data.goto_dest;
-            }
-            else if(stmt->type == pn_expr::cgoto_s)
-            {
-                if(!state->int_stack.pop().value.int32) continue;
-                i = stmt->data.goto_dest;
-            }
+            // if(stmt->type == pn_expr::return_s)
+            //     return state->int_stack.pop().as_double(); //TODO this can be converted to a goto
+            
+            if(stmt->type == pn_expr::cgoto_s) //TODO this can be moved to eval scope
+                i = i + stmt->data.goto_dest * !state->int_stack.pop().value.int32;
             else
-            {
                 state->int_stack.push_val(stmt->evaluate(state));
-            }
         }
+        return state->int_stack.pop();
     }
 };
 

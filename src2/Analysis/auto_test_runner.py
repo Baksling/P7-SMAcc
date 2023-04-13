@@ -338,9 +338,6 @@ def main():
         print_output(args.graph)
         return
 
-    if args.program is None or not path.exists(args.program):
-        raise argparse.ArgumentError(None, "Cannot find program binary")
-
     if args.device not in DEVICE_CHOICES and args.device not in ADDITIONAL_CHOICES:
         raise argparse.ArgumentError(None, "device type is not recognised device type. Should be in "
                                      + str(DEVICE_CHOICES) + " or a batch run, using one of the following: "
@@ -358,7 +355,13 @@ def main():
     if args.output is None or path.exists(args.output):
         raise argparse.ArgumentError(None, "No output path supplied or file already exists")
 
-    results, table_res = test_smacc(args.program, args.device, args)
+    if (args.program is None or not path.exists(args.program)) and args.uppaal is None:
+        raise argparse.ArgumentError(None, "Cannot find program binary")
+    
+    results, table_res = dict(), dict()
+    
+    if args.program is not None:
+        results, table_res = test_smacc(args.program, args.device, args)
     
     if args.uppaal is not None:
         uppaal_res, uppaal_table_res = test_uppaal(args.uppaal, args)
