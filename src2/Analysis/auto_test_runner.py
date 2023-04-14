@@ -291,7 +291,7 @@ def write_output(
             for scale, time in rs.items():
                 f.write(f"{system}\t{dtype}\t{scale}\t{time if time is not None else DID_NOT_FINISH}\n")
         for (system, dtype), time in single_results.items():
-            f.write(f"{system}\t{dtype}\tsingle\t{time if time is not None else DID_NOT_FINISH}")
+            f.write(f"{system}\t{dtype}\tsingle\t{time if time is not None else DID_NOT_FINISH}\n")
 
     if show:
         print_output(output_file)
