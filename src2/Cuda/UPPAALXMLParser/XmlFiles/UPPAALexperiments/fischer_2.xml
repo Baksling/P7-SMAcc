@@ -65,7 +65,7 @@ in_critical = in_critical - 1</label>
 	<system>system P;</system>
 	<queries>
 		<query>
-			<formula>E[&lt;=300](max: in_critical)
+			<formula>E[&lt;=300;10240](max: in_critical)
 			</formula>
 			<comment>Fischer's mutual exclusion protocol.
 			</comment>
