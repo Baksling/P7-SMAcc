@@ -90,7 +90,7 @@ def run_model(default_args, settings_name: str, d_args, time_arg: str, args, fil
                  + build_args(folder, file_name, time_arg, numb, upscale, use_scale, query)
                  + ["-o", output_name],
                  timeout=args.timeout)
-        out_time = time.time() - start
+        out_time = (time.time() - start) * 1000
         time_file = output_name + "_lite_summary.txt"
         reach_file = output_name + "_reach.tsv"
         return test_result(load_time(time_file), out_time, load_reach(reach_file, q_index))
@@ -114,7 +114,7 @@ def test_uppaal(binary: str, args) \
             start = time.time()
             p = cmd.run([binary, path.join(args.model, model), "-q", "-s"],
                         capture_output=True, text=True, check=True, timeout=args.timeout)
-            total = time.time() - start
+            total = (time.time() - start) * 1000
             return test_result(total, total, 0.0)
         except cmd.TimeoutExpired:
             print("timed out...")
@@ -275,15 +275,15 @@ def test_smacc(binary: str, device, args) -> \
     return result_dct, single_dct
 
 
-def print_output(filepath):
+def print_output(filepath, args):
     def load_time(row: dict):
         try:
-            return float(row["total_time"])
+            return float(row["run_time"])
         except ValueError:
             return None
 
     results: Dict[Tuple[str, str, int], float] = {}
-    single_results = Dict[Tuple[str, str], float] = {}
+    single_results: Dict[Tuple[str, str], float] = {}
     with open(filepath, 'r') as f:
         for row in csv.DictReader(f, delimiter='\t'):
             if row["scale"] == "single":
@@ -305,7 +305,10 @@ def print_output(filepath):
         for settings, (xs, ys) in rs.items():
             plt.plot(xs, ys, label=settings)
         plt.legend()
-        plt.show()
+        if args.plot_dest is not None:
+            plt.savefig(path.join(args.plot_dest, system + ".png"))
+        if args.show:
+            plt.show()
 
     # TODO print single table
 
@@ -315,7 +318,7 @@ DID_NOT_FINISH = 'DNF'
 
 def write_output(
         results: Dict[Tuple[str, str], Dict[int, test_result | None]],
-        single_results: Dict[Tuple[str, str], test_result | None], output_file, show) -> None:
+        single_results: Dict[Tuple[str, str], test_result | None], output_file) -> None:
     def time_convert(t):
         return t if t is not None else DID_NOT_FINISH
 
@@ -332,9 +335,6 @@ def write_output(
             t_time = result.total_time if result is not None else None
             hit = result.hit if result is not None else None
             f.write(f"{system}\t{device_type}\tsingle\t{time_convert(r_time)}\t{time_convert(t_time)}\t{hit}\n")
-
-    if show:
-        print_output(output_file)
 
 
 def main():
@@ -365,6 +365,8 @@ def main():
                         "Path to existing data to generate plots. If this option is supplied, no tests will be run.")
     parser.add_argument("-s", "--show", required=False, action='store_true', dest="show",
                         default=False, help="Whether to show plots or not. Default is not show")
+    parser.add_argument("--saveplots", required=False, dest="plot_dest",
+                        default=None, help="Path to save plots as pngs. If not supplied, plots wont be seved as file")
 
     if len(sys.argv) < 1:
         parser.print_help()
@@ -375,7 +377,7 @@ def main():
     if args.graph is not None:
         if not path.exists(args.graph):
             raise argparse.ArgumentError(None, "Path to existing data source doesnt exist.")
-        print_output(args.graph)
+        print_output(args.graph, args)
         return
 
     if args.device not in DEVICE_CHOICES and args.device not in ADDITIONAL_CHOICES:
@@ -410,7 +412,9 @@ def main():
         for system, result in uppaal_table_res.items():
             table_res[(system, "uppaal")] = result
 
-    write_output(results, table_res, args.output, args.show)
+    write_output(results, table_res, args.output)
+    if args.show:
+        print_output(args.output, args)
 
     if args.temp_dir:
         args.temp_dir.cleanup()
