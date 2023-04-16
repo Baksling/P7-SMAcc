@@ -167,6 +167,30 @@ void output_writer::write_hit_file(const std::chrono::steady_clock::duration sim
     file.close();
 }
 
+void output_writer::write_reach_file() const
+{
+    if(this->node_summary_map_.empty()) return;
+    std::ofstream file = std::ofstream(this->file_path_ + "_reach.tsv", std::ofstream::out|std::ofstream::trunc);
+
+    file << "process\treach_perc\n";
+    for(auto& groups : this->network_groups_)
+    {
+        node_summary no_hit = {0, 0, 0};
+        for(const int id : groups.second)
+        {
+            node_summary summary = this->node_summary_map_.at(id);
+            if(!is_goal_node_by_id(this->properties_->node_map, id))
+                no_hit.cumulative(summary);
+        }
+
+        const float percentage = calc_percentage(no_hit.reach_count, total_simulations_);
+        file << groups.first << '\t' << percentage << '\n';
+    }
+
+    file.flush();
+    file.close();
+}
+
 void output_writer::setup_network_groups(const sim_config* config)
 {
     for(const auto& pair : *config->properties->node_network)
@@ -220,12 +244,13 @@ output_writer::~output_writer()
 void output_writer::analyse_batch(const result_pointers& pointers)
 {
     const unsigned sims_per_thread = pointers.sim_per_thread();
+    const int node_count = this->node_count_;
 
     for (int t = 0; t < pointers.threads; ++t)
     {
-        for (int i = 0; i < this->node_count_; ++i)
+        for (int i = 0; i < node_count; ++i)
         {
-            const int index = t * this->node_count_ + i;
+            const int index = t * node_count + i;
             const int id = i+1; //ids go from 1..*, so to index them, they are id-1. Here we do the reverse.
             const node_results* node = &pointers.nodes[index];
             node_summary summary = node_summary
@@ -262,7 +287,7 @@ void output_writer::write(const result_store* sim_result, std::chrono::steady_cl
         this->write_lite(sim_duration);
     }
 
-    if(this->write_mode_ & (console_sum | file_sum | file_data | hit_file))
+    if(this->write_mode_ & (console_sum | file_sum | file_data | hit_file | reach_file))
     {
         const result_pointers pointers = sim_result->load_results();
         this->analyse_batch(pointers);
@@ -294,6 +319,10 @@ void output_writer::write_summary(std::chrono::steady_clock::duration sim_durati
     if (this->write_mode_ & hit_file)
     {
         this->write_hit_file(sim_duration);   
+    }
+    if(this->write_mode_ & reach_file)
+    {
+        this->write_reach_file();
     }
 }
 

@@ -29,6 +29,17 @@ DEVICE_CHOICES = \
 ADDITIONAL_CHOICES = {ALL, "ALL-CPU", "ALL-GPU"}
 
 
+class test_result:
+    def __init__(self, run_time, total_time, hit):
+        self.run_time = run_time
+        self.total_time = total_time
+        self.hit = hit
+    def __iter__(self):
+        yield self.run_time
+        yield self.total_time
+        yield self.hit
+
+
 def load_choice(choice) -> List[Tuple[str, list]]:
     if choice == ALL:
         return [(x, y) for x, y in DEVICE_CHOICES.items()]
@@ -44,12 +55,6 @@ def threads(settings, threads) -> list:
     return ["-c", str(threads)] if settings != BASELINE else ["-c", str(1)]
 
 
-# assuming lite summary
-def load_time(filepath):
-    with open(filepath, 'r') as f:
-        return float(f.readline())
-
-
 def build_args(folder: str, name: str, time: str, number: int, upscale: int, use_scale: bool,
                query: str | None) -> list:
     return ["-m", path.join(folder, name), "-x", time, "-n", str(number)] \
@@ -57,36 +62,60 @@ def build_args(folder: str, name: str, time: str, number: int, upscale: int, use
         + (["-q", query] if query is not None else [])
 
 
-def run_model(default_args, settings_name: str, d_args, time: str, args, file_name, numb,
-              upscale, use_scale: bool = True, query: str = None) -> float | None:
+def run_model(default_args, settings_name: str, d_args, time_arg: str, args, file_name, numb,
+              upscale, use_scale: bool = True, query: str = None, q_index=0) -> test_result | None:
     folder, cache_dir = args.model, args.temp
     output_name = f"{path.join(str(cache_dir), file_name)}_U{upscale}_{settings_name}"
     print(f"Running: {file_name} w. {upscale}")
+
+    # assuming lite summary
+    def load_time(filepath):
+        with open(filepath, 'r') as f:
+            return float(f.readline())
+
+    def load_reach(file, index: int):
+        with open(file, 'r') as f:
+            for line in f.readlines()[1:]:
+                line = line.replace("\n", "")
+                p, hit = line.split('\t')
+                if int(p) == index:
+                    return float(hit)
+            return 0.0
+
     try:
+        start = time.time()
         cmd.call(default_args
                  + d_args
                  + threads(settings_name, args.threads)
-                 + build_args(folder, file_name, time, numb, upscale, use_scale, query)
+                 + build_args(folder, file_name, time_arg, numb, upscale, use_scale, query)
                  + ["-o", output_name],
                  timeout=args.timeout)
-        return load_time(output_name + "_lite_summary.txt")
+        out_time = time.time() - start
+        time_file = output_name + "_lite_summary.txt"
+        reach_file = output_name + "_reach.tsv"
+        return test_result(load_time(time_file), out_time, load_reach(reach_file, q_index))
     except cmd.TimeoutExpired:
         print("timed out...")
         return None
 
 
-def test_uppaal(binary: str, args) -> Tuple[Dict[str, Dict[int, float]], Dict[str, float]]:
+def test_uppaal(binary: str, args) \
+        -> Tuple[
+            Dict[str, Dict[int, test_result | None]],
+            Dict[str, test_result | None]
+        ]:
     result_dct = {}
     single_dct = {}
     print(f"\nInitialising tests with uppaal:")
+
     def run_uppaal(model):
         print("running uppaal on: " + model)
         try:
             start = time.time()
-            cmd.run([binary, path.join(args.model, model), "-q", "-s"], 
-                    stdout=cmd.DEVNULL, stderr=cmd.STDOUT, check=True, timeout=args.timeout)
-            end = time.time()
-            return end - start
+            p = cmd.run([binary, path.join(args.model, model), "-q", "-s"],
+                        capture_output=True, text=True, check=True, timeout=args.timeout)
+            total = time.time() - start
+            return test_result(total, total, 0.0)
         except cmd.TimeoutExpired:
             print("timed out...")
             return None
@@ -98,7 +127,7 @@ def test_uppaal(binary: str, args) -> Tuple[Dict[str, Dict[int, float]], Dict[st
     aloha[25] = run_uppaal("UPPAALexperiments/AlohaSingle_25.xml")
     aloha[50] = run_uppaal("UPPAALexperiments/AlohaSingle_50.xml")
     aloha[100] = run_uppaal("UPPAALexperiments/AlohaSingle_100.xml")
-    # aloha[250] = run_uppaal("UPPAALexperiments/AlohaSingle_250.xml")
+    aloha[250] = run_uppaal("UPPAALexperiments/AlohaSingle_250.xml")
     result_dct["aloha"] = aloha
 
     # agent covid
@@ -112,10 +141,10 @@ def test_uppaal(binary: str, args) -> Tuple[Dict[str, Dict[int, float]], Dict[st
     # agent_covid[100000] = run_uppaal("/UPPAALexperiments/AgentBasedCovid_100000.xml")
 
     # reaction covid
-    single_dct["covid"] = run_uppaal("covidmodelQueryUPPAAL.xml")
+    single_dct["covid"] = run_uppaal("UPPAALexperiments/covidmodelQueryUPPAAL.xml")
     single_dct["bluetooth"] = run_uppaal("bluetoothNoParaSimas.cav.xml")
     single_dct["firewire"] = run_uppaal("firewireGoal.cav.xml")
-    
+
     # csma
     csma = {}
     csma[2] = run_uppaal("UPPAALexperiments/CSMA_2.xml")
@@ -128,7 +157,7 @@ def test_uppaal(binary: str, args) -> Tuple[Dict[str, Dict[int, float]], Dict[st
     # csma[500] = run_uppaal("UPPAALexperiments/CSMA_500.xml")
     # csma[1000] = run_uppaal("UPPAALexperiments/CSMA_1000.xml")
     result_dct["csma"] = csma
-    
+
     # fischer
     fischer = {}
     fischer[2] = run_uppaal("UPPAALexperiments/fischer_2.xml")
@@ -145,11 +174,14 @@ def test_uppaal(binary: str, args) -> Tuple[Dict[str, Dict[int, float]], Dict[st
 
 
 def test_smacc(binary: str, device, args) -> \
-        Tuple[Dict[Tuple[str, str], Dict[int, float]], Dict[Tuple[str, str], float]]:
+        Tuple[
+            Dict[Tuple[str, str], Dict[int, test_result | None]],
+            Dict[Tuple[str, str], test_result | None]
+        ]:
     device_args = load_choice(device)
-    default_args = [binary, "-w", "l", "-v", "0"]
-    result_dct: Dict[Tuple[str, str], Dict[int, float | None]] = {}
-    single_dct: Dict[Tuple[str, str], float | None] = {}
+    default_args = [binary, "-w", "lq", "-v", "0"]
+    result_dct: Dict[Tuple[str, str], Dict[int, test_result | None]] = {}
+    single_dct: Dict[Tuple[str, str], test_result | None] = {}
 
     for settings, d_args in device_args:
         print(f"\nInitialising tests with {settings}:")
@@ -246,7 +278,7 @@ def test_smacc(binary: str, device, args) -> \
 def print_output(filepath):
     def load_time(row: dict):
         try:
-            return float(row["time"])
+            return float(row["total_time"])
         except ValueError:
             return None
 
@@ -282,16 +314,24 @@ DID_NOT_FINISH = 'DNF'
 
 
 def write_output(
-        results: Dict[Tuple[str, str], Dict[int, float | None]],
-        single_results: Dict[Tuple[str, str], float | None], output_file, show) -> None:
+        results: Dict[Tuple[str, str], Dict[int, test_result | None]],
+        single_results: Dict[Tuple[str, str], test_result | None], output_file, show) -> None:
+    def time_convert(t):
+        return t if t is not None else DID_NOT_FINISH
+
     # file
     with open(output_file, 'w') as f:
-        f.write("system\tdevice\tscale\tms\n")
-        for (system, dtype), rs in results.items():
-            for scale, time in rs.items():
-                f.write(f"{system}\t{dtype}\t{scale}\t{time if time is not None else DID_NOT_FINISH}\n")
-        for (system, dtype), time in single_results.items():
-            f.write(f"{system}\t{dtype}\tsingle\t{time if time is not None else DID_NOT_FINISH}\n")
+        f.write("system\tdevice\tscale\trun_time\ttotal_time\thit\n")
+        for (system, device), (scale, result) in ((x, y) for x, rs in results.items() for y in rs.items()):
+                r_time = result.run_time if result is not None else None
+                t_time = result.total_time if result is not None else None
+                hit = result.hit if result is not None else None
+                f.write(f"{system}\t{device}\t{scale}\t{time_convert(r_time)}\t{time_convert(t_time)}\t{hit}\n")
+        for (system, device_type), result in single_results.items():
+            r_time = result.run_time if result is not None else None
+            t_time = result.total_time if result is not None else None
+            hit = result.hit if result is not None else None
+            f.write(f"{system}\t{device_type}\tsingle\t{time_convert(r_time)}\t{time_convert(t_time)}\t{hit}\n")
 
     if show:
         print_output(output_file)
@@ -357,19 +397,19 @@ def main():
 
     if (args.program is None or not path.exists(args.program)) and args.uppaal is None:
         raise argparse.ArgumentError(None, "Cannot find program binary")
-    
+
     results, table_res = dict(), dict()
-    
+
     if args.program is not None:
         results, table_res = test_smacc(args.program, args.device, args)
-    
+
     if args.uppaal is not None:
         uppaal_res, uppaal_table_res = test_uppaal(args.uppaal, args)
         for system, rs in uppaal_res.items():
             results[(system, "uppaal")] = rs
-        for system, time in uppaal_table_res.items():
-            table_res[(system, "uppaal")] = time
-    
+        for system, result in uppaal_table_res.items():
+            table_res[(system, "uppaal")] = result
+
     write_output(results, table_res, args.output, args.show)
 
     if args.temp_dir:

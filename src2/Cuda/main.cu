@@ -34,7 +34,7 @@ parser_state parse_configs(const int argc, const char* argv[], sim_config* confi
 
     //output 
     parser.add_argument("-o", "--output", "The path to output result file without file extension. e.g. './output' ", false);
-    parser.add_argument("-w", "--write", "Write mode \n / c = console summary  \n / f = file summary \n / d = file data dump \n / t = trace \n / l = lite summary \n / m = write model to file \n / r = write hit percentage to file", false);
+    parser.add_argument("-w", "--write", "Write mode \n / c = console summary  \n / f = file summary \n / d = file data dump \n / t = trace \n / l = lite summary \n / m = write model to file \n / r = write hit percentage to file \n / q = write reach percentage to file", false);
     
     //explicit block/thread specification
     parser.add_argument("-b", "--block", "Specify number of blocks/threads to use.\nIn the format 'blocks,threads' e.g. '32,512' for 32 blocks and 512 threads pr. block", false);

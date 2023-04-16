@@ -18,7 +18,8 @@ enum write_modes //values must be powers of 2.
     lite_sum = 8,
     model_out = 32,
     pretty_out = 64,
-    hit_file = 128
+    hit_file = 128,
+    reach_file = 256,
 };
 
 struct node_summary
@@ -107,6 +108,7 @@ private:
     void write_summary_to_stream(std::ostream& stream, std::chrono::steady_clock::duration sim_duration) const;
     void write_lite(std::chrono::steady_clock::duration sim_duration) const;
     void write_hit_file(std::chrono::steady_clock::duration sim_duration) const;
+    void write_reach_file() const;
     void setup_network_groups(const sim_config* config);
 
 public:
@@ -133,6 +135,7 @@ inline int output_writer::parse_mode(const std::string& str)
     if(str.find('m') != std::string::npos) mode |= model_out;
     if(str.find('p') != std::string::npos) mode |= pretty_out;
     if(str.find('r') != std::string::npos) mode |= hit_file;
+    if(str.find('q') != std::string::npos) mode |= reach_file;
     
     return mode;
 }
