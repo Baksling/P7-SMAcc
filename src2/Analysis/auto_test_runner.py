@@ -90,7 +90,7 @@ def run_model(default_args, settings_name: str, d_args, time_arg: str, args, fil
                  + build_args(folder, file_name, time_arg, numb, upscale, use_scale, query)
                  + ["-o", output_name],
                  timeout=args.timeout)
-        out_time = time.time() - start
+        out_time = (time.time() - start) * 1000
         time_file = output_name + "_lite_summary.txt"
         reach_file = output_name + "_reach.tsv"
         return test_result(load_time(time_file), out_time, load_reach(reach_file, q_index))
@@ -114,7 +114,7 @@ def test_uppaal(binary: str, args) \
             start = time.time()
             p = cmd.run([binary, path.join(args.model, model), "-q", "-s"],
                         capture_output=True, text=True, check=True, timeout=args.timeout)
-            total = time.time() - start
+            total = (time.time() - start) * 1000
             return test_result(total, total, 0.0)
         except cmd.TimeoutExpired:
             print("timed out...")
