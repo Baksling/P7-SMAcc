@@ -4,7 +4,7 @@ ENV DEVICE=ALL
 ENV TIMEOUT=3600
 ENV THREADS=100
 ENV BLOCKS=40,256
-ENV OUTPUT_PATH=smacc_output.tsv
+ENV PLOTS=/Smacc/
 
 RUN apt-get update -y && apt upgrade -y
 RUN apt-get install python3 python3-pip -y
@@ -22,5 +22,5 @@ WORKDIR /Smacc
 CMD python3 /Smacc/src2/Analysis/auto_test_runner.py \
     -p /Smacc/src2/Cuda/c.out -d ${DEVICE} \
     -m /Smacc/src2/Cuda/UPPAALXMLParser/XmlFiles/ \
-    -b ${BLOCKS} -t ${THREADS} -o /output/smacc_output.tsv \ 
-    --timeout ${TIMEOUT}
+    -b ${BLOCKS} -o /output/smacc_output.tsv \ 
+    --timeout ${TIMEOUT} --saveplots ${/Smacc/output}

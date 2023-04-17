@@ -47,7 +47,9 @@ def load_choice(choice) -> List[Tuple[str, list]]:
         return [("GPU", DEVICE_CHOICES["GPU"]), ("JIT", DEVICE_CHOICES["JIT"]),
                 ("SM", DEVICE_CHOICES["SM"]), ("PN", DEVICE_CHOICES["PN"])]
     elif choice == "ALL-CPU":
-        return [("CPU", DEVICE_CHOICES["CPU"]), ("PN-CPU", DEVICE_CHOICES["PN-CPU"])]
+        return [("BASELINE", DEVICE_CHOICES["BASELINE"]),
+                ("CPU", DEVICE_CHOICES["CPU"]), 
+                ("PN-CPU", DEVICE_CHOICES["PN-CPU"])]
     return [(choice, DEVICE_CHOICES[choice])]
 
 
@@ -139,6 +141,7 @@ def test_uppaal(binary: str, args) \
     agent_covid[10000] = run_uppaal("UPPAALexperiments/AgentBasedCovid_10000.xml")
     # agent_covid[50000] = run_uppaal("/UPPAALexperiments/AgentBasedCovid_50000.xml")
     # agent_covid[100000] = run_uppaal("/UPPAALexperiments/AgentBasedCovid_100000.xml")
+    result_dct["agent_coivd"] = agent_covid
 
     # reaction covid
     single_dct["covid"] = run_uppaal("UPPAALexperiments/covidmodelQueryUPPAAL.xml")
@@ -169,6 +172,7 @@ def test_uppaal(binary: str, args) \
     # fischer[250] = run_uppaal("UPPAALexperiments/fischer_250.xml")
     # fischer[500] = run_uppaal("UPPAALexperiments/fischer_500.xml")
     # fischer[1000] = run_uppaal("UPPAALexperiments/fischer_1000.xml")
+    result_dct["fischer"] = fischer
 
     return result_dct, single_dct
 
@@ -221,6 +225,9 @@ def test_smacc(binary: str, device, args) -> \
             run_model(default_args, settings, d_args, "100t", args, "covidmodelQueryI.xml", 10240, 1,
                       query="Template4.Query")
 
+        if settings == "SM":
+            continue
+
         single_dct[("bluetooth", settings)] = \
             run_model(default_args, settings, d_args, "5000t", args, "bluetoothNoParaSimas.cav.xml", 10240,
                       1,
@@ -229,9 +236,6 @@ def test_smacc(binary: str, device, args) -> \
         single_dct[("firewire", settings)] = \
             run_model(default_args, settings, d_args, "1000t", args, "firewireGoal.cav.xml", 10240, 1,
                       query="Node0.s5")
-
-        if settings == "SM":
-            continue
 
         # csma
         csma = {}
@@ -413,8 +417,7 @@ def main():
             table_res[(system, "uppaal")] = result
 
     write_output(results, table_res, args.output)
-    if args.show:
-        print_output(args.output, args)
+    print_output(args.output, args)
 
     if args.temp_dir:
         args.temp_dir.cleanup()
