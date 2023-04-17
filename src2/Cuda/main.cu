@@ -316,7 +316,7 @@ void run_optimise(network* model, sim_config* config, output_properties* propert
 
 int main(int argc, const char* argv[])
 {
-    CUDA_CHECK(cudaFree(nullptr));
+    // CUDA_CHECK(cudaFree(nullptr));
 
     io_paths paths = {};
     output_properties properties = {};
