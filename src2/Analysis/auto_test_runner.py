@@ -86,13 +86,15 @@ def run_model(default_args, settings_name: str, d_args, time_arg: str, args, fil
             return 0.0
 
     try:
+        call_args = args.additional_args \
+                    + default_args \
+                    + d_args \
+                    + threads(settings_name, args.threads) \
+                    + build_args(folder, file_name, time_arg, numb, upscale, use_scale, query) \
+                    + ["-o", output_name]
         start = time.time()
-        cmd.run(default_args
-                + d_args
-                + threads(settings_name, args.threads)
-                + build_args(folder, file_name, time_arg, numb, upscale, use_scale, query)
-                + ["-o", output_name],
-                timeout=args.timeout, check=True)
+        cmd.run(call_args,
+                timeout=args.timeout, check=True, stderr=cmd.STDOUT)
         out_time = (time.time() - start) * 1000
         time_file = output_name + "_lite_summary.txt"
         reach_file = output_name + "_reach.tsv"
@@ -124,22 +126,22 @@ def test_uppaal(binary: str, args) \
             return None
 
     aloha = {}
-    aloha[2] = run_uppaal("UPPAALexperiments/AlohaSingle_2.xml")
-    aloha[5] = run_uppaal("UPPAALexperiments/AlohaSingle_5.xml")
-    aloha[10] = run_uppaal("UPPAALexperiments/AlohaSingle_10.xml")
-    aloha[25] = run_uppaal("UPPAALexperiments/AlohaSingle_25.xml")
-    aloha[50] = run_uppaal("UPPAALexperiments/AlohaSingle_50.xml")
-    aloha[100] = run_uppaal("UPPAALexperiments/AlohaSingle_100.xml")
-    aloha[250] = run_uppaal("UPPAALexperiments/AlohaSingle_250.xml")
+    # aloha[2] = run_uppaal("UPPAALexperiments/AlohaSingle_2.xml")
+    # aloha[5] = run_uppaal("UPPAALexperiments/AlohaSingle_5.xml")
+    # aloha[10] = run_uppaal("UPPAALexperiments/AlohaSingle_10.xml")
+    # aloha[25] = run_uppaal("UPPAALexperiments/AlohaSingle_25.xml")
+    # aloha[50] = run_uppaal("UPPAALexperiments/AlohaSingle_50.xml")
+    # aloha[100] = run_uppaal("UPPAALexperiments/AlohaSingle_100.xml")
+    # aloha[250] = run_uppaal("UPPAALexperiments/AlohaSingle_250.xml")
     result_dct["aloha"] = aloha
 
     # agent covid
     agent_covid = {}
     agent_covid[100] = run_uppaal("UPPAALexperiments/AgentBasedCovid_100.xml")
     agent_covid[500] = run_uppaal("UPPAALexperiments/AgentBasedCovid_500.xml")
-    agent_covid[1000] = run_uppaal("UPPAALexperiments/AgentBasedCovid_1000.xml")
-    agent_covid[5000] = run_uppaal("UPPAALexperiments/AgentBasedCovid_5000.xml")
-    agent_covid[10000] = run_uppaal("UPPAALexperiments/AgentBasedCovid_10000.xml")
+    # agent_covid[1000] = run_uppaal("UPPAALexperiments/AgentBasedCovid_1000.xml")
+    # agent_covid[5000] = run_uppaal("UPPAALexperiments/AgentBasedCovid_5000.xml")
+    # agent_covid[10000] = run_uppaal("UPPAALexperiments/AgentBasedCovid_10000.xml")
     # agent_covid[50000] = run_uppaal("/UPPAALexperiments/AgentBasedCovid_50000.xml")
     # agent_covid[100000] = run_uppaal("/UPPAALexperiments/AgentBasedCovid_100000.xml")
     result_dct["agent_coivd"] = agent_covid
@@ -151,12 +153,12 @@ def test_uppaal(binary: str, args) \
 
     # csma
     csma = {}
-    csma[2] = run_uppaal("UPPAALexperiments/CSMA_2.xml")
-    csma[5] = run_uppaal("UPPAALexperiments/CSMA_5.xml")
-    csma[10] = run_uppaal("UPPAALexperiments/CSMA_10.xml")
-    csma[25] = run_uppaal("UPPAALexperiments/CSMA_25.xml")
-    csma[50] = run_uppaal("UPPAALexperiments/CSMA_50.xml")
-    csma[100] = run_uppaal("UPPAALexperiments/CSMA_100.xml")
+    # csma[2] = run_uppaal("UPPAALexperiments/CSMA_2.xml")
+    # csma[5] = run_uppaal("UPPAALexperiments/CSMA_5.xml")
+    # csma[10] = run_uppaal("UPPAALexperiments/CSMA_10.xml")
+    # csma[25] = run_uppaal("UPPAALexperiments/CSMA_25.xml")
+    # csma[50] = run_uppaal("UPPAALexperiments/CSMA_50.xml")
+    # csma[100] = run_uppaal("UPPAALexperiments/CSMA_100.xml")
     # csma[250] = run_uppaal("UPPAALexperiments/CSMA_250.xml")
     # csma[500] = run_uppaal("UPPAALexperiments/CSMA_500.xml")
     # csma[1000] = run_uppaal("UPPAALexperiments/CSMA_1000.xml")
@@ -372,6 +374,8 @@ def main():
                         default=False, help="Whether to show plots or not. Default is not show")
     parser.add_argument("--saveplots", required=False, dest="plot_dest",
                         default=None, help="Path to save plots as pngs. If not supplied, plots wont be seved as file")
+    parser.add_argument("--args", required=False, nargs="+", dest="additional_args", default=[],
+                        help="Additional arguments for running simulation. Added before all other args.")
 
     if len(sys.argv) < 1:
         parser.print_help()
