@@ -34,6 +34,7 @@ class test_result:
         self.run_time = run_time
         self.total_time = total_time
         self.hit = hit
+
     def __iter__(self):
         yield self.run_time
         yield self.total_time
@@ -48,7 +49,7 @@ def load_choice(choice) -> List[Tuple[str, list]]:
                 ("SM", DEVICE_CHOICES["SM"]), ("PN", DEVICE_CHOICES["PN"])]
     elif choice == "ALL-CPU":
         return [("BASELINE", DEVICE_CHOICES["BASELINE"]),
-                ("CPU", DEVICE_CHOICES["CPU"]), 
+                ("CPU", DEVICE_CHOICES["CPU"]),
                 ("PN-CPU", DEVICE_CHOICES["PN-CPU"])]
     return [(choice, DEVICE_CHOICES[choice])]
 
@@ -86,12 +87,12 @@ def run_model(default_args, settings_name: str, d_args, time_arg: str, args, fil
 
     try:
         start = time.time()
-        cmd.call(default_args
-                 + d_args
-                 + threads(settings_name, args.threads)
-                 + build_args(folder, file_name, time_arg, numb, upscale, use_scale, query)
-                 + ["-o", output_name],
-                 timeout=args.timeout)
+        cmd.run(default_args
+                + d_args
+                + threads(settings_name, args.threads)
+                + build_args(folder, file_name, time_arg, numb, upscale, use_scale, query)
+                + ["-o", output_name],
+                timeout=args.timeout, check=True)
         out_time = (time.time() - start) * 1000
         time_file = output_name + "_lite_summary.txt"
         reach_file = output_name + "_reach.tsv"
@@ -330,10 +331,10 @@ def write_output(
     with open(output_file, 'w') as f:
         f.write("system\tdevice\tscale\trun_time\ttotal_time\thit\n")
         for (system, device), (scale, result) in ((x, y) for x, rs in results.items() for y in rs.items()):
-                r_time = result.run_time if result is not None else None
-                t_time = result.total_time if result is not None else None
-                hit = result.hit if result is not None else None
-                f.write(f"{system}\t{device}\t{scale}\t{time_convert(r_time)}\t{time_convert(t_time)}\t{hit}\n")
+            r_time = result.run_time if result is not None else None
+            t_time = result.total_time if result is not None else None
+            hit = result.hit if result is not None else None
+            f.write(f"{system}\t{device}\t{scale}\t{time_convert(r_time)}\t{time_convert(t_time)}\t{hit}\n")
         for (system, device_type), result in single_results.items():
             r_time = result.run_time if result is not None else None
             t_time = result.total_time if result is not None else None
