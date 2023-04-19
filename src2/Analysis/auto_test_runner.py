@@ -351,7 +351,7 @@ def write_output(
 
     with open(path.join(output_path, "singles.tsv"), 'x') as f:
         for (system, device), o in single_results.items():
-            f.write(f"{system}\t{device}\t{time_convert(o.total_time * 1000 if o is not None else None)}\n")
+            f.write(f"{system}\t{device}\t{time_convert(o.total_time / 1000 if o is not None else None)}\n")
 
 
 def main():

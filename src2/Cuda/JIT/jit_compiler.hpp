@@ -36,6 +36,9 @@ exit(1);                                                    \
 #define JIT_CONSTRAINT_LOCATION "//__SEARCH_MARKER_FOR_JIT_CONSTRAINT__"
 #define JIT_INVARIANT_LOCATION "//__SEARCH_MARKER_FOR_JIT_INVARIANTS__"
 
+#ifndef KERNAL_PATH
+#define KERNAL_PATH ("kernal.cu")
+#endif
 
 #ifndef CUDA_INC_DIR
 #define CUDA_INC_DIR "/usr/local/cuda/include/"
@@ -68,7 +71,7 @@ public:
         expr_compiler->finalize();
 
         
-        std::ifstream file("kernal.cu");
+        std::ifstream file(KERNAL_PATH);
         if(file.fail()) throw std::runtime_error(KERNAL404);
         std::stringstream buffer;
         buffer << "kernal.cu\n" << file.rdbuf();
