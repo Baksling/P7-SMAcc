@@ -277,10 +277,11 @@ def test_smacc(binary, device, args):  # -> \
                                 50, use_scale=False)
         fischer[100] = run_model(default_args, settings, d_args, "300t", args, "fischer_100_29.xml", 10240,
                                  100, use_scale=False)
-        fischer[250] = run_model(default_args, settings, d_args, "300t", args, "fischer_250_2.xml", 10240,
+        fischer[250] = run_model(default_args, settings, d_args, "300t", args, "fischer_250_29.xml", 10240,
                                  250, use_scale=False)
-        fischer[500] = run_model(default_args, settings, d_args, "300t", args, "fischer_500_2.xml", 10240, 500, use_scale=False)
-        # fischer[1000] = run_model(default_args, settings, d_args, "300t", args, "fischer_500_2.xml", 10240, 1000, use_scale=False)
+        fischer[500] = run_model(default_args, settings, d_args, "300t", args, "fischer_500_29.xml", 10240, 
+                                 500, use_scale=False)
+        # fischer[1000] = run_model(default_args, settings, d_args, "300t", args, "fischer_500_29.xml", 10240, 1000, use_scale=False)
         result_dct[("fischer", settings)] = fischer
 
     return result_dct, single_dct
