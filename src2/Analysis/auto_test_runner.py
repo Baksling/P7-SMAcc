@@ -133,15 +133,16 @@ def test_uppaal(binary, args):
     aloha[50] = run_uppaal("UPPAALexperiments/AlohaSingle_50.xml")
     aloha[100] = run_uppaal("UPPAALexperiments/AlohaSingle_100.xml")
     aloha[250] = run_uppaal("UPPAALexperiments/AlohaSingle_250.xml")
+    aloha[500] = run_uppaal("UPPAALexperiments/AlohaSingle_500.xml")
     result_dct["aloha"] = aloha
 
     # agent covid
     agent_covid = {}
     agent_covid[100] = run_uppaal("UPPAALexperiments/AgentBasedCovid_100.xml")
     agent_covid[500] = run_uppaal("UPPAALexperiments/AgentBasedCovid_500.xml")
-    agent_covid[1000] = run_uppaal("UPPAALexperiments/AgentBasedCovid_1000.xml")
-    agent_covid[5000] = run_uppaal("UPPAALexperiments/AgentBasedCovid_5000.xml")
-    agent_covid[10000] = run_uppaal("UPPAALexperiments/AgentBasedCovid_10000.xml")
+    # agent_covid[1000] = run_uppaal("UPPAALexperiments/AgentBasedCovid_1000.xml")
+    # agent_covid[5000] = run_uppaal("UPPAALexperiments/AgentBasedCovid_5000.xml")
+    # agent_covid[10000] = run_uppaal("UPPAALexperiments/AgentBasedCovid_10000.xml")
     # agent_covid[50000] = run_uppaal("/UPPAALexperiments/AgentBasedCovid_50000.xml")
     # agent_covid[100000] = run_uppaal("/UPPAALexperiments/AgentBasedCovid_100000.xml")
     result_dct["agent_coivd"] = agent_covid
@@ -159,7 +160,7 @@ def test_uppaal(binary, args):
     csma[25] = run_uppaal("UPPAALexperiments/CSMA_25.xml")
     csma[50] = run_uppaal("UPPAALexperiments/CSMA_50.xml")
     csma[100] = run_uppaal("UPPAALexperiments/CSMA_100.xml")
-    # csma[250] = run_uppaal("UPPAALexperiments/CSMA_250.xml")
+    csma[250] = run_uppaal("UPPAALexperiments/CSMA_250.xml")
     # csma[500] = run_uppaal("UPPAALexperiments/CSMA_500.xml")
     # csma[1000] = run_uppaal("UPPAALexperiments/CSMA_1000.xml")
     result_dct["csma"] = csma
@@ -172,8 +173,8 @@ def test_uppaal(binary, args):
     fischer[25] = run_uppaal("UPPAALexperiments/fischer_25.xml")
     fischer[50] = run_uppaal("UPPAALexperiments/fischer_50.xml")
     fischer[100] = run_uppaal("UPPAALexperiments/fischer_100.xml")
-    # fischer[250] = run_uppaal("UPPAALexperiments/fischer_250.xml")
-    # fischer[500] = run_uppaal("UPPAALexperiments/fischer_500.xml")
+    fischer[250] = run_uppaal("UPPAALexperiments/fischer_250.xml")
+    fischer[500] = run_uppaal("UPPAALexperiments/fischer_500.xml")
     # fischer[1000] = run_uppaal("UPPAALexperiments/fischer_1000.xml")
     result_dct["fischer"] = fischer
 
@@ -200,8 +201,9 @@ def test_smacc(binary, device, args):  # -> \
         aloha[25] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", 10240, 25)
         aloha[50] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", 10240, 50)
         aloha[100] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", 10240, 100)
-        aloha[250] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", 10240, 250)
-        # aloha[500] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", 10240, 500)
+        if settings != "BASELINE":
+            aloha[250] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", 10240, 250)
+            aloha[500] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", 10240, 500)
         # aloha[1000] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", 10240, 1000)
         result_dct[("aloha", settings)] = aloha
 
@@ -215,10 +217,11 @@ def test_smacc(binary, device, args):  # -> \
                                      10240, 500)
         agent_covid[1000] = run_model(default_args, settings, d_args, "100t", args,
                                       "agentBaseCovid_1000_10.0.xml", 10240, 1000)
-        agent_covid[5000] = run_model(default_args, settings, d_args, "100t", args,
-                                      "agentBaseCovid_5000_50.0.xml", 10240, 5000)
-        agent_covid[10000] = run_model(default_args, settings, d_args, "100t", args,
-                                       "agentBaseCovid_10000_100.0.xml", 10240, 10000)
+        if settings != "BASELINE":
+            agent_covid[5000] = run_model(default_args, settings, d_args, "100t", args,
+                                          "agentBaseCovid_5000_50.0.xml", 10240, 5000)
+            agent_covid[10000] = run_model(default_args, settings, d_args, "100t", args,
+                                           "agentBaseCovid_10000_100.0.xml", 10240, 10000)
         # agent_covid[50000] = run_model(default_args, settings, d_args, "100t", args, "agentBaseCovid_50000_500.0.xml", 10240, 50000)
         # agent_covid[100000] = run_model(default_args, settings, d_args, "100t", args, "agentBaseCovid_100000_1000.0.xml", 10240, 1000000)
         result_dct[("agent_covid", settings)] = agent_covid
@@ -252,10 +255,11 @@ def test_smacc(binary, device, args):  # -> \
                              use_scale=False, query="Process0.SUCCESS")
         csma[50] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_50.xml", 10240, 50,
                              use_scale=False, query="Process0.SUCCESS")
-        csma[100] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_100.xml", 10240, 100,
-                              use_scale=False, query="Process0.SUCCESS")
-        # csma[250] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_250.xml", 10240, 250,
-        #                       use_scale=False)
+        if settings != "BASELINE":
+            csma[100] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_100.xml", 10240, 100,
+                                  use_scale=False, query="Process0.SUCCESS")
+            csma[250] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_250.xml", 10240, 250,
+                                  use_scale=False)
         # csma[500] = run_model(default_args, d_args, "2000t", args, "CSMA_500.xml", 10240, 500, use_scale=False)
         # csma[1000] = run_model(default_args, d_args, "2000t", args, "CSMA_1000.xml", 10240, 1000, use_scale=False)
         result_dct[("csma", settings)] = csma
@@ -273,9 +277,9 @@ def test_smacc(binary, device, args):  # -> \
                                 50, use_scale=False)
         fischer[100] = run_model(default_args, settings, d_args, "300t", args, "fischer_100_29.xml", 10240,
                                  100, use_scale=False)
-        # fischer[250] = run_model(default_args, settings, d_args, "300t", args, "fischer_250_2.xml", 10240,
-        #                          250, use_scale=False)
-        # fischer[500] = run_model(default_args, settings, d_args, "300t", args, "fischer_500_2.xml", 10240, 500, use_scale=False)
+        fischer[250] = run_model(default_args, settings, d_args, "300t", args, "fischer_250_2.xml", 10240,
+                                 250, use_scale=False)
+        fischer[500] = run_model(default_args, settings, d_args, "300t", args, "fischer_500_2.xml", 10240, 500, use_scale=False)
         # fischer[1000] = run_model(default_args, settings, d_args, "300t", args, "fischer_500_2.xml", 10240, 1000, use_scale=False)
         result_dct[("fischer", settings)] = fischer
 
