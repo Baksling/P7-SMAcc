@@ -68,7 +68,7 @@ def run_model(default_args, settings_name, d_args, time_arg, args, file_name, nu
               upscale, use_scale=True, query=None, q_index=0):
     folder, cache_dir = args.model, args.temp
     output_name = f"{path.join(str(cache_dir), file_name)}_U{upscale}_{settings_name}"
-    print(f"Running: {file_name} w. {upscale}")
+    print(f"Running: {file_name} w. {upscale} (at. {time.strftime('%H:%M:%S', time.localtime())})")
 
     # assuming lite summary
     def load_time(filepath):
