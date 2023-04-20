@@ -5,7 +5,7 @@ import os.path as path
 import tempfile as temp
 import subprocess as cmd
 import multiprocessing as mp
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import csv
 import time
 
@@ -73,7 +73,7 @@ def run_model(default_args, settings_name, d_args, time_arg, args, file_name, nu
     # assuming lite summary
     def load_time(filepath):
         with open(filepath, 'r') as f:
-            return float(f.readline())
+            return float(f.readline()) / float(1000)
 
     def load_reach(file, index):
         with open(file, 'r') as f:
@@ -94,7 +94,7 @@ def run_model(default_args, settings_name, d_args, time_arg, args, file_name, nu
         start = time.time()
         cmd.run(call_args,
                 timeout=args.timeout, check=True, stderr=cmd.STDOUT)
-        out_time = (time.time() - start) * 1000
+        out_time = (time.time() - start)
         time_file = output_name + "_lite_summary.txt"
         reach_file = output_name + "_reach.tsv"
         return TestResults(load_time(time_file), out_time, load_reach(reach_file, q_index))
@@ -119,29 +119,29 @@ def test_uppaal(binary, args):
             start = time.time()
             cmd.run(call_args,
                     capture_output=True, text=True, check=True, timeout=args.timeout)
-            total = (time.time() - start) * 1000
+            total = (time.time() - start)
             return TestResults(total, total, 0.0)
         except cmd.TimeoutExpired:
             print("timed out...")
             return None
 
     aloha = {}
-    # aloha[2] = run_uppaal("UPPAALexperiments/AlohaSingle_2.xml")
-    # aloha[5] = run_uppaal("UPPAALexperiments/AlohaSingle_5.xml")
-    # aloha[10] = run_uppaal("UPPAALexperiments/AlohaSingle_10.xml")
-    # aloha[25] = run_uppaal("UPPAALexperiments/AlohaSingle_25.xml")
-    # aloha[50] = run_uppaal("UPPAALexperiments/AlohaSingle_50.xml")
-    # aloha[100] = run_uppaal("UPPAALexperiments/AlohaSingle_100.xml")
-    # aloha[250] = run_uppaal("UPPAALexperiments/AlohaSingle_250.xml")
+    aloha[2] = run_uppaal("UPPAALexperiments/AlohaSingle_2.xml")
+    aloha[5] = run_uppaal("UPPAALexperiments/AlohaSingle_5.xml")
+    aloha[10] = run_uppaal("UPPAALexperiments/AlohaSingle_10.xml")
+    aloha[25] = run_uppaal("UPPAALexperiments/AlohaSingle_25.xml")
+    aloha[50] = run_uppaal("UPPAALexperiments/AlohaSingle_50.xml")
+    aloha[100] = run_uppaal("UPPAALexperiments/AlohaSingle_100.xml")
+    aloha[250] = run_uppaal("UPPAALexperiments/AlohaSingle_250.xml")
     result_dct["aloha"] = aloha
 
     # agent covid
     agent_covid = {}
     agent_covid[100] = run_uppaal("UPPAALexperiments/AgentBasedCovid_100.xml")
     agent_covid[500] = run_uppaal("UPPAALexperiments/AgentBasedCovid_500.xml")
-    # agent_covid[1000] = run_uppaal("UPPAALexperiments/AgentBasedCovid_1000.xml")
-    # agent_covid[5000] = run_uppaal("UPPAALexperiments/AgentBasedCovid_5000.xml")
-    # agent_covid[10000] = run_uppaal("UPPAALexperiments/AgentBasedCovid_10000.xml")
+    agent_covid[1000] = run_uppaal("UPPAALexperiments/AgentBasedCovid_1000.xml")
+    agent_covid[5000] = run_uppaal("UPPAALexperiments/AgentBasedCovid_5000.xml")
+    agent_covid[10000] = run_uppaal("UPPAALexperiments/AgentBasedCovid_10000.xml")
     # agent_covid[50000] = run_uppaal("/UPPAALexperiments/AgentBasedCovid_50000.xml")
     # agent_covid[100000] = run_uppaal("/UPPAALexperiments/AgentBasedCovid_100000.xml")
     result_dct["agent_coivd"] = agent_covid
@@ -153,12 +153,12 @@ def test_uppaal(binary, args):
 
     # csma
     csma = {}
-    # csma[2] = run_uppaal("UPPAALexperiments/CSMA_2.xml")
-    # csma[5] = run_uppaal("UPPAALexperiments/CSMA_5.xml")
-    # csma[10] = run_uppaal("UPPAALexperiments/CSMA_10.xml")
-    # csma[25] = run_uppaal("UPPAALexperiments/CSMA_25.xml")
-    # csma[50] = run_uppaal("UPPAALexperiments/CSMA_50.xml")
-    # csma[100] = run_uppaal("UPPAALexperiments/CSMA_100.xml")
+    csma[2] = run_uppaal("UPPAALexperiments/CSMA_2.xml")
+    csma[5] = run_uppaal("UPPAALexperiments/CSMA_5.xml")
+    csma[10] = run_uppaal("UPPAALexperiments/CSMA_10.xml")
+    csma[25] = run_uppaal("UPPAALexperiments/CSMA_25.xml")
+    csma[50] = run_uppaal("UPPAALexperiments/CSMA_50.xml")
+    csma[100] = run_uppaal("UPPAALexperiments/CSMA_100.xml")
     # csma[250] = run_uppaal("UPPAALexperiments/CSMA_250.xml")
     # csma[500] = run_uppaal("UPPAALexperiments/CSMA_500.xml")
     # csma[1000] = run_uppaal("UPPAALexperiments/CSMA_1000.xml")
@@ -283,12 +283,13 @@ def test_smacc(binary, device, args):  # -> \
 
 
 def print_output(filepath, args):
+    import matplotlib as plt
     def load_time(row):
         try:
             return float(row["run_time"])
         except ValueError:
             return None
-
+        
     results = {}
     single_results = {}
     with open(filepath, 'r') as f:
@@ -347,11 +348,11 @@ def write_output(
         with open(path.join(output_path, system + "_" + device + ".tsv"), 'x') as f:
             for scale, o in rs.items():
                 if o is None: continue
-                f.write(f"{scale}\t{o.total_time * 1000}\n")
+                f.write(f"{scale}\t{o.total_time}\n")
 
     with open(path.join(output_path, "singles.tsv"), 'x') as f:
         for (system, device), o in single_results.items():
-            f.write(f"{system}\t{device}\t{time_convert(o.total_time / 1000 if o is not None else None)}\n")
+            f.write(f"{system}\t{device}\t{time_convert(o.total_time if o is not None else None)}\n")
 
 
 def main():
@@ -434,7 +435,8 @@ def main():
             table_res[(system, "uppaal")] = result
 
     write_output(results, table_res, args.output)
-    print_output(args.output, args)
+    if args.show or args.plot_dest is not None:
+        print_output(args.output, args)
 
     if args.temp_dir:
         args.temp_dir.cleanup()
