@@ -102,7 +102,7 @@ CPU GPU int progress_sim(state* sim_state, const sim_config* config)
     {
         const node* current = sim_state->models.store[i];
         
-        //if goal is reached, dont bother
+        //if goal is reached, return
         if(current->type == node::goal) return i;
         
         //If all channels that are left is listeners, then dont bother
@@ -205,7 +205,7 @@ CPU GPU void simulate_automata(
             // model->query->check_query()
             const int process = progress_sim(&sim_state, config);
             if(IS_NO_PROCESS(process)) break;
-            if(sim_state.models.store[i]->type == node::goal) break;
+            if(sim_state.models.store[process]->type == node::goal) break;
             
             do
             {
