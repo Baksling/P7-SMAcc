@@ -7,11 +7,11 @@ import subprocess as cmd
 import multiprocessing as mp
 # import matplotlib.pyplot as plt
 import csv
-import time
+import time as timer
 
 CUDA_PARALLEL = "40,256"
 CPU_CORES = str(mp.cpu_count())
-THREAD_JOBS = str(mp.cpu_count() * 10)
+THREAD_JOBS = str(mp.cpu_count()*10)
 CPU_PARALLEL = "1," + CPU_CORES
 ALL = "ALL"
 BASELINE = "BASELINE"
@@ -26,6 +26,8 @@ DEVICE_CHOICES = \
         "PN-CPU": ["-d", "1", "-z", "-b", CPU_PARALLEL]
     }
 ADDITIONAL_CHOICES = {ALL, "ALL-CPU", "ALL-GPU"}
+CPU_CHOICES = {"CPU", "PN-CPU"}
+GPU_CHOICES = ["GPU", "JIT", "PN", "SM"]
 
 
 class TestResults:
@@ -68,12 +70,12 @@ def run_model(default_args, settings_name, d_args, time_arg, args, file_name, nu
               upscale, use_scale=True, query=None, q_index=0):
     folder, cache_dir = args.model, args.temp
     output_name = f"{path.join(str(cache_dir), file_name)}_U{upscale}_{settings_name}"
-    print(f"Running: {file_name} w. {upscale} (at. {time.strftime('%H:%M:%S', time.localtime())})")
+    print(f"Running: {file_name} w. {upscale} (at. {timer.strftime('%H:%M:%S', timer.localtime())})")
 
     # assuming lite summary
     def load_time(filepath):
         with open(filepath, 'r') as f:
-            return float(f.readline()) / float(1000)
+            return float(f.readline()) / float(1000)  # convert ms to s
 
     def load_reach(file, index):
         with open(file, 'r') as f:
@@ -91,10 +93,10 @@ def run_model(default_args, settings_name, d_args, time_arg, args, file_name, nu
                     + threads(settings_name, args.threads) \
                     + build_args(folder, file_name, time_arg, numb, upscale, use_scale, query) \
                     + ["-o", output_name]
-        start = time.time()
+        start = timer.time()
         cmd.run(call_args,
                 timeout=args.timeout, check=True, stderr=cmd.STDOUT)
-        out_time = (time.time() - start)
+        out_time = (timer.time() - start)
         time_file = output_name + "_lite_summary.txt"
         reach_file = output_name + "_reach.tsv"
         return TestResults(load_time(time_file), out_time, load_reach(reach_file, q_index))
@@ -116,10 +118,10 @@ def test_uppaal(binary, args):
         print("running uppaal on: " + model)
         try:
             call_args = args.additional_args + [binary, path.join(args.model, model), "-q", "-s"]
-            start = time.time()
+            start = timer.time()
             cmd.run(call_args,
                     capture_output=True, text=True, check=True, timeout=args.timeout)
-            total = (time.time() - start)
+            total = (timer.time() - start)
             return TestResults(total, total, 0.0)
         except cmd.TimeoutExpired:
             print("timed out...")
@@ -140,9 +142,9 @@ def test_uppaal(binary, args):
     agent_covid = {}
     agent_covid[100] = run_uppaal("UPPAALexperiments/AgentBasedCovid_100.xml")
     agent_covid[500] = run_uppaal("UPPAALexperiments/AgentBasedCovid_500.xml")
-    # agent_covid[1000] = run_uppaal("UPPAALexperiments/AgentBasedCovid_1000.xml")
-    # agent_covid[5000] = run_uppaal("UPPAALexperiments/AgentBasedCovid_5000.xml")
-    # agent_covid[10000] = run_uppaal("UPPAALexperiments/AgentBasedCovid_10000.xml")
+    agent_covid[1000] = run_uppaal("UPPAALexperiments/AgentBasedCovid_1000.xml")
+    agent_covid[5000] = run_uppaal("UPPAALexperiments/AgentBasedCovid_5000.xml")
+    agent_covid[10000] = run_uppaal("UPPAALexperiments/AgentBasedCovid_10000.xml")
     # agent_covid[50000] = run_uppaal("/UPPAALexperiments/AgentBasedCovid_50000.xml")
     # agent_covid[100000] = run_uppaal("/UPPAALexperiments/AgentBasedCovid_100000.xml")
     result_dct["agent_coivd"] = agent_covid
@@ -160,7 +162,7 @@ def test_uppaal(binary, args):
     csma[25] = run_uppaal("UPPAALexperiments/CSMA_25.xml")
     csma[50] = run_uppaal("UPPAALexperiments/CSMA_50.xml")
     csma[100] = run_uppaal("UPPAALexperiments/CSMA_100.xml")
-    csma[250] = run_uppaal("UPPAALexperiments/CSMA_250.xml")
+    # csma[250] = run_uppaal("UPPAALexperiments/CSMA_250.xml")
     # csma[500] = run_uppaal("UPPAALexperiments/CSMA_500.xml")
     # csma[1000] = run_uppaal("UPPAALexperiments/CSMA_1000.xml")
     result_dct["csma"] = csma
@@ -201,27 +203,23 @@ def test_smacc(binary, device, args):  # -> \
         aloha[25] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", 10240, 25)
         aloha[50] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", 10240, 50)
         aloha[100] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", 10240, 100)
-        if settings != "BASELINE":
-            aloha[250] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", 10240, 250)
-            aloha[500] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", 10240, 500)
+        aloha[250] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", 10240, 250)
+        aloha[500] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", 10240, 500)
         # aloha[1000] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", 10240, 1000)
         result_dct[("aloha", settings)] = aloha
 
         # agant covid
         agent_covid = {}
         agent_covid[100] = run_model(default_args, settings, d_args, "100t", args,
-                                     "agentBaseCovid_100_1.0.xml",
-                                     10240, 100)
+                                     "agentBaseCovid_100_1.0.xml", 10240, 100)
         agent_covid[500] = run_model(default_args, settings, d_args, "100t", args,
-                                     "agentBaseCovid_500_5.0.xml",
-                                     10240, 500)
+                                     "agentBaseCovid_500_5.0.xml", 10240, 500)
         agent_covid[1000] = run_model(default_args, settings, d_args, "100t", args,
                                       "agentBaseCovid_1000_10.0.xml", 10240, 1000)
-        if settings != "BASELINE":
-            agent_covid[5000] = run_model(default_args, settings, d_args, "100t", args,
-                                          "agentBaseCovid_5000_50.0.xml", 10240, 5000)
-            agent_covid[10000] = run_model(default_args, settings, d_args, "100t", args,
-                                           "agentBaseCovid_10000_100.0.xml", 10240, 10000)
+        agent_covid[5000] = run_model(default_args, settings, d_args, "100t", args,
+                                      "agentBaseCovid_5000_50.0.xml", 10240, 5000)
+        agent_covid[10000] = run_model(default_args, settings, d_args, "100t", args,
+                                       "agentBaseCovid_10000_100.0.xml", 10240, 10000)
         # agent_covid[50000] = run_model(default_args, settings, d_args, "100t", args, "agentBaseCovid_50000_500.0.xml", 10240, 50000)
         # agent_covid[100000] = run_model(default_args, settings, d_args, "100t", args, "agentBaseCovid_100000_1000.0.xml", 10240, 1000000)
         result_dct[("agent_covid", settings)] = agent_covid
@@ -255,11 +253,10 @@ def test_smacc(binary, device, args):  # -> \
                              use_scale=False, query="Process0.SUCCESS")
         csma[50] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_50.xml", 10240, 50,
                              use_scale=False, query="Process0.SUCCESS")
-        if settings != "BASELINE":
-            csma[100] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_100.xml", 10240, 100,
-                                  use_scale=False, query="Process0.SUCCESS")
-            csma[250] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_250.xml", 10240, 250,
-                                  use_scale=False)
+        csma[100] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_100.xml", 10240, 100,
+                              use_scale=False, query="Process0.SUCCESS")
+        # csma[250] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_250.xml", 10240, 250,
+        #                      use_scale=False, query="Process0.SUCCESS")
         # csma[500] = run_model(default_args, d_args, "2000t", args, "CSMA_500.xml", 10240, 500, use_scale=False)
         # csma[1000] = run_model(default_args, d_args, "2000t", args, "CSMA_1000.xml", 10240, 1000, use_scale=False)
         result_dct[("csma", settings)] = csma
@@ -279,7 +276,7 @@ def test_smacc(binary, device, args):  # -> \
                                  100, use_scale=False)
         fischer[250] = run_model(default_args, settings, d_args, "300t", args, "fischer_250_29.xml", 10240,
                                  250, use_scale=False)
-        fischer[500] = run_model(default_args, settings, d_args, "300t", args, "fischer_500_29.xml", 10240, 
+        fischer[500] = run_model(default_args, settings, d_args, "300t", args, "fischer_500_29.xml", 10240,
                                  500, use_scale=False)
         # fischer[1000] = run_model(default_args, settings, d_args, "300t", args, "fischer_500_29.xml", 10240, 1000, use_scale=False)
         result_dct[("fischer", settings)] = fischer
@@ -288,33 +285,92 @@ def test_smacc(binary, device, args):  # -> \
 
 
 def print_output(filepath, args):
-    import matplotlib as plt
+    import matplotlib.pyplot as plt
+    def avg(it):
+        return sum(it) / len(it)
+
     def load_time(row):
         try:
-            return float(row["run_time"])
+            return float(row["total_time"])
         except ValueError:
             return None
-        
+
+    def get_comparison_table(data, scale_systems, single_systems, devices):
+        if not (any(devices.intersection(CPU_CHOICES)) and any(devices.intersection(GPU_CHOICES))):
+            return dict()
+
+        def iterate_scales(choices, system):
+            for row in (r for r in data if r["system"] == system and r["scale"] != "single" and load_time(r) is not None):
+                for device in choices:
+                    if row["device"] == device:
+                        yield int(row["scale"])
+
+        def find_time(choices, system, scale):
+            smallest = None
+            for device in choices:
+                for row in (r for r in data
+                            if r["system"] == system and
+                               r["device"] == device and
+                               r["scale"] == str(scale)):
+                    current = load_time(row)
+                    if current is None: continue
+                    smallest = min(smallest, current) if smallest is not None else current
+            return smallest
+
+        scale_dct = {}
+        for system in scale_systems:
+            scale_dct[system] = min(max(iterate_scales(CPU_CHOICES, system)), max(iterate_scales(GPU_CHOICES, system)))
+
+        cpu_dct, gpu_dct = dict(), dict()
+        for system in scale_systems:
+            cpu_dct[system] = find_time(CPU_CHOICES, system, scale_dct[system])
+            gpu_dct[system] = find_time(GPU_CHOICES, system, scale_dct[system])
+        for system in single_systems:
+            cpu_dct[system] = find_time(CPU_CHOICES, system, "single")
+            gpu_dct[system] = find_time(GPU_CHOICES, system, "single")
+        return cpu_dct, gpu_dct
+
+    def print_table(columns, data, name):
+        fig, ax = plt.subplots()
+        # hide axes
+        fig.patch.set_visible(False)
+        ax.axis('off')
+        ax.axis('tight')
+
+        ax.table(colLabels=columns, cellText=data)
+        fig.tight_layout()
+
+        if args.plot_dest is not None:
+            plt.savefig(path.join(args.plot_dest, name), dpi=1024)
+        if args.show:
+            plt.show()
+        plt.clf()
+
+    systems, single_systems, devices = set(), set(), set()
     results = {}
     single_results = {}
+    cpu_dct, gpu_dct = None, None
     with open(filepath, 'r') as f:
-        for row in csv.DictReader(f, delimiter='\t'):
+        csv_reader = list(csv.DictReader(f, delimiter='\t'))
+        for row in csv_reader:
+            s = single_systems if row["scale"] == "single" else systems
+            s.add(row["system"])
+            devices.add(row["device"])
+            time = load_time(row)
             if row["scale"] == "single":
-                single_results[(row["system"], row["device"])] = load_time(row)
+                single_results[row["system"]] = single_results.get(row["system"], []) + [(row["device"], time)]
             else:
-                results[(row["system"], row["device"], int(row["scale"]))] = load_time(row)
-
-    data = dict()
-    for (system, settings, scale), time in results.items():
-        if time is None: continue
-        dct = data[system] = data.get(system, {})
-        xs, ys = dct.get(settings, ([], []))
-        data[system][settings] = (xs + [scale], ys + [time])
-
-    for system, rs in data.items():
+                system, settings, scale = row["system"], row["device"], row["scale"]
+                dct = results[system] = results.get(system, {})
+                xs, ys = dct.get(settings, ([], []))
+                results[system][settings] = (xs + [scale], ys + [time])
+        cpu_dct, gpu_dct = get_comparison_table(csv_reader, systems, single_systems, devices)
+    systems = systems.union(single_systems)
+    for system, rs in results.items():
+        # fig, ax = plt.subplots()
         plt.title(system)
         plt.xlabel("#components")
-        plt.ylabel("time [ms]")
+        plt.ylabel("time [sec]")
         for settings, (xs, ys) in rs.items():
             plt.plot(xs, ys, label=settings)
         plt.legend()
@@ -322,8 +378,38 @@ def print_output(filepath, args):
             plt.savefig(path.join(args.plot_dest, system + ".png"))
         if args.show:
             plt.show()
+        plt.clf()
 
-    # TODO print single table
+    columns = ["system", "BASELINE", "UPPAAL", "CPU", "PN-CPU", "GPU", "JIT", "PN", "SM"]
+    index_map = {"BASELINE": 1, "UPPAAL": 2, "CPU": 3, "PN-CPU": 4, "GPU": 5, "JIT": 6, "PN": 7, "SM": 8}
+    data = list()
+    for system, rs in single_results.items():
+        current = [system] + ['-' for _ in range(len(index_map))]
+        for device, time in rs:
+            if device not in index_map: continue
+            current[index_map[device]] = "{:.{}f}".format(time, 2)
+        data.append(current)
+    print_table(columns, data, "nonscalable_table.png")
+
+    if not (any(cpu_dct) and any(gpu_dct)):
+        return
+
+    systems = list(systems)
+    columns = ["system", "CPU", "GPU", "ratio", "equiv"]
+    data = list()
+
+    for system in systems:
+        cpu, gpu = cpu_dct.get(system), gpu_dct.get(system)
+        ratio = (cpu / gpu)
+        equiv = ratio * int(args.threads)
+        data.append([system, cpu, gpu, ratio*100, equiv])
+    avg_ratio = sum([x[1] for x in data]) / sum([x[2] for x in data])
+    data.append(["average",
+                 sum([x[1] for x in data]),
+                 sum([x[2] for x in data]),
+                 avg_ratio,
+                 avg_ratio * int(args.threads)])
+    print_table(columns, data, "comparison_table.png")
 
 
 DID_NOT_FINISH = 'DNF'

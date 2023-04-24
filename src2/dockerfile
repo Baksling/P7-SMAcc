@@ -2,7 +2,6 @@ FROM nvidia/cuda:11.8.0-devel-ubuntu22.04
 
 ENV DEVICE=ALL
 ENV TIMEOUT=3600
-ENV THREADS=100
 ENV BLOCKS=40,256
 ENV PLOTS=/Smacc/output/
 
@@ -22,5 +21,5 @@ WORKDIR /Smacc
 CMD python3 /Smacc/src2/Analysis/auto_test_runner.py \
     -p /Smacc/src2/Cuda/c.out -d ${DEVICE} \
     -m /Smacc/src2/Cuda/UPPAALXMLParser/XmlFiles/ \
-    -b ${BLOCKS} -o /output/smacc_output.tsv \ 
+    -b ${BLOCKS} -o Smacc/output/ \ 
     --timeout ${TIMEOUT} --saveplots /Smacc/output/
