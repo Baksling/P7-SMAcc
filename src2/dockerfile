@@ -16,10 +16,11 @@ RUN pip install -r /Smacc/src2/requirements.txt
 
 WORKDIR /Smacc/src2/Cuda/
 RUN bash ./compile.sh
+RUN cp /Smacc/src2/Cuda/kernal.cu /Smacc/kernal.cu && cp /Smacc/src2/Cuda/kernal.cu /kernal.cu
 WORKDIR /Smacc
 
 CMD python3 /Smacc/src2/Analysis/auto_test_runner.py \
     -p /Smacc/src2/Cuda/c.out -d ${DEVICE} \
     -m /Smacc/src2/Cuda/UPPAALXMLParser/XmlFiles/ \
-    -b ${BLOCKS} -o Smacc/output/ \ 
-    --timeout ${TIMEOUT} --saveplots /Smacc/output/
+    -b ${BLOCKS} -o /output/ \ 
+    --timeout ${TIMEOUT} --saveplots /output/

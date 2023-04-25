@@ -14,7 +14,9 @@ CPU_CORES = str(mp.cpu_count())
 THREAD_JOBS = str(mp.cpu_count()*10)
 CPU_PARALLEL = "1," + CPU_CORES
 ALL = "ALL"
+FULL_OUTPUT_FILENAME = "all_results.tsv"
 BASELINE = "BASELINE"
+TOTAL_SIMS = 10240
 DEVICE_CHOICES = \
     {
         "BASELINE": ["-d", "1", "-b", CPU_PARALLEL, "-c", "1"],
@@ -422,7 +424,7 @@ def write_output(
         return t if t is not None else DID_NOT_FINISH
 
     # file
-    with open(path.join(output_path, "all_results.tsv"), 'w') as f:
+    with open(path.join(output_path, FULL_OUTPUT_FILENAME), 'w') as f:
         f.write("system\tdevice\tscale\trun_time\ttotal_time\thit\n")
         for (system, device), (scale, result) in ((x, y) for x, rs in results.items() for y in rs.items()):
             r_time = result.run_time if result is not None else None
@@ -527,7 +529,7 @@ def main():
 
     write_output(results, table_res, args.output)
     if args.show or args.plot_dest is not None:
-        print_output(args.output, args)
+        print_output(path.join(args.output, FULL_OUTPUT_FILENAME), args)
 
     if args.temp_dir:
         args.temp_dir.cleanup()
