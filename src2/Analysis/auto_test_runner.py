@@ -199,88 +199,88 @@ def test_smacc(binary, device, args):  # -> \
         print(f"\nInitialising tests with {settings}:")
         # aloha
         aloha = {}
-        aloha[2] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", 10240, 2)
-        aloha[5] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", 10240, 5)
-        aloha[10] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", 10240, 10)
-        aloha[25] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", 10240, 25)
-        aloha[50] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", 10240, 50)
-        aloha[100] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", 10240, 100)
-        aloha[250] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", 10240, 250)
-        aloha[500] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", 10240, 500)
-        # aloha[1000] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", 10240, 1000)
+        aloha[2] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 2)
+        aloha[5] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 5)
+        aloha[10] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 10)
+        aloha[25] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 25)
+        aloha[50] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 50)
+        aloha[100] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 100)
+        aloha[250] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 250)
+        aloha[500] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 500)
+        # aloha[1000] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 1000)
         result_dct[("aloha", settings)] = aloha
 
         # agant covid
         agent_covid = {}
         agent_covid[100] = run_model(default_args, settings, d_args, "100t", args,
-                                     "agentBaseCovid_100_1.0.xml", 10240, 100)
+                                     "agentBaseCovid_100_1.0.xml", TOTAL_SIMS, 100)
         agent_covid[500] = run_model(default_args, settings, d_args, "100t", args,
-                                     "agentBaseCovid_500_5.0.xml", 10240, 500)
+                                     "agentBaseCovid_500_5.0.xml", TOTAL_SIMS, 500)
         agent_covid[1000] = run_model(default_args, settings, d_args, "100t", args,
-                                      "agentBaseCovid_1000_10.0.xml", 10240, 1000)
+                                      "agentBaseCovid_1000_10.0.xml", TOTAL_SIMS, 1000)
         agent_covid[5000] = run_model(default_args, settings, d_args, "100t", args,
-                                      "agentBaseCovid_5000_50.0.xml", 10240, 5000)
+                                      "agentBaseCovid_5000_50.0.xml", TOTAL_SIMS, 5000)
         agent_covid[10000] = run_model(default_args, settings, d_args, "100t", args,
-                                       "agentBaseCovid_10000_100.0.xml", 10240, 10000)
-        # agent_covid[50000] = run_model(default_args, settings, d_args, "100t", args, "agentBaseCovid_50000_500.0.xml", 10240, 50000)
-        # agent_covid[100000] = run_model(default_args, settings, d_args, "100t", args, "agentBaseCovid_100000_1000.0.xml", 10240, 1000000)
+                                       "agentBaseCovid_10000_100.0.xml", TOTAL_SIMS, 10000)
+        # agent_covid[50000] = run_model(default_args, settings, d_args, "100t", args, "agentBaseCovid_50000_500.0.xml", TOTAL_SIMS, 50000)
+        # agent_covid[100000] = run_model(default_args, settings, d_args, "100t", args, "agentBaseCovid_100000_1000.0.xml", TOTAL_SIMS, 1000000)
         result_dct[("agent_covid", settings)] = agent_covid
 
         # reaction_covid
         single_dct[("covid", settings)] = \
-            run_model(default_args, settings, d_args, "100t", args, "covidmodelQueryI.xml", 10240, 1,
+            run_model(default_args, settings, d_args, "100t", args, "covidmodelQueryI.xml", TOTAL_SIMS, 1,
                       query="Template4.Query")
 
         if settings == "SM":
             continue
 
         single_dct[("bluetooth", settings)] = \
-            run_model(default_args, settings, d_args, "5000t", args, "bluetoothNoParaSimas.cav.xml", 10240,
+            run_model(default_args, settings, d_args, "5000t", args, "bluetoothNoParaSimas.cav.xml", TOTAL_SIMS,
                       1,
                       query="Receiver.Reply")
 
         single_dct[("firewire", settings)] = \
-            run_model(default_args, settings, d_args, "1000t", args, "firewireGoal.cav.xml", 10240, 1,
+            run_model(default_args, settings, d_args, "1000t", args, "firewireGoal.cav.xml", TOTAL_SIMS, 1,
                       query="Node0.s5")
 
         # csma
         csma = {}
-        csma[2] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_2.xml", 10240, 2,
+        csma[2] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_2.xml", TOTAL_SIMS, 2,
                             use_scale=False, query="Process0.SUCCESS")
-        csma[5] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_5.xml", 10240, 5,
+        csma[5] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_5.xml", TOTAL_SIMS, 5,
                             use_scale=False, query="Process0.SUCCESS")
-        csma[10] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_10.xml", 10240, 10,
+        csma[10] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_10.xml", TOTAL_SIMS, 10,
                              use_scale=False, query="Process0.SUCCESS")
-        csma[25] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_25.xml", 10240, 25,
+        csma[25] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_25.xml", TOTAL_SIMS, 25,
                              use_scale=False, query="Process0.SUCCESS")
-        csma[50] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_50.xml", 10240, 50,
+        csma[50] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_50.xml", TOTAL_SIMS, 50,
                              use_scale=False, query="Process0.SUCCESS")
-        csma[100] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_100.xml", 10240, 100,
+        csma[100] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_100.xml", TOTAL_SIMS, 100,
                               use_scale=False, query="Process0.SUCCESS")
-        # csma[250] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_250.xml", 10240, 250,
+        # csma[250] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_250.xml", TOTAL_SIMS, 250,
         #                      use_scale=False, query="Process0.SUCCESS")
-        # csma[500] = run_model(default_args, d_args, "2000t", args, "CSMA_500.xml", 10240, 500, use_scale=False)
-        # csma[1000] = run_model(default_args, d_args, "2000t", args, "CSMA_1000.xml", 10240, 1000, use_scale=False)
+        # csma[500] = run_model(default_args, d_args, "2000t", args, "CSMA_500.xml", TOTAL_SIMS, 500, use_scale=False)
+        # csma[1000] = run_model(default_args, d_args, "2000t", args, "CSMA_1000.xml", TOTAL_SIMS, 1000, use_scale=False)
         result_dct[("csma", settings)] = csma
 
         fischer = {}
-        fischer[2] = run_model(default_args, settings, d_args, "300t", args, "fischer_2_29.xml", 10240, 2,
+        fischer[2] = run_model(default_args, settings, d_args, "300t", args, "fischer_2_29.xml", TOTAL_SIMS, 2,
                                use_scale=False)
-        fischer[5] = run_model(default_args, settings, d_args, "300t", args, "fischer_5_29.xml", 10240, 5,
+        fischer[5] = run_model(default_args, settings, d_args, "300t", args, "fischer_5_29.xml", TOTAL_SIMS, 5,
                                use_scale=False)
-        fischer[10] = run_model(default_args, settings, d_args, "300t", args, "fischer_10_29.xml", 10240,
+        fischer[10] = run_model(default_args, settings, d_args, "300t", args, "fischer_10_29.xml", TOTAL_SIMS,
                                 10, use_scale=False)
-        fischer[25] = run_model(default_args, settings, d_args, "300t", args, "fischer_25_29.xml", 10240,
+        fischer[25] = run_model(default_args, settings, d_args, "300t", args, "fischer_25_29.xml", TOTAL_SIMS,
                                 25, use_scale=False)
-        fischer[50] = run_model(default_args, settings, d_args, "300t", args, "fischer_50_29.xml", 10240,
+        fischer[50] = run_model(default_args, settings, d_args, "300t", args, "fischer_50_29.xml", TOTAL_SIMS,
                                 50, use_scale=False)
-        fischer[100] = run_model(default_args, settings, d_args, "300t", args, "fischer_100_29.xml", 10240,
+        fischer[100] = run_model(default_args, settings, d_args, "300t", args, "fischer_100_29.xml", TOTAL_SIMS,
                                  100, use_scale=False)
-        fischer[250] = run_model(default_args, settings, d_args, "300t", args, "fischer_250_29.xml", 10240,
+        fischer[250] = run_model(default_args, settings, d_args, "300t", args, "fischer_250_29.xml", TOTAL_SIMS,
                                  250, use_scale=False)
-        fischer[500] = run_model(default_args, settings, d_args, "300t", args, "fischer_500_29.xml", 10240,
+        fischer[500] = run_model(default_args, settings, d_args, "300t", args, "fischer_500_29.xml", TOTAL_SIMS,
                                  500, use_scale=False)
-        # fischer[1000] = run_model(default_args, settings, d_args, "300t", args, "fischer_500_29.xml", 10240, 1000, use_scale=False)
+        # fischer[1000] = run_model(default_args, settings, d_args, "300t", args, "fischer_500_29.xml", TOTAL_SIMS, 1000, use_scale=False)
         result_dct[("fischer", settings)] = fischer
 
     return result_dct, single_dct
@@ -515,6 +515,9 @@ def main():
     if (args.program is None or not path.exists(args.program)) and args.uppaal is None:
         raise argparse.ArgumentError(None, "Cannot find program binary")
 
+    global TOTAL_SIMS
+    blocks, threads = str.split(args.blocks, ',')
+    TOTAL_SIMS = int(blocks) * int(threads)
     results, table_res = dict(), dict()
 
     if args.program is not None:
