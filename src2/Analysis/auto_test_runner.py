@@ -17,6 +17,7 @@ ALL = "ALL"
 FULL_OUTPUT_FILENAME = "all_results.tsv"
 BASELINE = "BASELINE"
 TOTAL_SIMS = 10240
+DEFAULT_UPPAAL_EXPERIMENT_FOLDERNAME = "UPPAALexperiments"
 DEVICE_CHOICES = \
     {
         "BASELINE": ["-d", "1", "-b", CPU_PARALLEL, "-c", "1"],
@@ -130,40 +131,40 @@ def test_uppaal(binary, args):
             return None
 
     aloha = {}
-    aloha[2] = run_uppaal("UPPAALexperiments/AlohaSingle_2.xml")
-    aloha[5] = run_uppaal("UPPAALexperiments/AlohaSingle_5.xml")
-    aloha[10] = run_uppaal("UPPAALexperiments/AlohaSingle_10.xml")
-    aloha[25] = run_uppaal("UPPAALexperiments/AlohaSingle_25.xml")
-    aloha[50] = run_uppaal("UPPAALexperiments/AlohaSingle_50.xml")
-    aloha[100] = run_uppaal("UPPAALexperiments/AlohaSingle_100.xml")
-    aloha[250] = run_uppaal("UPPAALexperiments/AlohaSingle_250.xml")
-    aloha[500] = run_uppaal("UPPAALexperiments/AlohaSingle_500.xml")
+    aloha[2] = run_uppaal(path.join(args.uppaal_test_folder, "AlohaSingle_2.xml"))
+    aloha[5] = run_uppaal(path.join(args.uppaal_test_folder, "AlohaSingle_5.xml"))
+    aloha[10] = run_uppaal(path.join(args.uppaal_test_folder, "AlohaSingle_10.xml"))
+    aloha[25] = run_uppaal(path.join(args.uppaal_test_folder, "AlohaSingle_25.xml"))
+    aloha[50] = run_uppaal(path.join(args.uppaal_test_folder, "AlohaSingle_50.xml"))
+    aloha[100] = run_uppaal(path.join(args.uppaal_test_folder, "AlohaSingle_100.xml"))
+    aloha[250] = run_uppaal(path.join(args.uppaal_test_folder, "AlohaSingle_250.xml"))
+    aloha[500] = run_uppaal(path.join(args.uppaal_test_folder, "AlohaSingle_500.xml"))
     result_dct["aloha"] = aloha
 
     # agent covid
     agent_covid = {}
-    agent_covid[100] = run_uppaal("UPPAALexperiments/AgentBasedCovid_100.xml")
-    agent_covid[500] = run_uppaal("UPPAALexperiments/AgentBasedCovid_500.xml")
-    agent_covid[1000] = run_uppaal("UPPAALexperiments/AgentBasedCovid_1000.xml")
-    agent_covid[5000] = run_uppaal("UPPAALexperiments/AgentBasedCovid_5000.xml")
-    agent_covid[10000] = run_uppaal("UPPAALexperiments/AgentBasedCovid_10000.xml")
+    agent_covid[100] = run_uppaal(path.join(args.uppaal_test_folder, "AgentBasedCovid_100.xml"))
+    agent_covid[500] = run_uppaal(path.join(args.uppaal_test_folder, "AgentBasedCovid_500.xml"))
+    agent_covid[1000] = run_uppaal(path.join(args.uppaal_test_folder, "AgentBasedCovid_1000.xml"))
+    agent_covid[5000] = run_uppaal(path.join(args.uppaal_test_folder, "AgentBasedCovid_5000.xml"))
+    agent_covid[10000] = run_uppaal(path.join(args.uppaal_test_folder, "AgentBasedCovid_10000.xml"))
     # agent_covid[50000] = run_uppaal("/UPPAALexperiments/AgentBasedCovid_50000.xml")
     # agent_covid[100000] = run_uppaal("/UPPAALexperiments/AgentBasedCovid_100000.xml")
     result_dct["agent_coivd"] = agent_covid
 
     # reaction covid
-    single_dct["covid"] = run_uppaal("UPPAALexperiments/covidmodelQueryUPPAAL.xml")
-    single_dct["bluetooth"] = run_uppaal("bluetoothNoParaSimas.cav.xml")
-    single_dct["firewire"] = run_uppaal("firewireGoal.cav.xml")
+    single_dct["covid"] = run_uppaal(path.join(args.uppaal_test_folder, "covidmodelQueryUPPAAL.xml"))
+    single_dct["bluetooth"] = run_uppaal(path.join(args.uppaal_test_folder, "bluetoothNoParaSimas.cav.xml"))
+    single_dct["firewire"] = run_uppaal(path.join(args.uppaal_test_folder, "firewireGoal.cav.xml"))
 
     # csma
     csma = {}
-    csma[2] = run_uppaal("UPPAALexperiments/CSMA_2.xml")
-    csma[5] = run_uppaal("UPPAALexperiments/CSMA_5.xml")
-    csma[10] = run_uppaal("UPPAALexperiments/CSMA_10.xml")
-    csma[25] = run_uppaal("UPPAALexperiments/CSMA_25.xml")
-    csma[50] = run_uppaal("UPPAALexperiments/CSMA_50.xml")
-    csma[100] = run_uppaal("UPPAALexperiments/CSMA_100.xml")
+    csma[2] = run_uppaal(path.join(args.uppaal_test_folder, "CSMA_2.xml"))
+    csma[5] = run_uppaal(path.join(args.uppaal_test_folder, "CSMA_5.xml"))
+    csma[10] = run_uppaal(path.join(args.uppaal_test_folder, "CSMA_10.xml"))
+    csma[25] = run_uppaal(path.join(args.uppaal_test_folder, "CSMA_25.xml"))
+    csma[50] = run_uppaal(path.join(args.uppaal_test_folder, "CSMA_50.xml"))
+    csma[100] = run_uppaal(path.join(args.uppaal_test_folder, "CSMA_100.xml"))
     # csma[250] = run_uppaal("UPPAALexperiments/CSMA_250.xml")
     # csma[500] = run_uppaal("UPPAALexperiments/CSMA_500.xml")
     # csma[1000] = run_uppaal("UPPAALexperiments/CSMA_1000.xml")
@@ -171,14 +172,14 @@ def test_uppaal(binary, args):
 
     # fischer
     fischer = {}
-    fischer[2] = run_uppaal("UPPAALexperiments/fischer_2.xml")
-    fischer[5] = run_uppaal("UPPAALexperiments/fischer_5.xml")
-    fischer[10] = run_uppaal("UPPAALexperiments/fischer_10.xml")
-    fischer[25] = run_uppaal("UPPAALexperiments/fischer_25.xml")
-    fischer[50] = run_uppaal("UPPAALexperiments/fischer_50.xml")
-    fischer[100] = run_uppaal("UPPAALexperiments/fischer_100.xml")
-    fischer[250] = run_uppaal("UPPAALexperiments/fischer_250.xml")
-    fischer[500] = run_uppaal("UPPAALexperiments/fischer_500.xml")
+    fischer[2] = run_uppaal(path.join(args.uppaal_test_folder, "fischer_2.xml"))
+    fischer[5] = run_uppaal(path.join(args.uppaal_test_folder, "fischer_5.xml"))
+    fischer[10] = run_uppaal(path.join(args.uppaal_test_folder, "fischer_10.xml"))
+    fischer[25] = run_uppaal(path.join(args.uppaal_test_folder, "fischer_25.xml"))
+    fischer[50] = run_uppaal(path.join(args.uppaal_test_folder, "fischer_50.xml"))
+    fischer[100] = run_uppaal(path.join(args.uppaal_test_folder, "fischer_100.xml"))
+    fischer[250] = run_uppaal(path.join(args.uppaal_test_folder, "fischer_250.xml"))
+    fischer[500] = run_uppaal(path.join(args.uppaal_test_folder, "fischer_500.xml"))
     # fischer[1000] = run_uppaal("UPPAALexperiments/fischer_1000.xml")
     result_dct["fischer"] = fischer
 
@@ -466,6 +467,9 @@ def main():
                         help="seconds to run simulation, before timing out. Default = 3600")
     parser.add_argument("--UPPAAL", type=str, required=False, default=None, dest="uppaal",
                         help="path to uppaal executable to run (e.g. /verifyta), to run tests on uppaal.")
+    parser.add_argument("--up", type=str, required=False, defualt=DEFAULT_UPPAAL_EXPERIMENT_FOLDERNAME,
+                        dest='uppaal_test_folder',
+                        default='path extension on m, which to use for uppaal experiments (not required).')
     parser.add_argument("-b", "--blocks", type=str, required=False, default=CUDA_PARALLEL,
                         help="blocks and threads configuration to use on the GPU. should be [blocks],[threads], "
                              "e.g. 40,256. default=40,256")
