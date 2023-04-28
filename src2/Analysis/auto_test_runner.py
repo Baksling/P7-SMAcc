@@ -467,9 +467,9 @@ def main():
                         help="seconds to run simulation, before timing out. Default = 3600")
     parser.add_argument("--UPPAAL", type=str, required=False, default=None, dest="uppaal",
                         help="path to uppaal executable to run (e.g. /verifyta), to run tests on uppaal.")
-    parser.add_argument("--up", type=str, required=False, defualt=DEFAULT_UPPAAL_EXPERIMENT_FOLDERNAME,
+    parser.add_argument("--up", type=str, required=False, default=DEFAULT_UPPAAL_EXPERIMENT_FOLDERNAME,
                         dest='uppaal_test_folder',
-                        default='path extension on m, which to use for uppaal experiments (not required).')
+                        help='path extension on m, which to use for uppaal experiments (not required).')
     parser.add_argument("-b", "--blocks", type=str, required=False, default=CUDA_PARALLEL,
                         help="blocks and threads configuration to use on the GPU. should be [blocks],[threads], "
                              "e.g. 40,256. default=40,256")
