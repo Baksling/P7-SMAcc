@@ -191,6 +191,7 @@ def test_smacc(binary, device, args):  # -> \
     #     Dict[Tuple[str, str], Dict[int, test_result | None]],
     #     Dict[Tuple[str, str], test_result | None]
     # ]:
+    is_lite = bool(args.lite)
     device_args = load_choice(device)
     default_args = [binary, "-w", "lq", "-v", "0"]
     result_dct = {}
@@ -202,12 +203,13 @@ def test_smacc(binary, device, args):  # -> \
         aloha = {}
         aloha[2] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 2)
         aloha[5] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 5)
-        aloha[10] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 10)
-        aloha[25] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 25)
-        aloha[50] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 50)
-        aloha[100] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 100)
-        aloha[250] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 250)
-        aloha[500] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 500)
+        if not is_lite:
+            aloha[10] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 10)
+            aloha[25] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 25)
+            aloha[50] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 50)
+            aloha[100] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 100)
+            aloha[250] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 250)
+            aloha[500] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 500)
         # aloha[1000] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 1000)
         result_dct[("aloha", settings)] = aloha
 
@@ -215,14 +217,15 @@ def test_smacc(binary, device, args):  # -> \
         agent_covid = {}
         agent_covid[100] = run_model(default_args, settings, d_args, "100t", args,
                                      "agentBaseCovid_100_1.0.xml", TOTAL_SIMS, 100)
-        agent_covid[500] = run_model(default_args, settings, d_args, "100t", args,
+        if not is_lite:
+            agent_covid[500] = run_model(default_args, settings, d_args, "100t", args,
                                      "agentBaseCovid_500_5.0.xml", TOTAL_SIMS, 500)
-        agent_covid[1000] = run_model(default_args, settings, d_args, "100t", args,
-                                      "agentBaseCovid_1000_10.0.xml", TOTAL_SIMS, 1000)
-        agent_covid[5000] = run_model(default_args, settings, d_args, "100t", args,
-                                      "agentBaseCovid_5000_50.0.xml", TOTAL_SIMS, 5000)
-        agent_covid[10000] = run_model(default_args, settings, d_args, "100t", args,
-                                       "agentBaseCovid_10000_100.0.xml", TOTAL_SIMS, 10000)
+            agent_covid[1000] = run_model(default_args, settings, d_args, "100t", args,
+                                          "agentBaseCovid_1000_10.0.xml", TOTAL_SIMS, 1000)
+            agent_covid[5000] = run_model(default_args, settings, d_args, "100t", args,
+                                          "agentBaseCovid_5000_50.0.xml", TOTAL_SIMS, 5000)
+            agent_covid[10000] = run_model(default_args, settings, d_args, "100t", args,
+                                           "agentBaseCovid_10000_100.0.xml", TOTAL_SIMS, 10000)
         # agent_covid[50000] = run_model(default_args, settings, d_args, "100t", args, "agentBaseCovid_50000_500.0.xml", TOTAL_SIMS, 50000)
         # agent_covid[100000] = run_model(default_args, settings, d_args, "100t", args, "agentBaseCovid_100000_1000.0.xml", TOTAL_SIMS, 1000000)
         result_dct[("agent_covid", settings)] = agent_covid
@@ -250,14 +253,15 @@ def test_smacc(binary, device, args):  # -> \
                             use_scale=False, query="Process0.SUCCESS")
         csma[5] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_5.xml", TOTAL_SIMS, 5,
                             use_scale=False, query="Process0.SUCCESS")
-        csma[10] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_10.xml", TOTAL_SIMS, 10,
-                             use_scale=False, query="Process0.SUCCESS")
-        csma[25] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_25.xml", TOTAL_SIMS, 25,
-                             use_scale=False, query="Process0.SUCCESS")
-        csma[50] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_50.xml", TOTAL_SIMS, 50,
-                             use_scale=False, query="Process0.SUCCESS")
-        csma[100] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_100.xml", TOTAL_SIMS, 100,
-                              use_scale=False, query="Process0.SUCCESS")
+        if not is_lite:
+            csma[10] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_10.xml", TOTAL_SIMS, 10,
+                                 use_scale=False, query="Process0.SUCCESS")
+            csma[25] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_25.xml", TOTAL_SIMS, 25,
+                                 use_scale=False, query="Process0.SUCCESS")
+            csma[50] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_50.xml", TOTAL_SIMS, 50,
+                                 use_scale=False, query="Process0.SUCCESS")
+            csma[100] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_100.xml", TOTAL_SIMS, 100,
+                                  use_scale=False, query="Process0.SUCCESS")
         # csma[250] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_250.xml", TOTAL_SIMS, 250,
         #                      use_scale=False, query="Process0.SUCCESS")
         # csma[500] = run_model(default_args, d_args, "2000t", args, "CSMA_500.xml", TOTAL_SIMS, 500, use_scale=False)
@@ -271,16 +275,17 @@ def test_smacc(binary, device, args):  # -> \
                                use_scale=False)
         fischer[10] = run_model(default_args, settings, d_args, "300t", args, "fischer_10_29.xml", TOTAL_SIMS,
                                 10, use_scale=False)
-        fischer[25] = run_model(default_args, settings, d_args, "300t", args, "fischer_25_29.xml", TOTAL_SIMS,
-                                25, use_scale=False)
-        fischer[50] = run_model(default_args, settings, d_args, "300t", args, "fischer_50_29.xml", TOTAL_SIMS,
-                                50, use_scale=False)
-        fischer[100] = run_model(default_args, settings, d_args, "300t", args, "fischer_100_29.xml", TOTAL_SIMS,
-                                 100, use_scale=False)
-        fischer[250] = run_model(default_args, settings, d_args, "300t", args, "fischer_250_29.xml", TOTAL_SIMS,
-                                 250, use_scale=False)
-        fischer[500] = run_model(default_args, settings, d_args, "300t", args, "fischer_500_29.xml", TOTAL_SIMS,
-                                 500, use_scale=False)
+        if not is_lite:
+            fischer[25] = run_model(default_args, settings, d_args, "300t", args, "fischer_25_29.xml", TOTAL_SIMS,
+                                    25, use_scale=False)
+            fischer[50] = run_model(default_args, settings, d_args, "300t", args, "fischer_50_29.xml", TOTAL_SIMS,
+                                    50, use_scale=False)
+            fischer[100] = run_model(default_args, settings, d_args, "300t", args, "fischer_100_29.xml", TOTAL_SIMS,
+                                     100, use_scale=False)
+            fischer[250] = run_model(default_args, settings, d_args, "300t", args, "fischer_250_29.xml", TOTAL_SIMS,
+                                     250, use_scale=False)
+            fischer[500] = run_model(default_args, settings, d_args, "300t", args, "fischer_500_29.xml", TOTAL_SIMS,
+                                     500, use_scale=False)
         # fischer[1000] = run_model(default_args, settings, d_args, "300t", args, "fischer_500_29.xml", TOTAL_SIMS, 1000, use_scale=False)
         result_dct[("fischer", settings)] = fischer
 
@@ -398,20 +403,19 @@ def print_output(filepath, args):
         return
 
     systems = list(systems)
-    columns = ["system", "CPU", "GPU", "ratio", "equiv"]
+    columns = ["system", "CPU", "GPU", "speedup"]
     data = list()
 
     for system in systems:
         cpu, gpu = cpu_dct.get(system), gpu_dct.get(system)
         ratio = (cpu / gpu)
-        equiv = ratio * int(args.threads)
-        data.append([system, cpu, gpu, ratio*100, equiv])
+        #equiv = ratio * mp.cpu_count()
+        data.append([system, cpu, gpu, ratio*100])
     avg_ratio = sum([x[1] for x in data]) / sum([x[2] for x in data])
     data.append(["average",
                  sum([x[1] for x in data]),
                  sum([x[2] for x in data]),
-                 avg_ratio,
-                 avg_ratio * int(args.threads)])
+                 avg_ratio])
     print_table(columns, data, "comparison_table.png")
 
 
@@ -482,6 +486,8 @@ def main():
                         default=False, help="Whether to show plots or not. Default is not show")
     parser.add_argument("--saveplots", required=False, dest="plot_dest",
                         default=None, help="Path to save plots as pngs. If not supplied, plots wont be seved as file")
+    parser.add_argument("--lite", required=False, default=0, dest="lite", type=int, 
+                        help="Whether to run lite or non-lite version. (0 = full suite; 1 = lite suite; default = 0)")
     parser.add_argument("--args", required=False, nargs="+", dest="additional_args", default=[],
                         help="Additional arguments for running simulation. Added before all other args.")
 
