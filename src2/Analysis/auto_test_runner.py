@@ -10,8 +10,11 @@ import csv
 import time as timer
 
 CUDA_PARALLEL = "40,256"
+GPU_POWER = 250
+CPU_POWER = 450
+CACUTS_PLOT_CUTOFF = 2
 CPU_CORES = str(mp.cpu_count())
-THREAD_JOBS = str(mp.cpu_count()*10)
+THREAD_JOBS = str(mp.cpu_count() * 10)
 CPU_PARALLEL = "1," + CPU_CORES
 ALL = "ALL"
 FULL_OUTPUT_FILENAME = "all_results.tsv"
@@ -29,8 +32,16 @@ DEVICE_CHOICES = \
         "PN-CPU": ["-d", "1", "-z", "-b", CPU_PARALLEL]
     }
 ADDITIONAL_CHOICES = {ALL, "ALL-CPU", "ALL-GPU"}
+REF_DEVICE = "CPU"
 CPU_CHOICES = {"CPU", "PN-CPU"}
 GPU_CHOICES = ["GPU", "JIT", "PN", "SM"]
+
+
+def power_ratio(device, time, comp_time):
+    my_power = GPU_POWER if device in GPU_CHOICES else CPU_POWER
+    if device == "uppaal":
+        my_power = CPU_POWER / mp.cpu_count()
+    return (time * my_power) / (comp_time * CPU_POWER)
 
 
 class TestResults:
@@ -150,7 +161,7 @@ def test_uppaal(binary, args):
     agent_covid[10000] = run_uppaal(path.join(args.uppaal_test_folder, "AgentBasedCovid_10000.xml"))
     # agent_covid[50000] = run_uppaal("/UPPAALexperiments/AgentBasedCovid_50000.xml")
     # agent_covid[100000] = run_uppaal("/UPPAALexperiments/AgentBasedCovid_100000.xml")
-    result_dct["agent_coivd"] = agent_covid
+    result_dct["agent_covid"] = agent_covid
 
     # reaction covid
     single_dct["covid"] = run_uppaal(path.join(args.uppaal_test_folder, "covidmodelQueryUPPAAL.xml"))
@@ -219,7 +230,7 @@ def test_smacc(binary, device, args):  # -> \
                                      "agentBaseCovid_100_1.0.xml", TOTAL_SIMS, 100)
         if not is_lite:
             agent_covid[500] = run_model(default_args, settings, d_args, "100t", args,
-                                     "agentBaseCovid_500_5.0.xml", TOTAL_SIMS, 500)
+                                         "agentBaseCovid_500_5.0.xml", TOTAL_SIMS, 500)
             agent_covid[1000] = run_model(default_args, settings, d_args, "100t", args,
                                           "agentBaseCovid_1000_10.0.xml", TOTAL_SIMS, 1000)
             agent_covid[5000] = run_model(default_args, settings, d_args, "100t", args,
@@ -293,6 +304,7 @@ def test_smacc(binary, device, args):  # -> \
 
 
 def print_output(filepath, args):
+    import matplotlib.markers as mplmarkers
     import matplotlib.pyplot as plt
     def avg(it):
         return sum(it) / len(it)
@@ -303,12 +315,19 @@ def print_output(filepath, args):
         except ValueError:
             return None
 
+    def load_scale(row):
+        try:
+            return int(row["scale"])
+        except ValueError:
+            return None
+
     def get_comparison_table(data, scale_systems, single_systems, devices):
         if not (any(devices.intersection(CPU_CHOICES)) and any(devices.intersection(GPU_CHOICES))):
             return dict()
 
         def iterate_scales(choices, system):
-            for row in (r for r in data if r["system"] == system and r["scale"] != "single" and load_time(r) is not None):
+            for row in (r for r in data if
+                        r["system"] == system and r["scale"] != "single" and load_time(r) is not None):
                 for device in choices:
                     if row["device"] == device:
                         yield int(row["scale"])
@@ -354,16 +373,72 @@ def print_output(filepath, args):
             plt.show()
         plt.clf()
 
-    systems, single_systems, devices = set(), set(), set()
-    results = {}
-    single_results = {}
+    def print_cactus_plot():
+        nonlocal args, device_dct
+        reference_d = {(system, scale): time for (system, scale, time) in device_dct[REF_DEVICE]}
+        #problems which can be solved in less time than CACTUS_PLOT_CUTOFF in any config
+        small_problems = set(((system, scale)
+                              for lst in device_dct.values()
+                              for (system, scale, time) in lst if time < CACUTS_PLOT_CUTOFF))
+        ref_speed = dict()
+        for system, scale, time in device_dct[REF_DEVICE]:
+            ref_speed[(system, scale)] = min(ref_speed.get((system, scale), time), time)
+        speedup_dct = {device: sorted([(system, scale, reference_d[(system, scale)] / time)
+                                       for (system, scale, time) in lst
+                                       if (system, scale) not in small_problems and (system, scale) in reference_d],
+                                      key=lambda x: x[3])
+                       for device, lst in device_dct.items()}
+
+        plt.title("speedup cactus plt")
+        plt.xlabel("problem instance")
+        plt.ylabel("speedup over baseline")
+
+        markers = list(mplmarkers.MarkerStyle.markers.values())
+        # maxtime, maxratio = 0, 0
+        for i, (device, lst) in enumerate(speedup_dct.items()):
+            if len(lst) == 0: continue
+            xs, ys = list(range(len(lst))), [speedup for (_, _, speedup) in lst]
+            plt.plot(xs, ys, marker=markers[i], linewidth=2.0, label=device)
+
+        # plt.xlim(maxratio)
+        # plt.ylim(maxratio)
+        if args.plot_dest is not None:
+            plt.savefig(path.join(args.plot_dest, "cactus_speedup_plot.png"))
+        if args.show:
+            plt.show()
+        plt.clf()
+
+        power_dct = {device: sorted([(system, scale, power_ratio(device, time, ref_speed[(system, scale)]))
+                                     for (system, scale, time) in lst
+                                     if (system, scale) not in small_problems and (system, scale) in ref_speed],
+                                    key=lambda x: x[3])
+                     for device, lst in device_dct.items() if device != BASELINE}
+
+        for i, (device, lst) in enumerate(power_dct.items()):
+            if len(lst) == 0: continue
+            xs, ys = list(range(len(lst))), [power for (_, _, power) in lst]
+            plt.plot(xs, ys, marker=markers[i], linewidth=2.0, label=device)
+            
+        if args.plot_dest is not None:
+            plt.savefig(path.join(args.plot_dest, "cactus_power_plot.png"))
+        if args.show:
+            plt.show()
+        plt.clf()
+
+
+    systems, single_systems = set(), set()
+    results = dict()
+    single_results = dict()
+    device_dct = dict()  # Dict[str, List[Tuple[str, int or None, float]]]
     cpu_dct, gpu_dct = None, None
     with open(filepath, 'r') as f:
         csv_reader = list(csv.DictReader(f, delimiter='\t'))
         for row in csv_reader:
             s = single_systems if row["scale"] == "single" else systems
             s.add(row["system"])
-            devices.add(row["device"])
+            device_dct[row["device"]] = \
+                (device_dct.get(row["device"], [])
+                 + [(row["system"], load_scale(row), load_time(row))])
             time = load_time(row)
             if row["scale"] == "single":
                 single_results[row["system"]] = single_results.get(row["system"], []) + [(row["device"], time)]
@@ -372,7 +447,7 @@ def print_output(filepath, args):
                 dct = results[system] = results.get(system, {})
                 xs, ys = dct.get(settings, ([], []))
                 results[system][settings] = (xs + [scale], ys + [time])
-        cpu_dct, gpu_dct = get_comparison_table(csv_reader, systems, single_systems, devices)
+        cpu_dct, gpu_dct = get_comparison_table(csv_reader, systems, single_systems, set(device_dct.keys()))
     systems = systems.union(single_systems)
     for system, rs in results.items():
         # fig, ax = plt.subplots()
@@ -409,14 +484,16 @@ def print_output(filepath, args):
     for system in systems:
         cpu, gpu = cpu_dct.get(system), gpu_dct.get(system)
         ratio = (cpu / gpu)
-        #equiv = ratio * mp.cpu_count()
-        data.append([system, cpu, gpu, ratio*100])
+        # equiv = ratio * mp.cpu_count()
+        data.append([system, cpu, gpu, ratio * 100])
     avg_ratio = sum([x[1] for x in data]) / sum([x[2] for x in data])
     data.append(["average",
                  sum([x[1] for x in data]),
                  sum([x[2] for x in data]),
                  avg_ratio])
     print_table(columns, data, "comparison_table.png")
+    if REF_DEVICE in device_dct:
+        print_cactus_plot()
 
 
 DID_NOT_FINISH = 'DNF'
@@ -486,7 +563,7 @@ def main():
                         default=False, help="Whether to show plots or not. Default is not show")
     parser.add_argument("--saveplots", required=False, dest="plot_dest",
                         default=None, help="Path to save plots as pngs. If not supplied, plots wont be seved as file")
-    parser.add_argument("--lite", required=False, default=0, dest="lite", type=int, 
+    parser.add_argument("--lite", required=False, default=0, dest="lite", type=int,
                         help="Whether to run lite or non-lite version. (0 = full suite; 1 = lite suite; default = 0)")
     parser.add_argument("--args", required=False, nargs="+", dest="additional_args", default=[],
                         help="Additional arguments for running simulation. Added before all other args.")
