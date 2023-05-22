@@ -2,7 +2,7 @@ FROM nvidia/cuda:11.8.0-devel-ubuntu22.04
 
 ENV DEVICE=ALL
 ENV TIMEOUT=3600
-ENV BLOCKS=64,256
+ENV BLOCKS=40,256
 ENV LITE=0
 
 RUN apt-get update -y && apt upgrade -y

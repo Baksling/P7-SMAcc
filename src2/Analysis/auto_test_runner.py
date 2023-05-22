@@ -386,7 +386,7 @@ def print_output(filepath, args):
         speedup_dct = {device: sorted([(system, scale, reference_d[(system, scale)] / time)
                                        for (system, scale, time) in lst
                                        if (system, scale) not in small_problems and (system, scale) in reference_d],
-                                      key=lambda x: x[3])
+                                      key=lambda x: x[2])
                        for device, lst in device_dct.items()}
 
         plt.title("speedup cactus plt")
@@ -411,7 +411,7 @@ def print_output(filepath, args):
         power_dct = {device: sorted([(system, scale, power_ratio(device, time, ref_speed[(system, scale)]))
                                      for (system, scale, time) in lst
                                      if (system, scale) not in small_problems and (system, scale) in ref_speed],
-                                    key=lambda x: x[3])
+                                    key=lambda x: x[2])
                      for device, lst in device_dct.items() if device != BASELINE}
 
         for i, (device, lst) in enumerate(power_dct.items()):
