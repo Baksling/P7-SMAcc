@@ -391,7 +391,7 @@ def print_output(filepath, args):
 
         plt.title("speedup cactus plt")
         plt.xlabel("problem instance")
-        plt.ylabel("speedup over baseline")
+        plt.ylabel("speedup over CPU")
 
         markers = list(mplmarkers.MarkerStyle.markers.values())
         # maxtime, maxratio = 0, 0
@@ -399,9 +399,7 @@ def print_output(filepath, args):
             if len(lst) == 0: continue
             xs, ys = list(range(len(lst))), [speedup for (_, _, speedup) in lst]
             plt.plot(xs, ys, linewidth=2.0, label=device)
-
-        # plt.xlim(maxratio)
-        # plt.ylim(maxratio)
+        plt.legend()
         if args.plot_dest is not None:
             plt.savefig(path.join(args.plot_dest, "cactus_speedup_plot.png"))
         if args.show:
@@ -414,11 +412,14 @@ def print_output(filepath, args):
                                     key=lambda x: x[2])
                      for device, lst in device_dct.items() if device != BASELINE}
 
+        plt.title("power cactus plt")
+        plt.xlabel("problem instance")
+        plt.ylabel("power usage over CPU")
         for i, (device, lst) in enumerate(power_dct.items()):
             if len(lst) == 0: continue
             xs, ys = list(range(len(lst))), [power for (_, _, power) in lst]
             plt.plot(xs, ys, linewidth=2.0, label=device)
-            
+        plt.legend()
         if args.plot_dest is not None:
             plt.savefig(path.join(args.plot_dest, "cactus_power_plot.png"))
         if args.show:
