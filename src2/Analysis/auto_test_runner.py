@@ -398,7 +398,7 @@ def print_output(filepath, args):
         for i, (device, lst) in enumerate(speedup_dct.items()):
             if len(lst) == 0: continue
             xs, ys = list(range(len(lst))), [speedup for (_, _, speedup) in lst]
-            plt.plot(xs, ys, marker=markers[i], linewidth=2.0, label=device)
+            plt.plot(xs, ys, linewidth=2.0, label=device)
 
         # plt.xlim(maxratio)
         # plt.ylim(maxratio)
@@ -417,7 +417,7 @@ def print_output(filepath, args):
         for i, (device, lst) in enumerate(power_dct.items()):
             if len(lst) == 0: continue
             xs, ys = list(range(len(lst))), [power for (_, _, power) in lst]
-            plt.plot(xs, ys, marker=markers[i], linewidth=2.0, label=device)
+            plt.plot(xs, ys, linewidth=2.0, label=device)
             
         if args.plot_dest is not None:
             plt.savefig(path.join(args.plot_dest, "cactus_power_plot.png"))
