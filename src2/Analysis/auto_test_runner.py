@@ -603,7 +603,7 @@ def main():
     parser.add_argument("-b", "--blocks", type=str, required=False, default=CUDA_PARALLEL,
                         help="blocks and threads configuration to use on the GPU. should be [blocks],[threads], "
                              "e.g. 40,256. default=40,256")
-    parser.add_argument("-n", "--n_samples", type=int, required=False, dest='n_sampels', default=None, #adjusted later in function depending on mode
+    parser.add_argument("-n", "--n_samples", type=int, required=False, dest='n_samples', default=None, #adjusted later in function depending on mode
                         help="Number of samples per test. (default=10)")
     # parser.add_argument("-u", "--uppaal", type=str, default=None, required=False,
     #                     dest="uppaal", help="Path to uppaal binary. If supplied, runs uppaal tests on uppaal too.")
