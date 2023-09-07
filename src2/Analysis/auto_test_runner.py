@@ -9,6 +9,7 @@ import multiprocessing as mp
 import csv
 import time as timer
 
+N_SAMPLES = 10
 CUDA_PARALLEL = "40,256"
 GPU_POWER = 250
 CPU_POWER = 450
@@ -36,6 +37,9 @@ REF_DEVICE = "CPU"
 CPU_CHOICES = {"CPU", "PN-CPU"}
 GPU_CHOICES = ["GPU", "JIT", "PN", "SM"]
 
+def avg(lst):
+    return sum(lst) / len(lst)
+
 
 def power_ratio(device, time, comp_time):
     my_power = GPU_POWER if device in GPU_CHOICES else CPU_POWER
@@ -55,6 +59,15 @@ class TestResults:
         yield self.total_time
         yield self.hit
 
+class TimeoutReference:
+    def __init__(self, v = False) -> None:
+        self._time_out = v
+    
+    def is_timed_out(self):
+        return self._time_out
+    
+    def set_timeout(self):
+        self._time_out = True
 
 def load_choice(choice):
     if choice == ALL:
@@ -81,7 +94,9 @@ def build_args(folder, name, time_arg, number, upscale, use_scale,
 
 
 def run_model(default_args, settings_name, d_args, time_arg, args, file_name, numb,
-              upscale, use_scale=True, query=None, q_index=0):
+              upscale, use_scale=True, query=None, q_index=0, timeout_p: TimeoutReference = TimeoutReference(False)):
+    if timeout_p.is_timed_out():
+        return None
     folder, cache_dir = args.model, args.temp
     output_name = f"{path.join(str(cache_dir), file_name)}_U{upscale}_{settings_name}"
     print(f"Running: {file_name} w. {upscale} (at. {timer.strftime('%H:%M:%S', timer.localtime())})")
@@ -100,23 +115,35 @@ def run_model(default_args, settings_name, d_args, time_arg, args, file_name, nu
                     return float(hit)
             return 0.0
 
+    time_lst, out_lst, reach_lst = [], [], []
     try:
-        call_args = args.additional_args \
+        
+        for i in range(args.n_samples):
+            print(f"\t running test #{i}")
+            call_args = args.additional_args \
                     + default_args \
                     + d_args \
                     + threads(settings_name, args.threads) \
                     + build_args(folder, file_name, time_arg, numb, upscale, use_scale, query) \
                     + ["-o", output_name]
-        start = timer.time()
-        cmd.run(call_args,
-                timeout=args.timeout, check=True, stderr=cmd.STDOUT)
-        out_time = (timer.time() - start)
-        time_file = output_name + "_lite_summary.txt"
-        reach_file = output_name + "_reach.tsv"
-        return TestResults(load_time(time_file), out_time, load_reach(reach_file, q_index))
+            start = timer.time()
+            cmd.run(call_args,
+                    timeout=args.timeout, check=True, stderr=cmd.STDOUT)
+            out_time = (timer.time() - start)
+            time_file = output_name + "_lite_summary.txt"
+            reach_file = output_name + "_reach.tsv"
+            
+            time_lst.append(time_file)
+            out_lst.append(out_time)
+            reach_lst.append(load_reach(reach_file, q_index))
+        
     except cmd.TimeoutExpired:
         print("timed out...")
+        timeout_p.set_timeout()
         return None
+    
+    return TestResults(avg(time_lst), avg(out_lst), avg(reach_lst))
+
 
 
 def test_uppaal(binary, args):
@@ -128,69 +155,87 @@ def test_uppaal(binary, args):
     single_dct = {}
     print(f"\nInitialising tests with uppaal:")
 
-    def run_uppaal(model):
+    def run_uppaal(model, timeout_p: TimeoutReference = TimeoutReference(False)):
+        if timeout_p.is_timed_out():
+            return None
         print("running uppaal on: " + model)
+        time_lst, out_lst, reach_lst = [], [], []
         try:
-            call_args = args.additional_args + [binary, path.join(args.model, model), "-q", "-s"]
-            start = timer.time()
-            cmd.run(call_args,
-                    capture_output=True, text=True, check=True, timeout=args.timeout)
-            total = (timer.time() - start)
-            return TestResults(total, total, 0.0)
+            for i in range(args.n_samples):            
+                print(f"\t running test #{i}")
+                call_args = args.additional_args + [binary, path.join(args.model, model), "-q", "-s"]
+                start = timer.time()
+                cmd.run(call_args,
+                        capture_output=True, text=True, check=True, timeout=args.timeout)
+                total = (timer.time() - start)
+                
+                time_lst.append(total)
+                out_lst.append(total)
+                reach_lst.append(0.0) #ignore
+            
         except cmd.TimeoutExpired:
             print("timed out...")
+            timeout_p.set_timeout()
             return None
+            
+        return TestResults(avg(time_lst), avg(out_lst), avg(reach_lst))
 
+
+    aloha_timeout = TimeoutReference()
     aloha = {}
-    aloha[2] = run_uppaal(path.join(args.uppaal_test_folder, "AlohaSingle_2.xml"))
-    aloha[5] = run_uppaal(path.join(args.uppaal_test_folder, "AlohaSingle_5.xml"))
-    aloha[10] = run_uppaal(path.join(args.uppaal_test_folder, "AlohaSingle_10.xml"))
-    aloha[25] = run_uppaal(path.join(args.uppaal_test_folder, "AlohaSingle_25.xml"))
-    aloha[50] = run_uppaal(path.join(args.uppaal_test_folder, "AlohaSingle_50.xml"))
-    aloha[100] = run_uppaal(path.join(args.uppaal_test_folder, "AlohaSingle_100.xml"))
-    aloha[250] = run_uppaal(path.join(args.uppaal_test_folder, "AlohaSingle_250.xml"))
-    aloha[500] = run_uppaal(path.join(args.uppaal_test_folder, "AlohaSingle_500.xml"))
+    aloha[2] = run_uppaal(path.join(args.uppaal_test_folder, "AlohaSingle_2.xml"), aloha_timeout)
+    aloha[5] = run_uppaal(path.join(args.uppaal_test_folder, "AlohaSingle_5.xml"), aloha_timeout)
+    aloha[10] = run_uppaal(path.join(args.uppaal_test_folder, "AlohaSingle_10.xml"), aloha_timeout)
+    aloha[25] = run_uppaal(path.join(args.uppaal_test_folder, "AlohaSingle_25.xml"), aloha_timeout)
+    aloha[50] = run_uppaal(path.join(args.uppaal_test_folder, "AlohaSingle_50.xml"), aloha_timeout)
+    aloha[100] = run_uppaal(path.join(args.uppaal_test_folder, "AlohaSingle_100.xml"), aloha_timeout)
+    aloha[250] = run_uppaal(path.join(args.uppaal_test_folder, "AlohaSingle_250.xml"), aloha_timeout)
+    aloha[500] = run_uppaal(path.join(args.uppaal_test_folder, "AlohaSingle_500.xml"), aloha_timeout)
     result_dct["aloha"] = aloha
 
     # agent covid
+    agent_timeout = TimeoutReference()
     agent_covid = {}
-    agent_covid[100] = run_uppaal(path.join(args.uppaal_test_folder, "AgentBasedCovid_100.xml"))
-    agent_covid[500] = run_uppaal(path.join(args.uppaal_test_folder, "AgentBasedCovid_500.xml"))
-    agent_covid[1000] = run_uppaal(path.join(args.uppaal_test_folder, "AgentBasedCovid_1000.xml"))
-    agent_covid[5000] = run_uppaal(path.join(args.uppaal_test_folder, "AgentBasedCovid_5000.xml"))
-    agent_covid[10000] = run_uppaal(path.join(args.uppaal_test_folder, "AgentBasedCovid_10000.xml"))
-    # agent_covid[50000] = run_uppaal("/UPPAALexperiments/AgentBasedCovid_50000.xml")
-    # agent_covid[100000] = run_uppaal("/UPPAALexperiments/AgentBasedCovid_100000.xml")
+    agent_covid[100] = run_uppaal(path.join(args.uppaal_test_folder, "AgentBasedCovid_100.xml"), agent_timeout)
+    agent_covid[500] = run_uppaal(path.join(args.uppaal_test_folder, "AgentBasedCovid_500.xml"), agent_timeout)
+    agent_covid[1000] = run_uppaal(path.join(args.uppaal_test_folder, "AgentBasedCovid_1000.xml"), agent_timeout)
+    agent_covid[5000] = run_uppaal(path.join(args.uppaal_test_folder, "AgentBasedCovid_5000.xml"), agent_timeout)
+    agent_covid[10000] = run_uppaal(path.join(args.uppaal_test_folder, "AgentBasedCovid_10000.xml"), agent_timeout)
+    # agent_covid[50000] = run_uppaal("/UPPAALexperiments/AgentBasedCovid_50000.xml", agent_timeout)
+    # agent_covid[100000] = run_uppaal("/UPPAALexperiments/AgentBasedCovid_100000.xml", agent_timeout)
     result_dct["agent_covid"] = agent_covid
 
     # reaction covid
+    
     single_dct["covid"] = run_uppaal(path.join(args.uppaal_test_folder, "covidmodelQueryUPPAAL.xml"))
     single_dct["bluetooth"] = run_uppaal(path.join(args.uppaal_test_folder, "bluetoothNoParaSimas.cav.xml"))
     single_dct["firewire"] = run_uppaal(path.join(args.uppaal_test_folder, "firewireGoal.cav.xml"))
 
     # csma
+    csma_timeout = TimeoutReference()
     csma = {}
-    csma[2] = run_uppaal(path.join(args.uppaal_test_folder, "CSMA_2.xml"))
-    csma[5] = run_uppaal(path.join(args.uppaal_test_folder, "CSMA_5.xml"))
-    csma[10] = run_uppaal(path.join(args.uppaal_test_folder, "CSMA_10.xml"))
-    csma[25] = run_uppaal(path.join(args.uppaal_test_folder, "CSMA_25.xml"))
-    csma[50] = run_uppaal(path.join(args.uppaal_test_folder, "CSMA_50.xml"))
-    csma[100] = run_uppaal(path.join(args.uppaal_test_folder, "CSMA_100.xml"))
+    csma[2] = run_uppaal(path.join(args.uppaal_test_folder, "CSMA_2.xml"), csma_timeout)
+    csma[5] = run_uppaal(path.join(args.uppaal_test_folder, "CSMA_5.xml"), csma_timeout)
+    csma[10] = run_uppaal(path.join(args.uppaal_test_folder, "CSMA_10.xml"), csma_timeout)
+    csma[25] = run_uppaal(path.join(args.uppaal_test_folder, "CSMA_25.xml"), csma_timeout)
+    csma[50] = run_uppaal(path.join(args.uppaal_test_folder, "CSMA_50.xml"), csma_timeout)
+    csma[100] = run_uppaal(path.join(args.uppaal_test_folder, "CSMA_100.xml"), csma_timeout)
     # csma[250] = run_uppaal("UPPAALexperiments/CSMA_250.xml")
     # csma[500] = run_uppaal("UPPAALexperiments/CSMA_500.xml")
     # csma[1000] = run_uppaal("UPPAALexperiments/CSMA_1000.xml")
     result_dct["csma"] = csma
 
     # fischer
+    fischer_timeout = TimeoutReference()
     fischer = {}
-    fischer[2] = run_uppaal(path.join(args.uppaal_test_folder, "fischer_2.xml"))
-    fischer[5] = run_uppaal(path.join(args.uppaal_test_folder, "fischer_5.xml"))
-    fischer[10] = run_uppaal(path.join(args.uppaal_test_folder, "fischer_10.xml"))
-    fischer[25] = run_uppaal(path.join(args.uppaal_test_folder, "fischer_25.xml"))
-    fischer[50] = run_uppaal(path.join(args.uppaal_test_folder, "fischer_50.xml"))
-    fischer[100] = run_uppaal(path.join(args.uppaal_test_folder, "fischer_100.xml"))
-    fischer[250] = run_uppaal(path.join(args.uppaal_test_folder, "fischer_250.xml"))
-    fischer[500] = run_uppaal(path.join(args.uppaal_test_folder, "fischer_500.xml"))
+    fischer[2] = run_uppaal(path.join(args.uppaal_test_folder, "fischer_2.xml"), fischer_timeout)
+    fischer[5] = run_uppaal(path.join(args.uppaal_test_folder, "fischer_5.xml"), fischer_timeout)
+    fischer[10] = run_uppaal(path.join(args.uppaal_test_folder, "fischer_10.xml"), fischer_timeout)
+    fischer[25] = run_uppaal(path.join(args.uppaal_test_folder, "fischer_25.xml"), fischer_timeout)
+    fischer[50] = run_uppaal(path.join(args.uppaal_test_folder, "fischer_50.xml"), fischer_timeout)
+    fischer[100] = run_uppaal(path.join(args.uppaal_test_folder, "fischer_100.xml"), fischer_timeout)
+    fischer[250] = run_uppaal(path.join(args.uppaal_test_folder, "fischer_250.xml"), fischer_timeout)
+    fischer[500] = run_uppaal(path.join(args.uppaal_test_folder, "fischer_500.xml"), fischer_timeout)
     # fischer[1000] = run_uppaal("UPPAALexperiments/fischer_1000.xml")
     result_dct["fischer"] = fischer
 
@@ -210,33 +255,36 @@ def test_smacc(binary, device, args):  # -> \
 
     for settings, d_args in device_args:
         print(f"\nInitialising tests with {settings}:")
+
         # aloha
+        aloha_timeout = TimeoutReference()
         aloha = {}
-        aloha[2] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 2)
-        aloha[5] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 5)
+        aloha[2] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 2, timeout_p=aloha_timeout)
+        aloha[5] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 5, timeout_p=aloha_timeout)
         if not is_lite:
-            aloha[10] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 10)
-            aloha[25] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 25)
-            aloha[50] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 50)
-            aloha[100] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 100)
-            aloha[250] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 250)
-            aloha[500] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 500)
+            aloha[10] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 10, timeout_p=aloha_timeout)
+            aloha[25] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 25, timeout_p=aloha_timeout)
+            aloha[50] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 50, timeout_p=aloha_timeout)
+            aloha[100] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 100, timeout_p=aloha_timeout)
+            aloha[250] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 250, timeout_p=aloha_timeout)
+            aloha[500] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 500, timeout_p=aloha_timeout)
         # aloha[1000] = run_model(default_args, settings, d_args, "100t", args, "AlohaSingle.xml", TOTAL_SIMS, 1000)
         result_dct[("aloha", settings)] = aloha
 
         # agant covid
         agent_covid = {}
+        agent_timeout = TimeoutReference()
         agent_covid[100] = run_model(default_args, settings, d_args, "100t", args,
-                                     "agentBaseCovid_100_1.0.xml", TOTAL_SIMS, 100)
+                                     "agentBaseCovid_100_1.0.xml", TOTAL_SIMS, 100, timeout_p=agent_timeout)
         if not is_lite:
             agent_covid[500] = run_model(default_args, settings, d_args, "100t", args,
-                                         "agentBaseCovid_500_5.0.xml", TOTAL_SIMS, 500)
+                                         "agentBaseCovid_500_5.0.xml", TOTAL_SIMS, 500, timeout_p=agent_timeout)
             agent_covid[1000] = run_model(default_args, settings, d_args, "100t", args,
-                                          "agentBaseCovid_1000_10.0.xml", TOTAL_SIMS, 1000)
+                                          "agentBaseCovid_1000_10.0.xml", TOTAL_SIMS, 1000, timeout_p=agent_timeout)
             agent_covid[5000] = run_model(default_args, settings, d_args, "100t", args,
-                                          "agentBaseCovid_5000_50.0.xml", TOTAL_SIMS, 5000)
+                                          "agentBaseCovid_5000_50.0.xml", TOTAL_SIMS, 5000, timeout_p=agent_timeout)
             agent_covid[10000] = run_model(default_args, settings, d_args, "100t", args,
-                                           "agentBaseCovid_10000_100.0.xml", TOTAL_SIMS, 10000)
+                                           "agentBaseCovid_10000_100.0.xml", TOTAL_SIMS, 10000, timeout_p=agent_timeout)
         # agent_covid[50000] = run_model(default_args, settings, d_args, "100t", args, "agentBaseCovid_50000_500.0.xml", TOTAL_SIMS, 50000)
         # agent_covid[100000] = run_model(default_args, settings, d_args, "100t", args, "agentBaseCovid_100000_1000.0.xml", TOTAL_SIMS, 1000000)
         result_dct[("agent_covid", settings)] = agent_covid
@@ -259,44 +307,46 @@ def test_smacc(binary, device, args):  # -> \
                       query="Node0.s5")
 
         # csma
+        csma_timeout = TimeoutReference()
         csma = {}
         csma[2] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_2.xml", TOTAL_SIMS, 2,
-                            use_scale=False, query="Process0.SUCCESS")
+                            use_scale=False, query="Process0.SUCCESS", timeout_p=csma_timeout)
         csma[5] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_5.xml", TOTAL_SIMS, 5,
-                            use_scale=False, query="Process0.SUCCESS")
+                            use_scale=False, query="Process0.SUCCESS", timeout_p=csma_timeout)
         if not is_lite:
             csma[10] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_10.xml", TOTAL_SIMS, 10,
-                                 use_scale=False, query="Process0.SUCCESS")
+                                 use_scale=False, query="Process0.SUCCESS", timeout_p=csma_timeout)
             csma[25] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_25.xml", TOTAL_SIMS, 25,
-                                 use_scale=False, query="Process0.SUCCESS")
+                                 use_scale=False, query="Process0.SUCCESS", timeout_p=csma_timeout)
             csma[50] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_50.xml", TOTAL_SIMS, 50,
-                                 use_scale=False, query="Process0.SUCCESS")
+                                 use_scale=False, query="Process0.SUCCESS", timeout_p=csma_timeout)
             csma[100] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_100.xml", TOTAL_SIMS, 100,
-                                  use_scale=False, query="Process0.SUCCESS")
+                                  use_scale=False, query="Process0.SUCCESS", timeout_p=csma_timeout)
         # csma[250] = run_model(default_args, settings, d_args, "2000t", args, "CSMA_250.xml", TOTAL_SIMS, 250,
         #                      use_scale=False, query="Process0.SUCCESS")
         # csma[500] = run_model(default_args, d_args, "2000t", args, "CSMA_500.xml", TOTAL_SIMS, 500, use_scale=False)
         # csma[1000] = run_model(default_args, d_args, "2000t", args, "CSMA_1000.xml", TOTAL_SIMS, 1000, use_scale=False)
         result_dct[("csma", settings)] = csma
 
+        fischer_timeout = TimeoutReference()
         fischer = {}
         fischer[2] = run_model(default_args, settings, d_args, "300t", args, "fischer_2_29.xml", TOTAL_SIMS, 2,
-                               use_scale=False)
+                               use_scale=False, timeout_p=fischer_timeout)
         fischer[5] = run_model(default_args, settings, d_args, "300t", args, "fischer_5_29.xml", TOTAL_SIMS, 5,
-                               use_scale=False)
+                               use_scale=False, timeout_p=fischer_timeout)
         fischer[10] = run_model(default_args, settings, d_args, "300t", args, "fischer_10_29.xml", TOTAL_SIMS,
-                                10, use_scale=False)
+                                10, use_scale=False, timeout_p=fischer_timeout)
         if not is_lite:
             fischer[25] = run_model(default_args, settings, d_args, "300t", args, "fischer_25_29.xml", TOTAL_SIMS,
-                                    25, use_scale=False)
+                                    25, use_scale=False, timeout_p=fischer_timeout)
             fischer[50] = run_model(default_args, settings, d_args, "300t", args, "fischer_50_29.xml", TOTAL_SIMS,
-                                    50, use_scale=False)
+                                    50, use_scale=False, timeout_p=fischer_timeout)
             fischer[100] = run_model(default_args, settings, d_args, "300t", args, "fischer_100_29.xml", TOTAL_SIMS,
-                                     100, use_scale=False)
+                                     100, use_scale=False, timeout_p=fischer_timeout)
             fischer[250] = run_model(default_args, settings, d_args, "300t", args, "fischer_250_29.xml", TOTAL_SIMS,
-                                     250, use_scale=False)
+                                     250, use_scale=False, timeout_p=fischer_timeout)
             fischer[500] = run_model(default_args, settings, d_args, "300t", args, "fischer_500_29.xml", TOTAL_SIMS,
-                                     500, use_scale=False)
+                                     500, use_scale=False, timeout_p=fischer_timeout)
         # fischer[1000] = run_model(default_args, settings, d_args, "300t", args, "fischer_500_29.xml", TOTAL_SIMS, 1000, use_scale=False)
         result_dct[("fischer", settings)] = fischer
 
@@ -306,8 +356,6 @@ def test_smacc(binary, device, args):  # -> \
 def print_output(filepath, args):
     import matplotlib.markers as mplmarkers
     import matplotlib.pyplot as plt
-    def avg(it):
-        return sum(it) / len(it)
 
     def load_time(row):
         try:
@@ -555,6 +603,8 @@ def main():
     parser.add_argument("-b", "--blocks", type=str, required=False, default=CUDA_PARALLEL,
                         help="blocks and threads configuration to use on the GPU. should be [blocks],[threads], "
                              "e.g. 40,256. default=40,256")
+    parser.add_argument("-n", "--n_samples", type=int, required=False, dest='n_sampels', default=None, #adjusted later in function depending on mode
+                        help="Number of samples per test. (default=10)")
     # parser.add_argument("-u", "--uppaal", type=str, default=None, required=False,
     #                     dest="uppaal", help="Path to uppaal binary. If supplied, runs uppaal tests on uppaal too.")
     parser.add_argument("-g", "--graph", type=str, required=False, default=None,
@@ -574,6 +624,9 @@ def main():
         sys.exit(0)
 
     args = parser.parse_args()
+    
+    if args.n_samples is None:
+        args.n_samples = N_SAMPLES if args.lite == 0 else 1
 
     if args.graph is not None:
         if not path.exists(args.graph):
