@@ -117,7 +117,6 @@ def run_model(default_args, settings_name, d_args, time_arg, args, file_name, nu
 
     time_lst, out_lst, reach_lst = [], [], []
     try:
-        
         for i in range(args.n_samples):
             print(f"\t running test #{i}")
             call_args = args.additional_args \
@@ -133,7 +132,7 @@ def run_model(default_args, settings_name, d_args, time_arg, args, file_name, nu
             time_file = output_name + "_lite_summary.txt"
             reach_file = output_name + "_reach.tsv"
             
-            time_lst.append(time_file)
+            time_lst.append(load_time(time_file))
             out_lst.append(out_time)
             reach_lst.append(load_reach(reach_file, q_index))
         
