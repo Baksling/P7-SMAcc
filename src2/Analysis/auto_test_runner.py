@@ -370,7 +370,7 @@ def print_output(filepath, args):
 
     def get_comparison_table(data, scale_systems, single_systems, devices):
         if not (any(devices.intersection(CPU_CHOICES)) and any(devices.intersection(GPU_CHOICES))):
-            return dict()
+            return dict(), dict()
 
         def iterate_scales(choices, system):
             for row in (r for r in data if
