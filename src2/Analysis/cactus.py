@@ -5,9 +5,9 @@ from typing import Dict, List, Tuple
 import csv
 
 BASE_CONFIG = "CPU"
-CPU_CONFIG = {"PN-CPU", "BASELINE", "uppaal"}
+CPU_CONFIG = {"PN-CPU"}
 GPU_CONFIG = {"GPU", "JIT", "PN", "SM"}
-UPPAAL = "uppaal"
+SEQ_CONFIG = {"uppaal", "BASELINE"}
 MODEL = 0
 DEVICE = 1
 SCALE = 2
@@ -16,7 +16,7 @@ TOTAL_TIME = 4
 def main():
     print(sys.argv)
     file = path.join(os.getcwd(), sys.argv[1])
-    gpu_power, cpu_power = float(sys.argv[2]), float(sys.argv[3])
+    gpu_power, cpu_power, cores = float(sys.argv[2]), float(sys.argv[3]), float(sys.argv[4])
     
     models : Dict[Tuple[str, int], List[Tuple[str, float]]] = dict()
     with open(file, 'r') as f:
@@ -50,7 +50,12 @@ def main():
     for (model, scale, device), time in cactus.items():
         if (device == BASE_CONFIG): continue
         base_speed = cactus[model, scale, BASE_CONFIG]
-        use_power = gpu_power if (device in GPU_CONFIG) else cpu_power
+        if (device in GPU_CONFIG):
+            use_power = gpu_power
+        elif (device in SEQ_CONFIG):
+            use_power = cpu_power / cores
+        else:
+            use_power = cpu_power
         speed = base_speed / time
         power = (time * use_power) / (base_speed * cpu_power)
         speed_dct[device] = speed_dct.get(device, []) + [speed]
