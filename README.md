@@ -14,11 +14,13 @@ Empirically, changing the BLOCKS parameter to the number of SMs on the GPU seems
 
 ## Run experiment suite
 
-To run the experiments, run the "run_full.sh" script in order to run the full test suite, as seen in the paper (takes around 18-24 hours).
+To run the experiments, run the "run_full.sh" script in order to run the full test suite, as seen in the paper (takes around 18-24 hours). In the paper, the experiments are shown as an average of 10 samples, however, this script only runs 1 sample. 
+
 Alternatively, run the "run_lite.sh" script in order to run a shorter experiment suite (takes around 5-15 minutes).
 
-Example:
+The full suite includes all the models shown in the paper, while the run_lite suite only samples the smallest version of each model.
 
+Example:
     sudo bash run_lite.sh
 
 Please make sure the dockerfile and the run files in the same folder.
@@ -32,6 +34,8 @@ the file "all_results.tsv" is a file with all the results contained in one.
 The plots show the number of components used in the model on the x axis, with time on the y axis.
 The comparison table shows the fastest processing time on the CPU and GPU and the performance ratio between the two (GPU_time / CPU_time).
 The power ratio (from the paper) is calculated by taking the speedup multiplied with the CPU power divided by the GPU power ((speedup * CPU_wattage) / GPU_wattage). 
+
+CPU power consumption is assumed to be 450W and GPU power consumption is assumed to be 250W, as those were the values for the hardware used in the paper. 
 
 
 ## Run from source
