@@ -4,10 +4,10 @@ import os.path as path
 #This is what the JIT compiler looks for.
 OUTPUT_FILENAME = "kernal.cu"
 
-def header_file_lst(source_path: str) -> list[str]: 
+def header_file_lst(source_path: str): 
     return [path.join(source_path, 'common/macro.h',)]
 
-def file_lst(source_path: str) -> list[str]:
+def file_lst(source_path: str):
     return [path.join(source_path, x) for x in [
         'common/sim_config.h',
         'common/my_stack.h',
